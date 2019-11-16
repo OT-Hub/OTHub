@@ -1,5 +1,17 @@
-# OTHub
+# OT Hub
 
+OT Hub is a community-made project for live insights into the OriginTrail Decentralized Network.
+
+https://othub.origin-trail.network/
+
+This repository contains the web server API that powers the OT Hub website and the backend synchronisation process that connects to the Ethereum Blockchain.
+
+Due to licencing issues the website built with Angular is not currently included in this repository.
+
+## Code Projects
+- OTHub.ApiServer - This project is the web server API
+- OTHub.BackendSync - This project is the backend synchronisation process 
+- OTHub.Settings - This project contains the code for the settings described below
 
 ## Configuration
 
@@ -17,6 +29,8 @@ The configuration uses User Secrets which are stored in the authenticated users 
 - WebServer:AccessControlAllowOrigin - The URL to allow browser requests from (CORS). This can be left as https://localhost:4200 unless you plan on hosting your own website using the API.
 #### Optional
 - OriginTrailNode:Url - This can be used to perform uptime/online checks
+
+#### Example
 
 ```
 {
