@@ -1,0 +1,71 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <UserSecretsId>14849f46-26cf-410d-bd05-3ec2b19fb47a</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Remove="Abis\approval.json" />
+    <None Remove="Abis\erc725.json" />
+    <None Remove="Abis\holding-storage.json" />
+    <None Remove="Abis\holding.json" />
+    <None Remove="Abis\hub.json" />
+    <None Remove="Abis\litigation-storage.json" />
+    <None Remove="Abis\litigation.json" />
+    <None Remove="Abis\profile-storage.json" />
+    <None Remove="Abis\profile.json" />
+    <None Remove="Abis\reading.json" />
+    <None Remove="Abis\replacement.json" />
+    <None Remove="Abis\token.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Abis\approval.json" />
+    <EmbeddedResource Include="Abis\erc725.json" />
+    <EmbeddedResource Include="Abis\holding-storage.json" />
+    <EmbeddedResource Include="Abis\holding.json" />
+    <EmbeddedResource Include="Abis\hub.json" />
+    <EmbeddedResource Include="Abis\litigation-storage.json" />
+    <EmbeddedResource Include="Abis\litigation.json" />
+    <EmbeddedResource Include="Abis\profile-storage.json" />
+    <EmbeddedResource Include="Abis\profile.json" />
+    <EmbeddedResource Include="Abis\reading.json" />
+    <EmbeddedResource Include="Abis\replacement.json" />
+    <EmbeddedResource Include="Abis\token.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="CoinpaprikaAPI" Version="1.2.0" />
+    <PackageReference Include="Dapper" Version="1.60.1" />
+    <PackageReference Include="Dapper.SimpleCRUD" Version="2.0.1" />
+    <PackageReference Include="Discord.Net" Version="2.0.1" />
+    <PackageReference Include="FluentFTP" Version="19.2.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
+    <PackageReference Include="MySqlConnector" Version="0.53.0" />
+    <PackageReference Include="Nethereum.StandardTokenEIP20" Version="3.1.2" />
+    <PackageReference Include="Nethereum.Web3" Version="3.1.2" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
+    <PackageReference Include="RestSharp" Version="106.6.9" />
+  </ItemGroup>
+  <PropertyGroup>
+    <RuntimeIdentifiers>ubuntu.18.04-x64</RuntimeIdentifiers>
+    <AssemblyName>OTHub.BackendSync</AssemblyName>
+    <RootNamespace>OTHub.BackendSync</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OTHub.Settings\OTHub.Settings.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Cachet.NET.Core">
+      <HintPath>..\..\..\..\Downloads\Cachet.NET-master\Cachet.NET.Core\bin\Release\netcoreapp2.0\Cachet.NET.Core.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
+  </ItemGroup>
+  <ItemGroup>
+    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
+  </ItemGroup>
+</Project>
