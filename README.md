@@ -13,6 +13,10 @@ Due to licencing issues the website built with Angular is not currently included
 - OTHub.BackendSync - This project is the backend synchronisation process 
 - OTHub.Settings - This project contains the code for the settings described below
 
+## API Documentation
+
+https://othub-api.origin-trail.network/docs
+
 ## Configuration
 
 The configuration uses User Secrets which are stored in the authenticated users profile for security.
