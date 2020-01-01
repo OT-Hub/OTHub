@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace OTHelperNetStandard
+namespace OTHub.BackendSync
 {
     public static class HexHelper
     {

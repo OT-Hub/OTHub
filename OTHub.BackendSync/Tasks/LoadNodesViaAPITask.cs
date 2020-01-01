@@ -4,22 +4,23 @@ using System.Linq;
 using System.Net;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
-using OTHelperNetStandard.Models.Database;
-using OTHelperNetStandard.Models.Generated;
+using OTHub.BackendSync.Models.Database;
+using OTHub.BackendSync.Models.Generated;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class LoadNodesViaAPITask : TaskRun
     {
         public LoadNodesViaAPITask() : base("Load Nodes via API")
         {
         }
+
+        private static readonly object _lock = new object();
 
         public async override Task Execute(Source source)
         {
@@ -70,97 +71,144 @@ join ethblock b on b.blocknumber = p.blocknumber
 group by p.holder) x
 JOIN OTIdentity i on x.NewIdentity = i.Identity
 WHERE 
-Version != 0 {(OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet ? "" : " AND i.Approved = 1")} 
-AND (NOT EXISTS (SELECT 1 FROM OTNode_IPInfo IP WHERE IP.NodeId = I.NodeId) 
-OR (SELECT COUNT(*) FROM OTNode_History H WHERE H.NodeId = I.NodeId AND Success = 1 AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -7 DAY)) = 0)
+Version != 0
 GROUP BY NewIdentity, I.NodeId
-{(OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet ? "" : "HAVING MAX(x.Timestamp) >= DATE_Add(NOW(), INTERVAL - 4 WEEK)")} 
 ORDER BY MAX(x.Timestamp) DESC")
                     .ToArray();
 
+                //{(OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet ? "" : "HAVING MAX(x.Timestamp) >= DATE_Add(NOW(), INTERVAL - 8 WEEK)")} 
+
                 Console.WriteLine("Found " + nodesToCheck.Length + " nodes to check via API.");
 
-                int counter = 0;
-                foreach (var nodeToCheck in nodesToCheck)
+
+                var lists = Split<string>(nodesToCheck, nodesToCheck.Length / 12);
+
+                List<Task> tasks = new List<Task>();
+
+                foreach (var list in lists)
                 {
-                    counter++;
-                    try
+
+                    tasks.Add(Task.Run(async () =>
                     {
-                        Logger.WriteLine(source, "Trying " + nodeToCheck + " via node API (" + counter + " of " + nodesToCheck.Length + ")");
+                        int counter = 0;
 
-                        string strData = GetRequest($"{OTHubSettings.Instance.OriginTrailNode.Url}/api/network/get-contact/" + nodeToCheck);
-
-                        NodeContact data = JsonConvert.DeserializeObject<NodeContact>(strData);
-
-                        bool isOnline = false;
-
-                        try
+                        foreach (var nodeToCheck in list)
                         {
-                            string url = $"https://{data.hostname}:{data.port}/";
+                            counter++;
 
-                            var request = (HttpWebRequest) WebRequest.Create(url);
-                            request.Timeout = counter <= 10 ? 10000 : 5000;
-                            request.AllowAutoRedirect = false;
-                            request.ServerCertificateValidationCallback = delegate(object sender,
-                                X509Certificate certificate,
-                                X509Chain chain, SslPolicyErrors errors)
+                            try
                             {
+                                string urlText =
+                                    $"{OTHubSettings.Instance.OriginTrailNode.Url}/api/latest/network/get-contact/" +
+                                    nodeToCheck;
 
-                                isOnline = true;
+                                Logger.WriteLine(source,
+                                    "Trying " + nodeToCheck + " via node API (" + counter + " of " + list.Count +
+                                    "): " + urlText);
 
-                                return true;
-                            };
+                                string strData = GetRequest(urlText);
 
-                            HttpWebResponse response = (HttpWebResponse) request.GetResponse();
-                        }
-                        catch (Exception ex)
-                        {
+                                NodeContact data = JsonConvert.DeserializeObject<NodeContact>(strData);
 
-                        }
+                                bool isOnline = false;
 
-                        if (isOnline)
-                        {
-                     
+                                try
+                                {
+                                    string url = $"https://{data.hostname}:{data.port}/";
 
-                            var info = new IpInfo();
-                            info.Hostname = data.hostname;
-                            info.Wallet = data.wallet;
-                            info.Port = data.port;
-                            info.NodeId = nodeToCheck;
+                                    var request = (HttpWebRequest) WebRequest.Create(url);
+                                    request.Timeout = (int) TimeSpan.FromSeconds(140).TotalMilliseconds;
+                                    request.AllowAutoRedirect = false;
+                                    request.ServerCertificateValidationCallback = delegate(object sender,
+                                        X509Certificate certificate,
+                                        X509Chain chain, SslPolicyErrors errors)
+                                    {
 
-                            info.Timestamp = new DateTime(1970, 1, 1).AddMilliseconds(data.timestamp);
+                                        isOnline = true;
 
-                            if (info.Timestamp.Year < DateTime.Now.Year)
-                            {
-                                info.Timestamp = DateTime.UtcNow;
+                                        return true;
+                                    };
+
+                                    HttpWebResponse response = (HttpWebResponse) await request.GetResponseAsync();
+                                }
+                                catch (Exception ex)
+                                {
+
+                                }
+
+                                if (isOnline)
+                                {
+
+
+                                    var info = new IpInfo();
+                                    info.Hostname = data.hostname;
+                                    info.Wallet = data.wallet;
+                                    info.Port = data.port;
+                                    info.NodeId = nodeToCheck;
+                                    info.NetworkId = data.network_id;
+
+                                    info.Timestamp = new DateTime(1970, 1, 1).AddMilliseconds(data.timestamp);
+
+                                    if (info.Timestamp.Year < DateTime.Now.Year)
+                                    {
+                                        info.Timestamp = DateTime.UtcNow;
+                                    }
+
+
+                                    info.LastCheckedTimestamp = DateTime.UtcNow;
+
+
+                                    lock (_lock)
+                                    {
+                                        if (connection.ExecuteScalar<bool>(
+                                            @"SELECT NOT EXISTS (SELECT 1 FROM OTNode_IPInfo IP WHERE IP.NodeId = @nodeId)",
+                                            new {nodeId = nodeToCheck}))
+                                        {
+                                            Logger.WriteLine(source,
+                                                "Found " + nodeToCheck + " via node API! Inserting...");
+                                            IpInfo.Insert(connection, info);
+                                        }
+                                        else
+                                        {
+                                            Logger.WriteLine(source,
+                                                "Found " + nodeToCheck + " via node API! Updating...");
+
+                                            IpInfo.UpdateHost(connection, nodeToCheck, data.hostname, data.port,
+                                                info.Timestamp, info.LastCheckedTimestamp, info.NetworkId);
+                                        }
+                                    }
+                                }
                             }
-
-
-                            info.LastCheckedTimestamp = DateTime.UtcNow;
-
-
-                            if (connection.ExecuteScalar<bool>(@"SELECT NOT EXISTS (SELECT 1 FROM OTNode_IPInfo IP WHERE IP.NodeId = @nodeId)", new {nodeId = nodeToCheck}))
+                            catch (Exception e)
                             {
-                                Logger.WriteLine(source, "Found " + nodeToCheck + " via node API! Inserting...");
-                                IpInfo.Insert(connection, info);
-                            }
-                            else
-                            {
-                                Logger.WriteLine(source, "Found " + nodeToCheck + " via node API! Updating...");
+                                if (!e.Message.Contains("The operation has timed out"))
+                                {
+                                    var message = e.GetBaseException()?.ToString();
 
-                                IpInfo.UpdateHost(connection, nodeToCheck, data.hostname, data.port, info.Timestamp, info.LastCheckedTimestamp);
+                                    Logger.WriteLine(source,
+                                        "Error checking node online (LoadNodesViaAPI): " + message);
+                                }
                             }
                         }
-                    }
-                    catch (Exception e)
-                    {
-                        if (!e.Message.Contains("The operation has timed out"))
-                        {
-                            Logger.WriteLine(source, "Error checking node online (LoadNodesViaAPI): " + e.Message);
-                        }
-                    }
+                    }));
                 }
+
+                Task.WaitAll(tasks.ToArray());
             }
+        }
+
+        private static List<List<T>> Split<T>(ICollection<T> collection, int size)
+        {
+            var chunks = new List<List<T>>();
+            var chunkCount = collection.Count() / size;
+
+            if (collection.Count % size > 0)
+                chunkCount++;
+
+            for (var i = 0; i < chunkCount; i++)
+                chunks.Add(collection.Skip(i * size).Take(size).ToList());
+
+            return chunks;
         }
 
         private class TimeoutWebClient : System.Net.WebClient

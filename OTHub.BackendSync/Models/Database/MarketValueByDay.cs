@@ -1,9 +1,9 @@
 ﻿using System;
 using Dapper;
 using MySql.Data.MySqlClient;
-using OTHelperNetStandard.Models.Json;
+using OTHub.BackendSync.Models.Json;
 
-namespace OTHelperNetStandard
+namespace OTHub.BackendSync.Models.Database
 {
     public class MarketValueByDay
     {

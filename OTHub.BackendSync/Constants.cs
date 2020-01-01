@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text;
-using Nethereum.Contracts;
-using OTHelperNetStandard.Tasks;
 
-namespace OTHelperNetStandard
+namespace OTHub.BackendSync
 {
     public class Constants
     {
@@ -14,7 +10,7 @@ namespace OTHelperNetStandard
 
         public static string GetContractAbi(ContractType contractType)
         {
-            string path = "OTHelperNetStandard.Abis.";
+            string path = "OTHub.BackendSync.Abis.";
 
             switch (contractType)
             {

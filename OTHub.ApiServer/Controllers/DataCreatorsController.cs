@@ -98,8 +98,8 @@ WHERE I.Identity = @identity", new { identity = identity });
 (CASE WHEN o.IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(o.FinalizedTimeStamp, INTERVAL +o.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
 	ELSE (CASE WHEN o.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)
-		THEN 'Expired'
-		ELSE 'Bidding'
+		THEN 'Not Started'
+		ELSE 'Not Started'
 	END)
 END) as Status,
 (CASE WHEN o.IsFinalized = 1  THEN DATE_Add(o.FinalizedTimeStamp, INTERVAL +o.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp
@@ -123,7 +123,7 @@ select pc.TransactionHash, pc.InitialBalance as Amount, b.Timestamp, pc.GasPrice
 join ethblock b on b.BlockNumber = pc.BlockNumber
 WHERE pc.Profile = @identity", new { identity = identity }).ToArray();
 
-                    profile.Litigations = connection.Query<DataCreatorLitigationSummary>(@"SELECT li.TransactionHash, li.Timestamp, li.OfferId, li.RequestedDataIndex, li.HolderIdentity
+                    profile.Litigations = connection.Query<DataCreatorLitigationSummary>(@"SELECT li.TransactionHash, li.Timestamp, li.OfferId, li.HolderIdentity, li.requestedBlockIndex RequestedBlockIndex, li.requestedObjectIndex RequestedObjectIndex
 FROM otcontract_litigation_litigationinitiated li
 JOIN OTOffer O ON O.OfferId = li.OfferId
 JOIN OTIdentity I ON I.NodeId = O.DCNodeId

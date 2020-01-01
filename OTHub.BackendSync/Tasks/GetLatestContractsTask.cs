@@ -3,17 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Nethereum.Contracts;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC.Eth.DTOs;
-using Nethereum.Web3;
-using OTHelperNetStandard.Models.Database;
+using OTHub.BackendSync.Models.Database;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class GetLatestContractsTask : TaskRun
     {
@@ -34,8 +32,8 @@ namespace OTHelperNetStandard.Tasks
                 //    return;
                 //}
 
-                if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet)
-                {
+                //if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet)
+                //{
                     var allHubAddresses = new List<String>();
                     allHubAddresses.Add(OTHubSettings.Instance.Blockchain.HubAddress);
                     var addresses = allHubAddresses.Distinct();
@@ -44,17 +42,17 @@ namespace OTHelperNetStandard.Tasks
                     {
                         await NewTestnetMethod(connection, address, address == OTHubSettings.Instance.Blockchain.HubAddress);
                     }
-                }
-                else
-                {
-                    await OldLiveMethod(connection);
-                }
+                //}
+                //else
+                //{
+                //    await OldLiveMethod(connection);
+                //}
             }
         }
 
         private static async Task NewTestnetMethod(MySqlConnection connection, string hubAddress, bool isLatest)
         {
-            using (Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("OTHelperNetStandard.Abis.hub.json"))
+            using (Stream resource = Assembly.GetExecutingAssembly().GetManifestResourceStream("OTHub.BackendSync.Abis.hub.json"))
             using (StreamReader reader = new StreamReader(resource))
             {
                 var hubContract = new Contract(TaskRun.eth, reader.ReadToEnd(), hubAddress);

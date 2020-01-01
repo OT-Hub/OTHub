@@ -64,7 +64,7 @@ The following sizes in pixels are supported:
             }
 
             if (identity.Length != 42 || !identity.StartsWith("0x") || !identity.All(Char.IsLetterOrDigit))
-                return null;
+                return BadRequest();
 
             if (size > 64)
             {

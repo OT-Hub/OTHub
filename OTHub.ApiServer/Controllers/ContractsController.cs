@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Linq;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using OTHub.APIServer.Models;
@@ -24,8 +25,47 @@ This holding smart contract is responsible for the movement and storage of reser
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                return connection.QuerySingle<ContractAddress>(@"select Address from otcontract
+                return connection.QuerySingle<ContractAddress>(@"select Address, IsLatest from otcontract
 where Type = 6 AND IsLatest = 1 AND IsArchived = 0");
+            }
+        }
+
+        [Route("GetHoldingAddresses")]
+        [HttpGet]
+        [SwaggerResponse(200, type: typeof(ContractAddress[]))]
+        [SwaggerResponse(500, "Internal server error")]
+        public ContractAddress[] GetHoldingAddresses()
+        {
+            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                return connection.Query<ContractAddress>(@"select Address, IsLatest from otcontract
+where Type = 6").ToArray();
+            }
+        }
+
+        [Route("GetHoldingStorageAddresses")]
+        [HttpGet]
+        [SwaggerResponse(200, type: typeof(ContractAddress[]))]
+        [SwaggerResponse(500, "Internal server error")]
+        public ContractAddress[] GetHoldingStorageAddresses()
+        {
+            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                return connection.Query<ContractAddress>(@"select Address, IsLatest from otcontract
+where Type = 5").ToArray();
+            }
+        }
+
+        [Route("GetLitigationStorageAddresses")]
+        [HttpGet]
+        [SwaggerResponse(200, type: typeof(ContractAddress[]))]
+        [SwaggerResponse(500, "Internal server error")]
+        public ContractAddress[] GetLitigationStorageAddresses()
+        {
+            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                return connection.Query<ContractAddress>(@"select Address, IsLatest from otcontract
+where Type = 9").ToArray();
             }
         }
     }

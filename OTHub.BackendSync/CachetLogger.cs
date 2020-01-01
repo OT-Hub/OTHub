@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using OTHelperNetStandard.Tasks;
 
-namespace OTHelperNetStandard
+namespace OTHub.BackendSync
 {
     public static class CachetLogger
     {

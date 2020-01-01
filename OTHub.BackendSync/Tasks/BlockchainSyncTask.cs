@@ -2,17 +2,17 @@
 using System.Linq;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
-using OTHelperNetStandard.Models.Database;
+using OTHub.BackendSync.Models.Database;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class BlockchainSyncTask : TaskRun
     {
         public BlockchainSyncTask() : base("Blockchain Sync")
         {
 
-            Add(new SyncApprovalContractTask());
+            //Add(new SyncApprovalContractTask());
             Add(new SyncProfileContractTask());
             Add(new SyncHoldingContractTask());
             Add(new SyncLitigationContractTask());

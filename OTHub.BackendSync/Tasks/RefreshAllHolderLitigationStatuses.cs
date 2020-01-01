@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
-using OTHelperNetStandard.Models.Database;
+using OTHub.BackendSync.Models.Database;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class RefreshAllHolderLitigationStatuses : TaskRun
     {

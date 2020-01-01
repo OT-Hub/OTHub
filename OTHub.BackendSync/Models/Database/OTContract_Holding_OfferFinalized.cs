@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Dapper;
 using MySql.Data.MySqlClient;
-using Nethereum.Hex.HexTypes;
 
-namespace OTHelperNetStandard.Models.Database
+namespace OTHub.BackendSync.Models.Database
 {
     public class OTContract_Holding_OfferFinalized
     {

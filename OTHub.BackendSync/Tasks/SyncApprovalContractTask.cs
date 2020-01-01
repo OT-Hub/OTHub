@@ -5,23 +5,18 @@ using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
-using Nethereum.Hex.HexTypes;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC.Eth.DTOs;
-using Nethereum.Web3;
-using OTHelperNetStandard.Models.Database;
+using OTHub.BackendSync.Models.Database;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class SyncApprovalContractTask : TaskRun
     {
         public override async Task Execute(Source source)
         {
-            if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet)
-            {
-                return;
-            }
+            return;
 
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 

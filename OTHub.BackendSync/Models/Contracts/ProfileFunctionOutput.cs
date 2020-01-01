@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Numerics;
-using System.Text;
+﻿using System.Numerics;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
-namespace OTHelperNetStandard.Models.Contracts
+namespace OTHub.BackendSync.Models.Contracts
 {
     [FunctionOutput]
     public class ProfileFunctionOutput

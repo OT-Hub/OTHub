@@ -3,8 +3,11 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
+using OTHub.BackendSync.Models.Database;
+using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class TaskController
     {
@@ -17,6 +20,7 @@ namespace OTHelperNetStandard.Tasks
             private readonly TaskRun _task;
             private readonly TimeSpan _runEveryTimeSpan;
             private DateTime _lastRunDateTime;
+            private SystemStatus _systemStatus;
 
             internal TaskControllerItem(Source source, TaskRun task, TimeSpan runEveryTimeSpan, bool startNow)
             {
@@ -24,6 +28,7 @@ namespace OTHelperNetStandard.Tasks
                 _task = task;
                 _runEveryTimeSpan = runEveryTimeSpan;
                 _lastRunDateTime = startNow ? DateTime.MinValue : DateTime.Now;
+                _systemStatus = new SystemStatus(task.Name);
             }
 
             public bool NeedsRunning
@@ -35,14 +40,40 @@ namespace OTHelperNetStandard.Tasks
             {
                 DateTime startTime = DateTime.Now;
 
+                
+
                 try
                 {
                     Logger.WriteLine(_source, "Starting " + _task.Name);
                     await _task.Execute(_source);
+
+                    try
+                    {
+                        using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                        {
+                            _systemStatus.InsertOrUpdate(connection, true);
+                        }
+                    }
+                    catch
+                    {
+
+                    }
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
+
+                    try
+                    {
+                        using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                        {
+                            _systemStatus.InsertOrUpdate(connection, false);
+                        }
+                    }
+                    catch
+                    {
+
+                    }
                 }
                 finally
                 {

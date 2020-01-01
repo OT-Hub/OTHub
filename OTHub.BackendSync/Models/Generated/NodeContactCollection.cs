@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace OTHelperNetStandard.Models.Generated
+namespace OTHub.BackendSync.Models.Generated
 {
 
         public class NodeContactCollection

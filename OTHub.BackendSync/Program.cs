@@ -1,25 +1,21 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
-using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using MySql.Data.MySqlClient;
 using Nethereum.Contracts;
 using Nethereum.Hex.HexTypes;
-using Nethereum.JsonRpc.Client;
+using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
-using Newtonsoft.Json;
-using OTHelperNetStandard.Models.Database;
-using OTHelperNetStandard.Tasks;
+using OTHub.BackendSync.Models.Contracts;
+using OTHub.BackendSync.Models.Database;
+using OTHub.BackendSync.Tasks;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard
+namespace OTHub.BackendSync
 {
     partial class Program
     {
@@ -55,15 +51,18 @@ namespace OTHelperNetStandard
 
         static void Main(string[] args)
         {
+            //Console.WriteLine(1);
             ConfigurationBuilder builder = new ConfigurationBuilder();
+            //Console.WriteLine(2);
             builder.AddUserSecrets<OTHubSettings>();
-
+            //Console.WriteLine(3);
             IConfigurationRoot configuration = builder.Build();
-
+            //Console.WriteLine(4);
             var settings = configuration.Get<OTHubSettings>();
-
+            //Console.WriteLine(5);
             settings.Validate();
-
+            //Console.WriteLine(6);
+           
             DatabaseUpgradeTask task = new DatabaseUpgradeTask();
             task.Execute(Source.Startup).GetAwaiter().GetResult();
 
@@ -71,7 +70,6 @@ namespace OTHelperNetStandard
             contracts.Execute(Source.Startup).GetAwaiter().GetResult();
 
             List<Task> tasks = new List<Task>();
-
 
             tasks.Add(Task.Run(() =>
             {
@@ -85,14 +83,19 @@ namespace OTHelperNetStandard
                     TaskController controller = new TaskController(Source.NodeUptimeAndMisc);
                     controller.Schedule(new GetLatestContractsTask(), TimeSpan.FromMinutes(240), false);
 
-                    controller.Schedule(new GetMarketDataTask(), TimeSpan.FromMinutes(360), true);
+                    if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet)
+                    {
+                        controller.Schedule(new GetMarketDataTask(), TimeSpan.FromMinutes(60), true);
 
-                    int upTimeCheckInMinutes = 50;
+                        controller.Schedule(new CalculateOfferLambdaTask(), TimeSpan.FromMinutes(60), true);
+                    }
+
+                    int upTimeCheckInMinutes = 55;
 
                     controller.Schedule(new LoadPeercacheTask(), TimeSpan.FromMinutes(upTimeCheckInMinutes), true);
 
                     controller.Schedule(new MarkOldContractsAsArchived(), TimeSpan.FromDays(1),
-                        true); //TODO needs to do litigation contracts
+                        false); //TODO needs to do litigation contracts
 
                     //controller.Schedule(new GetMarketDataTask(), TimeSpan.FromHours(20), true);
                     controller.Start();
@@ -102,9 +105,8 @@ namespace OTHelperNetStandard
             tasks.Add(Task.Run(() =>
             {
                 TaskController controller = new TaskController(Source.BlockchainSync);
-
-                //TODO add this back in for testnet
-                //controller.Schedule(new RefreshAllHolderLitigationStatuses(), TimeSpan.FromDays(1), true);
+                
+                controller.Schedule(new RefreshAllHolderLitigationStatuses(), TimeSpan.FromHours(2), true);
 
                 controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(2), true);
                 controller.Schedule(new LoadIdentitiesTask(), TimeSpan.FromMinutes(2), true);

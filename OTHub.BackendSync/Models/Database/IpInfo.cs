@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Dapper;
 using MySql.Data.MySqlClient;
 
-namespace OTHelperNetStandard.Models.Database
+namespace OTHub.BackendSync.Models.Database
 {
     [DebuggerDisplay("{Hostname} - {Port}")]
     public class IpInfo
@@ -14,11 +14,12 @@ namespace OTHelperNetStandard.Models.Database
         public DateTime Timestamp { get; set; }
         public string Wallet { get; set; }
         public DateTime? LastCheckedTimestamp { get; set; }
+        public string NetworkId { get; set; }
 
         public static void Insert(MySqlConnection connection, IpInfo model)
         {
             connection.Execute(
-                @"INSERT INTO otnode_ipinfo(NodeId, Wallet, Port, Timestamp, Hostname, LastCheckedTimestamp) VALUES(@NodeId, @Wallet,@Port, @Timestamp, @Hostname, @LastCheckedTimestamp)",
+                @"INSERT INTO otnode_ipinfo(NodeId, Wallet, Port, Timestamp, Hostname, LastCheckedTimestamp, NetworkId) VALUES(@NodeId, @Wallet,@Port, @Timestamp, @Hostname, @LastCheckedTimestamp, @NetworkId)",
                 new
                 {
                     model.NodeId,
@@ -26,7 +27,8 @@ namespace OTHelperNetStandard.Models.Database
                     model.Timestamp,
                     model.Hostname,
                     model.Port,
-                    model.LastCheckedTimestamp
+                    model.LastCheckedTimestamp,
+                    model.NetworkId
                 });
         }
 
@@ -92,17 +94,18 @@ namespace OTHelperNetStandard.Models.Database
 
         }
 
-        public static void UpdateHost(MySqlConnection connection, string nodeId, string dataHostname, int dataPort, DateTime infoTimestamp, DateTime? infoLastCheckedTimestamp)
+        public static void UpdateHost(MySqlConnection connection, string nodeId, string dataHostname, int dataPort, DateTime infoTimestamp, DateTime? infoLastCheckedTimestamp, string networkID)
         {
             connection.Execute(
-                @"UPDATE otnode_ipinfo SET  Port = @Port, Hostname = @Hostname, LastCheckedTimestamp = @LastCheckedTimestamp, Timestamp = @Timestamp WHERE NodeId = @NodeId",
+                @"UPDATE otnode_ipinfo SET  Port = @Port, Hostname = @Hostname, LastCheckedTimestamp = @LastCheckedTimestamp, NetworkId = @NetworkId, Timestamp = @Timestamp WHERE NodeId = @NodeId",
                 new
                 {
                     NodeId = nodeId,
                     Hostname = dataHostname,
                     Port = dataPort,
                     Timestamp = infoTimestamp,
-                    LastCheckedTimestamp = infoLastCheckedTimestamp
+                    LastCheckedTimestamp = infoLastCheckedTimestamp,
+                    NetworkId = networkID
                 });
         }
     }

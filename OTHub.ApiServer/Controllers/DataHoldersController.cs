@@ -138,9 +138,9 @@ OT Hub enforces this API call is successful before letting users use Metamask to
         )]
         [SwaggerResponse(200, type: typeof(BeforePayoutResult))]
         [SwaggerResponse(500, "Internal server error")]
-        public async Task<BeforePayoutResult> CanTryPayout([FromQuery, SwaggerParameter("The ERC 725 identity for the node", Required = true)]string identity, [FromQuery, SwaggerParameter("The ID of the offer", Required = true)]string offerId)
+        public async Task<BeforePayoutResult> CanTryPayout([FromQuery, SwaggerParameter("The ERC 725 identity for the node", Required = true)]string identity, [FromQuery, SwaggerParameter("The ID of the offer", Required = true)]string offerId, [FromQuery] string holdingAddress, [FromQuery] string holdingStorageAddress, [FromQuery] string litigationStorageAddress)
         {
-            return await BlockchainHelper.CanTryPayout(identity, offerId);
+            return await BlockchainHelper.CanTryPayout(identity, offerId, holdingAddress, holdingStorageAddress, litigationStorageAddress);
         }
 
         [Route("CheckOnline")]
@@ -349,32 +349,32 @@ DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) as EndT
 		WHEN h.LitigationStatus = '3' THEN 'Data Holder is Being Replaced' 
 		WHEN h.LitigationStatus = '2' THEN 'Active (Litigation Answered)' 
 		WHEN h.LitigationStatus = '1' THEN 'Active (Litigation Initiated)' 
-		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Active (Litigation Failed)' 
+		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Litigation Failed' 
 		WHEN h.LitigationStatus = '0' and (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN 'Active (Litigation Passed)' 
 		ELSE 'Active' END)
 	 ELSE
 	(CASE 
 		WHEN h.LitigationStatus = '4' THEN 'Data Holder Replaced' 
 		WHEN h.LitigationStatus = '3' THEN 'Data Holder is Being Replaced' 
-		WHEN h.LitigationStatus = '2' THEN 'Completed Job (Litigation Answered)' 
-		WHEN h.LitigationStatus = '1' THEN 'Completed Job (Litigation Initiated)' 
-		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Completed Job (Litigation Failed)' 
-		WHEN h.LitigationStatus = '0' and (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN 'Completed Job (Litigation Passed)' 
-		ELSE 'Completed Job' END)
+		WHEN h.LitigationStatus = '2' THEN 'Completed (Litigation Answered)' 
+		WHEN h.LitigationStatus = '1' THEN 'Completed (Litigation Initiated)' 
+		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Litigation Failed' 
+		WHEN h.LitigationStatus = '0' and (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN 'Completed (Litigation Passed)' 
+		ELSE 'Completed' END)
 	  END)
 	ELSE ''
 END) as Status,
-(CASE WHEN po.ID is null then false else true end) as Paidout,
+(CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then true else false end) as Paidout,
 (CASE WHEN po.ID is null THEN 
 	(CASE WHEN (h.LitigationStatus is null OR h.LitigationStatus = 0 OR h.LitigationStatus = 1 OR h.LitigationStatus = 2)
-	AND NOW() > DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)
 		 THEN true else false END) 
 ELSE false END) as CanPayout
 FROM otoffer_holders h
 join otoffer o on o.offerid = h.offerid
 left join otcontract_holding_paidout po on po.OfferID = h.OfferID and po.Holder = h.Holder
 left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
-WHERE h.holder = @identity", new {identity = identity}).ToArray();
+WHERE h.holder = @identity
+GROUP BY h.OfferID, h.Holder", new {identity = identity}).ToArray();
 
                     profile.Payouts = connection.Query<NodeProfileDetailedModel_OfferPayout>(
                         @"SELECT OfferID, Amount, Timestamp, TransactionHash, GasUsed, GasPrice FROM otcontract_holding_paidout
@@ -393,7 +393,7 @@ select pc.TransactionHash, pc.InitialBalance as Amount, b.Timestamp, pc.GasPrice
 join ethblock b on b.BlockNumber = pc.BlockNumber
 WHERE pc.Profile = @identity", new {identity = identity}).ToArray();
 
-                    profile.Litigations = connection.Query<DataHolderLitigationSummary>(@"SELECT li.TransactionHash, li.Timestamp, li.OfferId, li.RequestedDataIndex
+                    profile.Litigations = connection.Query<DataHolderLitigationSummary>(@"SELECT li.TransactionHash, li.Timestamp, li.OfferId, li.requestedBlockIndex RequestedBlockIndex, li.requestedObjectIndex RequestedObjectIndex
 FROM otcontract_litigation_litigationinitiated li
 WHERE li.HolderIdentity = @identity
 ORDER BY li.Timestamp DESC", new {identity = identity}).ToArray();

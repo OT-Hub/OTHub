@@ -118,7 +118,8 @@ namespace OTHub.APIServer.Models
         public String TransactionHash { get; set; }
         public DateTime Timestamp { get; set; }
         public String OfferId { get; set; }
-        public Int32 RequestedDataIndex { get; set; }
+        public UInt64 RequestedObjectIndex { get; set; }
+        public UInt64 RequestedBlockIndex { get; set; }
     }
 
     public class DataCreatorLitigationSummary
@@ -126,7 +127,8 @@ namespace OTHub.APIServer.Models
         public String TransactionHash { get; set; }
         public DateTime Timestamp { get; set; }
         public String OfferId { get; set; }
-        public Int32 RequestedDataIndex { get; set; }
+        public UInt64 RequestedObjectIndex { get; set; }
+        public UInt64 RequestedBlockIndex { get; set; }
         public String HolderIdentity { get; set; }
     }
 }

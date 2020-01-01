@@ -2,9 +2,8 @@
 using System.Linq;
 using Dapper;
 using MySql.Data.MySqlClient;
-using Nethereum.Hex.HexTypes;
 
-namespace OTHelperNetStandard.Models.Database
+namespace OTHub.BackendSync.Models.Database
 {
     public class OTOffer
     {
@@ -41,7 +40,7 @@ namespace OTHelperNetStandard.Models.Database
             {
                 connection.Execute(
                     @"INSERT INTO OTOffer VALUES(@OfferID, @DCNodeId, @DataSetId, @TransactionIndex, @CreatedTimestamp, @CreatedBlockNumber, @CreatedTransactionHash,
-@DataSetSizeInBytes, @TokenAmountPerHolder, @HoldingTimeInMinutes, @LitigationIntervalInMinutes, @IsFinalized, @FinalizedTransactionHash, @FinalizedBlockNumber, @FinalizedTimestamp)",
+@DataSetSizeInBytes, @TokenAmountPerHolder, @HoldingTimeInMinutes, @LitigationIntervalInMinutes, @IsFinalized, @FinalizedTransactionHash, @FinalizedBlockNumber, @FinalizedTimestamp, NULL)",
                     new
                     {
                         model.OfferID,

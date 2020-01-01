@@ -5,7 +5,7 @@ using Dapper;
 using MySql.Data.MySqlClient;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class DatabaseUpgradeTask : TaskRun
     {
@@ -266,6 +266,36 @@ ADD COLUMN IF NOT EXISTS	`UseIPForChecking` bit NOT NULL DEFAULT false");
 
                 connection.Execute(@"ALTER TABLE OTNode_IPInfo
 MODIFY Wallet varchar(100) NULL");
+
+                connection.Execute(
+                    @"CREATE INDEX IF NOT EXISTS `OfferId_HolderIdentity` ON otcontract_litigation_litigationanswered  (`OfferId`, `HolderIdentity`) ;
+CREATE INDEX IF NOT EXISTS `OfferId_HolderIdentity` ON otcontract_litigation_litigationcompleted  (`OfferId`, `HolderIdentity`) ;
+CREATE INDEX IF NOT EXISTS `OfferId_HolderIdentity` ON otcontract_litigation_litigationinitiated  (`OfferId`, `HolderIdentity`) ;
+CREATE INDEX IF NOT EXISTS `OfferId_HolderIdentity` ON otcontract_litigation_replacementstarted  (`OfferId`, `HolderIdentity`) ;");
+
+                connection.Execute(@"ALTER TABLE otcontract_litigation_litigationinitiated
+DROP COLUMN IF EXISTS	`RequestedDataIndex`");
+
+                connection.Execute(@"ALTER TABLE otcontract_litigation_litigationinitiated
+ ADD COLUMN IF NOT EXISTS	`requestedObjectIndex` BIGINT(20) NOT NULL");
+
+                connection.Execute(@"ALTER TABLE otcontract_litigation_litigationinitiated
+ ADD COLUMN IF NOT EXISTS	`requestedBlockIndex` BIGINT(20) NOT NULL");
+
+                connection.Execute(@"ALTER TABLE otnode_ipinfo
+ADD COLUMN IF NOT EXISTS `NetworkId` TEXT NULL DEFAULT NULL");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS `systemstatus` (
+	`ID` INT(11) NOT NULL AUTO_INCREMENT,
+	`Name` VARCHAR(200) NOT NULL,
+	`LastSuccessDateTime` DATETIME NULL DEFAULT NULL,
+	`LastTriedDateTime` DATETIME NOT NULL,
+	`Success` BIT(1) NOT NULL,
+	PRIMARY KEY (`ID`)
+)");
+
+                connection.Execute(@"ALTER TABLE otoffer
+ADD COLUMN IF NOT EXISTS `EstimatedLambda` DECIMAL(10,2) NULL DEFAULT NULL");
             }
 
 

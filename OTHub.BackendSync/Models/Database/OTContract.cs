@@ -2,9 +2,9 @@
 using System.Linq;
 using Dapper;
 using MySql.Data.MySqlClient;
-using OTHelperNetStandard.Tasks;
+using OTHub.BackendSync.Tasks;
 
-namespace OTHelperNetStandard.Models.Database
+namespace OTHub.BackendSync.Models.Database
 {
     public class OTContract
     {
@@ -62,6 +62,17 @@ namespace OTHelperNetStandard.Models.Database
             }
             else
             {
+                if (contract.IsLatest)
+                {
+                    connection.Execute(@"UPDATE OTContract
+SET IsLatest = 0
+WHERE Type = @type AND IsLatest = 1 AND Address != @address", new
+                    {
+                        address = contract.Address,
+                        type = contract.Type,
+                    });
+                }
+
                 connection.Execute("UPDATE OTContract SET Type = @type, IsLatest = @isLatest, FromBlockNumber = @fromBlockNo, SyncBlockNumber = @syncBlockNo, IsArchived = @IsArchived, LastSyncedTimestamp = @LastSyncedTimestamp WHERE Address = @address and type = @type", new
                 {
                     address = contract.Address,
@@ -85,6 +96,11 @@ namespace OTHelperNetStandard.Models.Database
                 address = otContract.Address,
                 type = otContract.Type
             });
+
+            if (otContract.IsLatest)
+            {
+                otContract.IsArchived = false;
+            }
 
             if (count == 0)
             {

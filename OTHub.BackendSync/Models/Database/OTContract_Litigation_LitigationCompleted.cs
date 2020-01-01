@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Dapper;
 using MySql.Data.MySqlClient;
 
-namespace OTHelperNetStandard.Models.Database
+namespace OTHub.BackendSync.Models.Database
 {
     public class OTContract_Litigation_LitigationCompleted
     {

@@ -37,6 +37,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="CoinMarketCap-API" Version="2.0.0" />
     <PackageReference Include="CoinpaprikaAPI" Version="1.2.0" />
     <PackageReference Include="Dapper" Version="1.60.1" />
     <PackageReference Include="Dapper.SimpleCRUD" Version="2.0.1" />
@@ -44,8 +45,8 @@
     <PackageReference Include="FluentFTP" Version="19.2.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
     <PackageReference Include="MySqlConnector" Version="0.53.0" />
-    <PackageReference Include="Nethereum.StandardTokenEIP20" Version="3.1.2" />
-    <PackageReference Include="Nethereum.Web3" Version="3.1.2" />
+    <PackageReference Include="Nethereum.StandardTokenEIP20" Version="3.4.0" />
+    <PackageReference Include="Nethereum.Web3" Version="3.4.0" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
     <PackageReference Include="RestSharp" Version="106.6.9" />
   </ItemGroup>

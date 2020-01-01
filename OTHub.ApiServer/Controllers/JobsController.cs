@@ -36,13 +36,13 @@ If you want to get more information about a specific offer you should use /api/j
 (CASE WHEN O.IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
 	ELSE (CASE WHEN O.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)
-		THEN 'Expired'
-		ELSE 'Bidding'
+		THEN 'Not Started'
+		ELSE 'Not Started'
 	END)
 END) as Status,
 (CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp
 FROM OTOffer O
-JOIN OTIdentity I ON I.NodeID = O.DCNodeID
+LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
 GROUP BY O.OfferID").ToArray();
 
                 return summary;
@@ -60,8 +60,13 @@ If you want to get more information about a specific offer you should use /api/j
         )]
         [SwaggerResponse(200, type: typeof(OfferSummaryModel[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public OfferSummaryWithPaging GetWithPaging([FromQuery, SwaggerParameter("How many offers you want to return per page", Required = true)] int pageLength, [FromQuery, SwaggerParameter("The page number to start from. The first page is 0.", Required = true)] int start)
+        public OfferSummaryWithPaging GetWithPaging([FromQuery, SwaggerParameter("How many offers you want to return per page", Required = true)] int pageLength, [FromQuery, SwaggerParameter("The page number to start from. The first page is 0.", Required = true)] int start, [FromQuery] string filter)
         {
+            if (filter != null && filter.Length > 200)
+            {
+                filter = null;
+            }
+
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -70,20 +75,28 @@ If you want to get more information about a specific offer you should use /api/j
 (CASE WHEN O.IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
 	ELSE (CASE WHEN O.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)
-		THEN 'Expired'
-		ELSE 'Bidding'
+		THEN 'Not Started'
+		ELSE 'Not Started'
 	END)
 END) as Status,
 (CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp
 FROM OTOffer O
-JOIN OTIdentity I ON I.NodeID = O.DCNodeID
+LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
+WHERE COALESCE(@filter, '') = '' OR O.OfferId = @filter OR (I.Identity IS NOT NULL AND I.Identity = @filter)
 GROUP BY O.OfferID
 ORDER BY O.CreatedTimestamp DESC
-LIMIT {start},{pageLength}").ToArray();
+LIMIT {start},{pageLength}", new
+                    {
+                        filter
+                    }).ToArray();
 
                 var total = connection.ExecuteScalar<int>(@"SELECT COUNT(DISTINCT O.OfferID)
 FROM OTOffer O
-JOIN OTIdentity I ON I.NodeID = O.DCNodeID");
+LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
+WHERE COALESCE(@filter, '') = '' OR O.OfferId = @filter OR (I.Identity IS NOT NULL AND I.Identity = @filter)", new
+                {
+                    filter
+                });
 
                 return new OfferSummaryWithPaging
                 {
@@ -116,12 +129,12 @@ Data Included:
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 OfferDetailedModel model = connection.QueryFirstOrDefault<OfferDetailedModel>(
-                    @"SELECT O.OfferId, O.CreatedTimestamp as Timestamp, O.FinalizedTimestamp, O.LitigationIntervalInMinutes, O.DataSetId, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
+                    @"SELECT O.OfferId, O.EstimatedLambda, O.CreatedTimestamp as Timestamp, O.FinalizedTimestamp, O.LitigationIntervalInMinutes, O.DataSetId, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
 (CASE WHEN IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
 	ELSE (CASE WHEN O.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)
-		THEN 'Expired'
-		ELSE 'Bidding'
+		THEN 'Not Started'
+		ELSE 'Not Started'
 	END)
 END) as Status,
 (CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp
@@ -145,7 +158,7 @@ WHERE O.OfferId = @offerID", new { offerID = offerID });
                 if (model != null)
                 {
                     model.Holders = connection.Query<OfferDetailedHolderModel>(
-                        @"SELECT H.Holder as Identity, H.LitigationStatus,
+                        @"SELECT H.Holder as Identity, CASE WHEN H.LitigationStatus = 0 AND (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN NULL ELSE H.LitigationStatus END LitigationStatus,
 (CASE WHEN IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN
 	(CASE 
@@ -160,11 +173,11 @@ WHERE O.OfferId = @offerID", new { offerID = offerID });
 	(CASE 
 		WHEN h.LitigationStatus = '4' THEN 'Data Holder Replaced' 
 		WHEN h.LitigationStatus = '3' THEN 'Data Holder is Being Replaced' 
-		WHEN h.LitigationStatus = '2' THEN 'Completed Job (Litigation Answered)' 
-		WHEN h.LitigationStatus = '1' THEN 'Completed Job (Litigation Initiated)' 
-		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Completed Job (Litigation Failed)' 
-		WHEN h.LitigationStatus = '0' and (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN 'Completed Job (Litigation Passed)' 
-		ELSE 'Completed Job' END)
+		WHEN h.LitigationStatus = '2' THEN 'Completed (Litigation Answered)' 
+		WHEN h.LitigationStatus = '1' THEN 'Completed (Litigation Initiated)' 
+		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Litigation Failed' 
+		WHEN h.LitigationStatus = '0' and (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN 'Completed (Litigation Passed)' 
+		ELSE 'Completed' END)
 	  END)
 	ELSE ''
 END) as LitigationStatusText
@@ -183,6 +196,10 @@ union all
 select Timestamp, 'Offer Finalized', null from otcontract_holding_offerfinalized
 where OfferId = @offerID
 union all
+select Timestamp, 'Data Holder Chosen' as Name, Holder as 'RelatedTo'  from otoffer_holders h
+join otcontract_holding_offerfinalized of on of.OfferID = h.OfferId
+where h.OfferId = @offerID AND h.IsOriginalHolder = 1
+union all
 select Timestamp, 'Litigation Initiated', HolderIdentity from otcontract_litigation_litigationinitiated
 where OfferId = @offerID
 union all
@@ -195,13 +212,13 @@ union all
 select Timestamp, CASE WHEN DHWasPenalized = 1 THEN 'Litigation Failed' ELSE 'Litigation Passed' END, HolderIdentity from otcontract_litigation_litigationcompleted
 where OfferId = @offerID
 union all
-select Timestamp, 'Replacement Started', HolderIdentity from otcontract_litigation_replacementstarted
+select Timestamp, 'Data Holder Replaced', HolderIdentity from otcontract_litigation_replacementstarted
 where OfferId = @offerID
 union all
-select Timestamp, 'Replacement Completed', ChosenHolder from otcontract_replacement_replacementcompleted
+select Timestamp, 'Data Holder Chosen', ChosenHolder from otcontract_replacement_replacementcompleted
 where OfferId = @offerID
 union all
-select Timestamp, CONCAT('Offer Paidout for ', (CAST(`Amount` AS CHAR)+0), ' {(OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet ? "ATRAC" : "TRAC")}'), Holder from otcontract_holding_paidout
+select Timestamp, CONCAT('Offer Paidout for ', (CAST(TRUNCATE(`Amount`, 3) AS CHAR)+0), ' {(OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet ? "ATRAC" : "TRAC")}'), Holder from otcontract_holding_paidout
 where OfferId = @offerID
 union all
 select DATE_Add(of.Timestamp, INTERVAL + oc.HoldingTimeInMinutes MINUTE), 'Offer Completed', null from otcontract_holding_offerfinalized of

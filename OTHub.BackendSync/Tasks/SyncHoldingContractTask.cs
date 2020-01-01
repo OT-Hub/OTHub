@@ -1,21 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
-using Nethereum.Hex.HexTypes;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
-using OTHelperNetStandard.Models.Database;
+using OTHub.BackendSync.Models.Database;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class SyncHoldingContractTask : TaskRun
     {
@@ -110,7 +107,7 @@ namespace OTHelperNetStandard.Tasks
 
             var toBlock = new BlockParameter(end);
 
-            var createEvents = await offerCreatedEvent.GetAllChanges<Program.OfferCreated>(
+            var createEvents = await offerCreatedEvent.GetAllChanges<Models.Contracts.Program.OfferCreated>(
                 offerCreatedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
@@ -159,7 +156,7 @@ namespace OTHelperNetStandard.Tasks
                 Logger.WriteLine(source, "Found " + offerTaskEvents.Count + " offer task events");
             }
 
-            foreach (EventLog<Program.OfferCreated> eventLog in createEvents)
+            foreach (EventLog<Models.Contracts.Program.OfferCreated> eventLog in createEvents)
             {
                 string offerID = HexHelper.ByteArrayToString(eventLog.Event.offerId);
 

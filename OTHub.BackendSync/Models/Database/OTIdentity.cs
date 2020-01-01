@@ -3,7 +3,7 @@ using System.Linq;
 using Dapper;
 using MySql.Data.MySqlClient;
 
-namespace OTHelperNetStandard.Models.Database
+namespace OTHub.BackendSync.Models.Database
 {
     public class OTIdentity
     {

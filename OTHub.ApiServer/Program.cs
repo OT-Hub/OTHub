@@ -4,6 +4,7 @@ using System.Reflection;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using OTHub.Settings;
 
 namespace OTHub.APIServer
 {
@@ -22,14 +23,15 @@ namespace OTHub.APIServer
                 .UseKestrel(o => o.AddServerHeader = false)
                 .ConfigureAppConfiguration((context, builder) =>
                 {
-                    builder.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                    builder.AddUserSecrets<OTHubSettings>();
+                    builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
                     builder.AddEnvironmentVariables();
                 })
                 .Build();
         
         public static string GetContractAbi(ContractType contractType)
         {
-            string path = "OTHubApi.Abis.";
+            string path = "OTHub.APIServer.Abis.";
 
             switch (contractType)
             {

@@ -21,64 +21,64 @@ namespace OTHub.APIServer.Controllers
             _cache = cache;
         }
 
-        [HttpGet]
-        [Route("NodesChartData")]
-        [Obsolete]
-        public HomeNodesChartData GetNodesChartData()
-        {
-            if (_cache.TryGetValue("OTHub_HomeNodesChartModel", out var model) && model is HomeNodesChartData chartModel)
-                return chartModel;
+//        [HttpGet]
+//        [Route("NodesChartData")]
+//        [Obsolete]
+//        public HomeNodesChartData GetNodesChartData()
+//        {
+//            if (_cache.TryGetValue("OTHub_HomeNodesChartModel", out var model) && model is HomeNodesChartData chartModel)
+//                return chartModel;
 
-            chartModel = new HomeNodesChartData();
+//            chartModel = new HomeNodesChartData();
 
-            using (var connection =
-                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-            {
-                HomeNodesChartDataModel[] chartData = connection.Query<HomeNodesChartDataModel>(@"SELECT 
-x.Date,
-count(distinct oth.NodeId) as OnlineNodes,
-(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTOffer O ON I.NodeId = O.DCNodeId WHERE O.CreatedTimestamp <= x.Date AND I.Version = 1) DataCreatorNodes,
-(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTContract_Approval_NodeApproved NA ON I.NodeId = NA.NodeID WHERE NA.Timestamp <= x.Date AND I.Version = 1) ApprovedNodes
-FROM (
-SELECT CURDATE() Date
-UNION 
-SELECT DATE_Add(CURDATE(), INTERVAL - 41 DAY)
-UNION 
-SELECT DATE_Add(CURDATE(), INTERVAL - 42 DAY)
-UNION 
-SELECT DATE_Add(CURDATE(), INTERVAL - 43 DAY)
-UNION 
-SELECT DATE_Add(CURDATE(), INTERVAL - 44 DAY)
-UNION 
-SELECT DATE_Add(CURDATE(), INTERVAL - 45 DAY)
-UNION 
-SELECT DATE_Add(CURDATE(), INTERVAL - 46 DAY)
-) x 
-LEFT JOIN OTNode_History oth on oth.Success = 1 AND Date(oth.Timestamp) = x.Date AND (x.Date != CURDATE() OR oth.TimeStamp >= DATE_Add(NOW(), INTERVAL -3 HOUR))
-GROUP BY x.Date").ToArray();
+//            using (var connection =
+//                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+//            {
+//                HomeNodesChartDataModel[] chartData = connection.Query<HomeNodesChartDataModel>(@"SELECT 
+//x.Date,
+//count(distinct oth.NodeId) as OnlineNodes,
+//(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTOffer O ON I.NodeId = O.DCNodeId WHERE O.CreatedTimestamp <= x.Date AND I.Version = 1) DataCreatorNodes,
+//(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTContract_Approval_NodeApproved NA ON I.NodeId = NA.NodeID WHERE NA.Timestamp <= x.Date AND I.Version = 1) ApprovedNodes
+//FROM (
+//SELECT CURDATE() Date
+//UNION 
+//SELECT DATE_Add(CURDATE(), INTERVAL - 41 DAY)
+//UNION 
+//SELECT DATE_Add(CURDATE(), INTERVAL - 42 DAY)
+//UNION 
+//SELECT DATE_Add(CURDATE(), INTERVAL - 43 DAY)
+//UNION 
+//SELECT DATE_Add(CURDATE(), INTERVAL - 44 DAY)
+//UNION 
+//SELECT DATE_Add(CURDATE(), INTERVAL - 45 DAY)
+//UNION 
+//SELECT DATE_Add(CURDATE(), INTERVAL - 46 DAY)
+//) x 
+//LEFT JOIN OTNode_History oth on oth.Success = 1 AND Date(oth.Timestamp) = x.Date AND (x.Date != CURDATE() OR oth.TimeStamp >= DATE_Add(NOW(), INTERVAL -1 HOUR))
+//GROUP BY x.Date").ToArray();
 
-                List<string> labels = new List<string>();
-                List<int> onlineNodes = new List<int>();
-                List<int> dataCreatorNodes = new List<int>();
-                List<int> approvedNodes = new List<int>();
-                foreach (var row in chartData.OrderBy(d => d.Date))
-                {
-                    labels.Add(row.Date.ToString("MMM dd yyyy"));
-                    onlineNodes.Add(row.OnlineNodes);
-                    dataCreatorNodes.Add(row.DataCreatorNodes);
-                    approvedNodes.Add(row.ApprovedNodes);
-                }
+//                List<string> labels = new List<string>();
+//                List<int> onlineNodes = new List<int>();
+//                List<int> dataCreatorNodes = new List<int>();
+//                List<int> approvedNodes = new List<int>();
+//                foreach (var row in chartData.OrderBy(d => d.Date))
+//                {
+//                    labels.Add(row.Date.ToString("MMM dd yyyy"));
+//                    onlineNodes.Add(row.OnlineNodes);
+//                    dataCreatorNodes.Add(row.DataCreatorNodes);
+//                    approvedNodes.Add(row.ApprovedNodes);
+//                }
 
-                chartModel.Labels = labels.ToArray();
-                chartModel.OnlineNodes = onlineNodes.ToArray();
-                chartModel.DataCreatorNodes = dataCreatorNodes.ToArray();
-                chartModel.ApprovedNodes = approvedNodes.ToArray();
-            }
+//                chartModel.Labels = labels.ToArray();
+//                chartModel.OnlineNodes = onlineNodes.ToArray();
+//                chartModel.DataCreatorNodes = dataCreatorNodes.ToArray();
+//                chartModel.ApprovedNodes = approvedNodes.ToArray();
+//            }
 
-            _cache.Set("OTHub_HomeNodesChartModel", chartModel, TimeSpan.FromMinutes(10));
+//            _cache.Set("OTHub_HomeNodesChartModel", chartModel, TimeSpan.FromMinutes(3));
 
-            return chartModel;
-        }
+//            return chartModel;
+//        }
 
         [HttpGet]
         [Route("JobsChartData")]
@@ -194,7 +194,7 @@ GROUP BY x.Date").ToArray();
                 chartModel.NewJobs = newJobs.ToArray();
             }
 
-            _cache.Set("OTHub_HomeJobsChartModel", chartModel, TimeSpan.FromMinutes(10));
+            _cache.Set("OTHub_HomeJobsChartModel", chartModel, TimeSpan.FromMinutes(4));
 
             return chartModel;
         }
@@ -224,8 +224,9 @@ Please note market price information is not currently available within the respo
             {
                 //	(SELECT count(distinct nodeId) as OnlineNodesCount FROM otnode_history WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY) AND Success = 1) as OnlineNodesCount,
                 //  ((SELECT count(distinct nodeId) FROM OTContract_Approval_NodeApproved) -(SELECT count(distinct nodeId) FROM OTContract_Approval_NodeRemoved)) as ApprovedNodesCount,
-                var homeInfo = connection.QuerySingle<HomeNodesInfo>(@"SELECT 
-    (SELECT count(distinct nodeId) as OnlineNodesCount FROM otnode_history WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL -2 HOUR) AND Success = 1) OnlineNodesCount,
+
+               var homeInfo = connection.QuerySingle<HomeNodesInfo>($@"SELECT 
+    (SELECT count(distinct h.nodeId) as OnlineNodesCount FROM otnode_history h join otnode_ipinfo i on i.nodeid = h.nodeid WHERE h.TimeStamp >= DATE_Add(NOW(), INTERVAL -1 HOUR) AND h.Success = 1 and i.NetworkId like '{OTHubSettings.Instance.Blockchain.Network}V4.0') OnlineNodesCount,
     (select count(distinct n.nodeId) FROM OTNode_IPInfo n JOIN OTIdentity I ON I.NodeId = n.NodeId WHERE I.Approved = 1) ApprovedNodesCount,
 	(select sum(Stake) from otidentity where version = (select max(ii.version) from otidentity ii)) StakedTokensTotal,
     (SELECT count(distinct H.Holder) FROM OTOffer_Holders H JOIN OTOffer O on O.OfferID = H.OfferID WHERE O.IsFinalized = 1 AND O.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -7 DAY)) NodesWithJobsThisWeek,

@@ -9,11 +9,11 @@ using Nethereum.Contracts;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.Web3;
-using OTHelperNetStandard.Models.Contracts;
-using OTHelperNetStandard.Models.Database;
+using OTHub.BackendSync.Models.Contracts;
+using OTHub.BackendSync.Models.Database;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class LoadIdentitiesTask : TaskRun
     {

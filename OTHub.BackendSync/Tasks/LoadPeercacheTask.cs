@@ -1,23 +1,18 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Security;
-using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using MySql.Data.MySqlClient;
-using Newtonsoft.Json;
-using OTHelperNetStandard.Models.Database;
-using OTHelperNetStandard.Models.Generated;
+using OTHub.BackendSync.Models.Database;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class LoadPeercacheTask : TaskRun
     {
@@ -272,17 +267,17 @@ namespace OTHelperNetStandard.Tasks
                                         var secondCheck = CheckIfNodeOnline(connection, node, checkAllOnline, true);
                                         if (secondCheck == true)
                                         {
-                                            Logger.WriteLine(source, node.Hostname + " is online (2nd attempt).");
+                                            //Logger.WriteLine(source, node.Hostname + " is online (2nd attempt).");
                                         }
                                         else if (secondCheck == false)
                                         {
-                                            Logger.WriteLine(source, node.Hostname + " is offline (2nd attempt).");
+                                            //Logger.WriteLine(source, node.Hostname + " is offline (2nd attempt).");
                                         }
                                     }
                                 }
                                 else if (firstCheck == true)
                                 {
-                                    Logger.WriteLine(source, node.Hostname + " is online.");
+                                    //Logger.WriteLine(source, node.Hostname + " is online.");
                                 }
                             }
                         }

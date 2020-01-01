@@ -3,7 +3,7 @@ using Dapper;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 
-namespace OTHelperNetStandard.Models.Database
+namespace OTHub.BackendSync.Models.Database
 {
     public class OTOfferHolder
     {
@@ -87,8 +87,8 @@ WHERE CASE
  WHEN x.LitAnswered = x.MaxNumber THEN 2
  WHEN x.LitInit = x.MaxNumber THEN 1
  ELSE NULL
- END != LitigationStatus) p on p.OfferId = H.OfferId AND p.Holder = H.Holder
- SET LitigationStatus = p.Status, LitigationStatusBlockNumber = p.MaxNumber");
+ END != COALESCE(LitigationStatus, -1)) p on p.OfferId = H.OfferId AND p.Holder = H.Holder
+ SET LitigationStatus = p.Status, LitigationStatusBlockNumber = p.MaxNumber", null, null, (int)TimeSpan.FromMinutes(5).TotalSeconds);
         }
 
         public static void UpdateLitigationStatusesForOffer(MySqlConnection connection, string offerId)
@@ -128,7 +128,7 @@ WHERE CASE
  WHEN x.LitAnswered = x.MaxNumber THEN 2
  WHEN x.LitInit = x.MaxNumber THEN 1
  ELSE NULL
- END != LitigationStatus) p on p.OfferId = H.OfferId AND p.Holder = H.Holder
+ END != COALESCE(LitigationStatus, -1)) p on p.OfferId = H.OfferId AND p.Holder = H.Holder
  SET LitigationStatus = p.Status, LitigationStatusBlockNumber = p.MaxNumber",
                 new
                 {

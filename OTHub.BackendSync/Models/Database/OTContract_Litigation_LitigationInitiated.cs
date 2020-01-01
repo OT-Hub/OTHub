@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using Dapper;
 using MySql.Data.MySqlClient;
 
-namespace OTHelperNetStandard.Models.Database
+namespace OTHub.BackendSync.Models.Database
 {
     public class OTContract_Litigation_LitigationInitiated
     {
@@ -13,9 +11,10 @@ namespace OTHelperNetStandard.Models.Database
         public DateTime Timestamp { get; set; }
         public String OfferId { get; set; }
         public String HolderIdentity { get; set; }
-        public UInt64 RequestedDataIndex { get; set; }
         public ulong GasPrice { get; set; }
         public ulong GasUsed { get; set; }
+        public ulong RequestedObjectIndex { get; set; }
+        public ulong RequestedBlockIndex { get; set; }
 
         public static void InsertIfNotExist(MySqlConnection connection, OTContract_Litigation_LitigationInitiated model)
         {
@@ -28,8 +27,8 @@ namespace OTHelperNetStandard.Models.Database
             {
                 connection.Execute(
                     @"INSERT INTO OTContract_Litigation_LitigationInitiated
-(TransactionHash, BlockNumber, Timestamp, OfferId, HolderIdentity, RequestedDataIndex, GasPrice, GasUsed)
-VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @RequestedDataIndex, @GasPrice, @GasUsed)",
+(TransactionHash, BlockNumber, Timestamp, OfferId, HolderIdentity, RequestedObjectIndex, GasPrice, GasUsed, RequestedBlockIndex)
+VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @RequestedObjectIndex, @GasPrice, @GasUsed, @RequestedBlockIndex)",
                     new
                     {
                         model.TransactionHash,
@@ -37,7 +36,8 @@ VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @R
                         model.Timestamp,
                         model.OfferId,
                         model.HolderIdentity,
-                        model.RequestedDataIndex,
+                        model.RequestedObjectIndex,
+                        model.RequestedBlockIndex,
                         model.GasPrice,
                         model.GasUsed
                     });

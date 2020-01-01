@@ -2,18 +2,16 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
-using Nethereum.Hex.HexTypes;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC.Eth.DTOs;
-using OTHelperNetStandard.Models.Database;
+using OTHub.BackendSync.Models.Database;
 using OTHub.Settings;
 
-namespace OTHelperNetStandard.Tasks
+namespace OTHub.BackendSync.Tasks
 {
     public class SyncLitigationContractTask : TaskRun
     {
@@ -192,8 +190,12 @@ namespace OTHelperNetStandard.Tasks
                 var holderIdentity = (string)eventLog.Event
                         .First(e => e.Parameter.Name == "holderIdentity").Result;
 
-                var requestedDataIndex = (BigInteger)eventLog.Event
-                        .First(e => e.Parameter.Name == "requestedDataIndex").Result;
+                var requestedObjectIndex = (BigInteger)eventLog.Event
+                        .First(e => e.Parameter.Name == "requestedObjectIndex").Result;
+
+
+                var requestedBlockIndex = (BigInteger)eventLog.Event
+                    .First(e => e.Parameter.Name == "requestedBlockIndex").Result;
 
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
@@ -204,7 +206,8 @@ namespace OTHelperNetStandard.Tasks
                     BlockNumber = (UInt64)eventLog.Log.BlockNumber.Value,
                     Timestamp = block.Timestamp,
                     OfferId = offerId,
-                    RequestedDataIndex = (UInt64)requestedDataIndex,
+                    RequestedObjectIndex = (UInt64)requestedObjectIndex,
+                    RequestedBlockIndex = (UInt64)requestedBlockIndex,
                     HolderIdentity = holderIdentity,
                     GasPrice = (UInt64)transaction.GasPrice.Value,
                     GasUsed = (UInt64)receipt.GasUsed.Value

@@ -17,14 +17,43 @@ namespace OTHub.APIServer
     {
         private static Web3 cl = new Web3(OTHubSettings.Instance.Infura.Url);
 
-        public static async Task<BeforePayoutResult> CanTryPayout(string identity, string offerId)
+        public static async Task<BeforePayoutResult> CanTryPayout(string identity, string offerId, string holdingAddress, string holdingStorageAddress, string litigationStorageAddress)
         {
             var holdingStorageAbi = Program.GetContractAbi(ContractType.HoldingStorage);
 
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var holdingStorageAddress = connection.QuerySingle<ContractAddress>(@"select Address from otcontract
-where Type = 5 AND IsLatest = 1 AND IsArchived = 0").Address;
+                holdingStorageAddress = connection.QueryFirstOrDefault<ContractAddress>(@"select Address from otcontract
+where Type = 5 AND Address = @holdingStorageAddress", new
+                {
+                    holdingStorageAddress = holdingStorageAddress
+                })?.Address;
+
+                if (holdingStorageAddress == null)
+                {
+                    return new BeforePayoutResult
+                    {
+                        CanTryPayout = false,
+                        Header = "Stop!",
+                        Message = "OT Hub is not familiar with this holding storage smart contract address. Unknown addresses can not be used."
+                    };
+                }
+
+                holdingAddress = connection.QueryFirstOrDefault<ContractAddress>(@"select Address from otcontract
+where Type = 6 AND Address = @holdingAddress", new
+                {
+                    holdingAddress = holdingAddress
+                })?.Address;
+
+                if (holdingAddress == null)
+                {
+                    return new BeforePayoutResult
+                    {
+                        CanTryPayout = false,
+                        Header = "Stop!",
+                        Message = "OT Hub is not familiar with this holding smart contract address. Unknown addresses can not be used."
+                    };
+                }
 
                 var offerIdArray = offerId.HexToByteArray();
 
@@ -56,20 +85,20 @@ where Type = 5 AND IsLatest = 1 AND IsArchived = 0").Address;
 
                 var block = await cl.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(latestBlockParam);
 
-                DateTime blockTimestamp = UnixTimeStampToDateTime((double) block.Timestamp.Value);
+                //DateTime blockTimestamp = UnixTimeStampToDateTime((double) block.Timestamp.Value);
                 DateTime offerStartTime = UnixTimeStampToDateTime((UInt64)getOfferStartTime);
 
-                DateTime offerEndTime = offerStartTime.AddMinutes((UInt64)getOfferHoldingTimeInMinutes);
+                //DateTime offerEndTime = offerStartTime.AddMinutes((UInt64)getOfferHoldingTimeInMinutes);
 
-                if (blockTimestamp < offerEndTime)
-                {
-                    return new BeforePayoutResult
-                    {
-                        CanTryPayout = false,
-                        Header = "Stop!",
-                        Message = "The smart contract says this job is still active. The transaction will likely fail if you try to send this manually."
-                    };
-                }
+                //if (blockTimestamp < offerEndTime)
+                //{
+                //    return new BeforePayoutResult
+                //    {
+                //        CanTryPayout = false,
+                //        Header = "Stop!",
+                //        Message = "The smart contract says this job is still active. The transaction will likely fail if you try to send this manually."
+                //    };
+                //}
 
                 var getHolderPaidAmount = await getHolderPaidAmountFunction.CallAsync<BigInteger>(offerIdArray, identity);
 
@@ -85,24 +114,46 @@ where Type = 5 AND IsLatest = 1 AND IsArchived = 0").Address;
                     };
                 }
 
-                if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet)
+                if (!String.IsNullOrWhiteSpace(litigationStorageAddress))
                 {
-                    var litigationStorageAddress = connection.QuerySingle<ContractAddress>(@"select Address from otcontract
-where Type = 9 AND IsLatest = 1 AND IsArchived = 0").Address;
+                    //if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet)
+                    //{
+                    litigationStorageAddress = connection.QueryFirstOrDefault<ContractAddress>(@"select Address from otcontract
+where Type = 9 AND Address = @litigationStorageAddress", new
+                    {
+                        litigationStorageAddress = litigationStorageAddress
+                    })?.Address;
 
-                    Contract storageContract = new Contract((EthApiService)cl.Eth, Program.GetContractAbi(ContractType.LitigationStorage), litigationStorageAddress);
+                    if (litigationStorageAddress == null)
+                    {
+                        return new BeforePayoutResult
+                        {
+                            CanTryPayout = false,
+                            Header = "Stop!",
+                            Message = "OT Hub is not familiar with this litigation storage smart contract address. Unknown addresses can not be used."
+                        };
+                    }
+
+                    Contract storageContract = new Contract((EthApiService) cl.Eth,
+                        Program.GetContractAbi(ContractType.LitigationStorage), litigationStorageAddress);
                     Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
 
                     Function getLitigationTimestampFunction = storageContract.GetFunction("getLitigationTimestamp");
-                    BigInteger litigationTimestampInt = await getLitigationTimestampFunction.CallAsync<BigInteger>(latestBlockParam, offerIdArray, identity);
-                    DateTime litigationTimestamp = UnixTimeStampToDateTime((UInt64)litigationTimestampInt);
+                    BigInteger litigationTimestampInt =
+                        await getLitigationTimestampFunction.CallAsync<BigInteger>(latestBlockParam, offerIdArray,
+                            identity);
+                    DateTime litigationTimestamp = UnixTimeStampToDateTime((UInt64) litigationTimestampInt);
 
-                    Function getOfferLitigationIntervalInMinutesFunction = holdingStorageContract.GetFunction("getOfferLitigationIntervalInMinutes");
-                    BigInteger litgationInterval = await getOfferLitigationIntervalInMinutesFunction.CallAsync<BigInteger>(latestBlockParam, offerIdArray) * 60;
+                    Function getOfferLitigationIntervalInMinutesFunction =
+                        holdingStorageContract.GetFunction("getOfferLitigationIntervalInMinutes");
+                    BigInteger litgationInterval =
+                        await getOfferLitigationIntervalInMinutesFunction.CallAsync<BigInteger>(latestBlockParam,
+                            offerIdArray) * 60;
 
 
 
-                    var status = await getLitigationStatusFunction.CallAsync<UInt16>(latestBlockParam, offerIdArray, identity);
+                    var status =
+                        await getLitigationStatusFunction.CallAsync<UInt16>(latestBlockParam, offerIdArray, identity);
 
                     if (status == 1) //initiated
                     {
@@ -112,7 +163,8 @@ where Type = 9 AND IsLatest = 1 AND IsArchived = 0").Address;
                             {
                                 CanTryPayout = false,
                                 Header = "Stop!",
-                                Message = "The smart contract says 'Unanswered litigation in progress, cannot pay out'. The transaction will likely fail if you try to send this manually."
+                                Message =
+                                    "The smart contract says 'Unanswered litigation in progress, cannot pay out'. The transaction will likely fail if you try to send this manually."
                             };
                         }
                     }
@@ -124,7 +176,8 @@ where Type = 9 AND IsLatest = 1 AND IsArchived = 0").Address;
                             {
                                 CanTryPayout = false,
                                 Header = "Stop!",
-                                Message = "The smart contract says 'Unanswered litigation in progress, cannot pay out'. The transaction will likely fail if you try to send this manually."
+                                Message =
+                                    "The smart contract says 'Unanswered litigation in progress, cannot pay out'. The transaction will likely fail if you try to send this manually."
                             };
                         }
                     }
@@ -138,10 +191,12 @@ where Type = 9 AND IsLatest = 1 AND IsArchived = 0").Address;
                         {
                             CanTryPayout = false,
                             Header = "Stop!",
-                            Message = "The smart contract says 'Data holder is replaced or being replaced, cannot payout!'. The transaction will likely fail if you try to send this manually."
+                            Message =
+                                "The smart contract says 'Data holder is replaced or being replaced, cannot payout!'. The transaction will likely fail if you try to send this manually."
                         };
                     }
                 }
+                //}
 
                 return new BeforePayoutResult
                 {

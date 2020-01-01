@@ -101,6 +101,7 @@ namespace OTHub.APIServer.Models
         public UInt64? FinalizedGasPrice { get; set; }
         public UInt64 LitigationIntervalInMinutes { get; set; }
         public OfferDetailedTimelineModel[] Timeline { get; set; }
+        public Decimal? EstimatedLambda { get; set; }
     }
 
     public class OfferDetailedHolderModel
