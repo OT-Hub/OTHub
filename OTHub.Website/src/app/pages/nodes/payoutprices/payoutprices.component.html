@@ -7,7 +7,7 @@
 
         <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="isLoading === false && failedLoading === false">
             <nb-card>
-                <nb-card-header>  <h2>Summary</h2></nb-card-header>
+                <nb-card-header>Summary</nb-card-header>
                 <nb-card-body>
                     <div class="row">
                         <div class="col-lg-3 col-sm-6">
@@ -18,7 +18,7 @@
                             </div>
                         </div>
                         <div class="col-lg-3 col-sm-6">
-                            <div class="text-center btn-default" style="padding:15px;">
+                            <div class="text-center btn-warning" style="padding:15px;">
                           
                                 <div class="text m-b-10">Total TRAC Paid</div>
                                 <h3 class="m-b-0">{{totalTracPaid }}
@@ -51,8 +51,8 @@
 
         <div class="col-lg-12 col-md-12 col-sm-12">
             <nb-card>
-                <nb-card-header>                    <h2>Payouts</h2>
-                    <ul class="header-dropdown m-r--5">
+                <nb-card-header>Payouts
+                    <!-- <ul class="header-dropdown m-r--5">
                         <li class="dropdown">
                             <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown"
                                 role="button" aria-haspopup="true" aria-expanded="false">
@@ -77,7 +77,8 @@
                                 </li>
                             </ul>
                         </li>
-                    </ul></nb-card-header>
+                    </ul> -->
+                </nb-card-header>
                 <nb-card-body>
                     <p>This page shows you the USD equivalent price of TRAC at the time the offer paid out.</p>
                     <p>USD prices are taken from Coinpaprika. Payouts will be matched to the closest ticker price

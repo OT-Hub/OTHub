@@ -172,7 +172,7 @@ export class PayoutPricesComponent implements OnInit, OnDestroy {
         const headers = new HttpHeaders()
             .set('Content-Type', 'application/json')
             .set('Accept', 'application/json');
-        const url = this.httpService.ApiUrl + '/api/nodes/dataholders/PayoutsInUSDForDataHolder?identity=' + this.identity;
+        const url = this.httpService.ApiUrl + '/api/nodes/dataholder/PayoutsInUSDForDataHolder?identity=' + this.identity;
 
         return this.http.get<PayoutInUsdModel[]>(url, { headers });
     }
