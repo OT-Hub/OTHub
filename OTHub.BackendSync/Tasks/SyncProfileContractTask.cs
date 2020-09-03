@@ -71,7 +71,7 @@ namespace OTHub.BackendSync.Tasks
 
                         foreach (var batch in batches)
                         {
-                            await Task.Delay(50);
+                            await Task.Delay(250);
 
                             try
                             {
@@ -131,35 +131,49 @@ namespace OTHub.BackendSync.Tasks
                 identityCreatedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
+
             var identityTransferredEvents = await identityTransferredEvent.GetAllChangesDefault(
                 identityTransferredEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
+
+            await Task.Delay(250);
 
             var profileCreatedEvents = await profileCreatedEvent.GetAllChangesDefault(
                 profileCreatedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
+
             var tokensDepositedEvents = await tokensDepositedEvent.GetAllChangesDefault(
                 tokensDepositedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
+
+            await Task.Delay(250);
 
             var tokensReleasedEvents = await tokensReleasedEvent.GetAllChangesDefault(
                 tokensReleasedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
-
+            await Task.Delay(250);
 
             var tokensWithdrawnEvents = await tokensWithdrawnEvent.GetAllChangesDefault(
                 tokensWithdrawnEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
+
             var tokensTransferredEvents = await tokensTransferredEvent.GetAllChangesDefault(
                 tokensTransferredEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
+
             var tokensReservedEvents = await tokensReservedEvent.GetAllChangesDefault(
                 tokensReservedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
+
+            await Task.Delay(250);
 
             if (identityCreatedEvents.Any())
             {
@@ -214,8 +228,8 @@ namespace OTHub.BackendSync.Tasks
                 var newIdentity = (string)eventLog.Event
                     .FirstOrDefault(p => p.Parameter.Name == "newIdentity").Result;
 
-                await Task.Delay(50);
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                await Task.Delay(100);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -245,8 +259,9 @@ namespace OTHub.BackendSync.Tasks
                 var initialBalance = Web3.Convert.FromWei((BigInteger)eventLog.Event
                     .FirstOrDefault(p => p.Parameter.Name == "initialBalance").Result);
 
-                await Task.Delay(50);
+           
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                await Task.Delay(100);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -291,8 +306,9 @@ namespace OTHub.BackendSync.Tasks
                 var nodeId = HexHelper.ByteArrayToString((byte[])eventLog.Event
                     .FirstOrDefault(p => p.Parameter.Name == "nodeId").Result, false);
 
-                await Task.Delay(50);
+       
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                await Task.Delay(100);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -340,8 +356,8 @@ namespace OTHub.BackendSync.Tasks
                     var newBalance = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "newBalance").Result);
 
-                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;
@@ -379,8 +395,8 @@ namespace OTHub.BackendSync.Tasks
                     var amount = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "amount").Result);
 
-                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;
@@ -420,8 +436,8 @@ namespace OTHub.BackendSync.Tasks
                     var newBalance = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "newBalance").Result);
 
-                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;
@@ -464,8 +480,8 @@ namespace OTHub.BackendSync.Tasks
                     var amount = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "amount").Result);
 
-                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;
@@ -504,8 +520,8 @@ namespace OTHub.BackendSync.Tasks
                     var amountReserved = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "amountReserved").Result);
 
-                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;

@@ -62,7 +62,7 @@ namespace OTHub.BackendSync.Tasks
 
                         foreach (var batch in batches)
                         {
-                            await Task.Delay(50);
+                            await Task.Delay(500);
 
                             try
                             {
@@ -109,21 +109,30 @@ namespace OTHub.BackendSync.Tasks
 
             var toBlock = new BlockParameter(end);
 
+            await Task.Delay(250);
+
             var createEvents = await offerCreatedEvent.GetAllChanges<Models.Contracts.Program.OfferCreated>(
                 offerCreatedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
 
             var finalizedEvents = await offerFinalizedEvent.GetAllChangesDefault(
                 offerFinalizedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
+
             var payoutEvents = await paidOutEvent.GetAllChangesDefault(
                 paidOutEvent.CreateFilterInput(new BlockParameter(start), toBlock));
+
+            await Task.Delay(250);
 
             var ownershipTransferredEvents = await ownershipTransferredEvent.GetAllChangesDefault(
                 ownershipTransferredEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
+
+            await Task.Delay(250);
 
             var offerTaskEvents = await offerTaskEvent.GetAllChangesDefault(
                 offerTaskEvent.CreateFilterInput(new BlockParameter(start), toBlock));
@@ -168,6 +177,7 @@ namespace OTHub.BackendSync.Tasks
                 var block = await Program.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl);
 
                 var receipt = cl.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
+                await Task.Delay(100);
                 var transaction = cl.Eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 
                 await transaction;
@@ -221,6 +231,7 @@ namespace OTHub.BackendSync.Tasks
                     .Result;
 
                 var receipt = cl.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
+                await Task.Delay(100);
                 var transaction = cl.Eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -265,6 +276,7 @@ namespace OTHub.BackendSync.Tasks
 
 
                 var receipt = cl.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
+                await Task.Delay(100);
                 var transaction = cl.Eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -295,6 +307,7 @@ namespace OTHub.BackendSync.Tasks
                     .Result;
 
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                await Task.Delay(100);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -331,6 +344,7 @@ namespace OTHub.BackendSync.Tasks
                     (byte[])eventLog.Event.First(e => e.Parameter.Name == "task").Result);
 
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
+                await Task.Delay(100);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
