@@ -6,7 +6,7 @@ import { JobsRoutingModule } from './jobs-routing.module';
 import { MomentModule } from 'ngx-moment';
 import { OffersDetailComponent } from './offersdetail/offersdetail.component';
 import { SharedModule } from '../shared.module';
-import { NbAlertModule, NbCardModule, NbIconModule, NbPopoverModule, NbSearchModule, NbSelectModule, NbOptionModule, NbButtonModule, NbStepperModule } from '@nebular/theme';
+import { NbAlertModule, NbCardModule, NbIconModule, NbPopoverModule, NbSearchModule, NbSelectModule, NbOptionModule, NbButtonModule, NbStepperModule, NbListModule, NbBadgeModule } from '@nebular/theme';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 @NgModule({
   declarations: [ OffersComponent, OffersDetailComponent],
@@ -22,7 +22,9 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
     NbSelectModule,
     NbButtonModule,
     NbStepperModule,
-    NbPopoverModule
+    NbPopoverModule,
+    NbListModule,
+    NbBadgeModule
   ]
 })
 export class JobsModule { }

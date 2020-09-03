@@ -1,8 +1,6 @@
 <section class="content">
     <div class="container-fluid">
-        <div class="progress" *ngIf="isLoading === true && failedLoading === false">
-            <div class="indeterminate btn-primary"></div>
-        </div>
+
         <div *ngIf="isLoading === false && failedLoading === true">
             <app-failed-loading-page></app-failed-loading-page>
         </div>
