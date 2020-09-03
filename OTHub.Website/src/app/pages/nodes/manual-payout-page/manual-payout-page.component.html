@@ -1,0 +1,152 @@
+<section class="content">
+  <div class="container-fluid">
+    <div class="progress" *ngIf="isLoading === true && failedLoading === false">
+      <div class="indeterminate btn-primary"></div>
+    </div>
+    <div *ngIf="isLoading === false && failedLoading === true">
+      <app-failed-loading-page></app-failed-loading-page>
+    </div>
+    <div class="row clearfix" [hidden]="isLoading === true || failedLoading === true">
+      <div class="col-lg-12 col-md-12 col-sm-12" [hidden]="isMetaMaskInstalled === false">
+        <nb-card>
+          <nb-card-header>Payout</nb-card-header>
+          <nb-card-body>
+            <h6>Information</h6>
+            <ul class="list-group list-group-flush">
+              <li class="list-group-item">
+                Identity: {{identity}}
+              </li>
+              <li class="list-group-item">
+                Job Id: {{offerId}}
+              </li>
+              <li class="list-group-item">
+                Management Wallet: {{managementWallet}}
+              </li>
+              <li class="list-group-item">
+                Holding Smart Contract Address:
+                <select (change)="holdingSmartContractChanged($event.target.value)" style="display:block;">
+                  <option value="0">Latest</option>
+                  <option *ngFor="let allHoldingAddress of allHoldingAddresses" [value]="allHoldingAddress.Address">
+                      {{allHoldingAddress.Address}} <span *ngIf="allHoldingAddress.IsLatest === true">(Latest)</span>
+                  </option>
+              </select>
+              </li>
+              <li class="list-group-item">
+                Holding Storage Smart Contract Address:
+                <select (change)="holdingStorageSmartContractChanged($event.target.value)" style="display:block;">
+                  <option value="0">Latest</option>
+                  <option *ngFor="let allHoldingStorageAddress of allHoldingStorageAddresses" [value]="allHoldingStorageAddress.Address">
+                      {{allHoldingStorageAddress.Address}} <span *ngIf="allHoldingStorageAddress.IsLatest === true">(Latest)</span>
+                  </option>
+              </select>
+              </li>
+              <li class="list-group-item">
+                Litigation Storage Smart Contract Address:
+                <select (change)="litigationStorageSmartContractChanged($event.target.value)" style="display:block;">
+                  <option value="0">Latest</option>
+                  <option *ngFor="let allLitigationStorageAddress of allLitigationStorageAddresses" [value]="allLitigationStorageAddress.Address">
+                      {{allLitigationStorageAddress.Address}} <span *ngIf="allLitigationStorageAddress.IsLatest === true">(Latest)</span>
+                  </option>
+              </select>
+              </li>
+            </ul>
+            <br>
+
+            <p>This page allows you to manually run a payout for your node. OT Hub will verify that the job will successfully payout before the ETH transaction is sent.
+              <br><br>
+              Automatic node payouts happen via your operational wallet. However, it is possible to do the payout
+              via your management wallet.
+              <br>
+              By using your management wallet for payouts you can set a lower gas price without affecting your nodes general
+              operation.
+              <br><br>
+              Please note you can always use <a href="https://befranz.net/otnode/ot-manualpayout/"
+                target="_blank">https://befranz.net/otnode/ot-manualpayout/</a> if you are uncomfortable with
+              connecting your MetaMask to OT Hub.
+            </p>
+            <button class="btn btn-primary" (click)="enableMetaMask()" *ngIf="isMetaMaskUnlocked === false">Open
+              MetaMask</button>
+
+            <div [hidden]="isMetaMaskUnlocked === false || hasSentTransaction == true || canPayoutResult?.CanTryPayout == false">
+              <h6>MetaMask</h6>
+              <ul class="list-group list-group-flush">
+                <li class="list-group-item">
+                  Selected Wallet: {{selectedAddress}}
+                </li>
+              </ul>
+              <br>
+              <div *ngIf="selectedAddress != managementWallet">
+                <div class="alert alert-info">
+                  <strong>You need to select your management wallet in MetaMask to continue.</strong>
+                  <br>
+
+                </div>
+              </div>
+              <h6 *ngIf="selectedAddress == managementWallet">Gas Price</h6>
+              <div class="form-group" *ngIf="selectedAddress == managementWallet">
+                <div class="form-line">
+                  <input type="text" id="gasPriceInput" class="form-control" name="gasPriceInput"
+                    placeholder="Gas Price (Gwei)*" required (keyup)="onGasPriceKeyUp($event)">
+                </div>
+              </div>
+              <div class="alert alert-warning" *ngIf="selectedAddress == managementWallet && 1 > gasPrice">
+                Warning! You have entered a low gas price.
+              </div>
+              <h6>Estimated Cost (Real data from the last 7 days)</h6>
+              <ul class="list-group" *ngIf="selectedAddress == managementWallet">
+                  <li class="list-group-item" *ngFor="let recentGasPrice of recentGasPrices">
+                      {{recentGasPrice.GasPrice / 1000000000 | number:'1.0-8'}} Gwei
+                      (Average: {{recentGasPrice.GasUsed * (recentGasPrice.GasPrice / 1000000000000000000) | number:'1.0-8'}} ETH) <span style="margin-left:10px;color: gray;">{{recentGasPrice.TotalCount | number:'1.0'}} Transactions</span>
+                  </li>
+              </ul>
+              <br *ngIf="selectedAddress == managementWallet">
+              <div *ngIf="selectedAddress == managementWallet">
+                <button class="btn btn-primary" (click)="sendTransaction()" *ngIf="isBusySending == false">Send Transaction (Opens in
+                  MetaMask)</button>
+                  <div class="progress" *ngIf="isBusySending == true">
+                      <div class="indeterminate btn-primary"></div>
+                  </div>
+                  <p style="text-align: center;" *ngIf="isBusySending == true">Please wait...</p>
+                <br *ngIf="sendError != null">
+                <br *ngIf="sendError != null">
+                <div class="alert alert-danger" *ngIf="sendError != null">
+                  There was an error sending the transaction. Detailed error is shown below:
+                  <br>
+                  {{sendError}}
+                </div>
+              </div>
+            </div>
+            <div *ngIf="canPayoutResult?.CanTryPayout == false">
+                <div class="alert alert-danger">
+                   {{canPayoutResult?.Header}}
+                    <br>
+                    {{canPayoutResult?.Message}}
+                  </div>
+            </div>
+            <div *ngIf="hasSentTransaction === true">
+                <div class="alert alert-success">
+                  Success! You can view the Payout transaction on the blockchain below.
+                  <br>
+                    <a target="_blank" href="https://www.etherscan.io/tx/{{sentTransactionHash}}">https://www.etherscan.io/tx/{{sentTransactionHash}}</a>
+                    <br>
+                    <br>
+                    Note: Please don't repeat this Payout process if it fails without understanding why it might be failing.
+                  </div>
+            </div>
+
+         </nb-card-body>
+      </nb-card>
+      </div>
+      <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="isMetaMaskInstalled === false">
+        <nb-card>
+          <nb-card-header>Payout - {{offerId}}</nb-card-header>
+          <nb-card-body>
+            <div class="alert alert-info">
+              <strong>MetaMask!</strong> This page requires the MetaMask extension to work.
+            </div>
+         </nb-card-body>
+      </nb-card>
+      </div>
+    </div>
+  </div>
+</section>

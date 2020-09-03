@@ -296,6 +296,22 @@ ADD COLUMN IF NOT EXISTS `NetworkId` TEXT NULL DEFAULT NULL");
 
                 connection.Execute(@"ALTER TABLE otoffer
 ADD COLUMN IF NOT EXISTS `EstimatedLambda` DECIMAL(10,2) NULL DEFAULT NULL");
+
+
+
+                connection.Execute(
+    @"CREATE INDEX IF NOT EXISTS `Otoffer_DCNodeID` ON otoffer  (`DCNodeId`) USING BTREE;
+CREATE INDEX IF NOT EXISTS `OTContract_Profile_ProfileCreated_Profile` ON OTContract_Profile_ProfileCreated  (`Profile`) USING BTREE;
+CREATE INDEX IF NOT EXISTS `OTContract_Profile_IdentityCreated_NewIdentity` ON OTContract_Profile_IdentityCreated  (`NewIdentity`) USING BTREE;");
+
+
+
+                connection.Execute(@"DELETE FROM SystemStatus");
+
+                connection.Execute(@"DROP INDEX IF EXISTS `NodeId` on otnode_history");
+
+                connection.Execute(@"CREATE INDEX IF NOT EXISTS `otnode_history_NodeID` ON otnode_history  (`NodeID`, `Timestamp`, `Success`) USING BTREE;");
+
             }
 
 

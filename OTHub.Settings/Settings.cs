@@ -73,6 +73,7 @@ namespace OTHub.Settings
             WebServer = configuration.GetSection("WebServer")
                 .Get<WebServerSettings>();
 
+
             Validate();
         }
     }

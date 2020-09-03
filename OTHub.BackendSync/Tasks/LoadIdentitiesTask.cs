@@ -207,6 +207,8 @@ where i.Identity = @identity", new
 
                         if (updateProfile || (currentIdentity.NodeId ?? "").Length > 40)
                         {
+                            await Task.Delay(50);
+
                             var output =
                                 await profileFunction.CallDeserializingToObjectAsync<ProfileFunctionOutput>(
                                     currentIdentity.Identity);
@@ -301,6 +303,8 @@ where i.Identity = @identity", new
 
                 var otVersionFunction = ercContract.GetFunction("otVersion");
 
+                await Task.Delay(50);
+
                 var value = await otVersionFunction.CallAsync<BigInteger>();
 
                 OTIdentity.Insert(connection, new OTIdentity
@@ -325,6 +329,8 @@ WHERE Profile not in (select otidentity.Identity from otidentity)").ToArray();
 
                 var otVersionFunction = ercContract.GetFunction("otVersion");
 
+                await Task.Delay(50);
+
                 var value = await otVersionFunction.CallAsync<BigInteger>();
 
                 OTIdentity.Insert(connection, new OTIdentity
@@ -338,7 +344,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity)").ToArray();
             return allIdentitiesCreated;
         }
 
-        public LoadIdentitiesTask() : base("Load Identities")
+        public LoadIdentitiesTask() : base("Load Profile Balances")
         {
         }
     }

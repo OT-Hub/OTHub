@@ -71,6 +71,8 @@ namespace OTHub.BackendSync.Tasks
 
                         foreach (var batch in batches)
                         {
+                            await Task.Delay(50);
+
                             try
                             {
                                 await Sync(connection, profileCreatedEvent, identityCreatedEvent,
@@ -212,6 +214,7 @@ namespace OTHub.BackendSync.Tasks
                 var newIdentity = (string)eventLog.Event
                     .FirstOrDefault(p => p.Parameter.Name == "newIdentity").Result;
 
+                await Task.Delay(50);
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -242,6 +245,7 @@ namespace OTHub.BackendSync.Tasks
                 var initialBalance = Web3.Convert.FromWei((BigInteger)eventLog.Event
                     .FirstOrDefault(p => p.Parameter.Name == "initialBalance").Result);
 
+                await Task.Delay(50);
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -287,6 +291,7 @@ namespace OTHub.BackendSync.Tasks
                 var nodeId = HexHelper.ByteArrayToString((byte[])eventLog.Event
                     .FirstOrDefault(p => p.Parameter.Name == "nodeId").Result, false);
 
+                await Task.Delay(50);
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -335,7 +340,7 @@ namespace OTHub.BackendSync.Tasks
                     var newBalance = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "newBalance").Result);
 
-
+                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -374,7 +379,7 @@ namespace OTHub.BackendSync.Tasks
                     var amount = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "amount").Result);
 
-
+                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -415,6 +420,7 @@ namespace OTHub.BackendSync.Tasks
                     var newBalance = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "newBalance").Result);
 
+                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -458,7 +464,7 @@ namespace OTHub.BackendSync.Tasks
                     var amount = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "amount").Result);
 
-
+                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -498,7 +504,7 @@ namespace OTHub.BackendSync.Tasks
                     var amountReserved = Web3.Convert.FromWei((BigInteger)eventLog.Event
                         .FirstOrDefault(p => p.Parameter.Name == "amountReserved").Result);
 
-
+                    await Task.Delay(50);
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 

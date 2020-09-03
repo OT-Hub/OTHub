@@ -432,7 +432,7 @@ namespace OTHub.BackendSync.Tasks
             return null;
         }
 
-        public LoadPeercacheTask() : base("Load Peercache")
+        public LoadPeercacheTask() : base("Perform Node Online Checks")
         {
         }
     }

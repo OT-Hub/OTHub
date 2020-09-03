@@ -1,0 +1,167 @@
+<section class="content">
+    <div class="container-fluid">
+        <div class="progress" *ngIf="isLoading === true && failedLoading === false">
+            <div class="indeterminate btn-primary"></div>
+        </div>
+        <div *ngIf="isLoading === false && failedLoading === true">
+            <app-failed-loading-page></app-failed-loading-page>
+        </div>
+        <div class="alert alert-warning" *ngIf="NodeModel?.Version === 0">
+            <strong>Warning!</strong> This old Identity is only available for viewing historical data.
+        </div>
+        <div class="row clearfix" [hidden]="failedLoading === true">
+            <div class="col-lg-12 col-md-12 col-sm-12" [ngClass]="{'col-lg-7' : MyNode || IsTestNet === true, 'col-lg-12' : !MyNode && IsTestNet !== true}">
+
+                <nb-card>
+                    <nb-card-header>                   <img [src]="identityIconUrl" style="
+                        position: absolute;
+                        right: 0;
+                        z-index: 9;
+                        margin-right: 20px;
+                    " />
+                   Data Holder</nb-card-header>
+                    <nb-card-body>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item" *ngIf="DisplayName">
+                                Display Name: {{DisplayName}}
+                            </li>
+                            <li class="list-group-item">
+                                Identity: {{NodeModel?.Identity}} <app-copyclipboardicon
+                                    [textToCopy]="NodeModel?.Identity" style="vertical-align:middle">
+                                </app-copyclipboardicon>
+                            </li>
+                            <li class="list-group-item" *ngIf="NodeModel?.OldIdentity != null">
+                                Old Identity: <a
+                                    title="You may find more historical data for this node on this identity."
+                                    routerLink="/nodes/dataholders/{{NodeModel?.OldIdentity}}">{{NodeModel?.OldIdentity}}</a>
+                            </li>
+                            <li class="list-group-item" *ngIf="NodeModel?.NewIdentity != null">
+                                New Identity: <a
+                                    title="You may find more historical data for this node on this identity."
+                                    routerLink="/nodes/dataholders/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>
+                            </li>
+                            <li class="list-group-item"
+                                *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'">
+                                Node Id: {{NodeModel?.NodeId}} <app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
+                                    style="vertical-align:middle">
+                                </app-copyclipboardicon>
+                            </li>
+                            <li class="list-group-item" *ngIf="NodeModel?.ManagementWallet != null">
+                                Management Wallet: {{NodeModel?.ManagementWallet}} <app-copyclipboardicon
+                                    [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">
+                                </app-copyclipboardicon>
+                                <a *ngIf="NodeModel != null" class="themeLink"
+                                    routerLink="/nodes/dataholders/managementwallet/{{NodeModel?.ManagementWallet}}"
+                                    style="vertical-align: middle;margin-left:5px;"
+                                    title="Find Nodes with this Management Wallet">
+                                    <i class="fas fa-search"></i>
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
+                            </li>
+                            <li class="list-group-item">
+                                Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
+                            </li>
+                        </ul>
+                     </nb-card-body>
+                </nb-card>
+
+            </div>
+            <div class="col-lg-5 col-md-12 col-sm-12" *ngIf="MyNode || IsTestNet === true">
+                <nb-card>
+                    <nb-card-header>               <h2>Node Uptime <i class="fas fa-heartbeat"
+                        title="Uptime for active nodes is checked every 40 minutes."></i></h2></nb-card-header>
+                    <nb-card-body>
+                        <div class="alert alert-warning"
+                        *ngIf="!NodeModel?.NodeUptime?.LastCheck && NodeModel">
+                        <strong>Warning!</strong>
+                        <br>OT Hub has not found this node yet. Please check back later!
+                    </div>
+                    <div class="alert alert-warning"
+                        *ngIf="NodeModel?.NodeUptime?.LastCheck && !NodeModel?.NodeUptime?.LastSuccess && NodeModel">
+                        <strong>Warning!</strong>
+                        <br>OT Hub has found this node but has never seen it online.
+                    </div>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
+                            Last Seen Online: <span
+                                [title]="NodeModel?.NodeUptime?.LastSuccess | amFromUtc | amLocal | amDateFormat:'LL h:mm A'"
+                                *ngIf="NodeModel?.NodeUptime?.LastSuccess">{{NodeModel?.NodeUptime?.LastSuccess  | amFromUtc | amLocal | amTimeAgo }}</span>
+                        </li>
+                        <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastCheck">
+                            Last Uptime Check: <span
+                                [title]="NodeModel?.NodeUptime?.LastCheck | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">{{NodeModel?.NodeUptime?.LastCheck  | amFromUtc | amLocal | amTimeAgo }}</span>
+                        </li>
+                        <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
+                            24 Hours Uptime: <span
+                                *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess24Hours / (NodeModel?.NodeUptime?.TotalSuccess24Hours + NodeModel?.NodeUptime?.TotalFailed24Hours)) * 100 | number:'1.0-2' }}%</span>
+                        </li>
+                        <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
+                            7 Days Uptime: <span
+                                *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess7Days / (NodeModel?.NodeUptime?.TotalSuccess7Days + NodeModel?.NodeUptime?.TotalFailed7Days)) * 100 | number:'1.0-2' }}%</span>
+                        </li>
+                    </ul>
+                    <div style="margin: 0 auto; width: 100%;" id="visavail_container">
+                            <p id="todayUptimeChart"></p>
+                        </div>
+                        <br *ngIf="NodeModel?.NodeUptime?.ChartData === null">
+                    <button type="button" class="btn btn-primary waves-effect"
+                        *ngIf="NodeModel?.NodeUptime?.LastCheck && !isCheckingNodeUptime && NodeModel?.Version > 0 && MyNode"
+                        (click)="CheckNodeOnline()">Check Online</button>
+                    <div class="progress" *ngIf="isCheckingNodeUptime">
+                        <div class="indeterminate btn-primary"></div>
+                    </div>
+                    <p style="text-align: center;" *ngIf="isCheckingNodeUptime">Please wait...</p>
+                    <div *ngIf="OnlineCheckResult != null">
+                        <br>
+                        <div class="alert alert-dismissible" [ngClass]="{'alert-warning' : OnlineCheckResult?.Warning, 'alert-success' : OnlineCheckResult?.Success, 'alert-danger' : OnlineCheckResult?.Error}">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                        <span aria-hidden="true">&times;</span>
+                                    </button>
+                            <strong>{{OnlineCheckResult?.Header}}</strong>
+                            <br> {{OnlineCheckResult?.Message}}
+                        </div>
+
+                    </div>
+                     </nb-card-body>
+                </nb-card>
+            </div>
+        </div>
+        <div class="row clearfix" [hidden]="failedLoading === true">
+            <div class="col-lg-12 col-md-12 col-sm-12">
+              <ngx-jobs [identity]="identity"></ngx-jobs>
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <ngx-litigations></ngx-litigations>
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12">
+             <ngx-payouts [identity]="identity"></ngx-payouts>
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12">
+               <ngx-transfers></ngx-transfers>
+            </div>
+
+            <div class="col-lg-12 col-md-12 col-sm-12">
+                <nb-card>
+                    <nb-card-header>Blockchain</nb-card-header>
+                    <nb-card-body>
+                        <span>Profile Creation</span>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                Transaction Hash: {{NodeModel?.CreateTransactionHash}} <app-copyclipboardicon
+                                    [textToCopy]="NodeModel?.CreateTransactionHash" style="vertical-align:middle">
+                                </app-copyclipboardicon>
+                            </li>
+                            <li class="list-group-item">
+                                Transaction Fee:
+                                {{NodeModel?.CreateGasUsed * (NodeModel?.CreateGasPrice / 1000000000000000000)| number:'1.0-8'}}
+                                ETH ({{NodeModel?.CreateGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
+                            </li>
+                        </ul>
+                     </nb-card-body>
+                </nb-card>
+            </div>
+        </div>
+    </div>
+</section>

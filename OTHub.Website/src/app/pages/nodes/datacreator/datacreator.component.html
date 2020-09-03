@@ -1,0 +1,318 @@
+<section class="content">
+    <div class="container-fluid">
+        <div class="progress" *ngIf="isLoading === true && failedLoading === false">
+            <div class="indeterminate btn-primary"></div>
+        </div>
+        <div *ngIf="isLoading === false && failedLoading === true">
+            <app-failed-loading-page></app-failed-loading-page>
+        </div>
+        <div class="alert alert-warning" *ngIf="NodeModel?.Version === 0">
+            <strong>Warning!</strong> This old identity is only available for viewing historical data.
+        </div>
+        <div class="alert alert-warning" *ngIf="NodeModel != null && NodeModel?.Offers.length === 0">
+            <strong>Warning!</strong> This node has not created any offers on the network.
+            <br>
+            Did you mean to go to the <a routerLink="/nodes/dataholders/{{NodeModel?.Identity}}" onClick="return false;">Data Holder</a> page?
+        </div>
+        <div class="row clearfix" [hidden]="failedLoading === true">
+
+            <div class="col-lg-12 col-md-12 col-sm-12">
+
+
+                <nb-card>
+                    <nb-card-header>             <img [src]="identityIconUrl" style="
+                        position: absolute;
+                        right: 0;
+                        z-index: 9;
+                        margin-right: 20px;
+                    " />
+                    Data Creator</nb-card-header>
+                    <nb-card-body>
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item" *ngIf="myNodeService.GetName(NodeModel?.Identity, true)">
+                                Display Name: {{myNodeService.GetName(NodeModel?.Identity, true)}}
+                            </li>
+                            <li class="list-group-item">
+                                Identity: {{NodeModel?.Identity}} <app-copyclipboardicon
+                                    [textToCopy]="NodeModel?.Identity" style="vertical-align:middle">
+                                </app-copyclipboardicon>
+                            </li>
+                            <li class="list-group-item" *ngIf="NodeModel?.OldIdentity != null">
+                                Old Identity: <a
+                                    title="You may find more historical data for this node on this identity."
+                                    routerLink="/nodes/datacreators/{{NodeModel?.OldIdentity}}">{{NodeModel?.OldIdentity}}</a>
+                            </li>
+                            <li class="list-group-item" *ngIf="NodeModel?.NewIdentity != null">
+                                New Identity: <a
+                                    title="You may find more historical data for this node on this identity."
+                                    routerLink="/nodes/datacreators/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>
+                            </li>
+                            <li class="list-group-item"
+                                *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'">
+                                Node Id: {{NodeModel?.NodeId}} <app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
+                                    style="vertical-align:middle">
+                                </app-copyclipboardicon>
+                            </li>
+                            <li class="list-group-item" *ngIf="NodeModel?.ManagementWallet != null">
+                                Management Wallet: {{NodeModel?.ManagementWallet}} <app-copyclipboardicon
+                                    [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">
+                                </app-copyclipboardicon>
+                                <a *ngIf="NodeModel != null" class="themeLink"
+                                    routerLink="/nodes/dataholders/managementwallet/{{NodeModel?.ManagementWallet}}"
+                                    style="vertical-align: middle;margin-left:5px;"
+                                    title="Find Nodes with this Management Wallet">
+                                    <i class="fas fa-search"></i>
+                                </a>
+                            </li>
+                            <li class="list-group-item">
+                                Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
+                            </li>
+                            <li class="list-group-item">
+                                Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
+                            </li>
+                        </ul>
+                     </nb-card-body>
+                </nb-card>
+
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12">
+
+                <nb-card>
+                    <nb-card-header>                      Offers
+                        <!-- <ul class="header-dropdown m-r--5">
+                            <li class="dropdown">
+                                <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown"
+                                    role="button" aria-haspopup="true" aria-expanded="false">
+                                    <i class="material-icons">more_vert</i>
+                                </a>
+                                <ul class="dropdown-menu pull-right">
+                                    <li>
+                                        <a href="#" (click)="copyToClipboard(jobsExportOptionsObj, jobsDataTable)"
+                                            onClick="return false;">Copy to Clipboard</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" (click)="exportToCSV(jobsExportOptionsObj, jobsDataTable)"
+                                            onClick="return false;">Export to CSV</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" (click)="exportToExcel(jobsExportOptionsObj, jobsDataTable)"
+                                            onClick="return false;">Export to Excel</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" (click)="print(jobsExportOptionsObj, jobsDataTable)"
+                                            onClick="return false;">Print</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul> -->
+                    </nb-card-header>
+                    <nb-card-body>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-hover js-jobs dataTable"
+                                data-order='[[3, "desc"]]'>
+                                <thead>
+                                    <tr>
+                                        <th style="display:none;">Offer Id</th>
+                                        <th>Offer Id</th>
+                                        <th style="display:none;">Timestamp</th>
+                                        <th>Age</th>
+                                        <th>Data Set Size</th>
+                                        <th>Holding Time</th>
+                                        <th>Token Amount</th>
+                                        <th>Status</th>
+                                        <th style="display:none;">End Timestamp</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let offer of NodeModel?.Offers">
+                                        <td style="display:none;">{{offer.OfferId}}</td>
+                                        <td><a routerLink="/offers/{{offer.OfferId}}"
+                                                title="{{offer.OfferId}}">{{offer.OfferId | slice:0:50}}...</a></td>
+                                        <td style="display:none;">{{offer.Timestamp}}</td>
+                                        <td [title]="offer.Timestamp | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">
+                                            {{offer.Timestamp | amFromUtc | amLocal | amTimeAgo }}</td>
+                                        <td>{{offer.DataSetSizeInBytes / 1000 | number:'1.2-2'}} KB</td>
+                                        <td>{{(offer.HoldingTimeInMinutes > 1440 ? offer.HoldingTimeInMinutes / 1440 : offer.HoldingTimeInMinutes) | number:'1.0-1'}}
+                                            {{offer.HoldingTimeInMinutes > 1440 ? 'days' : 'minutes'}}</td>
+                                        <td>{{formatAmount(offer.TokenAmountPerHolder)}}</td>
+                                        <td>{{offer.Status}}</td>
+                                        <td style="display:none;">{{offer.EndTimestamp}}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                     </nb-card-body>
+                </nb-card>
+
+
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12">
+
+                <nb-card>
+                    <nb-card-header>Litigations Started Against Data Holders
+                        <!-- <ul class="header-dropdown m-r--5">
+                            <li class="dropdown">
+                                <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown"
+                                    role="button" aria-haspopup="true" aria-expanded="false">
+                                    <i class="material-icons">more_vert</i>
+                                </a>
+                                <ul class="dropdown-menu pull-right">
+                                    <li>
+                                        <a href="#" (click)="copyToClipboard(litigationsExportOptionsObj, litigationsDataTable)"
+                                            onClick="return false;">Copy to Clipboard</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" (click)="exportToCSV(litigationsExportOptionsObj, litigationsDataTable)"
+                                            onClick="return false;">Export to CSV</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" (click)="exportToExcel(litigationsExportOptionsObj, litigationsDataTable)"
+                                            onClick="return false;">Export to Excel</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" (click)="print(litigationsExportOptionsObj, litigationsDataTable)"
+                                            onClick="return false;">Print</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul> -->
+                    </nb-card-header>
+                    <nb-card-body>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-hover js-litigations-table dataTable"
+                                data-order='[[ 3, "desc" ]]'>
+                                <thead>
+                                    <tr>
+                                        <th style="display:none;">Offer Id</th>
+                                        <th>Offer Id</th>
+                                        <th style="display:none;">Timestamp</th>
+                                        <th>Timestamp</th>
+                                        <th style="display:none;">Data Holder</th>
+                                        <th>Data Holder</th>
+                                        <th>Requested Block Index</th>
+                                        <th>Requested Object Index</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let litigation of NodeModel?.Litigations">
+                                        <td style="display:none;">{{litigation.OfferId}}</td>
+                                        <td>
+                                            <a routerLink="/offers/{{litigation.OfferId}}"
+                                                title="{{litigation.OfferId}}">{{litigation.OfferId}}</a>
+                                        </td>
+                                        <td style="display:none;">{{litigation.Timestamp}}</td>
+                                        <td>
+                                            {{litigation.Timestamp | amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}
+                                        </td>
+                                        <td style="display:none;">{{litigation.HolderIdentity}}</td>
+                                        <td>
+                                            <a routerLink="/nodes/dataholders/{{litigation.HolderIdentity}}">{{litigation.HolderIdentity}}</a>
+                                        </td>
+                                        <td>
+                                            {{litigation.RequestedBlockIndex}}
+                                        </td>
+                                        <td>
+                                            {{litigation.RequestedObjectIndex}}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                     </nb-card-body>
+                </nb-card>
+
+      
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12">
+
+                <nb-card>
+                    <nb-card-header>Deposits & Withdrawals
+                        <!-- <ul class="header-dropdown m-r--5">
+                            <li class="dropdown">
+                                <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown"
+                                    role="button" aria-haspopup="true" aria-expanded="false">
+                                    <i class="material-icons">more_vert</i>
+                                </a>
+                                <ul class="dropdown-menu pull-right">
+                                    <li>
+                                        <a href="#" (click)="copyToClipboard(profileExportOptionsObj, profileDataTable)"
+                                            onClick="return false;">Copy to Clipboard</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" (click)="exportToCSV(profileExportOptionsObj, profileDataTable)"
+                                            onClick="return false;">Export to CSV</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" (click)="exportToExcel(profileExportOptionsObj, profileDataTable)"
+                                            onClick="return false;">Export to Excel</a>
+                                    </li>
+                                    <li>
+                                        <a href="#" (click)="print(profileExportOptionsObj, profileDataTable)"
+                                            onClick="return false;">Print</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul> -->
+                    </nb-card-header>
+                    <nb-card-body>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-striped table-hover js-profile-table dataTable"
+                                data-order='[[ 3, "desc" ]]'>
+                                <thead>
+                                    <tr>
+                                        <th style="display:none;">Transaction Hash</th>
+                                        <th>Transaction Hash</th>
+                                        <th style="display:none;">Timestamp</th>
+                                        <th>Timestamp</th>
+                                        <th>Type</th>
+                                        <th>Token Amount</th>
+                                        <th>Transaction Fee</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let transfer of NodeModel?.ProfileTransfers">
+                                        <td style="display:none;">{{transfer.TransactionHash}}</td>
+                                        <td [title]="transfer.TransactionHash"> {{transfer.TransactionHash }}
+                                            <app-copyclipboardicon [textToCopy]="transfer.TransactionHash"
+                                                style="vertical-align:middle">
+                                            </app-copyclipboardicon>
+                                        </td>
+                                        <td style="display:none;">{{transfer.Timestamp}}</td>
+                                        <td> {{transfer.Timestamp | amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}
+                                        </td>
+                                        <td>{{transfer.Amount > 0 ? 'Deposit' : 'Withdrawal'}}</td>
+                                        <td>{{formatAmount(transfer.Amount)}}</td>
+                                        <td>{{transfer.GasUsed * (transfer.GasPrice / 1000000000000000000) | number:'1.0-8'}}
+                                            ETH</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                     </nb-card-body>
+                </nb-card>
+
+            </div>
+            <div class="col-lg-12 col-md-12 col-sm-12">
+
+                <nb-card>
+                    <nb-card-header>Blockchain</nb-card-header>
+                    <nb-card-body>
+                        Profile Creation
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+                                Transaction Hash: {{NodeModel?.CreateTransactionHash}} <app-copyclipboardicon
+                                    [textToCopy]="NodeModel?.CreateTransactionHash" style="vertical-align:middle">
+                                </app-copyclipboardicon>
+                            </li>
+                            <li class="list-group-item">
+                                Transaction Fee:
+                                {{NodeModel?.CreateGasUsed * (NodeModel?.CreateGasPrice / 1000000000000000000)| number:'1.0-8'}}
+                                ETH ({{NodeModel?.CreateGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
+                            </li>
+                        </ul>
+                     </nb-card-body>
+                </nb-card>
+            </div>
+        </div>
+    </div>
+</section>

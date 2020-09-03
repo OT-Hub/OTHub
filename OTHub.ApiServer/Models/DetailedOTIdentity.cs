@@ -4,7 +4,7 @@ namespace OTHub.APIServer.Models
 {
     public abstract class NodeDetailedModel
     {
-        public NodeProfileDetailedModel_ProfileTransfer[] ProfileTransfers { get; set; }
+        //public NodeProfileDetailedModel_ProfileTransfer[] ProfileTransfers { get; set; }
 
         public NodeUptimeHistory NodeUptime { get; set; }
 
@@ -24,8 +24,8 @@ namespace OTHub.APIServer.Models
 
     public class NodeDataCreatorDetailedModel : NodeDetailedModel
     {
-        public OfferSummaryModel[] Offers { get; set; }
-        public DataCreatorLitigationSummary[] Litigations { get; set; }
+        //public OfferSummaryModel[] Offers { get; set; }
+        //public DataCreatorLitigationSummary[] Litigations { get; set; }
     }
 
     public class NodeOnlineResult
@@ -50,9 +50,9 @@ namespace OTHub.APIServer.Models
         public Int32 TotalWonOffers { get; set; }
         public Int32 WonOffersLast7Days { get; set; }
 
-        public NodeProfileDetailedModel_OfferSummary[] Offers { get; set; }
-        public NodeProfileDetailedModel_OfferPayout[] Payouts { get; set; }
-        public DataHolderLitigationSummary[] Litigations { get; set; }
+        //public NodeProfileDetailedModel_OfferSummary[] Offers { get; set; }
+        //public NodeProfileDetailedModel_OfferPayout[] Payouts { get; set; }
+        //public DataHolderLitigationSummary[] Litigations { get; set; }
     }
 
     public class NodeUptimeHistory

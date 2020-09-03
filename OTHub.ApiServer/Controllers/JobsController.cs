@@ -1,13 +1,18 @@
 ﻿using System;
 using System.Linq;
+using System.Text;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using OTHub.APIServer.Models;
 using OTHub.Settings;
+using ServiceStack;
+using ServiceStack.Text;
 using Swashbuckle.AspNetCore.Annotations;
 using Swashbuckle.AspNetCore.Filters;
+using static System.Net.WebRequestMethods;
 
 namespace OTHub.APIServer.Controllers
 {
@@ -60,12 +65,56 @@ If you want to get more information about a specific offer you should use /api/j
         )]
         [SwaggerResponse(200, type: typeof(OfferSummaryModel[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public OfferSummaryWithPaging GetWithPaging([FromQuery, SwaggerParameter("How many offers you want to return per page", Required = true)] int pageLength, [FromQuery, SwaggerParameter("The page number to start from. The first page is 0.", Required = true)] int start, [FromQuery] string filter)
+        public IActionResult GetWithPaging([FromQuery, SwaggerParameter("How many offers you want to return per page", Required = true)] int _limit, [FromQuery, SwaggerParameter("The page number to start from. The first page is 0.", Required = true)] int _page, [FromQuery] string OfferId_like,
+            [FromQuery] string _sort,
+            [FromQuery] string _order,
+            [FromQuery] bool export,
+            [FromQuery] int? exportType)
         {
-            if (filter != null && filter.Length > 200)
+            _page--;
+
+            if (OfferId_like != null && OfferId_like.Length > 200)
             {
-                filter = null;
+                OfferId_like = null;
             }
+
+            string orderBy = String.Empty;
+
+            switch (_sort)
+            {
+                case "Timestamp":
+                    orderBy = "ORDER BY Timestamp";
+                    break;
+                case "DataSetSizeInBytes":
+                    orderBy = "ORDER BY DataSetSizeInBytes";
+                    break;
+                case "HoldingTimeInMinutes":
+                    orderBy = "ORDER BY HoldingTimeInMinutes";
+                    break;
+                case "TokenAmountPerHolder":
+                    orderBy = "ORDER BY TokenAmountPerHolder";
+                    break;
+            }
+
+            if (!String.IsNullOrWhiteSpace(orderBy))
+            {
+                switch (_order)
+                {
+                    case "ASC":
+                        orderBy += " ASC";
+                        break;
+                    case "DESC":
+                        orderBy += " DESC";
+                        break;
+                }
+            }
+
+            string limit = string.Empty;
+
+            if (_page >= 0 && _limit >= 0)
+            {
+                limit = $"LIMIT {_page},{_limit}";
+            } 
 
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
@@ -82,29 +131,46 @@ END) as Status,
 (CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp
 FROM OTOffer O
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
-WHERE COALESCE(@filter, '') = '' OR O.OfferId = @filter OR (I.Identity IS NOT NULL AND I.Identity = @filter)
+WHERE COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like
 GROUP BY O.OfferID
-ORDER BY O.CreatedTimestamp DESC
-LIMIT {start},{pageLength}", new
+{orderBy}
+{limit}", new
                     {
-                        filter
+                        OfferId_like
                     }).ToArray();
 
                 var total = connection.ExecuteScalar<int>(@"SELECT COUNT(DISTINCT O.OfferID)
 FROM OTOffer O
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
-WHERE COALESCE(@filter, '') = '' OR O.OfferId = @filter OR (I.Identity IS NOT NULL AND I.Identity = @filter)", new
+WHERE COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like", new
                 {
-                    filter
+                    OfferId_like
                 });
 
-                return new OfferSummaryWithPaging
+                HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
+                HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
+
+                if (export)
                 {
-                    data = summary,
-                    draw = summary.Length,
-                    recordsFiltered = total,
-                    recordsTotal = total
-                };
+                    if (exportType == 0)
+                    {
+                        return File(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(summary)), "application/json", "jobs.json", false);
+                    }
+                    else if (exportType == 1)
+                    {
+                        return File(Encoding.UTF8.GetBytes(CsvSerializer.SerializeToCsv(summary)), "text/csv", "jobs.csv", false);
+                    }
+                }
+
+                return new OkObjectResult(summary);
+
+                //return new OfferSummaryWithPaging
+                //{
+                //    data = summary,
+                //    draw = summary.Length,
+                //    recordsFiltered = total,
+                //    recordsTotal = total
+                //};
             }
         }
 
@@ -190,38 +256,38 @@ ORDER BY H.LitigationStatus", new
                             offerID = offerID
                         }).ToArray();
 
-                    model.Timeline = connection.Query<OfferDetailedTimelineModel>($@"select Timestamp, 'Offer Created' as Name, null as 'RelatedTo'  from otcontract_holding_offercreated
+                    model.Timeline = connection.Query<OfferDetailedTimelineModel>($@"select Timestamp, 'Offer Created' as Name, null as 'RelatedTo', TransactionHash  from otcontract_holding_offercreated
 where OfferId = @offerID
 union all
-select Timestamp, 'Offer Finalized', null from otcontract_holding_offerfinalized
+select Timestamp, 'Offer Finalized', null, TransactionHash from otcontract_holding_offerfinalized
 where OfferId = @offerID
 union all
-select Timestamp, 'Data Holder Chosen' as Name, Holder as 'RelatedTo'  from otoffer_holders h
+select Timestamp, 'Data Holder Chosen' as Name, Holder as 'RelatedTo', TransactionHash  from otoffer_holders h
 join otcontract_holding_offerfinalized of on of.OfferID = h.OfferId
 where h.OfferId = @offerID AND h.IsOriginalHolder = 1
 union all
-select Timestamp, 'Litigation Initiated', HolderIdentity from otcontract_litigation_litigationinitiated
+select Timestamp, 'Litigation Initiated', HolderIdentity, TransactionHash from otcontract_litigation_litigationinitiated
 where OfferId = @offerID
 union all
-select Timestamp, 'Litigation Timed out', HolderIdentity from otcontract_litigation_litigationtimedout
+select Timestamp, 'Litigation Timed out', HolderIdentity, TransactionHash from otcontract_litigation_litigationtimedout
 where OfferId = @offerID
 union all
-select Timestamp, 'Litigation Answered', HolderIdentity from otcontract_litigation_litigationanswered
+select Timestamp, 'Litigation Answered', HolderIdentity, TransactionHash from otcontract_litigation_litigationanswered
 where OfferId = @offerID
 union all
-select Timestamp, CASE WHEN DHWasPenalized = 1 THEN 'Litigation Failed' ELSE 'Litigation Passed' END, HolderIdentity from otcontract_litigation_litigationcompleted
+select Timestamp, CASE WHEN DHWasPenalized = 1 THEN 'Litigation Failed' ELSE 'Litigation Passed' END, HolderIdentity, TransactionHash from otcontract_litigation_litigationcompleted
 where OfferId = @offerID
 union all
-select Timestamp, 'Data Holder Replaced', HolderIdentity from otcontract_litigation_replacementstarted
+select Timestamp, 'Data Holder Replaced', HolderIdentity, TransactionHash from otcontract_litigation_replacementstarted
 where OfferId = @offerID
 union all
-select Timestamp, 'Data Holder Chosen', ChosenHolder from otcontract_replacement_replacementcompleted
+select Timestamp, 'Data Holder Chosen', ChosenHolder, TransactionHash from otcontract_replacement_replacementcompleted
 where OfferId = @offerID
 union all
-select Timestamp, CONCAT('Offer Paidout for ', (CAST(TRUNCATE(`Amount`, 3) AS CHAR)+0), ' {(OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet ? "ATRAC" : "TRAC")}'), Holder from otcontract_holding_paidout
+select Timestamp, CONCAT('Offer Paidout for ', (CAST(TRUNCATE(`Amount`, 3) AS CHAR)+0), ' {(OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet ? "ATRAC" : "TRAC")}'), Holder, TransactionHash from otcontract_holding_paidout
 where OfferId = @offerID
 union all
-select DATE_Add(of.Timestamp, INTERVAL + oc.HoldingTimeInMinutes MINUTE), 'Offer Completed', null from otcontract_holding_offerfinalized of
+select DATE_Add(of.Timestamp, INTERVAL + oc.HoldingTimeInMinutes MINUTE), 'Offer Completed', null, null from otcontract_holding_offerfinalized of
 join otcontract_holding_offercreated oc on oc.OfferId = of.OfferId
 where of.OfferId = @offerID 
 and NOW() >= DATE_Add(of.Timestamp, INTERVAL + oc.HoldingTimeInMinutes MINUTE)", new {offerID = offerID }).OrderBy(t => t.Timestamp).ToArray();

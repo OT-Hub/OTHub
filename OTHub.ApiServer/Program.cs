@@ -1,9 +1,17 @@
 ﻿using System;
 using System.IO;
+using System.Numerics;
 using System.Reflection;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Nethereum.Contracts;
+using Nethereum.Hex.HexConvertors.Extensions;
+using Nethereum.RPC;
+using Nethereum.RPC.Eth.DTOs;
+using Nethereum.Web3;
+using OTHub.APIServer.Models;
 using OTHub.Settings;
 
 namespace OTHub.APIServer

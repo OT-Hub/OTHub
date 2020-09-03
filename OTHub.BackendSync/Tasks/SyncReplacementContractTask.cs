@@ -49,6 +49,7 @@ namespace OTHub.BackendSync.Tasks
 
                     var toBlock = new BlockParameter(LatestBlockNumber);
 
+                    await Task.Delay(50);
                     var replacementCompletedEvents = await replacementCompletedEvent.GetAllChangesDefault(
                         replacementCompletedEvent.CreateFilterInput(new BlockParameter(contract.SyncBlockNumber),
                             toBlock));
@@ -61,6 +62,8 @@ namespace OTHub.BackendSync.Tasks
 
                     foreach (EventLog<List<ParameterOutput>> eventLog in replacementCompletedEvents)
                     {
+                        await Task.Delay(50);
+
                         var block = await Program.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                             cl);
                         var offerId =
@@ -73,6 +76,7 @@ namespace OTHub.BackendSync.Tasks
                         var chosenHolder = (string)eventLog.Event
                                 .First(e => e.Parameter.Name == "chosenHolder").Result;
 
+                        await Task.Delay(50);
                         var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                         var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 

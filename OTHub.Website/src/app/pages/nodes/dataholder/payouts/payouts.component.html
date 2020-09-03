@@ -1,0 +1,77 @@
+<nb-card>
+    <nb-card-header>Payouts for Jobs
+        <!-- <ul class="header-dropdown m-r--5">
+            <li class="dropdown">
+                <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown"
+                    role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="material-icons">more_vert</i>
+                </a>
+                <ul class="dropdown-menu pull-right">
+                    <li>
+                        <a href="#" (click)="copyToClipboard(payoutsExportOptionsObj, payoutsDataTable)"
+                            onClick="return false;">Copy to Clipboard</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="exportToCSV(payoutsExportOptionsObj, payoutsDataTable)"
+                            onClick="return false;">Export to CSV</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="exportToExcel(payoutsExportOptionsObj, payoutsDataTable)"
+                            onClick="return false;">Export to Excel</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="print(payoutsExportOptionsObj, payoutsDataTable)"
+                            onClick="return false;">Print</a>
+                    </li>
+                </ul>
+            </li>
+        </ul> -->
+    </nb-card-header>
+    <nb-card-body>
+        <!-- <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover js-payouts-table dataTable"
+                data-order='[[ 5, "desc" ]]'>
+                <thead>
+                    <tr>
+                        <th style="display:none;">Offer Id</th>
+                        <th>Offer Id</th>
+                        <th style="display:none;">Transaction Hash</th>
+                        <th>Transaction Hash</th>
+                        <th style="display:none;">Timestamp</th>
+                        <th>Timestamp</th>
+                        <th>Token Amount</th>
+                        <th>Transaction Fee</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let payout of NodeModel?.Payouts">
+                        <td style="display:none;">{{payout.OfferId}}</td>
+                        <td>
+                            <a routerLink="/offers/{{payout.OfferId}}"
+                                title="{{payout.OfferId}}">{{payout.OfferId}}</a>
+                        </td>
+                        <td style="display:none;">{{payout.TransactionHash}}</td>
+                        <td [title]="payout.TransactionHash">
+                            {{payout.TransactionHash | slice:0:20 }}... <app-copyclipboardicon
+                                [textToCopy]="payout.TransactionHash" style="vertical-align:middle">
+                            </app-copyclipboardicon>
+                        </td>
+                        <td style="display:none;">{{payout.Timestamp}}</td>
+                        <td>
+                            {{payout.Timestamp | amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}
+                        </td>
+                        <td>
+                            {{formatAmount(payout.Amount)}}
+                        </td>
+                        <td>
+                            {{payout.GasUsed * (payout.GasPrice / 1000000000000000000) | number:'1.0-8'}}
+                            ETH
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div> -->
+        <button style="margin-top:5px;" type="button" class="btn btn-primary waves-effect"
+        (click)="ViewPayoutsInUSD()">Generate Report for Payouts in USD</button>
+     </nb-card-body>
+</nb-card>

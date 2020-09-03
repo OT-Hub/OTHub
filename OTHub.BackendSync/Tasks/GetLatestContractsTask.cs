@@ -57,17 +57,29 @@ namespace OTHub.BackendSync.Tasks
             {
                 var hubContract = new Contract(TaskRun.eth, reader.ReadToEnd(), hubAddress);
 
+                
                 var tokenAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.Token.ToString());
+                
                 var approvalAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.Approval.ToString());
+                
                 var holdingStorageAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.HoldingStorage.ToString());
+                
                 var holdingAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.Holding.ToString());
+                
                 var profileStorageAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.ProfileStorage.ToString());
+                
                 var profileAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.Profile.ToString());
+                
                 var readingAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.Reading.ToString());
+                
                 var readingStorageAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.ReadingStorage.ToString());
+                
                 var litigationAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.Litigation.ToString());
+                
                 var litigationStorageAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.LitigationStorage.ToString());
+                
                 var replacementAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractType.Replacement.ToString());
+                
 
                 if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet)
                 {
@@ -196,12 +208,16 @@ namespace OTHub.BackendSync.Tasks
 
                 Event contractsChangedEvent = hubContract.GetEvent("ContractsChanged");
 
+                
+
                 var eventsOfChange = await contractsChangedEvent.GetAllChangesDefault(
                     contractsChangedEvent.CreateFilterInput(new BlockParameter(TaskRun.FromBlockNumber),
                         BlockParameter.CreateLatest()));
 
                 foreach (var eventLog in eventsOfChange)
                 {
+                    
+
                     Function setContractAddressFunction = hubContract.GetFunction("setContractAddress");
 
                     var transaction = await cl.Eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);

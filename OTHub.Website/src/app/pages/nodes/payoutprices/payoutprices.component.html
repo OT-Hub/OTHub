@@ -1,0 +1,139 @@
+<section class="content">
+    <div class="container-fluid">
+
+        <div class="progress" *ngIf="isLoading === true && failedLoading === false">
+            <div class="indeterminate btn-primary"></div>
+        </div>
+        <div *ngIf="isLoading === false && failedLoading === true">
+            <app-failed-loading-page></app-failed-loading-page>
+        </div>
+
+        <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="isLoading === false && failedLoading === false">
+            <nb-card>
+                <nb-card-header>  <h2>Summary</h2></nb-card-header>
+                <nb-card-body>
+                    <div class="row">
+                        <div class="col-lg-3 col-sm-6">
+                            <div class="text-center btn-primary" style="padding:15px;">                                  
+                                <div class="text m-b-10">Total Payouts</div>
+                                <h3 class="m-b-0">{{Items.length}}
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            <div class="text-center btn-default" style="padding:15px;">
+                          
+                                <div class="text m-b-10">Total TRAC Paid</div>
+                                <h3 class="m-b-0">{{totalTracPaid }}
+                           
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            <div class="text-center btn-info" style="padding:15px;">
+                         
+                                <div class="text m-b-10">Total Equivalent USD Paid</div>
+                                <h3 class="m-b-0">{{totalEquivUSDPaid | number:'1.0-2'}}
+                                   
+                                </h3>
+                            </div>
+                        </div>
+                        <div class="col-lg-3 col-sm-6">
+                            <div class="text-center btn-success" style="padding:15px;">
+                          
+                                <div class="text m-b-10">Average USD Ticker Price</div>
+                                <h3 class="m-b-0">{{averageTracTickerPrice| number:'1.0-6'}}
+                            
+                                </h3>
+                            </div>
+                        </div>
+                    </div>
+                 </nb-card-body>
+            </nb-card>
+        </div>
+
+        <div class="col-lg-12 col-md-12 col-sm-12">
+            <nb-card>
+                <nb-card-header>                    <h2>Payouts</h2>
+                    <ul class="header-dropdown m-r--5">
+                        <li class="dropdown">
+                            <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown"
+                                role="button" aria-haspopup="true" aria-expanded="false">
+                                <i class="material-icons">more_vert</i>
+                            </a>
+                            <ul class="dropdown-menu pull-right">
+                                <li>
+                                    <a href="#" (click)="copyToClipboard(payoutsExportOptionsObj, payoutsDataTable)"
+                                        onClick="return false;">Copy to Clipboard</a>
+                                </li>
+                                <li>
+                                    <a href="#" (click)="exportToCSV(payoutsExportOptionsObj, payoutsDataTable)"
+                                        onClick="return false;">Export to CSV</a>
+                                </li>
+                                <li>
+                                    <a href="#" (click)="exportToExcel(payoutsExportOptionsObj, payoutsDataTable)"
+                                        onClick="return false;">Export to Excel</a>
+                                </li>
+                                <li>
+                                    <a href="#" (click)="print(payoutsExportOptionsObj, payoutsDataTable)"
+                                        onClick="return false;">Print</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul></nb-card-header>
+                <nb-card-body>
+                    <p>This page shows you the USD equivalent price of TRAC at the time the offer paid out.</p>
+                    <p>USD prices are taken from Coinpaprika. Payouts will be matched to the closest ticker price
+                        available (every 6 hours).</p>
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped table-hover js-payoutsusd-table dataTable"
+                            data-order='[[ 5, "desc" ]]'>
+                            <thead>
+                                <tr>
+                                    <th style="display:none;">Offer Id</th>
+                                    <th>Offer Id</th>
+                                    <th>TRAC Amount Paid</th>
+                                    <th>USD Equivalent Paid</th>
+                                    <th style="display:none;">Payout Timestamp</th>
+                                    <th>Payout Timestamp</th>
+                                    <th style="display:none;">Ticker Timestamp</th>
+                                    <th>Ticker Timestamp</th>
+                                    <th>Ticker USD Price</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let payout of Items">
+                                    <td style="display:none;">{{payout.OfferID}}</td>
+                                    <td>
+                                        <a routerLink="/offers/{{payout.OfferID}}"
+                                            title="{{payout.OfferID}}">{{payout.OfferID}}</a>
+                                    </td>
+
+                                    <td>
+                                        {{payout.TRACAmount }}
+                                    </td>
+
+                                    <td>
+                                        {{payout.USDAmount  | number:'1.0-2'}}
+                                    </td>
+                                    <td style="display:none;">{{payout.PayoutTimestamp}}</td>
+                                    <td>
+                                        {{payout.PayoutTimestamp | amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}
+
+                                    </td>
+                                    <td style="display:none;">{{payout.TickerTimestamp}}</td>
+                                    <td>
+                                        {{payout.TickerTimestamp | amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}
+                                    </td>
+                                    <td>
+                                        {{payout.TickerUSDPrice}}
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                 </nb-card-body>
+            </nb-card>
+        </div>
+    </div>
+</section>

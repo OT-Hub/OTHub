@@ -40,7 +40,7 @@ namespace OTHub.BackendSync.Tasks
                     Logger.WriteLine(source, "     Using contract: " + contract.Address);
 
                     var holdingContract = new Contract(eth, Constants.GetContractAbi(ContractType.Litigation), contract.Address);
-
+                    
                     var litigationInitiatedEvent = holdingContract.GetEvent("LitigationInitiated");
                     var litigationAnsweredEvent = holdingContract.GetEvent("LitigationAnswered");
                     var litigationTimedOutEvent = holdingContract.GetEvent("LitigationTimedOut");
@@ -66,6 +66,8 @@ namespace OTHub.BackendSync.Tasks
 
                         foreach (var batch in batches)
                         {
+                            await Task.Delay(50);
+
                             try
                             {
                                 await Sync(connection, litigationInitiatedEvent, litigationAnsweredEvent,
@@ -197,6 +199,7 @@ namespace OTHub.BackendSync.Tasks
                 var requestedBlockIndex = (BigInteger)eventLog.Event
                     .First(e => e.Parameter.Name == "requestedBlockIndex").Result;
 
+                await Task.Delay(50);
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -228,6 +231,7 @@ namespace OTHub.BackendSync.Tasks
                 var holderIdentity = (string)eventLog.Event
                     .First(e => e.Parameter.Name == "holderIdentity").Result;
 
+                await Task.Delay(50);
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -257,6 +261,7 @@ namespace OTHub.BackendSync.Tasks
                 var holderIdentity = (string)eventLog.Event
                     .First(e => e.Parameter.Name == "holderIdentity").Result;
 
+                await Task.Delay(50);
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -289,6 +294,7 @@ namespace OTHub.BackendSync.Tasks
                 var dhWasPenalized = (bool)eventLog.Event
                     .First(e => e.Parameter.Name == "DH_was_penalized").Result;
 
+                await Task.Delay(50);
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -325,6 +331,7 @@ namespace OTHub.BackendSync.Tasks
                 var litigationRootHash = HexHelper.ByteArrayToString((byte[])eventLog.Event
                         .First(e => e.Parameter.Name == "litigationRootHash").Result);
 
+                await Task.Delay(50);
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 

@@ -21,64 +21,215 @@ namespace OTHub.APIServer.Controllers
             _cache = cache;
         }
 
-//        [HttpGet]
-//        [Route("NodesChartData")]
-//        [Obsolete]
-//        public HomeNodesChartData GetNodesChartData()
-//        {
-//            if (_cache.TryGetValue("OTHub_HomeNodesChartModel", out var model) && model is HomeNodesChartData chartModel)
-//                return chartModel;
+        //        [HttpGet]
+        //        [Route("NodesChartData")]
+        //        [Obsolete]
+        //        public HomeNodesChartData GetNodesChartData()
+        //        {
+        //            if (_cache.TryGetValue("OTHub_HomeNodesChartModel", out var model) && model is HomeNodesChartData chartModel)
+        //                return chartModel;
 
-//            chartModel = new HomeNodesChartData();
+        //            chartModel = new HomeNodesChartData();
 
-//            using (var connection =
-//                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-//            {
-//                HomeNodesChartDataModel[] chartData = connection.Query<HomeNodesChartDataModel>(@"SELECT 
-//x.Date,
-//count(distinct oth.NodeId) as OnlineNodes,
-//(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTOffer O ON I.NodeId = O.DCNodeId WHERE O.CreatedTimestamp <= x.Date AND I.Version = 1) DataCreatorNodes,
-//(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTContract_Approval_NodeApproved NA ON I.NodeId = NA.NodeID WHERE NA.Timestamp <= x.Date AND I.Version = 1) ApprovedNodes
-//FROM (
-//SELECT CURDATE() Date
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 41 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 42 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 43 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 44 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 45 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 46 DAY)
-//) x 
-//LEFT JOIN OTNode_History oth on oth.Success = 1 AND Date(oth.Timestamp) = x.Date AND (x.Date != CURDATE() OR oth.TimeStamp >= DATE_Add(NOW(), INTERVAL -1 HOUR))
-//GROUP BY x.Date").ToArray();
+        //            using (var connection =
+        //                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+        //            {
+        //                HomeNodesChartDataModel[] chartData = connection.Query<HomeNodesChartDataModel>(@"SELECT 
+        //x.Date,
+        //count(distinct oth.NodeId) as OnlineNodes,
+        //(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTOffer O ON I.NodeId = O.DCNodeId WHERE O.CreatedTimestamp <= x.Date AND I.Version = 1) DataCreatorNodes,
+        //(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTContract_Approval_NodeApproved NA ON I.NodeId = NA.NodeID WHERE NA.Timestamp <= x.Date AND I.Version = 1) ApprovedNodes
+        //FROM (
+        //SELECT CURDATE() Date
+        //UNION 
+        //SELECT DATE_Add(CURDATE(), INTERVAL - 41 DAY)
+        //UNION 
+        //SELECT DATE_Add(CURDATE(), INTERVAL - 42 DAY)
+        //UNION 
+        //SELECT DATE_Add(CURDATE(), INTERVAL - 43 DAY)
+        //UNION 
+        //SELECT DATE_Add(CURDATE(), INTERVAL - 44 DAY)
+        //UNION 
+        //SELECT DATE_Add(CURDATE(), INTERVAL - 45 DAY)
+        //UNION 
+        //SELECT DATE_Add(CURDATE(), INTERVAL - 46 DAY)
+        //) x 
+        //LEFT JOIN OTNode_History oth on oth.Success = 1 AND Date(oth.Timestamp) = x.Date AND (x.Date != CURDATE() OR oth.TimeStamp >= DATE_Add(NOW(), INTERVAL -1 HOUR))
+        //GROUP BY x.Date").ToArray();
 
-//                List<string> labels = new List<string>();
-//                List<int> onlineNodes = new List<int>();
-//                List<int> dataCreatorNodes = new List<int>();
-//                List<int> approvedNodes = new List<int>();
-//                foreach (var row in chartData.OrderBy(d => d.Date))
-//                {
-//                    labels.Add(row.Date.ToString("MMM dd yyyy"));
-//                    onlineNodes.Add(row.OnlineNodes);
-//                    dataCreatorNodes.Add(row.DataCreatorNodes);
-//                    approvedNodes.Add(row.ApprovedNodes);
-//                }
+        //                List<string> labels = new List<string>();
+        //                List<int> onlineNodes = new List<int>();
+        //                List<int> dataCreatorNodes = new List<int>();
+        //                List<int> approvedNodes = new List<int>();
+        //                foreach (var row in chartData.OrderBy(d => d.Date))
+        //                {
+        //                    labels.Add(row.Date.ToString("MMM dd yyyy"));
+        //                    onlineNodes.Add(row.OnlineNodes);
+        //                    dataCreatorNodes.Add(row.DataCreatorNodes);
+        //                    approvedNodes.Add(row.ApprovedNodes);
+        //                }
 
-//                chartModel.Labels = labels.ToArray();
-//                chartModel.OnlineNodes = onlineNodes.ToArray();
-//                chartModel.DataCreatorNodes = dataCreatorNodes.ToArray();
-//                chartModel.ApprovedNodes = approvedNodes.ToArray();
-//            }
+        //                chartModel.Labels = labels.ToArray();
+        //                chartModel.OnlineNodes = onlineNodes.ToArray();
+        //                chartModel.DataCreatorNodes = dataCreatorNodes.ToArray();
+        //                chartModel.ApprovedNodes = approvedNodes.ToArray();
+        //            }
 
-//            _cache.Set("OTHub_HomeNodesChartModel", chartModel, TimeSpan.FromMinutes(3));
+        //            _cache.Set("OTHub_HomeNodesChartModel", chartModel, TimeSpan.FromMinutes(3));
 
-//            return chartModel;
-//        }
+        //            return chartModel;
+        //        }
+
+        [HttpGet]
+        [Route("JobsChartDataSummaryV2")]
+        public JobChartDataV2SummaryModel JobsChartDataSummaryV2()
+        {
+            using (var connection =
+            new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var summary = connection.QuerySingle<JobChartDataV2SummaryModel>(@"SELECT
+    (SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) as OffersLast24Hours,
+    (SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL - 7 DAY)) as OffersLast7Days,
+        (SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL - 1 MONTH)) as OffersLastMonth,
+	(SELECT SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_Add(FinalizedTimeStamp, INTERVAL +HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END)
+	 FROM OTOffer) as OffersActive");
+
+                return summary;
+            }
+        }
+
+            [HttpGet]
+        [Route("JobsChartDataV2")]
+        public JobsChartDataV2 JobsChartDataV2()
+        {
+            var response = new JobsChartDataV2();
+
+            using (var connection =
+               new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var data = connection.Query<JobsChartDataV2Model>(@"SELECT 
+x.Date,
+DAYNAME(x.Date) Label,
+COUNT(O.OfferId) NewJobs,
+(
+	SELECT COUNT(OI.OfferId) FROM OTOffer OI 
+	WHERE 
+	OI.IsFinalized = 1
+	AND 
+	DATE(DATE_Add(OI.FinalizedTimeStamp, INTERVAL + OI.HoldingTimeInMinutes MINUTE)) = x.Date
+	)
+	as CompletedJobs
+FROM (
+SELECT CURDATE() Date
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 1 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 2 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 3 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 4 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 5 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 6 DAY)
+) x 
+LEFT JOIN OTOffer O on O.IsFinalized = 1 AND x.Date = DATE(O.FinalizedTimestamp)
+GROUP BY x.Date").ToArray();
+
+                response.Week = new int[][]
+                {
+                    data.Select(d => d.CompletedJobs).ToArray(),
+                    data.Select(d => d.NewJobs).ToArray()
+                };
+
+                response.WeekLabels = data.Select(d => d.Label).ToArray();
+
+                data = connection.Query<JobsChartDataV2Model>(@"SELECT 
+x.Date,
+MONTHNAME(x.Date) Label,
+COUNT(O.OfferId) NewJobs,
+(
+	SELECT COUNT(OI.OfferId) FROM OTOffer OI 
+	WHERE 
+	OI.IsFinalized = 1
+	AND 
+	YEAR(DATE_Add(OI.FinalizedTimeStamp, INTERVAL + OI.HoldingTimeInMinutes MINUTE)) = YEAR(x.Date)
+	AND
+	MONTH(DATE_Add(OI.FinalizedTimeStamp, INTERVAL + OI.HoldingTimeInMinutes MINUTE)) = MONTH(x.Date)
+	)
+	as CompletedJobs
+FROM (
+SELECT CURDATE() Date
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 1 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 2 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 3 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 4 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 5 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 6 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 7 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 8 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 9 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 10 MONTH)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 11 MONTH)
+) x 
+LEFT JOIN OTOffer O on O.IsFinalized = 1 AND YEAR(x.Date) = YEAR(DATE(O.FinalizedTimestamp)) AND MONTH(x.Date) = MONTH(DATE(O.FinalizedTimestamp))
+GROUP BY x.Date").ToArray();
+
+                response.Month = new int[][]
+                {
+                    data.Select(d => d.CompletedJobs).ToArray(),
+                    data.Select(d => d.NewJobs).ToArray()
+                };
+
+                response.MonthLabels = data.Select(d => d.Label).ToArray();
+
+                data = connection.Query<JobsChartDataV2Model>(@"SELECT 
+x.Date,
+YEAR(x.Date) Label,
+COUNT(O.OfferId) NewJobs,
+(
+	SELECT COUNT(OI.OfferId) FROM OTOffer OI 
+	WHERE 
+	OI.IsFinalized = 1
+	AND 
+	YEAR(DATE_Add(OI.FinalizedTimeStamp, INTERVAL + OI.HoldingTimeInMinutes MINUTE)) = YEAR(x.Date)
+	)
+	as CompletedJobs
+FROM (
+SELECT CURDATE() Date
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 1 YEAR)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 2 YEAR)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 3 YEAR)
+) x 
+LEFT JOIN OTOffer O on O.IsFinalized = 1 AND YEAR(x.Date) = YEAR(DATE(O.FinalizedTimestamp))
+GROUP BY x.Date").ToArray();
+
+                response.Year = new int[][]
+                {
+                    data.Select(d => d.CompletedJobs).ToArray(),
+                    data.Select(d => d.NewJobs).ToArray()
+                };
+
+                response.YearLabels = data.Select(d => d.Label).ToArray();
+
+                return response;
+            }
+        }
 
         [HttpGet]
         [Route("JobsChartData")]

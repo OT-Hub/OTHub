@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,8 +11,10 @@ using Nethereum.Hex.HexTypes;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using Newtonsoft.Json;
 using OTHub.BackendSync.Models.Contracts;
 using OTHub.BackendSync.Models.Database;
+using OTHub.BackendSync.Models.Generated;
 using OTHub.BackendSync.Tasks;
 using OTHub.Settings;
 
@@ -62,7 +65,9 @@ namespace OTHub.BackendSync
             //Console.WriteLine(5);
             settings.Validate();
             //Console.WriteLine(6);
-           
+
+            Logger.WriteLine(Source.BlockchainSync, "Infura url: " + settings.Infura.Url);
+
             DatabaseUpgradeTask task = new DatabaseUpgradeTask();
             task.Execute(Source.Startup).GetAwaiter().GetResult();
 
@@ -75,6 +80,7 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.NodeApi);
                 controller.Schedule(new LoadNodesViaAPITask(), TimeSpan.FromHours(16), true);
+                controller.Schedule(new OptimiseDatabaseTask(), TimeSpan.FromDays(1), false);
                 controller.Start();
             }));
 
@@ -108,8 +114,8 @@ namespace OTHub.BackendSync
                 
                 controller.Schedule(new RefreshAllHolderLitigationStatuses(), TimeSpan.FromHours(2), true);
 
-                controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(2), true);
-                controller.Schedule(new LoadIdentitiesTask(), TimeSpan.FromMinutes(2), true);
+                controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(4), true);
+                controller.Schedule(new LoadIdentitiesTask(), TimeSpan.FromMinutes(5), true);
 
                 controller.Start();
             }));

@@ -132,6 +132,7 @@ namespace OTHub.APIServer.Models
         public Int32 AvgHoldingTimeInMinutes { get; set; }
         public Int32 AvgTokenAmountPerHolder { get; set; }
         public DateTime CreatedTimestamp { get; set; }
+        public DateTime? LastJob { get; set; }
     }
 
     public class NodeDataHolderSummaryModel
@@ -146,6 +147,9 @@ namespace OTHub.APIServer.Models
         public Int32 TotalWonOffers { get; set; }
         public Int32 WonOffersLast7Days { get; set; }
         public Boolean Approved { get; set; }
+
+        public DateTime? LastSeenOnline { get; set; }
+        public DateTime? LastSeenOffline { get; set; }
     }
 
     public class HomeModel

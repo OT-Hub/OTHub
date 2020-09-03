@@ -62,6 +62,8 @@ namespace OTHub.BackendSync.Tasks
 
                         foreach (var batch in batches)
                         {
+                            await Task.Delay(50);
+
                             try
                             {
                                 await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent,

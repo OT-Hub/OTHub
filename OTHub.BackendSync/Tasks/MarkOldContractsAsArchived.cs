@@ -10,7 +10,7 @@ namespace OTHub.BackendSync.Tasks
 {
     public class MarkOldContractsAsArchived : TaskRun
     {
-        public MarkOldContractsAsArchived() : base("Mark Old Contracts as Archived")
+        public MarkOldContractsAsArchived() : base("Mark Old Smart Contracts as Archived")
         {
         }
 

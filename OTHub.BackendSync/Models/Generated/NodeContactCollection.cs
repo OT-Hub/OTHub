@@ -3,9 +3,9 @@
 namespace OTHub.BackendSync.Models.Generated
 {
 
-        public class NodeContactCollection
-        {
-            public Dictionary<string, NodeContact> Message { get; set; }
-        }
+        //public class NodeContactCollection
+        //{
+        //    public Dictionary<string, NodeContact> Message { get; set; }
+        //}
     
 }

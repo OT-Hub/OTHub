@@ -173,12 +173,16 @@ namespace OTHub.BackendSync.Tasks
                             if (date > now)
                                 break;
 
-                   
 
+                            DataTable rawData = new DataTable();
+                            rawData.Columns.Add("Timestamp", typeof(DateTime));
+                            rawData.Columns.Add("Price", typeof(decimal));
+
+                            RootObject obj = null;
 
                             for (int i = 0; i < 24; i++)
                             {
-                                Thread.Sleep(300);
+                                Thread.Sleep(250);
 
                                 Int32 unixStartTimestamp = (Int32)(date.AddHours(i).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                                 Int32 unixEndTimestamp = (Int32)(date.AddHours(i).AddHours(1).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
@@ -186,12 +190,9 @@ namespace OTHub.BackendSync.Tasks
                                 var data = wc.DownloadString(
                                     $"https://api.coingecko.com/api/v3/coins/origintrail/market_chart/range?vs_currency=eth&from={unixStartTimestamp}&to={unixEndTimestamp}");
 
-                                RootObject obj = JsonConvert.DeserializeObject<RootObject>(data);
+                                obj = JsonConvert.DeserializeObject<RootObject>(data);
 
-                                DataTable rawData = new DataTable();
-                                rawData.Columns.Add("Timestamp", typeof(DateTime));
-                                rawData.Columns.Add("Price", typeof(decimal));
-
+                      
                                 if (obj?.prices == null)
                                     continue;
 
@@ -211,27 +212,30 @@ namespace OTHub.BackendSync.Tasks
 
                                     break;
                                 }
+                            }
 
-                                if (rawData.Rows.Count == 0)
-                                    continue;
+                            if (rawData.Rows.Count == 0)
+                                continue;
 
 
-                                using (MySqlTransaction tran =
-                                    connection.BeginTransaction(System.Data.IsolationLevel.Serializable))
+                            using (MySqlTransaction tran =
+                                connection.BeginTransaction(System.Data.IsolationLevel.Serializable))
+                            {
+                                using (MySqlCommand cmd = new MySqlCommand())
                                 {
-                                    using (MySqlCommand cmd = new MySqlCommand())
+                                    cmd.Connection = connection;
+                                    cmd.Transaction = tran;
+                                    cmd.CommandText = "SELECT * FROM ticker_eth";
+                                    using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
                                     {
-                                        cmd.Connection = connection;
-                                        cmd.Transaction = tran;
-                                        cmd.CommandText = "SELECT * FROM ticker_eth";
-                                        using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
+                                        //da.UpdateBatchSize = 1000;
+                                        using (MySqlCommandBuilder cb = new MySqlCommandBuilder(da))
                                         {
-                                            //da.UpdateBatchSize = 1000;
-                                            using (MySqlCommandBuilder cb = new MySqlCommandBuilder(da))
-                                            {
-                                                da.Update(rawData);
-                                                tran.Commit();
+                                            da.Update(rawData);
+                                            tran.Commit();
 
+                                            if (obj != null)
+                                            {
                                                 var max = obj.prices.Max(v => UnixTimeStampToDateTime(Convert.ToDouble(v[0].ToString().Substring(0, 10))));
                                                 if (max > latestTimestamp)
                                                 {
