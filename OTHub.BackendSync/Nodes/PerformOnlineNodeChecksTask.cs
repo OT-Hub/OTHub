@@ -14,7 +14,7 @@ using OTHub.Settings;
 
 namespace OTHub.BackendSync.Tasks
 {
-    public class LoadPeercacheTask : TaskRun
+    public class PerformOnlineNodeChecksTask : TaskRun
     {
         private static bool _checkAllOnlineOnStartup = true;
 
@@ -432,7 +432,7 @@ namespace OTHub.BackendSync.Tasks
             return null;
         }
 
-        public LoadPeercacheTask() : base("Perform Node Online Checks")
+        public PerformOnlineNodeChecksTask() : base("Perform Node Online Checks")
         {
         }
     }

@@ -15,7 +15,7 @@ using OTHub.Settings;
 
 namespace OTHub.BackendSync.Tasks
 {
-    public class LoadIdentitiesTask : TaskRun
+    public class LoadProfileBalancesTask : TaskRun
     {
         public class OfferGroupHolder
         {
@@ -344,7 +344,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity)").ToArray();
             return allIdentitiesCreated;
         }
 
-        public LoadIdentitiesTask() : base("Load Profile Balances")
+        public LoadProfileBalancesTask() : base("Load Profile Balances")
         {
         }
     }

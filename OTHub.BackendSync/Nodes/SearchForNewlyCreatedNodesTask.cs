@@ -15,9 +15,9 @@ using OTHub.Settings;
 
 namespace OTHub.BackendSync.Tasks
 {
-    public class LoadNodesViaAPITask : TaskRun
+    public class SearchForNewlyCreatedNodesTask : TaskRun
     {
-        public LoadNodesViaAPITask() : base("Search for Newly Created Nodes on the ODN")
+        public SearchForNewlyCreatedNodesTask() : base("Search for Newly Created Nodes on the ODN")
         {
         }
 

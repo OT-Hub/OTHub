@@ -79,7 +79,7 @@ namespace OTHub.BackendSync
             tasks.Add(Task.Run(() =>
             {
                 TaskController controller = new TaskController(Source.NodeApi);
-                controller.Schedule(new LoadNodesViaAPITask(), TimeSpan.FromHours(16), true);
+                controller.Schedule(new SearchForNewlyCreatedNodesTask(), TimeSpan.FromHours(16), true);
                 controller.Schedule(new OptimiseDatabaseTask(), TimeSpan.FromDays(1), false);
                 controller.Start();
             }));
@@ -98,7 +98,7 @@ namespace OTHub.BackendSync
 
                     int upTimeCheckInMinutes = 55;
 
-                    controller.Schedule(new LoadPeercacheTask(), TimeSpan.FromMinutes(upTimeCheckInMinutes), true);
+                    controller.Schedule(new PerformOnlineNodeChecksTask(), TimeSpan.FromMinutes(upTimeCheckInMinutes), true);
 
                     controller.Schedule(new MarkOldContractsAsArchived(), TimeSpan.FromDays(1),
                         false); //TODO needs to do litigation contracts
@@ -115,7 +115,7 @@ namespace OTHub.BackendSync
                 controller.Schedule(new RefreshAllHolderLitigationStatuses(), TimeSpan.FromHours(2), true);
 
                 controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(4), true);
-                controller.Schedule(new LoadIdentitiesTask(), TimeSpan.FromMinutes(5), true);
+                controller.Schedule(new LoadProfileBalancesTask(), TimeSpan.FromMinutes(5), true);
 
                 controller.Start();
             }));
