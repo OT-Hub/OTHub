@@ -12,7 +12,7 @@
                     <nb-card-header>Job</nb-card-header>
                     <nb-list>
                         <nb-list-item class="dont-break-out">
-                            Offer Id: {{OfferModel?.OfferId}} <app-copyclipboardicon [textToCopy]="OfferModel?.OfferId"
+                            Offer Id: {{OfferModel?.OfferId}}&nbsp;<app-copyclipboardicon [textToCopy]="OfferModel?.OfferId"
                                 style="vertical-align:middle">
                             </app-copyclipboardicon>
                         </nb-list-item>
@@ -39,7 +39,7 @@
                     <nb-card-header>Data</nb-card-header>
                     <nb-list>
                         <nb-list-item class="dont-break-out">
-                            Dataset Id: {{OfferModel?.DataSetId}} <app-copyclipboardicon
+                            Dataset Id: {{OfferModel?.DataSetId}}&nbsp;<app-copyclipboardicon
                             [textToCopy]="OfferModel?.DataSetId" style="vertical-align:middle">
                         </app-copyclipboardicon>
                         </nb-list-item>
@@ -56,8 +56,9 @@
                         </nb-list-item>
                         <nb-list-item *ngIf="OfferModel?.EstimatedLambda !== null">
                             Estimated Price Factor: {{toFixed(OfferModel?.EstimatedLambda, 0)}}&nbsp;<i
-                            class="fas fa-info-circle"
-                            [title]="'This is only an estimate. The closest matching price factor found by OT Hub was ' + OfferModel?.EstimatedLambda + '.'"></i>
+                            class="fas fa-info-circle" 
+                            [nbPopover]="'This is only an estimate. The closest matching price factor found by OT Hub was ' + OfferModel?.EstimatedLambda + '.'"
+                            nbPopoverTrigger="hover"></i>
                         </nb-list-item>
                         <nb-list-item>
                             Time Between Litigation Checks: {{OfferModel?.LitigationIntervalInMinutes}}
@@ -185,7 +186,7 @@
                     <span style="margin: 10px 20px;">Job Creation</span>
                     <nb-list>
                         <nb-list-item class="dont-break-out">
-                            Transaction Hash: {{OfferModel?.CreatedTransactionHash}} <app-copyclipboardicon
+                            Transaction Hash: {{OfferModel?.CreatedTransactionHash}}&nbsp;<app-copyclipboardicon
                             [textToCopy]="OfferModel?.CreatedTransactionHash" style="vertical-align:middle">
                         </app-copyclipboardicon>
                         </nb-list-item>
@@ -202,7 +203,7 @@
                     <span style="margin: 10px 20px;" *ngIf="OfferModel?.FinalizedTransactionHash !== null">Job Finalized</span>
                     <nb-list *ngIf="OfferModel?.FinalizedTransactionHash !== null">
                         <nb-list-item class="dont-break-out">
-                            Transaction Hash: {{OfferModel?.FinalizedTransactionHash}}
+                            Transaction Hash: {{OfferModel?.FinalizedTransactionHash}}&nbsp;
                             <app-copyclipboardicon [textToCopy]="OfferModel?.FinalizedTransactionHash"
                                 style="vertical-align:middle"></app-copyclipboardicon>
                         </nb-list-item>

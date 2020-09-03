@@ -2,13 +2,14 @@ import { FailedLoadingPageComponent } from './ui/failed-loading-page/failed-load
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CopyclipboardiconComponent } from './ui/copyclipboardicon/copyclipboardicon.component';
-import { NbIconModule } from '@nebular/theme';
+import { NbIconModule, NbPopoverModule } from '@nebular/theme';
 
 
 
 @NgModule({
   imports: [
-    NbIconModule
+    NbIconModule,
+    NbPopoverModule
   ],
   declarations: [
   CopyclipboardiconComponent, FailedLoadingPageComponent
