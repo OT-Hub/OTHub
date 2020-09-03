@@ -4,7 +4,7 @@ import { MomentModule } from 'ngx-moment';
 import { SharedModule } from '../shared.module';
 import { SystemRoutingModule } from './system-routing.module';
 import { SystemStatusComponent } from './status/systemstatus.component';
-import { NbCardModule, NbListModule } from '@nebular/theme';
+import { NbCardModule, NbListModule, NbBadgeModule } from '@nebular/theme';
 @NgModule({
   declarations: [SystemStatusComponent ],
   imports: [
@@ -13,7 +13,8 @@ import { NbCardModule, NbListModule } from '@nebular/theme';
     MomentModule,
     SharedModule,
     NbCardModule,
-    NbListModule
+    NbListModule,
+    NbBadgeModule
   ]
 })
 export class SystemModule { }

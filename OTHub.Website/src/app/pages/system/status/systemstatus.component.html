@@ -8,8 +8,16 @@
 
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <nb-card>
-                    <nb-card-header><h2>System Status</h2></nb-card-header>
-                    <nb-card-body>
+                    <nb-card-header>System Status</nb-card-header>
+                    <nb-list>
+                        <nb-list-item *ngFor="let data of Data?.Items" style="position: relative;">
+                            {{data.Name}}
+                            <nb-badge style="font-size: 12px;padding:6px;margin-right:10px;" text="Last successfully run at {{data.LastSuccessDateTime| amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}" status="{{data.LastSuccessDateTime != data.LastTriedDateTime && data.LastTriedDateTime != null ? 'danger' : 'success'}}"
+                             position="middle right"></nb-badge>
+
+                        </nb-list-item>
+                    </nb-list>
+                    <!-- <nb-card-body>
                         <table>
                             <thead>
                                 <tr>
@@ -36,7 +44,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                     </nb-card-body>
+                     </nb-card-body> -->
                 </nb-card>
             </div>
 
