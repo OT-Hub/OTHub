@@ -19,6 +19,7 @@ import {
   NbSidebarModule,
   NbToastrModule,
   NbWindowModule,
+  NbThemeService,
 } from '@nebular/theme';
 
 @NgModule({
@@ -43,4 +44,11 @@ import {
   bootstrap: [AppComponent],
 })
 export class AppModule {
+  constructor(private themeService: NbThemeService) {
+
+    this.themeService.onThemeChange()
+          .subscribe((theme: any) => {
+            localStorage.setItem('theme', theme.name);
+          });
+  }
 }
