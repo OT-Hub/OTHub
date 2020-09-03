@@ -6,7 +6,7 @@
         <div class="alert alert-warning" *ngIf="NodeModel?.Version === 0">
             <strong>Warning!</strong> This old identity is only available for viewing historical data.
         </div>
-        <div class="alert alert-warning" *ngIf="NodeModel != null && NodeModel?.Offers.length === 0">
+        <div class="alert alert-warning" *ngIf="NodeModel != null && NodeModel?.Offers?.length === 0">
             <strong>Warning!</strong> This node has not created any offers on the network.
             <br>
             Did you mean to go to the <a routerLink="/nodes/dataholders/{{NodeModel?.Identity}}" onClick="return false;">Data Holder</a> page?
@@ -17,58 +17,51 @@
 
 
                 <nb-card>
-                    <nb-card-header>             <img [src]="identityIconUrl" style="
-                        position: absolute;
-                        right: 0;
-                        z-index: 9;
-                        margin-right: 20px;
-                    " />
-                    Data Creator</nb-card-header>
-                    <nb-card-body>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item" *ngIf="myNodeService.GetName(NodeModel?.Identity, true)">
-                                Display Name: {{myNodeService.GetName(NodeModel?.Identity, true)}}
-                            </li>
-                            <li class="list-group-item">
-                                Identity: {{NodeModel?.Identity}} <app-copyclipboardicon
-                                    [textToCopy]="NodeModel?.Identity" style="vertical-align:middle">
-                                </app-copyclipboardicon>
-                            </li>
-                            <li class="list-group-item" *ngIf="NodeModel?.OldIdentity != null">
-                                Old Identity: <a
-                                    title="You may find more historical data for this node on this identity."
-                                    routerLink="/nodes/datacreators/{{NodeModel?.OldIdentity}}">{{NodeModel?.OldIdentity}}</a>
-                            </li>
-                            <li class="list-group-item" *ngIf="NodeModel?.NewIdentity != null">
-                                New Identity: <a
-                                    title="You may find more historical data for this node on this identity."
-                                    routerLink="/nodes/datacreators/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>
-                            </li>
-                            <li class="list-group-item"
-                                *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'">
-                                Node Id: {{NodeModel?.NodeId}} <app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
-                                    style="vertical-align:middle">
-                                </app-copyclipboardicon>
-                            </li>
-                            <li class="list-group-item" *ngIf="NodeModel?.ManagementWallet != null">
-                                Management Wallet: {{NodeModel?.ManagementWallet}} <app-copyclipboardicon
-                                    [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">
-                                </app-copyclipboardicon>
-                                <a *ngIf="NodeModel != null" class="themeLink"
-                                    routerLink="/nodes/dataholders/managementwallet/{{NodeModel?.ManagementWallet}}"
-                                    style="vertical-align: middle;margin-left:5px;"
-                                    title="Find Nodes with this Management Wallet">
-                                    <i class="fas fa-search"></i>
-                                </a>
-                            </li>
-                            <li class="list-group-item">
-                                Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
-                            </li>
-                            <li class="list-group-item">
-                                Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
-                            </li>
-                        </ul>
-                     </nb-card-body>
+                    <nb-card-header> <img [src]="identityIconUrl" style="
+                        width:24px;height:24px;margin-right:5px" />
+                         Data Creator</nb-card-header>
+                    <nb-list>
+                        <nb-list-item *ngIf="myNodeService.GetName(NodeModel?.Identity, true)">
+                            Display Name: {{myNodeService.GetName(NodeModel?.Identity, true)}}
+                        </nb-list-item>
+                        <nb-list-item>
+                            Identity: {{NodeModel?.Identity}}&nbsp;<app-copyclipboardicon
+                            [textToCopy]="NodeModel?.Identity" style="vertical-align:middle">
+                        </app-copyclipboardicon>
+                        </nb-list-item>
+                        <nb-list-item *ngIf="NodeModel?.OldIdentity != null">
+                            Old Identity: <a
+                            title="You may find more historical data for this node on this identity."
+                            routerLink="/nodes/datacreators/{{NodeModel?.OldIdentity}}">{{NodeModel?.OldIdentity}}</a>
+                        </nb-list-item>
+                        <nb-list-item *ngIf="NodeModel?.NewIdentity != null">
+                            New Identity: <a
+                            title="You may find more historical data for this node on this identity."
+                            routerLink="/nodes/datacreators/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>
+                        </nb-list-item>
+                        <nb-list-item *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'"> 
+                            Node Id: {{NodeModel?.NodeId}}&nbsp;<app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
+                            style="vertical-align:middle">
+                        </app-copyclipboardicon>
+                        </nb-list-item>
+                        <nb-list-item *ngIf="NodeModel?.ManagementWallet != null">
+                            Management Wallet: {{NodeModel?.ManagementWallet}}&nbsp;<app-copyclipboardicon
+                            [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">
+                        </app-copyclipboardicon>
+                        <a *ngIf="NodeModel != null" class="themeLink"
+                            routerLink="/nodes/dataholders/managementwallet/{{NodeModel?.ManagementWallet}}"
+                            style="vertical-align: middle;margin-left:5px;"
+                            title="Find Nodes with this Management Wallet">
+                            <i class="fas fa-search"></i>
+                        </a>
+                        </nb-list-item>
+                        <nb-list-item>
+                            Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
+                        </nb-list-item>
+                        <nb-list-item>
+                            Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
+                        </nb-list-item>
+                        </nb-list>
                 </nb-card>
 
             </div>
@@ -104,7 +97,10 @@
                         </ul> -->
                     </nb-card-header>
                     <nb-card-body>
-                        <div class="table-responsive">
+                        <nb-alert status="info">
+                            Check back later!
+                          </nb-alert>
+                        <!-- <div class="table-responsive">
                             <table class="table table-bordered table-striped table-hover js-jobs dataTable"
                                 data-order='[[3, "desc"]]'>
                                 <thead>
@@ -137,7 +133,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
+                        </div> -->
                      </nb-card-body>
                 </nb-card>
 
@@ -175,7 +171,10 @@
                         </ul> -->
                     </nb-card-header>
                     <nb-card-body>
-                        <div class="table-responsive">
+                        <nb-alert status="info">
+                            Check back later!
+                          </nb-alert>
+                        <!-- <div class="table-responsive">
                             <table class="table table-bordered table-striped table-hover js-litigations-table dataTable"
                                 data-order='[[ 3, "desc" ]]'>
                                 <thead>
@@ -214,7 +213,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
+                        </div> -->
                      </nb-card-body>
                 </nb-card>
 
@@ -252,7 +251,10 @@
                         </ul> -->
                     </nb-card-header>
                     <nb-card-body>
-                        <div class="table-responsive">
+                        <nb-alert status="info">
+                            Check back later!
+                          </nb-alert>
+                        <!-- <div class="table-responsive">
                             <table class="table table-bordered table-striped table-hover js-profile-table dataTable"
                                 data-order='[[ 3, "desc" ]]'>
                                 <thead>
@@ -284,7 +286,7 @@
                                     </tr>
                                 </tbody>
                             </table>
-                        </div>
+                        </div> -->
                      </nb-card-body>
                 </nb-card>
 
@@ -293,21 +295,30 @@
 
                 <nb-card>
                     <nb-card-header>Blockchain</nb-card-header>
-                    <nb-card-body>
-                        Profile Creation
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item">
-                                Transaction Hash: {{NodeModel?.CreateTransactionHash}} <app-copyclipboardicon
-                                    [textToCopy]="NodeModel?.CreateTransactionHash" style="vertical-align:middle">
-                                </app-copyclipboardicon>
-                            </li>
-                            <li class="list-group-item">
+                    <span style="margin: 10px 20px;">Profile Creation</span>
+                    <nb-list>
+                        <nb-list-item class="dont-break-out">
+                            Transaction Hash: {{NodeModel?.CreateTransactionHash}}&nbsp;<app-copyclipboardicon
+                            [textToCopy]="NodeModel?.CreateTransactionHash" style="vertical-align:middle">
+                        </app-copyclipboardicon>
+                            </nb-list-item>
+                            <nb-list-item>
                                 Transaction Fee:
                                 {{NodeModel?.CreateGasUsed * (NodeModel?.CreateGasPrice / 1000000000000000000)| number:'1.0-8'}}
                                 ETH ({{NodeModel?.CreateGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
+                            </nb-list-item>
+                            </nb-list>
+                    <!-- <nb-card-body>
+                        Profile Creation
+                        <ul class="list-group list-group-flush">
+                            <li class="list-group-item">
+         
+                            </li>
+                            <li class="list-group-item">
+
                             </li>
                         </ul>
-                     </nb-card-body>
+                     </nb-card-body> -->
                 </nb-card>
             </div>
         </div>

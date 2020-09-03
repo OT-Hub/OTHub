@@ -77,7 +77,7 @@ export class MyNodeService {
 
     GetName(identity: string, returnAsEmpty: boolean): string {
 
-        identity = identity.trim();
+        identity = identity?.trim();
 
         if (identity) {
             const item = this.items[identity];
