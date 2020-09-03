@@ -13,7 +13,7 @@ import { SharedModule } from '../shared.module';
 import { FindbymanagementwalletComponent } from './findbymanagementwallet/findbymanagementwallet.component';
 import { ManualPayoutPageComponent } from './manual-payout-page/manual-payout-page.component';
 import { SafePipe } from './safe.pipe';
-import { NbCardModule, NbButtonModule, NbSelectModule, NbStepperModule, NbPopoverModule, NbIconModule } from '@nebular/theme';
+import { NbCardModule, NbButtonModule, NbSelectModule, NbStepperModule, NbPopoverModule, NbIconModule, NbListModule, NbBadgeModule } from '@nebular/theme';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { JobsComponent } from './dataholder/jobs/jobs.component';
 import { LitigationsComponent } from './dataholder/litigations/litigations.component';
@@ -39,7 +39,9 @@ import { OnlineIndicatorRenderComponent } from './dataholders/onlineindicator.co
     NbSelectModule,
     NbButtonModule,
     NbStepperModule,
-    NbPopoverModule
+    NbPopoverModule,
+    NbListModule ,
+    NbBadgeModule
   ]
 })
 export class NodesModule { }
