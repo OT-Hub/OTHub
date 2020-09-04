@@ -42,6 +42,9 @@ namespace OTHub.Settings.Abis
                 case ContractTypeEnum.ERC725:
                     path += "erc725.json";
                     break;
+                case ContractTypeEnum.Reading:
+                    path += "reading.json";
+                    break;
                 default:
                     throw new Exception("Not supported: " + ContractTypeEnum);
             }

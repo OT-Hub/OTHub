@@ -1,10 +1,14 @@
-﻿namespace OTHub.Settings.Abis
+﻿using System;
+
+namespace OTHub.Settings.Abis
 {
     public enum ContractTypeEnum
     {
+        [Obsolete]
         Approval,
         Profile,
-        ReadingStorage, //unused
+        [Obsolete]
+        ReadingStorage,
         Reading, //unused
         Token,
         HoldingStorage,
