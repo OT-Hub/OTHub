@@ -3,7 +3,7 @@ using System.Diagnostics;
 using Dapper;
 using MySql.Data.MySqlClient;
 
-namespace OTHub.BackendSync.Models.Database
+namespace OTHub.BackendSync.Database.Models
 {
     [DebuggerDisplay("{Hostname} - {Port}")]
     public class IpInfo

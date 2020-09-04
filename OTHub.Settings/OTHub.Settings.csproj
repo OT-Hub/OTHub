@@ -6,11 +6,40 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Abis\approval.json" />
+    <None Remove="Abis\erc725.json" />
+    <None Remove="Abis\holding-storage.json" />
+    <None Remove="Abis\holding.json" />
+    <None Remove="Abis\hub.json" />
+    <None Remove="Abis\litigation-storage.json" />
+    <None Remove="Abis\litigation.json" />
+    <None Remove="Abis\profile-storage.json" />
+    <None Remove="Abis\profile.json" />
+    <None Remove="Abis\reading.json" />
+    <None Remove="Abis\replacement.json" />
+    <None Remove="Abis\token.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="2.2.4" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Abis\approval.json" />
+    <EmbeddedResource Include="Abis\erc725.json" />
+    <EmbeddedResource Include="Abis\holding-storage.json" />
+    <EmbeddedResource Include="Abis\holding.json" />
+    <EmbeddedResource Include="Abis\hub.json" />
+    <EmbeddedResource Include="Abis\litigation-storage.json" />
+    <EmbeddedResource Include="Abis\litigation.json" />
+    <EmbeddedResource Include="Abis\profile-storage.json" />
+    <EmbeddedResource Include="Abis\profile.json" />
+    <EmbeddedResource Include="Abis\reading.json" />
+    <EmbeddedResource Include="Abis\replacement.json" />
+    <EmbeddedResource Include="Abis\token.json" />
   </ItemGroup>
 </Project>

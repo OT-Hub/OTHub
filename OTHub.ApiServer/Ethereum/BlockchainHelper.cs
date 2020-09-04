@@ -12,6 +12,8 @@ using OTHub.APIServer.Sql;
 using OTHub.APIServer.Sql.Models.Contracts;
 using OTHub.APIServer.Sql.Models.Nodes;
 using OTHub.Settings;
+using OTHub.Settings.Abis;
+using OTHub.Settings.Helpers;
 
 namespace OTHub.APIServer.Ethereum
 {
@@ -142,7 +144,7 @@ where Type = 9 AND Address = @litigationStorageAddress", new
                     BigInteger litigationTimestampInt =
                         await getLitigationTimestampFunction.CallAsync<BigInteger>(latestBlockParam, offerIdArray,
                             identity);
-                    DateTime litigationTimestamp = UnixTimeStampToDateTime((UInt64) litigationTimestampInt);
+                    DateTime litigationTimestamp = TimestampHelper.UnixTimeStampToDateTime((UInt64) litigationTimestampInt);
 
                     Function getOfferLitigationIntervalInMinutesFunction =
                         holdingStorageContract.GetFunction("getOfferLitigationIntervalInMinutes");
@@ -203,14 +205,6 @@ where Type = 9 AND Address = @litigationStorageAddress", new
                     CanTryPayout = true
                 };
             }
-        }
-
-        private static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
-        {
-            // Unix timestamp is seconds past epoch
-            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
-            return dtDateTime;
         }
     }
 }

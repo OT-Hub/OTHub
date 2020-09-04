@@ -15,22 +15,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Remove="Abis\approval.json" />
-    <Content Remove="Abis\erc725.json" />
-    <Content Remove="Abis\holding-storage.json" />
-    <Content Remove="Abis\holding.json" />
-    <Content Remove="Abis\hub.json" />
-    <Content Remove="Abis\importfile.json" />
-    <Content Remove="Abis\litigation-storage.json" />
-    <Content Remove="Abis\litigation.json" />
-    <Content Remove="Abis\profile-storage.json" />
-    <Content Remove="Abis\profile.json" />
-    <Content Remove="Abis\reading.json" />
-    <Content Remove="Abis\replacement.json" />
-    <Content Remove="Abis\token.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Folder Include="wwwroot\" />
   </ItemGroup>
 
@@ -55,22 +39,6 @@
 
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Abis\approval.json" />
-    <EmbeddedResource Include="Abis\erc725.json" />
-    <EmbeddedResource Include="Abis\holding-storage.json" />
-    <EmbeddedResource Include="Abis\holding.json" />
-    <EmbeddedResource Include="Abis\hub.json" />
-    <EmbeddedResource Include="Abis\importfile.json" />
-    <EmbeddedResource Include="Abis\litigation-storage.json" />
-    <EmbeddedResource Include="Abis\litigation.json" />
-    <EmbeddedResource Include="Abis\profile-storage.json" />
-    <EmbeddedResource Include="Abis\profile.json" />
-    <EmbeddedResource Include="Abis\reading.json" />
-    <EmbeddedResource Include="Abis\replacement.json" />
-    <EmbeddedResource Include="Abis\token.json" />
   </ItemGroup>
 
   <ItemGroup>

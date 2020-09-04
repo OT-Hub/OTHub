@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OTHub.BackendSync.Models.Json
+namespace OTHub.BackendSync.Markets.Models
 {
     public class MarketValueByDayJson
     {

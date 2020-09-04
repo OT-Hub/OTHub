@@ -1,0 +1,113 @@
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using MySql.Data.MySqlClient;
+using Nethereum.Hex.HexTypes;
+using Nethereum.JsonRpc.Client;
+using Nethereum.RPC;
+using Nethereum.Web3;
+using OTHub.BackendSync.Database.Models;
+using OTHub.BackendSync.Logging;
+using OTHub.Settings;
+
+namespace OTHub.BackendSync
+{
+    public abstract class TaskRun
+    {
+        private readonly List<TaskRun> _childTasks = new List<TaskRun>();
+
+        private HexBigInteger _latestBlockNumber;
+        public static Web3 cl { get; } 
+        public static EthApiService eth { get; }
+
+        public static uint SyncBlockNumber { get; }
+        public static uint FromBlockNumber { get; }
+        
+        
+        
+
+        //public static string[] OldHubAddressesSinceVersion3 { get; } = new string[0];
+
+        static TaskRun()
+        {
+
+            SyncBlockNumber = OTHubSettings.Instance.Blockchain.StartSyncFromBlockNumber;
+            FromBlockNumber = OTHubSettings.Instance.Blockchain.StartSyncFromBlockNumber;
+
+            cl = new Web3(OTHubSettings.Instance.Infura.Url);
+            eth = new EthApiService(cl.Client);
+
+            RequestInterceptor r = new LogRequestInterceptor();
+            cl.Client.OverridingRequestInterceptor = r;
+        }
+
+        public HexBigInteger LatestBlockNumber
+        {
+            get => _latestBlockNumber;
+            protected set
+            {
+                _latestBlockNumber = value;
+
+                foreach (var childTask in _childTasks)
+                {
+                    childTask.LatestBlockNumber = value;
+                }
+            }
+        }
+
+        protected void Add(TaskRun task)
+        {
+            _childTasks.Add(task);
+        }
+
+        protected async Task RunChildren(Source source)
+        {
+            var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+            LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - 1);
+
+            foreach (var childTask in _childTasks)
+            {
+                Logger.WriteLine(Source.BlockchainSync, "Starting " + childTask.Name);
+                try
+                {
+                    await childTask.Execute(source);
+                }
+                catch
+                {
+                    try
+                    {
+                        using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                        {
+                            new SystemStatus(childTask.Name).InsertOrUpdate(connection, false);
+                        }
+                    }
+                    catch
+                    {
+
+                    }
+
+                    throw;
+                }
+
+                try
+                {
+                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                    {
+                        new SystemStatus(childTask.Name).InsertOrUpdate(connection, true);
+                    }
+                }
+                catch
+                {
+
+                }
+            }
+        }
+
+        public string Name { get; }
+
+        protected TaskRun(string name)
+        {
+            Name = name;
+        }
+        public abstract Task Execute(Source source);
+    }
+}

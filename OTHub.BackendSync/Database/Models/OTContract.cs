@@ -2,9 +2,8 @@
 using System.Linq;
 using Dapper;
 using MySql.Data.MySqlClient;
-using OTHub.BackendSync.Tasks;
 
-namespace OTHub.BackendSync.Models.Database
+namespace OTHub.BackendSync.Database.Models
 {
     public class OTContract
     {

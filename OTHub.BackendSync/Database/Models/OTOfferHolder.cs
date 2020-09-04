@@ -3,7 +3,7 @@ using Dapper;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
 
-namespace OTHub.BackendSync.Models.Database
+namespace OTHub.BackendSync.Database.Models
 {
     public class OTOfferHolder
     {

@@ -1,81 +1,52 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
-using Nethereum.Contracts;
-using Nethereum.Hex.HexTypes;
-using Nethereum.RPC;
-using Nethereum.RPC.Eth.DTOs;
-using Nethereum.Web3;
-using Newtonsoft.Json;
-using OTHub.BackendSync.Models.Contracts;
-using OTHub.BackendSync.Models.Database;
-using OTHub.BackendSync.Models.Generated;
-using OTHub.BackendSync.Tasks;
+using OTHub.BackendSync.Ethereum.Tasks;
+using OTHub.BackendSync.Logging;
+using OTHub.BackendSync.Markets.Tasks;
+using OTHub.BackendSync.Nodes.Tasks;
+using OTHub.BackendSync.System.Tasks;
 using OTHub.Settings;
 
 namespace OTHub.BackendSync
 {
     partial class Program
     {
-        private static readonly object _getEthBlockLock = new object();
-        public static async Task<EthBlock> GetEthBlock(MySqlConnection connection, string blockHash, HexBigInteger blockNumber, Web3 cl)
-        {
-            var block = EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value);
-
-            if (block == null)
-            {
-                lock (_getEthBlockLock)
-                {
-                    block = EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value);
-
-                    if (block == null)
-                    {
-                        var apiBlock = cl.Eth.Blocks.GetBlockWithTransactionsHashesByNumber.SendRequestAsync(blockNumber).GetAwaiter().GetResult();
-
-                        block = new EthBlock
-                        {
-                            BlockHash = blockHash,
-                            BlockNumber = (UInt64)blockNumber.Value,
-                            Timestamp = UnixTimeStampToDateTime((double)apiBlock.Timestamp.Value)
-                        };
-
-                        EthBlock.Insert(connection, block);
-                    }
-                }
-            }
-
-            return block;
-        }
-
         static void Main(string[] args)
         {
-            //Console.WriteLine(1);
             ConfigurationBuilder builder = new ConfigurationBuilder();
-            //Console.WriteLine(2);
             builder.AddUserSecrets<OTHubSettings>();
-            //Console.WriteLine(3);
+           
             IConfigurationRoot configuration = builder.Build();
-            //Console.WriteLine(4);
+         
             var settings = configuration.Get<OTHubSettings>();
-            //Console.WriteLine(5);
             settings.Validate();
-            //Console.WriteLine(6);
 
             Logger.WriteLine(Source.BlockchainSync, "Infura url: " + settings.Infura.Url);
 
+            //Add any new tables, indexes, columns etc to the database. This can only be used to upgrade somewhat recent databases.
             DatabaseUpgradeTask task = new DatabaseUpgradeTask();
             task.Execute(Source.Startup).GetAwaiter().GetResult();
 
+            //Get all the latest ethereum smart contracts before we even start up
             GetLatestContractsTask contracts = new GetLatestContractsTask();
             contracts.Execute(Source.Startup).GetAwaiter().GetResult();
 
             List<Task> tasks = new List<Task>();
 
+            //Tasks controllers below allow grouping of background tasks which run on set timers.
+            //Only 1 task in a task controller can run at a time. If multiple are scheduled at the same time
+            //it will wait until the previous task has finished before executing the next.
+
+            //Currently we have 3 task controllers for the following areas:
+            //1. OriginTrail Node API usage (Very low on cpu usage)
+            //2. Node online checks and misc tasks (Low to medium on cpu usage)
+            //3. Blockchain sync (medium to high on cpu usage)
+
+            //Sources don't have much impact when configuring a task controller. They are only just for logging purposes.
+
+            //Task controller 1
             tasks.Add(Task.Run(() =>
             {
                 TaskController controller = new TaskController(Source.NodeApi);
@@ -84,6 +55,7 @@ namespace OTHub.BackendSync
                 controller.Start();
             }));
 
+            //Task controller 2
             tasks.Add(Task.Run(() =>
                 {
                     TaskController controller = new TaskController(Source.NodeUptimeAndMisc);
@@ -108,11 +80,12 @@ namespace OTHub.BackendSync
                 }));
 
 
+            //Task controller 3
             tasks.Add(Task.Run(() =>
             {
                 TaskController controller = new TaskController(Source.BlockchainSync);
                 
-                controller.Schedule(new RefreshAllHolderLitigationStatuses(), TimeSpan.FromHours(2), true);
+                controller.Schedule(new RefreshAllHolderLitigationStatusesTask(), TimeSpan.FromHours(2), true);
 
                 controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(4), true);
                 controller.Schedule(new LoadProfileBalancesTask(), TimeSpan.FromMinutes(5), true);
@@ -120,40 +93,8 @@ namespace OTHub.BackendSync
                 controller.Start();
             }));
 
+            //This will never return
             Task.WaitAll(tasks.ToArray());
         }
-
-
-
-
-
-
-        public static DateTime UnixTimeStampToDateTime(double unixTimeStamp)
-        {
-            // Unix timestamp is seconds past epoch
-            System.DateTime dtDateTime = new DateTime(1970, 1, 1, 0, 0, 0, 0, System.DateTimeKind.Utc);
-            dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
-            return dtDateTime;
-        }
-
-
-    }
-
-
-    public enum ContractType
-    {
-        Approval,
-        Profile,
-        ReadingStorage, //unused
-        Reading, //unused
-        Token,
-        HoldingStorage,
-        Holding,
-        ProfileStorage,
-        Litigation,
-        LitigationStorage,
-        Replacement,
-        ERC725,
-        Hub
     }
 }

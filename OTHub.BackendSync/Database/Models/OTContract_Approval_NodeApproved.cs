@@ -2,7 +2,7 @@
 using Dapper;
 using MySql.Data.MySqlClient;
 
-namespace OTHub.BackendSync.Models.Database
+namespace OTHub.BackendSync.Database.Models
 {
     public class OTContract_Approval_NodeApproved
     {

@@ -7,36 +7,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Abis\approval.json" />
-    <None Remove="Abis\erc725.json" />
-    <None Remove="Abis\holding-storage.json" />
-    <None Remove="Abis\holding.json" />
-    <None Remove="Abis\hub.json" />
-    <None Remove="Abis\litigation-storage.json" />
-    <None Remove="Abis\litigation.json" />
-    <None Remove="Abis\profile-storage.json" />
-    <None Remove="Abis\profile.json" />
-    <None Remove="Abis\reading.json" />
-    <None Remove="Abis\replacement.json" />
-    <None Remove="Abis\token.json" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Include="Abis\approval.json" />
-    <EmbeddedResource Include="Abis\erc725.json" />
-    <EmbeddedResource Include="Abis\holding-storage.json" />
-    <EmbeddedResource Include="Abis\holding.json" />
-    <EmbeddedResource Include="Abis\hub.json" />
-    <EmbeddedResource Include="Abis\litigation-storage.json" />
-    <EmbeddedResource Include="Abis\litigation.json" />
-    <EmbeddedResource Include="Abis\profile-storage.json" />
-    <EmbeddedResource Include="Abis\profile.json" />
-    <EmbeddedResource Include="Abis\reading.json" />
-    <EmbeddedResource Include="Abis\replacement.json" />
-    <EmbeddedResource Include="Abis\token.json" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="CoinMarketCap-API" Version="2.0.0" />
     <PackageReference Include="CoinpaprikaAPI" Version="1.2.0" />
     <PackageReference Include="Dapper" Version="1.60.1" />

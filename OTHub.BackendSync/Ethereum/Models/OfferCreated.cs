@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
-namespace OTHub.BackendSync.Models.Contracts
+namespace OTHub.BackendSync.Ethereum.Models
 {
     partial class Program
     {
