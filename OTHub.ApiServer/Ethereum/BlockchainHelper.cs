@@ -8,10 +8,12 @@ using Nethereum.Hex.HexConvertors.Extensions;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
-using OTHub.APIServer.Models;
+using OTHub.APIServer.Sql;
+using OTHub.APIServer.Sql.Models.Contracts;
+using OTHub.APIServer.Sql.Models.Nodes;
 using OTHub.Settings;
 
-namespace OTHub.APIServer
+namespace OTHub.APIServer.Ethereum
 {
     public static class BlockchainHelper
     {
@@ -19,12 +21,11 @@ namespace OTHub.APIServer
 
         public static async Task<BeforePayoutResult> CanTryPayout(string identity, string offerId, string holdingAddress, string holdingStorageAddress, string litigationStorageAddress)
         {
-            var holdingStorageAbi = Program.GetContractAbi(ContractType.HoldingStorage);
+            var holdingStorageAbi = AbiHelper.GetContractAbi(ContractTypeEnum.HoldingStorage);
 
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                holdingStorageAddress = connection.QueryFirstOrDefault<ContractAddress>(@"select Address from otcontract
-where Type = 5 AND Address = @holdingStorageAddress", new
+                holdingStorageAddress = connection.QueryFirstOrDefault<ContractAddress>(ContractsSql.GetHoldingStorageAddressByAddress, new
                 {
                     holdingStorageAddress = holdingStorageAddress
                 })?.Address;
@@ -39,8 +40,7 @@ where Type = 5 AND Address = @holdingStorageAddress", new
                     };
                 }
 
-                holdingAddress = connection.QueryFirstOrDefault<ContractAddress>(@"select Address from otcontract
-where Type = 6 AND Address = @holdingAddress", new
+                holdingAddress = connection.QueryFirstOrDefault<ContractAddress>(ContractsSql.GetHoldingAddressByAddress, new
                 {
                     holdingAddress = holdingAddress
                 })?.Address;
@@ -61,7 +61,7 @@ where Type = 6 AND Address = @holdingAddress", new
                     new Contract(new EthApiService(cl.Client), holdingStorageAbi,
                         holdingStorageAddress);
                 var getHolderStakedAmountFunction = holdingStorageContract.GetFunction("getHolderStakedAmount");
-                var getOfferStartTimeFunction = holdingStorageContract.GetFunction("getOfferStartTime");
+                //var getOfferStartTimeFunction = holdingStorageContract.GetFunction("getOfferStartTime");
                 var getOfferHoldingTimeInMinutesFunction =
                     holdingStorageContract.GetFunction("getOfferHoldingTimeInMinutes");
                 var getHolderPaidAmountFunction = holdingStorageContract.GetFunction("getHolderPaidAmount");
@@ -78,7 +78,7 @@ where Type = 6 AND Address = @holdingAddress", new
                     };
                 }
 
-                var getOfferStartTime = await getOfferStartTimeFunction.CallAsync<BigInteger>(offerIdArray);
+                //var getOfferStartTime = await getOfferStartTimeFunction.CallAsync<BigInteger>(offerIdArray);
                 var getOfferHoldingTimeInMinutes = await getOfferHoldingTimeInMinutesFunction.CallAsync<BigInteger>(offerIdArray);
 
                 var latestBlockParam = BlockParameter.CreateLatest();
@@ -86,7 +86,7 @@ where Type = 6 AND Address = @holdingAddress", new
                 var block = await cl.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(latestBlockParam);
 
                 //DateTime blockTimestamp = UnixTimeStampToDateTime((double) block.Timestamp.Value);
-                DateTime offerStartTime = UnixTimeStampToDateTime((UInt64)getOfferStartTime);
+                //DateTime offerStartTime = UnixTimeStampToDateTime((UInt64)getOfferStartTime);
 
                 //DateTime offerEndTime = offerStartTime.AddMinutes((UInt64)getOfferHoldingTimeInMinutes);
 
@@ -135,7 +135,7 @@ where Type = 9 AND Address = @litigationStorageAddress", new
                     }
 
                     Contract storageContract = new Contract((EthApiService) cl.Eth,
-                        Program.GetContractAbi(ContractType.LitigationStorage), litigationStorageAddress);
+                        AbiHelper.GetContractAbi(ContractTypeEnum.LitigationStorage), litigationStorageAddress);
                     Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
 
                     Function getLitigationTimestampFunction = storageContract.GetFunction("getLitigationTimestamp");

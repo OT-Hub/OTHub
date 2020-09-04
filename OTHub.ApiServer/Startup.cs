@@ -42,7 +42,6 @@ namespace OTHub.APIServer
         
 
             services.AddSwaggerExamples();
-            services.AddSwaggerExamplesFromAssemblyOf<OfferExample>();
             services.AddCors(options =>
             {
                 options.AddPolicy(MyAllowSpecificOrigins,

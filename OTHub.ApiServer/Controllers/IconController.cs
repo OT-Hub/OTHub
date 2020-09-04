@@ -6,7 +6,8 @@ using System.Runtime.InteropServices;
 using Jdenticon;
 using Jdenticon.Rendering;
 using Microsoft.AspNetCore.Mvc;
-using OTHub.APIServer.Models;
+using OTHub.APIServer.Sql.Models;
+using OTHub.APIServer.Sql.Models.Contracts;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace OTHub.APIServer.Controllers

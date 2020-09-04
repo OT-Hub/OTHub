@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using OTHub.Settings;
 using Swashbuckle.AspNetCore.Annotations;
@@ -14,12 +15,12 @@ namespace OTHub.APIServer.Controllers
         )]
         [SwaggerResponse(200)]
         [SwaggerResponse(500, "Internal server error")]
-        public void Get()
+        public async Task Get()
         {
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                connection.Open();
+                await connection.OpenAsync();
             }
         }
     }

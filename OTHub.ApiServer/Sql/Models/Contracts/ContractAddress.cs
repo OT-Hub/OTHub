@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace OTHub.APIServer.Models
+namespace OTHub.APIServer.Sql.Models.Contracts
 {
     public class ContractAddress
     {

@@ -5,7 +5,7 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using MySql.Data.MySqlClient;
-using OTHub.APIServer.Models;
+using OTHub.APIServer.Sql.Models.Home;
 using OTHub.Settings;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -21,64 +21,7 @@ namespace OTHub.APIServer.Controllers
             _cache = cache;
         }
 
-        //        [HttpGet]
-        //        [Route("NodesChartData")]
-        //        [Obsolete]
-        //        public HomeNodesChartData GetNodesChartData()
-        //        {
-        //            if (_cache.TryGetValue("OTHub_HomeNodesChartModel", out var model) && model is HomeNodesChartData chartModel)
-        //                return chartModel;
-
-        //            chartModel = new HomeNodesChartData();
-
-        //            using (var connection =
-        //                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-        //            {
-        //                HomeNodesChartDataModel[] chartData = connection.Query<HomeNodesChartDataModel>(@"SELECT 
-        //x.Date,
-        //count(distinct oth.NodeId) as OnlineNodes,
-        //(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTOffer O ON I.NodeId = O.DCNodeId WHERE O.CreatedTimestamp <= x.Date AND I.Version = 1) DataCreatorNodes,
-        //(SELECT COUNT(distinct I.NodeId) FROM OTIdentity I JOIN OTContract_Approval_NodeApproved NA ON I.NodeId = NA.NodeID WHERE NA.Timestamp <= x.Date AND I.Version = 1) ApprovedNodes
-        //FROM (
-        //SELECT CURDATE() Date
-        //UNION 
-        //SELECT DATE_Add(CURDATE(), INTERVAL - 41 DAY)
-        //UNION 
-        //SELECT DATE_Add(CURDATE(), INTERVAL - 42 DAY)
-        //UNION 
-        //SELECT DATE_Add(CURDATE(), INTERVAL - 43 DAY)
-        //UNION 
-        //SELECT DATE_Add(CURDATE(), INTERVAL - 44 DAY)
-        //UNION 
-        //SELECT DATE_Add(CURDATE(), INTERVAL - 45 DAY)
-        //UNION 
-        //SELECT DATE_Add(CURDATE(), INTERVAL - 46 DAY)
-        //) x 
-        //LEFT JOIN OTNode_History oth on oth.Success = 1 AND Date(oth.Timestamp) = x.Date AND (x.Date != CURDATE() OR oth.TimeStamp >= DATE_Add(NOW(), INTERVAL -1 HOUR))
-        //GROUP BY x.Date").ToArray();
-
-        //                List<string> labels = new List<string>();
-        //                List<int> onlineNodes = new List<int>();
-        //                List<int> dataCreatorNodes = new List<int>();
-        //                List<int> approvedNodes = new List<int>();
-        //                foreach (var row in chartData.OrderBy(d => d.Date))
-        //                {
-        //                    labels.Add(row.Date.ToString("MMM dd yyyy"));
-        //                    onlineNodes.Add(row.OnlineNodes);
-        //                    dataCreatorNodes.Add(row.DataCreatorNodes);
-        //                    approvedNodes.Add(row.ApprovedNodes);
-        //                }
-
-        //                chartModel.Labels = labels.ToArray();
-        //                chartModel.OnlineNodes = onlineNodes.ToArray();
-        //                chartModel.DataCreatorNodes = dataCreatorNodes.ToArray();
-        //                chartModel.ApprovedNodes = approvedNodes.ToArray();
-        //            }
-
-        //            _cache.Set("OTHub_HomeNodesChartModel", chartModel, TimeSpan.FromMinutes(3));
-
-        //            return chartModel;
-        //        }
+      
 
         [HttpGet]
         [Route("JobsChartDataSummaryV2")]

@@ -2,7 +2,8 @@
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
-using OTHub.APIServer.Models;
+using OTHub.APIServer.Sql.Models;
+using OTHub.APIServer.Sql.Models.Contracts;
 using OTHub.Settings;
 using Swashbuckle.AspNetCore.Annotations;
 

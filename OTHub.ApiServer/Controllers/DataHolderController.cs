@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using MySql.Data.MySqlClient;
 using Newtonsoft.Json;
-using OTHub.APIServer.Models;
 using OTHub.Settings;
 using ServiceStack.Text;
 using Swashbuckle.AspNetCore.Annotations;
@@ -15,6 +14,11 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
+using OTHub.APIServer.Ethereum;
+using OTHub.APIServer.Sql.Models;
+using OTHub.APIServer.Sql.Models.Nodes;
+using OTHub.APIServer.Sql.Models.Nodes.DataCreator;
+using OTHub.APIServer.Sql.Models.Nodes.DataHolder;
 
 namespace OTHub.APIServer.Controllers
 {
