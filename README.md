@@ -40,7 +40,7 @@ The configuration uses User Secrets which are stored in the authenticated users 
 {
   "Infura:Url": "https://mainnet.infura.io/v3/xxxx",
   "Blockchain:Network": "Mainnet",
-  "Blockchain:HubAddress": "0xa287d7134fb40bef071c932286bd2cd01efccf30",
+  "Blockchain:HubAddress": "0x89777F4D16F0a263F47EaD07cbCAb9497861aa79",
   "Blockchain:StartSyncFromBlockNumber": 6655078,
   "OriginTrailNode:Url": "http://xx.xx.xx.xx:8900",
   "MariaDB:Server": "127.0.0.1",
