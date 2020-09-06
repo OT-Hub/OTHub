@@ -17,6 +17,7 @@ namespace OTHub.Settings.Abis
         Litigation,
         LitigationStorage,
         Replacement,
-        ERC725
+        ERC725,
+        Hub
     }
 }

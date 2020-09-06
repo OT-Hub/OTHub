@@ -8,12 +8,18 @@ import * as moment from 'moment';
 import { MyNodeService } from '../../nodes/mynodeservice';
 import { HubHttpService } from '../../hub-http-service';
 
-
-export interface Weather {
-  origintrail: Origintrail;
+export interface OrigintrailPriceEthWrapper {
+  origintrail: OrigintrailPriceEth;
 }
-export interface Origintrail {
+export interface OrigintrailPriceEth {
   eth: number;
+}
+
+export interface OrigintrailPriceUsdWrapper {
+  origintrail: OrigintrailPriceUsd;
+}
+export interface OrigintrailPriceUsd {
+  usd: number;
 }
 
 
@@ -38,43 +44,61 @@ export class PriceFactorCalculatorComponent implements OnInit, OnDestroy {
   holdingTime: number;
   datasetSize: number;
   tracePriceInEth: number;
-  GetDataObservable: any;
+  tracePriceInUsd: number;
+  GetDataObservableEth: any;
+  GetDataObservableUsd: any;
 
   ngOnInit() {
 
-    this.GetDataObservable = this.getTracPrice().subscribe(data => {
+    this.GetDataObservableEth = this.getTracPriceInEth().subscribe(data => {
       this.tracePriceInEth = data.origintrail.eth;
+      
+      this.GetDataObservableUsd = this.getTracPriceInUsd().subscribe(data => {
+        this.tracePriceInUsd = data.origintrail.usd;
 
-      $('#tracPriceInEth').val(this.tracePriceInEth);
+        $(document).ready(() => {
+          this.setupPriceFactor();
+          this.setupDataSetFactor();
+          this.setupHoldingTimeFactor();
+  
+          this.failedLoading = false;
+          this.isLoading = false;
 
-      $(document).ready(() => {
-        this.setupPriceFactor();
-        this.setupDataSetFactor();
-        this.setupHoldingTimeFactor();
+          $('#tracPriceInEth').val(this.tracePriceInEth);
+        });
+       });
 
-        this.failedLoading = false;
-        this.isLoading = false;
-      });
+
     }, err => {
       this.failedLoading = true;
       this.isLoading = false;
     });
   }
 
-  getTracPrice() {
+  getTracPriceInEth() {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
 
     const coinGeckoLink = 'https://api.coingecko.com/api/v3/simple/price?ids=origintrail&vs_currencies=eth';
-    return this.http.get<Weather>(coinGeckoLink, { headers });
+    return this.http.get<OrigintrailPriceEthWrapper>(coinGeckoLink, { headers });
+  }
+
+  getTracPriceInUsd() {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+
+    const coinGeckoLink = 'https://api.coingecko.com/api/v3/simple/price?ids=origintrail&vs_currencies=usd';
+    return this.http.get<OrigintrailPriceUsdWrapper>(coinGeckoLink, { headers });
   }
 
   setupDataSetFactor() {
     const slider = document.getElementById('dataSetSlider');
 
+
     const sliderJs = noUiSlider.create(slider, {
-      start: 0.1,
+      start: 0.5,
       step: 0.1,
       orientation: 'horizontal',
       connect: true,
@@ -82,7 +106,7 @@ export class PriceFactorCalculatorComponent implements OnInit, OnDestroy {
         'min': [0.1],
         'max': [10]
       },
-      pips: { mode: 'count', values: 6 }
+      pips: { mode: 'count', values: 10 }
     });
 
     sliderJs.on('update', (values, handle) => {
@@ -104,9 +128,9 @@ export class PriceFactorCalculatorComponent implements OnInit, OnDestroy {
       connect: true,
       range: {
         'min': [1],
-        'max': [365]
+        'max': [1825]
       },
-      pips: { mode: 'count', values: 13 }
+      pips: { mode: 'count', values: 8 }
     });
 
     sliderJs.on('update', (values, handle) => {
@@ -128,9 +152,9 @@ export class PriceFactorCalculatorComponent implements OnInit, OnDestroy {
       connect: true,
       range: {
         'min': [0.1],
-        'max': [10]
+        'max': [15]
       },
-      pips: { mode: 'count', values: 6 }
+      pips: { mode: 'count', values: 15 }
     });
 
     sliderJs.on('update', (values, handle) => {
@@ -143,11 +167,13 @@ export class PriceFactorCalculatorComponent implements OnInit, OnDestroy {
   }
 
   updatePrice() {
-    const amount = Math.round(2 * (0.00075 / this.tracePriceInEth) + this.priceFactor * Math.sqrt(2 * this.holdingTime * this.datasetSize));
-    $('.trac-val').text(amount + ' TRAC');
+    const tracAmount = Math.round(2 * (0.00075 / this.tracePriceInEth) + this.priceFactor * Math.sqrt(2 * this.holdingTime * this.datasetSize));
+    $('.trac-eth-val').text(tracAmount + ' TRAC');
+    $('.trac-usd-val').text('$' + (tracAmount * this.tracePriceInUsd).toFixed(2));
   }
 
   ngOnDestroy() {
-    this.GetDataObservable.unsubscribe();
+    this.GetDataObservableEth?.unsubscribe();
+    this.GetDataObservableUsd?.unsubscribe();
   }
 }

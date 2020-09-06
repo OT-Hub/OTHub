@@ -66,9 +66,16 @@ namespace OTHub.BackendSync
 
             foreach (var childTask in _childTasks)
             {
+                var status = new SystemStatus(childTask.Name);
+
                 Logger.WriteLine(Source.BlockchainSync, "Starting " + childTask.Name);
                 try
                 {
+                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                    {
+                        status.InsertOrUpdate(connection, true, null, true);
+                    }
+
                     await childTask.Execute(source);
                 }
                 catch
@@ -77,7 +84,7 @@ namespace OTHub.BackendSync
                     {
                         using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                         {
-                            new SystemStatus(childTask.Name).InsertOrUpdate(connection, false);
+                            status.InsertOrUpdate(connection, false, null, false);
                         }
                     }
                     catch
@@ -92,7 +99,7 @@ namespace OTHub.BackendSync
                 {
                     using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
-                        new SystemStatus(childTask.Name).InsertOrUpdate(connection, true);
+                        status.InsertOrUpdate(connection, true, null, false);
                     }
                 }
                 catch

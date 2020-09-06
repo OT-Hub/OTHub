@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
+using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Ethereum.Tasks;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Markets.Tasks;
@@ -29,9 +31,19 @@ namespace OTHub.BackendSync
             DatabaseUpgradeTask task = new DatabaseUpgradeTask();
             task.Execute(Source.Startup).GetAwaiter().GetResult();
 
+            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                new SystemStatus(task.Name).InsertOrUpdate(connection, true, null, false);
+            }
+
             //Get all the latest ethereum smart contracts before we even start up
             GetLatestContractsTask contracts = new GetLatestContractsTask();
             contracts.Execute(Source.Startup).GetAwaiter().GetResult();
+
+            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                new SystemStatus(contracts.Name).InsertOrUpdate(connection, true, null, false);
+            }
 
             List<Task> tasks = new List<Task>();
 

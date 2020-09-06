@@ -28,9 +28,31 @@
         </ul> -->
     </nb-card-header>
     <nb-card-body>
-        <nb-alert status="info">
-            Check back later!
-          </nb-alert>
+        <nb-select selected="10" (selectedChange)="pageSizeChanged($event)">
+            <nb-option value="10">10 per Page</nb-option>
+            <nb-option value="25">25 per Page</nb-option>
+            <nb-option value="50">50 per Page</nb-option>
+            <nb-option value="100">100 per Page</nb-option>
+        </nb-select>
+        <button nbButton status="primary" outline [nbPopover]="exportTemplate" style="margin-left:10px;">Export</button>
+
+        <ng-template #exportTemplate>
+            <nb-card class="popover-card">
+                <nb-card-header status="warning">
+                   Export
+                </nb-card-header>
+                <nb-card-body>
+                    <p>Export the grid below in the specified format</p>
+                    <button nbButton status="primary" (click)="ExportToCsv()">CSV</button>
+                    <button nbButton status="primary" (click)="ExportToJson()" style="margin-left:10px;">JSON</button>
+                </nb-card-body>
+            </nb-card>
+        </ng-template>
+
+        <br>
+        <br>
+        <ng2-smart-table [settings]="settings" [source]="source">
+        </ng2-smart-table>
         <!-- <div class="table-responsive">
             <table class="table table-bordered table-striped table-hover js-profile-table dataTable"
                 data-order='[[ 3, "desc" ]]'>

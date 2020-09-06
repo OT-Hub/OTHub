@@ -20,7 +20,7 @@ export class JobsComponent implements OnInit {
   isDarkTheme: boolean;
 
   ngOnInit(): void {
-    const url = this.httpService.ApiUrl + '/api/nodes/dataholder/' + this.identity + '/GetJobs';
+    const url = this.httpService.ApiUrl + '/api/nodes/dataholder/' + this.identity + '/jobs';
 
     this.source = new ServerDataSource(this.http, 
       { endPoint: url });
@@ -29,12 +29,12 @@ export class JobsComponent implements OnInit {
   source: ServerDataSource;
 
   ExportToJson() {
-    const url = this.httpService.ApiUrl +'/api/nodes/dataholder/' + this.identity + '/GetJobs?export=true&exporttype=0';
+    const url = this.httpService.ApiUrl +'/api/nodes/dataholder/' + this.identity + '/jobs?export=true&exporttype=0';
     window.location.href = url;
   }
 
   ExportToCsv() {
-    const url = this.httpService.ApiUrl + '/api/nodes/dataholder/' + this.identity + '/GetJobs?export=true&exporttype=1';
+    const url = this.httpService.ApiUrl + '/api/nodes/dataholder/' + this.identity + '/jobs?export=true&exporttype=1';
     window.location.href = url;
   }
 
@@ -121,7 +121,7 @@ delete: false
         valuePrepareFunction: (value, row) => {
           if (row.CanPayout === true) {
             if (this.myNodeService.Get(this.identity)) {
-              return 'No (<a routerLink="/nodes/dataholders/' + this.identity + '/payout/' + row.OfferId + '">Payout</a>)';
+              return 'No (<a href="/nodes/dataholders/' + this.identity + '/payout/' + row.OfferId + '">Payout</a>)';
             }
           }
           

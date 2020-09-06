@@ -117,7 +117,7 @@ export class OffersDetailComponent implements OnInit {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
-    const url = this.httpService.ApiUrl + '/api/jobs/detail/' + this.offerId + '?' + (new Date()).getTime();
+    const url = this.httpService.ApiUrl + '/api/job/detail/' + this.offerId + '?' + (new Date()).getTime();
     const promise = this.http.get<OTOfferDetailModel>(url, { headers: headers });
     return promise;
   }

@@ -15,10 +15,11 @@ using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using OTHub.APIServer.Ethereum;
-using OTHub.APIServer.Sql.Models;
 using OTHub.APIServer.Sql.Models.Nodes;
 using OTHub.APIServer.Sql.Models.Nodes.DataCreator;
 using OTHub.APIServer.Sql.Models.Nodes.DataHolder;
+using OTHub.APIServer.Sql;
+using System.Diagnostics;
 
 namespace OTHub.APIServer.Controllers
 {
@@ -26,7 +27,7 @@ namespace OTHub.APIServer.Controllers
     public class DataHolderController : Controller
     {
 
-        [Route("{identity}/GetJobs")]
+        [Route("{identity}/jobs")]
         [HttpGet]
         public IActionResult GetJobs(string identity,
             [FromQuery, SwaggerParameter("How many offers you want to return per page", Required = true)] int _limit, 
@@ -34,9 +35,15 @@ namespace OTHub.APIServer.Controllers
             [FromQuery] string _sort,
             [FromQuery] string _order,
             [FromQuery] bool export,
-            [FromQuery] int? exportType)
+            [FromQuery] int? exportType,
+            [FromQuery] string OfferId_like)
         {
             _page--;
+
+            if (OfferId_like != null && OfferId_like.Length > 200)
+            {
+                OfferId_like = null;
+            }
 
             string orderBy = String.Empty;
 
@@ -86,55 +93,11 @@ namespace OTHub.APIServer.Controllers
              new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var offers = connection.Query<NodeProfileDetailedModel_OfferSummary>(
-                    $@"SELECT h.OfferId, 
-                h.IsOriginalHolder,
-                o.FinalizedTimestamp, 
-                o.HoldingTimeInMinutes, 
-                o.TokenAmountPerHolder,
-                DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) as EndTimestamp,
-                (CASE WHEN IsFinalized = 1 
-                	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN
-                	(CASE 
-                		WHEN h.LitigationStatus = '4' THEN 'Data Holder Replaced' 
-                		WHEN h.LitigationStatus = '3' THEN 'Data Holder is Being Replaced' 
-                		WHEN h.LitigationStatus = '2' THEN 'Active (Litigation Answered)' 
-                		WHEN h.LitigationStatus = '1' THEN 'Active (Litigation Initiated)' 
-                		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Litigation Failed' 
-                		WHEN h.LitigationStatus = '0' and (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN 'Active (Litigation Passed)' 
-                		ELSE 'Active' END)
-                	 ELSE
-                	(CASE 
-                		WHEN h.LitigationStatus = '4' THEN 'Data Holder Replaced' 
-                		WHEN h.LitigationStatus = '3' THEN 'Data Holder is Being Replaced' 
-                		WHEN h.LitigationStatus = '2' THEN 'Completed (Litigation Answered)' 
-                		WHEN h.LitigationStatus = '1' THEN 'Completed (Litigation Initiated)' 
-                		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Litigation Failed' 
-                		WHEN h.LitigationStatus = '0' and (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN 'Completed (Litigation Passed)' 
-                		ELSE 'Completed' END)
-                	  END)
-                	ELSE ''
-                END) as Status,
-                (CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then true else false end) as Paidout,
-                (CASE WHEN po.ID is null THEN 
-                	(CASE WHEN (h.LitigationStatus is null OR h.LitigationStatus = 0 OR h.LitigationStatus = 1 OR h.LitigationStatus = 2)
-                		 THEN true else false END) 
-                ELSE false END) as CanPayout
-                FROM otoffer_holders h
-                join otoffer o on o.offerid = h.offerid
-                left join otcontract_holding_paidout po on po.OfferID = h.OfferID and po.Holder = h.Holder
-                left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
-                WHERE h.holder = @identity
-                GROUP BY h.OfferID, h.Holder
+                    DataHolderSql.GetJobs + $@"
 {orderBy}
-{limit}", new { identity = identity }).ToArray();
+{limit}", new { identity = identity, OfferId_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>($@"SELECT COUNT(DISTINCT h.OfferId)
-                FROM otoffer_holders h
-                join otoffer o on o.offerid = h.offerid
-                left join otcontract_holding_paidout po on po.OfferID = h.OfferID and po.Holder = h.Holder
-                left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
-                WHERE h.holder = @identity",
-new { identity = identity });
+                var total = connection.ExecuteScalar<int>(DataHolderSql.GetJobsCount, new { identity = identity, OfferId_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -155,6 +118,267 @@ new { identity = identity });
             }
         }
 
+        [Route("{identity}/payouts")]
+        [HttpGet]
+        public IActionResult GetPayouts(string identity,
+            [FromQuery] int _limit,
+            [FromQuery] int _page,
+            [FromQuery] string _sort,
+            [FromQuery] string _order,
+            [FromQuery] bool export,
+            [FromQuery] int? exportType,
+            [FromQuery] string OfferId_like,
+            [FromQuery] string TransactionHash_like)
+        {
+            _page--;
+
+            if (OfferId_like != null && OfferId_like.Length > 200)
+            {
+                OfferId_like = null;
+            }
+
+            if (TransactionHash_like != null && TransactionHash_like.Length > 200)
+            {
+                TransactionHash_like = null;
+            }
+
+            string orderBy = String.Empty;
+
+            switch (_sort)
+            {
+                case "Timestamp":
+                    orderBy = "ORDER BY Timestamp";
+                    break;
+                case "Amount":
+                    orderBy = "ORDER BY Amount";
+                    break;
+                case "GasUsed":
+                    orderBy = "ORDER BY GasUsed";
+                    break;
+                case "GasPrice":
+                    orderBy = "ORDER BY GasPrice";
+                    break;
+            }
+
+            if (!String.IsNullOrWhiteSpace(orderBy))
+            {
+                switch (_order)
+                {
+                    case "ASC":
+                        orderBy += " ASC";
+                        break;
+                    case "DESC":
+                        orderBy += " DESC";
+                        break;
+                }
+            }
+
+            string limit = string.Empty;
+
+            if (_page >= 0 && _limit >= 0)
+            {
+                limit = $"LIMIT {_page},{_limit}";
+            }
+
+            using (var connection =
+             new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                NodeProfileDetailedModel_OfferPayout[] payouts = connection.Query<NodeProfileDetailedModel_OfferPayout>(
+                    DataHolderSql.GetPayouts + $@"
+{orderBy}
+{limit}", new { identity = identity, OfferId_like, TransactionHash_like }).ToArray();
+
+                var total = connection.ExecuteScalar<int>(DataHolderSql.GetPayoutsCount, new { identity = identity, OfferId_like, TransactionHash_like });
+
+                HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
+                HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
+
+                if (export)
+                {
+                    if (exportType == 0)
+                    {
+                        return File(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(payouts)), "application/json", "payouts.json", false);
+                    }
+                    else if (exportType == 1)
+                    {
+                        return File(Encoding.UTF8.GetBytes(CsvSerializer.SerializeToCsv(payouts)), "text/csv", "payouts.csv", false);
+                    }
+                }
+
+                return new OkObjectResult(payouts);
+            }
+        }
+
+        [Route("{identity}/profiletransfers")]
+        [HttpGet]
+        public IActionResult GetProfileTransfers(string identity,
+    [FromQuery] int _limit,
+    [FromQuery] int _page,
+    [FromQuery] string _sort,
+    [FromQuery] string _order,
+    [FromQuery] bool export,
+    [FromQuery] int? exportType,
+    [FromQuery] string TransactionHash_like)
+        {
+            _page--;
+
+            if (TransactionHash_like != null && TransactionHash_like.Length > 200)
+            {
+                TransactionHash_like = null;
+            }
+
+            string orderBy = String.Empty;
+
+            switch (_sort)
+            {
+                case "Timestamp":
+                    orderBy = "ORDER BY Timestamp";
+                    break;
+                case "GasUsed":
+                    orderBy = "ORDER BY GasUsed";
+                    break;
+                case "GasPrice":
+                    orderBy = "ORDER BY GasPrice";
+                    break;
+                case "Amount":
+                    orderBy = "ORDER BY Amount";
+                    break;
+            }
+
+            if (!String.IsNullOrWhiteSpace(orderBy))
+            {
+                switch (_order)
+                {
+                    case "ASC":
+                        orderBy += " ASC";
+                        break;
+                    case "DESC":
+                        orderBy += " DESC";
+                        break;
+                }
+            }
+
+            string limit = string.Empty;
+
+            if (_page >= 0 && _limit >= 0)
+            {
+                limit = $"LIMIT {_page},{_limit}";
+            }
+
+            using (var connection =
+             new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                NodeProfileDetailedModel_ProfileTransfer[] transfers = connection.Query<NodeProfileDetailedModel_ProfileTransfer>(
+                    DataHolderSql.GetProfileTransfers + $@"
+{orderBy}
+{limit}", new { identity = identity, TransactionHash_like }).ToArray();
+
+                var total = connection.ExecuteScalar<int>(DataHolderSql.GetProfileTransfersCount, new { identity = identity, TransactionHash_like });
+
+                HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
+                HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
+
+                if (export)
+                {
+                    if (exportType == 0)
+                    {
+                        return File(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(transfers)), "application/json", "transfers.json", false);
+                    }
+                    else if (exportType == 1)
+                    {
+                        return File(Encoding.UTF8.GetBytes(CsvSerializer.SerializeToCsv(transfers)), "text/csv", "transfers.csv", false);
+                    }
+                }
+
+                return new OkObjectResult(transfers);
+            }
+        }
+
+        [Route("{identity}/litigations")]
+        [HttpGet]
+        public IActionResult GetLitigations(string identity,
+    [FromQuery] int _limit,
+    [FromQuery] int _page,
+    [FromQuery] string _sort,
+    [FromQuery] string _order,
+    [FromQuery] bool export,
+    [FromQuery] int? exportType,
+    [FromQuery] string OfferId_like)
+        {
+            _page--;
+
+            if (OfferId_like != null && OfferId_like.Length > 200)
+            {
+                OfferId_like = null;
+            }
+
+            string orderBy = String.Empty;
+
+            switch (_sort)
+            {
+                case "Timestamp":
+                    orderBy = "ORDER BY Timestamp";
+                    break;
+                case "RequestedObjectIndex":
+                    orderBy = "ORDER BY RequestedObjectIndex";
+                    break;
+                case "RequestedBlockIndex":
+                    orderBy = "ORDER BY RequestedBlockIndex";
+                    break;
+                case "OfferId":
+                    orderBy = "ORDER BY OfferId";
+                    break;
+            }
+
+            if (!String.IsNullOrWhiteSpace(orderBy))
+            {
+                switch (_order)
+                {
+                    case "ASC":
+                        orderBy += " ASC";
+                        break;
+                    case "DESC":
+                        orderBy += " DESC";
+                        break;
+                }
+            }
+
+            string limit = string.Empty;
+
+            if (_page >= 0 && _limit >= 0)
+            {
+                limit = $"LIMIT {_page},{_limit}";
+            }
+
+            using (var connection =
+             new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                DataHolderLitigationSummary[] litigations = connection.Query<DataHolderLitigationSummary>(
+                    DataHolderSql.GetLitigations + $@"
+{orderBy}
+{limit}", new { identity = identity, OfferId_like }).ToArray();
+
+                var total = connection.ExecuteScalar<int>(DataHolderSql.GetLitigationsCount, new { identity = identity, OfferId_like });
+
+                HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
+                HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
+
+                if (export)
+                {
+                    if (exportType == 0)
+                    {
+                        return File(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(litigations)), "application/json", "litigations.json", false);
+                    }
+                    else if (exportType == 1)
+                    {
+                        return File(Encoding.UTF8.GetBytes(CsvSerializer.SerializeToCsv(litigations)), "text/csv", "litigations.csv", false);
+                    }
+                }
+
+                return new OkObjectResult(litigations);
+            }
+        }
+
         [Route("{identity}")]
         [HttpGet]
         [SwaggerOperation(
@@ -172,91 +396,17 @@ Data Included:
        )]
         [SwaggerResponse(200, type: typeof(NodeDataCreatorDetailedModel))]
         [SwaggerResponse(500, "Internal server error")]
-        public NodeDataHolderDetailedModel Get([SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity, [FromQuery, SwaggerParameter("A boolean flag to indicate if you want to include uptime/health information about this node in the response.", Required = false)] bool includeNodeUptime)
+        public NodeDataHolderDetailedModel Get([SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity,
+            [FromQuery, SwaggerParameter("A boolean flag to indicate if you want to include uptime/health information about this node in the response.", Required = false)]
+        bool includeNodeUptime)
         {
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var profile = connection.QueryFirstOrDefault<NodeDataHolderDetailedModel>(
-                    @"select I.Identity, substring(I.NodeId, 1, 40) as NodeId, Version, COALESCE(I.Stake, 0) as StakeTokens, COALESCE(I.StakeReserved, 0) as StakeReservedTokens, 
-COALESCE(I.Paidout, 0) as PaidTokens, COALESCE(I.TotalOffers, 0) as TotalWonOffers, COALESCE(I.OffersLast7Days, 0) WonOffersLast7Days, I.Approved,
-(select IT.OldIdentity from OTContract_Profile_IdentityTransferred IT WHERE IT.NewIdentity = @identity) as OldIdentity,
-(select IT.NewIdentity from OTContract_Profile_IdentityTransferred IT WHERE IT.OldIdentity = @identity) as NewIdentity,
-I.ManagementWallet,
-COALESCE(ic.TransactionHash, pc.TransactionHash) CreateTransactionHash,
-COALESCE(ic.GasPrice, pc.GasPrice) CreateGasPrice,
-COALESCE(ic.GasUsed, pc.GasUsed) CreateGasUsed,
-(SELECT COUNT(O.OfferID) FROM OTOffer O WHERE O.DCNodeId = I.NodeId) as DCOfferCount
-from OTIdentity I
-left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity
-left JOIN otcontract_profile_profilecreated pc on pc.Profile = I.Identity
-WHERE I.Identity = @identity", new { identity = identity });
+                var profile = connection.QueryFirstOrDefault<NodeDataHolderDetailedModel>(DataHolderSql.GetDetailed, new { identity = identity });
 
                 if (profile != null)
                 {
-//                    profile.Offers = connection.Query<NodeProfileDetailedModel_OfferSummary>(
-//                        @"SELECT h.OfferId, 
-//h.IsOriginalHolder,
-//o.FinalizedTimestamp, 
-//o.HoldingTimeInMinutes, 
-//o.TokenAmountPerHolder,
-//DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) as EndTimestamp,
-//(CASE WHEN IsFinalized = 1 
-//	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN
-//	(CASE 
-//		WHEN h.LitigationStatus = '4' THEN 'Data Holder Replaced' 
-//		WHEN h.LitigationStatus = '3' THEN 'Data Holder is Being Replaced' 
-//		WHEN h.LitigationStatus = '2' THEN 'Active (Litigation Answered)' 
-//		WHEN h.LitigationStatus = '1' THEN 'Active (Litigation Initiated)' 
-//		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Litigation Failed' 
-//		WHEN h.LitigationStatus = '0' and (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN 'Active (Litigation Passed)' 
-//		ELSE 'Active' END)
-//	 ELSE
-//	(CASE 
-//		WHEN h.LitigationStatus = '4' THEN 'Data Holder Replaced' 
-//		WHEN h.LitigationStatus = '3' THEN 'Data Holder is Being Replaced' 
-//		WHEN h.LitigationStatus = '2' THEN 'Completed (Litigation Answered)' 
-//		WHEN h.LitigationStatus = '1' THEN 'Completed (Litigation Initiated)' 
-//		WHEN h.LitigationStatus = '0' and lc.DHWasPenalized = 1 THEN 'Litigation Failed' 
-//		WHEN h.LitigationStatus = '0' and (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN 'Completed (Litigation Passed)' 
-//		ELSE 'Completed' END)
-//	  END)
-//	ELSE ''
-//END) as Status,
-//(CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then true else false end) as Paidout,
-//(CASE WHEN po.ID is null THEN 
-//	(CASE WHEN (h.LitigationStatus is null OR h.LitigationStatus = 0 OR h.LitigationStatus = 1 OR h.LitigationStatus = 2)
-//		 THEN true else false END) 
-//ELSE false END) as CanPayout
-//FROM otoffer_holders h
-//join otoffer o on o.offerid = h.offerid
-//left join otcontract_holding_paidout po on po.OfferID = h.OfferID and po.Holder = h.Holder
-//left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
-//WHERE h.holder = @identity
-//GROUP BY h.OfferID, h.Holder", new { identity = identity }).ToArray();
-
-//                    profile.Payouts = connection.Query<NodeProfileDetailedModel_OfferPayout>(
-//                        @"SELECT OfferID, Amount, Timestamp, TransactionHash, GasUsed, GasPrice FROM otcontract_holding_paidout
-//WHERE holder = @identity", new { identity = identity }).ToArray();
-
-//                    profile.ProfileTransfers = connection.Query<NodeProfileDetailedModel_ProfileTransfer>(
-//                        @"SELECT TransactionHash, AmountDeposited as Amount, b.Timestamp, t.GasPrice, t.GasUsed FROM otcontract_profile_tokensdeposited t
-//JOIN ethblock b on b.BlockNumber = t.BlockNumber
-//where t.Profile = @identity
-//union
-//SELECT TransactionHash, AmountWithdrawn * - 1 as Amount, b.Timestamp, t.GasPrice, t.GasUsed FROM otcontract_profile_tokenswithdrawn t
-//JOIN ethblock b on b.BlockNumber = t.BlockNumber
-//where t.Profile = @identity
-//union 
-//select pc.TransactionHash, pc.InitialBalance as Amount, b.Timestamp, pc.GasPrice, pc.GasUsed  from otcontract_profile_profilecreated pc
-//join ethblock b on b.BlockNumber = pc.BlockNumber
-//WHERE pc.Profile = @identity", new { identity = identity }).ToArray();
-
-//                    profile.Litigations = connection.Query<DataHolderLitigationSummary>(@"SELECT li.TransactionHash, li.Timestamp, li.OfferId, li.requestedBlockIndex RequestedBlockIndex, li.requestedObjectIndex RequestedObjectIndex
-//FROM otcontract_litigation_litigationinitiated li
-//WHERE li.HolderIdentity = @identity
-//ORDER BY li.Timestamp DESC", new { identity = identity }).ToArray();
-
                     if (includeNodeUptime)
                     {
                         profile.NodeUptime = connection.QueryFirstOrDefault<NodeUptimeHistory>(@"SELECT
@@ -276,7 +426,7 @@ GROUP BY I.Identity", new { identity = identity });
 FROM OTNode_History H
 JOIN OTIdentity I ON I.NodeId = H.NodeId
 Where I.Identity = @identity
-AND H.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
+AND H.Timestamp >= DATE_Add(NOW(), INTERVAL -3 DAY)
 ORDER BY H.Timestamp", new
                             {
                                 identity = identity
@@ -304,14 +454,7 @@ ORDER BY H.Timestamp", new
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                return connection.Query<PayoutUSDModel>(@"SELECT po.OfferID, (CAST(`Amount` AS CHAR)+0) TRACAmount, po.Timestamp PayoutTimestamp, ticker.Timestamp TickerTimestamp, ticker.Price TickerUSDPrice, ticker.Price * po.Amount USDAmount 
-FROM otcontract_holding_paidout po
-JOIN ticker_trac ticker ON ticker.Timestamp = (
-SELECT MAX(TIMESTAMP)
-FROM ticker_trac
-WHERE TIMESTAMP <= po.Timestamp)
-WHERE po.Holder = @identity
-ORDER BY po.Timestamp DESC", new
+                return connection.Query<PayoutUSDModel>(DataHolderSql.GetUSDPayoutsForDataHolder, new
                 {
                     identity = identity
                 }).ToArray();
@@ -445,6 +588,11 @@ WHERE I.Identity = @identity", new { identity = identity });
                 int port = row.Port;
                 bool success = false;
 
+                Stopwatch sw = new Stopwatch();
+                sw.Start();
+
+                DateTime now = DateTime.Now;
+
                 try
                 {
                     string url = $"https://{hostname}:{port}/";
@@ -467,6 +615,27 @@ WHERE I.Identity = @identity", new { identity = identity });
                 {
 
                 }
+                finally
+                {
+                    sw.Stop();
+                }
+
+                var nodeId = connection.ExecuteScalar<String>("Select NodeID FROM OTIdentity WHERE Identity = @identity", new
+                {
+                    identity
+                });
+
+                connection.Execute(
+    @"INSERT INTO OTNode_History(NodeId, Timestamp, Success, Duration)
+VALUES(@NodeId, @Timestamp, @Success, @Duration)",
+    new
+    {
+        NodeId = nodeId,
+        Timestamp = now,
+        Duration = sw.ElapsedMilliseconds,
+        Success = success
+    });
+
 
                 if (success)
                 {
@@ -477,6 +646,8 @@ WHERE I.Identity = @identity", new { identity = identity });
                         Message = "Your node responded successfully to the online check."
                     };
                 }
+
+
 
                 return new NodeOnlineResult
                 {

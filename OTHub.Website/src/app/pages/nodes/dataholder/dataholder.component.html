@@ -60,11 +60,14 @@
             </div>
             <div class="col-lg-5 col-md-12 col-sm-12" *ngIf="MyNode || IsTestNet === true">
                 <nb-card>
-                    <nb-card-header>
-                        <h2>Node Uptime <i class="fas fa-heartbeat"
-                                title="Uptime for active nodes is checked every 40 minutes."></i></h2>
+                    <nb-card-header style="position: relative;">
+                        <i class="fas fa-heartbeat"
+                        title="Uptime for active nodes is checked every 40 minutes."></i> Node Uptime 
+                        <nb-badge style="font-size: 12px;padding:6px;margin-right:10px;"
+                        text="7 Days Uptime: {{(NodeModel?.NodeUptime?.TotalSuccess7Days / (NodeModel?.NodeUptime?.TotalSuccess7Days + NodeModel?.NodeUptime?.TotalFailed7Days)) * 100 | number:'1.0-2' }}%"
+                        status="success" position="middle right" *ngIf="NodeModel?.NodeUptime?.LastSuccess"></nb-badge>
                     </nb-card-header>
-                    <nb-card-body>
+      
                         <div class="alert alert-warning" *ngIf="!NodeModel?.NodeUptime?.LastCheck && NodeModel">
                             <strong>Warning!</strong>
                             <br>OT Hub has not found this node yet. Please check back later!
@@ -74,8 +77,28 @@
                             <strong>Warning!</strong>
                             <br>OT Hub has found this node but has never seen it online.
                         </div>
-                        <ul class="list-group list-group-flush">
-                            <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
+                        <nb-list>
+                         
+                            <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastSuccess">
+                                Last Seen Online: <span
+                                [title]="NodeModel?.NodeUptime?.LastSuccess | amFromUtc | amLocal | amDateFormat:'LL h:mm A'"
+                                *ngIf="NodeModel?.NodeUptime?.LastSuccess">{{NodeModel?.NodeUptime?.LastSuccess  | amFromUtc | amLocal | amTimeAgo }}</span>
+                            </nb-list-item>
+                            <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastCheck">
+                                Last Uptime Check: <span
+                                    [title]="NodeModel?.NodeUptime?.LastCheck | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">{{NodeModel?.NodeUptime?.LastCheck  | amFromUtc | amLocal | amTimeAgo }}</span>
+                            </nb-list-item>
+                            <!-- <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastSuccess">
+                                24 Hours Uptime: <span
+                                    *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess24Hours / (NodeModel?.NodeUptime?.TotalSuccess24Hours + NodeModel?.NodeUptime?.TotalFailed24Hours)) * 100 | number:'1.0-2' }}%</span>
+                            </nb-list-item>
+                            <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastSuccess">
+                                7 Days Uptime: <span
+                                    *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess7Days / (NodeModel?.NodeUptime?.TotalSuccess7Days + NodeModel?.NodeUptime?.TotalFailed7Days)) * 100 | number:'1.0-2' }}%</span>
+                            </nb-list-item> -->
+                            </nb-list>
+                        <!-- <ul class="list-group list-group-flush"> -->
+                            <!-- <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
                                 Last Seen Online: <span
                                     [title]="NodeModel?.NodeUptime?.LastSuccess | amFromUtc | amLocal | amDateFormat:'LL h:mm A'"
                                     *ngIf="NodeModel?.NodeUptime?.LastSuccess">{{NodeModel?.NodeUptime?.LastSuccess  | amFromUtc | amLocal | amTimeAgo }}</span>
@@ -83,21 +106,21 @@
                             <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastCheck">
                                 Last Uptime Check: <span
                                     [title]="NodeModel?.NodeUptime?.LastCheck | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">{{NodeModel?.NodeUptime?.LastCheck  | amFromUtc | amLocal | amTimeAgo }}</span>
-                            </li>
-                            <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
+                            </li> -->
+                            <!-- <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
                                 24 Hours Uptime: <span
                                     *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess24Hours / (NodeModel?.NodeUptime?.TotalSuccess24Hours + NodeModel?.NodeUptime?.TotalFailed24Hours)) * 100 | number:'1.0-2' }}%</span>
                             </li>
                             <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
                                 7 Days Uptime: <span
                                     *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess7Days / (NodeModel?.NodeUptime?.TotalSuccess7Days + NodeModel?.NodeUptime?.TotalFailed7Days)) * 100 | number:'1.0-2' }}%</span>
-                            </li>
-                        </ul>
-                        <div style="margin: 0 auto; width: 100%;" id="visavail_container">
+                            </li> -->
+                        <!-- </ul> -->
+                        <div style="margin: 0px 10px; width: 100%;" id="visavail_container">
                             <p id="todayUptimeChart"></p>
                         </div>
                         <br *ngIf="NodeModel?.NodeUptime?.ChartData === null">
-                        <button type="button" class="btn btn-primary waves-effect"
+                        <button nbButton status="success" outline style="margin:10px;"
                             *ngIf="NodeModel?.NodeUptime?.LastCheck && !isCheckingNodeUptime && NodeModel?.Version > 0 && MyNode"
                             (click)="CheckNodeOnline()">Check Online</button>
                         <div class="progress" *ngIf="isCheckingNodeUptime">
@@ -105,8 +128,7 @@
                         </div>
                         <p style="text-align: center;" *ngIf="isCheckingNodeUptime">Please wait...</p>
                         <div *ngIf="OnlineCheckResult != null">
-                            <br>
-                            <div class="alert alert-dismissible"
+                            <div class="alert alert-dismissible" style="margin:10px;"
                                 [ngClass]="{'alert-warning' : OnlineCheckResult?.Warning, 'alert-success' : OnlineCheckResult?.Success, 'alert-danger' : OnlineCheckResult?.Error}">
                                 <button type="button" class="close" data-dismiss="alert" aria-label="Close">
                                     <span aria-hidden="true">&times;</span>
@@ -116,7 +138,7 @@
                             </div>
 
                         </div>
-                    </nb-card-body>
+        
                 </nb-card>
             </div>
         </div>
@@ -125,13 +147,13 @@
                 <ngx-jobs [identity]="identity"></ngx-jobs>
             </div>
             <div class="col-lg-12 col-md-12 col-sm-12">
-                <ngx-litigations></ngx-litigations>
+                <ngx-litigations [identity]="identity"></ngx-litigations>
             </div>
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <ngx-payouts [identity]="identity"></ngx-payouts>
             </div>
             <div class="col-lg-12 col-md-12 col-sm-12">
-                <ngx-transfers></ngx-transfers>
+                <ngx-transfers [identity]="identity"></ngx-transfers>
             </div>
 
             <div class="col-lg-12 col-md-12 col-sm-12">

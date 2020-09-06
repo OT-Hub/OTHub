@@ -313,6 +313,14 @@ CREATE INDEX IF NOT EXISTS `OTContract_Profile_IdentityCreated_NewIdentity` ON O
 
                 connection.Execute(@"CREATE INDEX IF NOT EXISTS `otnode_history_NodeID` ON otnode_history  (`NodeID`, `Timestamp`, `Success`) USING BTREE;");
 
+                connection.Execute(@"ALTER TABLE systemstatus
+ADD COLUMN IF NOT EXISTS `IsRunning` bit NOT NULL DEFAULT 0");
+
+                connection.Execute(@"ALTER TABLE systemstatus
+ADD COLUMN IF NOT EXISTS `NextRunDateTime` datetime NULL DEFAULT NULL");
+
+                connection.Execute(@"ALTER TABLE systemstatus
+MODIFY COLUMN `LastTriedDateTime` datetime NULL DEFAULT NULL");
             }
 
 

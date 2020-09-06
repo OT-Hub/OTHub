@@ -13,7 +13,7 @@ namespace OTHub.BackendSync.Database.Models
             Name = name;
         }
 
-        public void InsertOrUpdate(MySqlConnection connection, bool success)
+        public void InsertOrUpdate(MySqlConnection connection, bool? success, DateTime? nextRunDateTime, bool isRunning)
         {
             var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM systemstatus WHERE Name = @Name", new
             {
@@ -22,40 +22,44 @@ namespace OTHub.BackendSync.Database.Models
 
             if (count == 0)
             {
-                Insert(connection, success);
+                Insert(connection, success, isRunning, nextRunDateTime);
             }
             else
             {
-                Update(connection, success);
+                Update(connection, success, isRunning, nextRunDateTime);
             }
         }
 
-        private void Insert(MySqlConnection connection, bool success)
+        private void Insert(MySqlConnection connection, bool? success, bool isRunning, DateTime? nextRunDateTime)
         {
             var now = DateTime.Now;
 
-            connection.Execute(@"INSERT INTO systemstatus(Name, LastSuccessDateTime, LastTriedDateTime, Success) 
-VALUES(@Name, @LastSuccessDateTime, @LastTriedDateTime, @Success)",
+            connection.Execute(@"INSERT INTO systemstatus(Name, LastSuccessDateTime, LastTriedDateTime, Success, IsRunning, NextRunDateTime) 
+VALUES(@Name, @LastSuccessDateTime, @LastTriedDateTime, @Success, @IsRunning, @NextRunDateTime)",
                 new
                 {
                     Name = Name,
-                    Success = success,
+                    Success = success ?? true,
                     LastTriedDateTime = now,
-                    LastSuccessDateTime = success ? (DateTime?)now : null
+                    LastSuccessDateTime = success == true ? (DateTime?)now : null,
+                    NextRunDateTime = nextRunDateTime,
+                    IsRunning = isRunning
                 });
         }
 
-        private void Update(MySqlConnection connection, bool success)
+        private void Update(MySqlConnection connection, bool? success, bool isRunning, DateTime? nextRunDateTime)
         {
             var now = DateTime.Now;
 
-            connection.Execute(@"UPDATE systemstatus SET Success = @Success, LastTriedDateTime = @LastTriedDateTime,
+            connection.Execute(@"UPDATE systemstatus SET Success = COALESCE(@Success, Success), LastTriedDateTime = @LastTriedDateTime, IsRunning = @IsRunning, NextRunDateTime = @NextRunDateTime,
 LastSuccessDateTime = COALESCE(@LastSuccessDateTime, LastSuccessDateTime) WHERE Name = @Name", new
             {
                 Name = Name,
                 Success = success,
                 LastTriedDateTime = now,
-                LastSuccessDateTime = success ? (DateTime?)now : null
+                LastSuccessDateTime = success == true ? (DateTime?)now : null,
+                NextRunDateTime = nextRunDateTime,
+                IsRunning = isRunning
             });
         }
     }

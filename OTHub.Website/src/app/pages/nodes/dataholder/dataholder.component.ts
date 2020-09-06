@@ -8,10 +8,11 @@ import { MomentModule } from 'ngx-moment';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MyNodeService } from '../mynodeservice';
 import { HubHttpService } from '../../hub-http-service';
+import * as moment from 'moment';
 import { MyNodeModel } from '../mynodemodel';
 declare const $: any;
 declare const d3: any;
-declare const visavailChart: any;
+declare const visavail: any;
 import Web3 from 'web3';
 @Component({
   selector: 'app-nodeprofile',
@@ -226,10 +227,40 @@ export class DataHolderComponent implements OnInit, OnDestroy {
           this.chartData = JSON.parse(this.NodeModel.NodeUptime.ChartData);
 
           $(function() {
-            that.uptimeChart = visavailChart().drawTitle(0);
-            that.draw_visavail();
 
-          $(window).resize(function() { return that.draw_visavail(); });
+            var options = {
+              id_div_container: "visavail_container",
+              id_div_graph: "todayUptimeChart",
+              ticks_for_graph: 12,
+              show_y_title: true,
+              title:  {enabled: false},
+              sub_title: {enabled: true},
+              responsive: {enabled: true},
+              custom_categories: true,
+              zoom: {enabled: true},
+              icon: {
+                class_has_data: 'fas fa-fw fa-check',
+                class_has_no_data: 'fas fa-fw fa-exclamation-circle'
+              },
+              margin: {
+                bottom: 0
+              }
+            };
+
+            that.uptimeChart = visavail.generate(options, [{
+              "measure": "Uptime",
+              "interval_s": 1,
+              "data": that.chartData,
+              "categories": { 
+               
+                    "Online": {class: "uptimeOnline" },
+                    "Offline": {class: "uptimeOffline" },
+      
+                },
+            }]);
+            //that.draw_visavail();
+
+          //$(window).resize(function() { return that.draw_visavail(); });
           });
         }
 

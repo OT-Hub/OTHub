@@ -6,14 +6,14 @@
         <div class="row clearfix" [hidden]="failedLoading === true || isLoading === true">
 
             <div class="col-lg-12 col-md-12 col-sm-12">
-                <div class="card project_widget">
-                    <div class="header">
-                        <h2>Price Factor Calculator</h2>
-                    </div>
-                    <div class="body">
 
-                    <p>This calculator lets you test price factors with different variables to estimate TRAC rewards for offers.</p>
-                    <p>It is possible for larger values to be used than what this calculator allows.</p>
+                <nb-card>
+                    <nb-card-header>Price Factor Calculator
+                    </nb-card-header>
+                    <nb-card-body>
+                        <p>This calculator lets you test price factors with different variables to estimate TRAC rewards
+                            for offers.</p>
+                        <p>It is possible for larger values to be used than what this calculator allows.</p>
                         <form class="form-horizontal">
                             <div class="row clearfix">
                                 <div class="col-lg-2 col-md-2 col-sm-4 col-xs-5 form-control-label">
@@ -36,9 +36,11 @@
                                     <div id="priceFactorSlider" style="margin-top:15px;"></div>
                                 </div>
                                 <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <span class="priceFactorSlider-val" id="skip-value-lower" style="   display: flex;margin-top:15px;"></span>
+                                    <span class="priceFactorSlider-val" id="skip-value-lower"
+                                        style="   display: flex;margin-top:15px;"></span>
                                 </div>
                             </div>
+                            <br>
                             <br>
                             <div class="row clearfix">
                                 <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 form-control-label">
@@ -48,9 +50,11 @@
                                     <div id="dataSetSlider" style="margin-top:15px;"></div>
                                 </div>
                                 <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <span class="dataSetSlider-val" id="skip-value-lower" style="   display: flex;margin-top:15px;"></span>
+                                    <span class="dataSetSlider-val" id="skip-value-lower"
+                                        style="   display: flex;margin-top:15px;"></span>
                                 </div>
                             </div>
+                            <br>
                             <br>
                             <div class="row clearfix">
                                 <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 form-control-label">
@@ -60,22 +64,29 @@
                                     <div id="holdingTimeSlider" style="margin-top:15px;"></div>
                                 </div>
                                 <div class="col-lg-2 col-md-2 col-sm-2">
-                                    <span class="holdingTimeSlider-val" id="skip-value-lower" style="   display: flex;margin-top:15px;"></span>
+                                    <span class="holdingTimeSlider-val" id="skip-value-lower"
+                                        style="   display: flex;margin-top:15px;"></span>
                                 </div>
                             </div>
+                            <br>
                             <br>
                             <br>
                             <div class="row clearfix">
                                 <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 form-control-label">
                                     Reward
                                 </div>
-                                <div class="col-lg-10 col-md-10 col-sm-10 col-xs-10">
-                                    <span class="trac-val btn-success" id="skip-value-lower" style="padding:10px;"></span>
+                                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                                    <span class="trac-eth-val btn-success" id="skip-value-lower"
+                                        style="padding:10px;"></span>
+                                </div>
+                                <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5">
+                                    <span class="trac-usd-val btn-success" id="skip-value-lower"
+                                        style="padding:10px;"></span>
                                 </div>
                             </div>
                         </form>
-                    </div>
-                </div>
+                    </nb-card-body>
+                </nb-card>
             </div>
 
         </div>

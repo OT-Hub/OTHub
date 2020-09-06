@@ -30,6 +30,11 @@ namespace OTHub.BackendSync
                 _runEveryTimeSpan = runEveryTimeSpan;
                 _lastRunDateTime = startNow ? DateTime.MinValue : DateTime.Now;
                 _systemStatus = new SystemStatus(task.Name);
+
+                using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                {
+                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false);
+                }
             }
 
             public bool NeedsRunning
@@ -37,48 +42,47 @@ namespace OTHub.BackendSync
                 get { return ((DateTime.Now - _lastRunDateTime) > _runEveryTimeSpan); }
             }
 
+            public DateTime? NextRunDate
+            {
+                get
+                {
+                    if (_lastRunDateTime == DateTime.MinValue)
+                        return null;
+
+                    return _lastRunDateTime + _runEveryTimeSpan;
+                }
+            }
+
             public async Task Execute()
             {
                 DateTime startTime = DateTime.Now;
 
-                
+                bool success = false;
 
                 try
                 {
                     Logger.WriteLine(_source, "Starting " + _task.Name);
+
+                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                    {
+                        _systemStatus.InsertOrUpdate(connection, true, null, true);
+                    }
+
                     await _task.Execute(_source);
 
-                    try
-                    {
-                        using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-                        {
-                            _systemStatus.InsertOrUpdate(connection, true);
-                        }
-                    }
-                    catch
-                    {
-
-                    }
+                    success = true;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex);
-
-                    try
-                    {
-                        using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-                        {
-                            _systemStatus.InsertOrUpdate(connection, false);
-                        }
-                    }
-                    catch
-                    {
-
-                    }
+                    Logger.WriteLine(_source, ex.ToString());
                 }
                 finally
                 {
                     _lastRunDateTime = DateTime.Now;
+                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                    {
+                        _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false);
+                    }
                     Logger.WriteLine(_source, "Finished " + _task.Name + " in " + (DateTime.Now - startTime).TotalSeconds + " seconds");
                 }
             }

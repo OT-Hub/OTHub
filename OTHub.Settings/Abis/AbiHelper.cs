@@ -45,6 +45,9 @@ namespace OTHub.Settings.Abis
                 case ContractTypeEnum.Reading:
                     path += "reading.json";
                     break;
+                case ContractTypeEnum.Hub:
+                    path += "hub.json";
+                    break;
                 default:
                     throw new Exception("Not supported: " + ContractTypeEnum);
             }

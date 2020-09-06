@@ -36,7 +36,7 @@ where CreatedTimestamp >= '2019/12/26 17:00' AND EstimatedLambda IS NULL").ToArr
 
                     dataSetSize = (dataSetSize / 1024) / 1024;
 
-                    var time = connection.QueryFirstOrDefault<ClosestTime>(
+                    var ethPrice = connection.QueryFirstOrDefault<ClosestTime>(
                             @"select Timestamp, Price, ABS(TIMESTAMPDIFF(SECOND, @date, Timestamp)) as DiffInSeconds from ticker_eth
 WHERE ABS(TIMESTAMPDIFF(SECOND, @date, Timestamp)) < 7100
 ORDER BY ABS(TIMESTAMPDIFF(SECOND, @date, Timestamp))
@@ -45,7 +45,7 @@ LIMIT 1", new
                                 date = createdTimestamp
                             });
 
-                    if (time == null)
+                    if (ethPrice == null)
                         continue;
 
                     Dictionary<double, decimal> factorToAmount = new Dictionary<double, decimal>();
@@ -54,7 +54,7 @@ LIMIT 1", new
 
                     factorToAmount[factor] =
                         Convert.ToDecimal(
-                            Math.Round(2 * (0.00075 / time.Price) + factor * Math.Sqrt(2 * days * dataSetSize)));
+                            Math.Round(2 * (0.00075 / ethPrice.Price) + factor * Math.Sqrt(2 * days * dataSetSize)));
 
                     if (factorToAmount[factor] > tokenAmount)
                     {
@@ -64,7 +64,7 @@ LIMIT 1", new
                         {
                             loopFactor -= 1;
 
-                            factorToAmount[loopFactor] = Convert.ToDecimal(Math.Round(2 * (0.00075 / time.Price) + loopFactor * Math.Sqrt(2 * days * dataSetSize)));
+                            factorToAmount[loopFactor] = Convert.ToDecimal(Math.Round(2 * (0.00075 / ethPrice.Price) + loopFactor * Math.Sqrt(2 * days * dataSetSize)));
                         }
                     }
                     else if (factorToAmount[factor] < tokenAmount)
@@ -75,7 +75,7 @@ LIMIT 1", new
                         {
                             loopFactor += 1;
 
-                            factorToAmount[loopFactor] = Convert.ToDecimal(Math.Round(2 * (0.00075 / time.Price) + loopFactor * Math.Sqrt(2 * days * dataSetSize)));
+                            factorToAmount[loopFactor] = Convert.ToDecimal(Math.Round(2 * (0.00075 / ethPrice.Price) + loopFactor * Math.Sqrt(2 * days * dataSetSize)));
                         }
                     }
 
@@ -87,7 +87,7 @@ LIMIT 1", new
                         {
                             loopFactor += 0.10;
 
-                            factorToAmount[loopFactor] = Convert.ToDecimal(Math.Round(2 * (0.00075 / time.Price) + loopFactor * Math.Sqrt(2 * days * dataSetSize)));
+                            factorToAmount[loopFactor] = Convert.ToDecimal(Math.Round(2 * (0.00075 / ethPrice.Price) + loopFactor * Math.Sqrt(2 * days * dataSetSize)));
                         }
                     }
 

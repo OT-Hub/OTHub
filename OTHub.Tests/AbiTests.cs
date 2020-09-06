@@ -19,6 +19,7 @@ namespace OTHub.Tests
         //[InlineData(ContractTypeEnum.ReadingStorage)] //This doesn't exist?
         [InlineData(ContractTypeEnum.Replacement)]
         [InlineData(ContractTypeEnum.Token)]
+        [InlineData(ContractTypeEnum.Hub)]
         public void GetContractAbi(ContractTypeEnum type)
         {
             string abi = AbiHelper.GetContractAbi(type);
