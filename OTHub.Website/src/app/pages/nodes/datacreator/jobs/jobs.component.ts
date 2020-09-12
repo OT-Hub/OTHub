@@ -5,6 +5,7 @@ import { HubHttpService } from '../../../hub-http-service';
 import { HttpClient } from '@angular/common/http';
 import { MyNodeService } from '../../mynodeservice';
 
+import { OfferIdColumnComponent } from '../../../miscellaneous/offeridcolumn.component';
 @Component({
   selector: 'datacreator-jobs',
   templateUrl: './jobs.component.html',
@@ -56,10 +57,12 @@ delete: false
       OfferId: {
         sort: false,
         title: 'Offer ID',
-        type: 'html',
-        valuePrepareFunction: (value) => {
-          return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
-        }
+        type: 'custom',
+        renderComponent: OfferIdColumnComponent,
+        // type: 'html',
+        // valuePrepareFunction: (value) => {
+        //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
+        // }
       },
       CreatedTimestamp: {
         sort: true,

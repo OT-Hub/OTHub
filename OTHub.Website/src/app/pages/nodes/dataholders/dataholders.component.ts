@@ -13,6 +13,7 @@ import { NbToastrService, NbGlobalLogicalPosition, NbToastrConfig, NbComponentSt
 import { MyNodeModel } from '../mynodemodel';
 import { ServerSourceConf } from 'ng2-smart-table/lib/lib/data-source/server/server-source.conf';
 import { OnlineIndicatorRenderComponent } from './onlineindicator.component';
+import { DataHolderIdentityColumnComponent } from '../../miscellaneous/identitycolumn.component';
 @Component({
   selector: 'app-dataholders',
   templateUrl: './dataholders.component.html',
@@ -327,17 +328,18 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         Identity: {
           sort: false,
           title: 'Identity',
-          type: 'html',
+          type: 'custom',
           filter: true,
-          valuePrepareFunction: (value) => {
-            if (!value) {
-              return 'Unknown';
-            }
+          renderComponent: DataHolderIdentityColumnComponent,
+          // valuePrepareFunction: (value) => {
+          //   if (!value) {
+          //     return 'Unknown';
+          //   }
   
-            return '<a target=_self href="/nodes/dataholders/' + value +
-             '""><img class="lazy" style="height:16px;width:16px;" title="' +
-              value + '" src="' + this.getIdentityIcon(value) + '">' + value + '</a>';
-          }
+          //   return '<a target=_self href="/nodes/dataholders/' + value +
+          //    '""><img class="lazy" style="height:16px;width:16px;" title="' +
+          //     value + '" src="' + this.getIdentityIcon(value) + '">' + value + '</a>';
+          // }
         },
         DisplayName: {
           title: 'Name',

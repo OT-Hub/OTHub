@@ -4,6 +4,7 @@ import { ServerDataSource } from 'ng2-smart-table';
 import { HttpClient } from '@angular/common/http';
 import * as moment from 'moment';
 import { MyNodeService } from '../../mynodeservice';
+import { OfferIdColumnComponent } from '../../../miscellaneous/offeridcolumn.component';
 
 @Component({
   selector: 'ngx-jobs',
@@ -56,10 +57,11 @@ delete: false
       OfferId: {
         sort: false,
         title: 'Offer ID',
-        type: 'html',
-        valuePrepareFunction: (value) => {
-          return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
-        }
+        type: 'custom',
+        renderComponent: OfferIdColumnComponent,
+        // valuePrepareFunction: (value) => {
+        //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
+        // }
       },
       FinalizedTimestamp: {
         sort: true,

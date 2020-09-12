@@ -12,6 +12,7 @@ import { MyNodeModel } from '../mynodemodel';
 import { NbToastrConfig, NbToastrService, NbComponentStatus } from '@nebular/theme';
 import { DataHolderDetailedModel } from '../dataholder/dataholder-models';
 import { ServerSourceConf } from 'ng2-smart-table/lib/lib/data-source/server/server-source.conf';
+import {DataCreatorIdentityColumnComponent} from '../../miscellaneous/identitycolumn.component'
 @Component({
   selector: 'app-datacreators',
   templateUrl: './datacreators.component.html',
@@ -314,17 +315,18 @@ export class DatacreatorsComponent implements OnInit  {
         Identity: {
           sort: false,
           title: 'Identity',
-          type: 'html',
+          type: 'custom',
           filter: true,
-          valuePrepareFunction: (value) => {
-            if (!value) {
-              return 'Unknown';
-            }
+          renderComponent: DataCreatorIdentityColumnComponent
+          // valuePrepareFunction: (value) => {
+          //   if (!value) {
+          //     return 'Unknown';
+          //   }
   
-            return '<a target=_self href="/nodes/datacreators/' + value +
-             '""><img class="lazy" style="height:16px;width:16px;" title="' +
-              value + '" src="' + this.getIdentityIcon(value) + '">' + value + '</a>';
-          }
+          //   return '<a target=_self href="/nodes/datacreators/' + value +
+          //    '""><img class="lazy" style="height:16px;width:16px;" title="' +
+          //     value + '" src="' + this.getIdentityIcon(value) + '">' + value + '</a>';
+          // }
         },
         DisplayName: {
           title: 'Name',

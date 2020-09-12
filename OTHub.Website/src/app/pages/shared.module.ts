@@ -5,6 +5,7 @@ import { CopyclipboardiconComponent } from './ui/copyclipboardicon/copyclipboard
 import { NbIconModule, NbPopoverModule } from '@nebular/theme';
 import { OfferIdColumnComponent } from './miscellaneous/offeridcolumn.component';
 import { RouterModule } from '@angular/router';
+import { DataHolderIdentityColumnComponent, DataCreatorIdentityColumnComponent } from './miscellaneous/identitycolumn.component';
 
 
 
@@ -15,7 +16,7 @@ import { RouterModule } from '@angular/router';
     RouterModule
   ],
   declarations: [
-  CopyclipboardiconComponent, FailedLoadingPageComponent, OfferIdColumnComponent
+  CopyclipboardiconComponent, FailedLoadingPageComponent, OfferIdColumnComponent, DataHolderIdentityColumnComponent, DataCreatorIdentityColumnComponent
   ],
   exports: [
     CopyclipboardiconComponent, FailedLoadingPageComponent

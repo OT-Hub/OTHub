@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { MyNodeService } from '../../mynodeservice';
 import { ServerDataSource } from 'ng2-smart-table';
 import * as moment from 'moment';
-
+import { OfferIdColumnComponent } from '../../../miscellaneous/offeridcolumn.component';
 @Component({
   selector: 'ngx-payouts',
   templateUrl: './payouts.component.html',
@@ -57,10 +57,11 @@ delete: false
       OfferId: {
         sort: false,
         title: 'Offer ID',
-        type: 'html',
-        valuePrepareFunction: (value) => {
-          return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value + '</a>';
-        }
+        type: 'custom',
+        renderComponent: OfferIdColumnComponent,
+        // valuePrepareFunction: (value) => {
+        //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value + '</a>';
+        // }
       },
       TransactionHash: {
         sort: false,
