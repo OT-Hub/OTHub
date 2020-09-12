@@ -10,8 +10,7 @@ JOIN ticker_trac ticker ON ticker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= po.Timestamp)
-WHERE po.Holder = @identity
-ORDER BY po.Timestamp DESC";
+WHERE po.Holder = @identity AND (@OfferId_like is null OR po.OfferID = @OfferId_like)";
 
         public const String GetDetailed = @"select I.Identity, substring(I.NodeId, 1, 40) as NodeId, Version, COALESCE(I.Stake, 0) as StakeTokens, COALESCE(I.StakeReserved, 0) as StakeReservedTokens, 
 COALESCE(I.Paidout, 0) as PaidTokens, COALESCE(I.TotalOffers, 0) as TotalWonOffers, COALESCE(I.OffersLast7Days, 0) WonOffersLast7Days, I.Approved,

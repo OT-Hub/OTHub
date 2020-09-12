@@ -5,51 +5,27 @@
             <app-failed-loading-page></app-failed-loading-page>
         </div>
 
-        <div class="alert alert-warning">
-            This page is still being updated. Please check back later.
-        </div>
 
         <div class="col-lg-12 col-md-12 col-sm-12" *ngIf="isLoading === false && failedLoading === false">
             <nb-card>
                 <nb-card-header>Summary</nb-card-header>
-                <nb-card-body>
-                    <div class="row">
-                        <div class="col-lg-3 col-sm-6">
-                            <div class="text-center btn-primary" style="padding:15px;">                                  
-                                <div class="text m-b-10">Total Payouts</div>
-                                <h3 class="m-b-0">{{Items.length}}
-                                </h3>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-sm-6">
-                            <div class="text-center btn-warning" style="padding:15px;">
-                          
-                                <div class="text m-b-10">Total TRAC Paid</div>
-                                <h3 class="m-b-0">{{totalTracPaid }}
-                           
-                                </h3>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-sm-6">
-                            <div class="text-center btn-info" style="padding:15px;">
-                         
-                                <div class="text m-b-10">Total Equivalent USD Paid</div>
-                                <h3 class="m-b-0">{{totalEquivUSDPaid | number:'1.0-2'}}
-                                   
-                                </h3>
-                            </div>
-                        </div>
-                        <div class="col-lg-3 col-sm-6">
-                            <div class="text-center btn-success" style="padding:15px;">
-                          
-                                <div class="text m-b-10">Average USD Ticker Price</div>
-                                <h3 class="m-b-0">{{averageTracTickerPrice| number:'1.0-6'}}
-                            
-                                </h3>
-                            </div>
-                        </div>
-                    </div>
-                 </nb-card-body>
+                <nb-list>
+                    <nb-list-item>
+                        Identity: {{identity}}
+                    </nb-list-item>
+                    <nb-list-item>
+                        Total Payouts: {{totalPayoutsLength}}
+                    </nb-list-item>
+                    <nb-list-item>
+                        Total TRAC Paid: {{totalTracPaid}}
+                    </nb-list-item>
+                    <nb-list-item>
+                        Total Equivalent USD Paid: {{totalEquivUSDPaid | number:'1.0-2'}}
+                    </nb-list-item>
+                    <nb-list-item>
+                        Average USD Ticker Price: {{averageTracTickerPrice| number:'1.0-6'}}
+                    </nb-list-item>
+                </nb-list>
             </nb-card>
         </div>
 
@@ -87,7 +63,34 @@
                     <p>This page shows you the USD equivalent price of TRAC at the time the offer paid out.</p>
                     <p>USD prices are taken from Coinpaprika. Payouts will be matched to the closest ticker price
                         available (every 6 hours).</p>
-                    <div class="table-responsive">
+
+                        <!-- <nb-select selected="10" (selectedChange)="pageSizeChanged($event)">
+                            <nb-option value="10">10 per Page</nb-option>
+                            <nb-option value="25">25 per Page</nb-option>
+                            <nb-option value="50">50 per Page</nb-option>
+                            <nb-option value="100">100 per Page</nb-option>
+                        </nb-select> -->
+                        <button nbButton status="primary" outline [nbPopover]="exportTemplate" style="margin-left:10px;">Export</button>
+                
+                        <ng-template #exportTemplate>
+                            <nb-card class="popover-card">
+                                <nb-card-header status="warning">
+                                   Export
+                                </nb-card-header>
+                                <nb-card-body>
+                                    <p>Export the grid below in the specified format</p>
+                                    <button nbButton status="primary" (click)="ExportToCsv()">CSV</button>
+                                    <button nbButton status="primary" (click)="ExportToJson()" style="margin-left:10px;">JSON</button>
+                                </nb-card-body>
+                            </nb-card>
+                        </ng-template>
+                
+                        <br>
+                        <br>
+                        <ng2-smart-table [settings]="settings" [source]="source">
+                        </ng2-smart-table>
+
+                    <!-- <div class="table-responsive">
                         <table class="table table-bordered table-striped table-hover js-payoutsusd-table dataTable"
                             data-order='[[ 5, "desc" ]]'>
                             <thead>
@@ -133,7 +136,7 @@
                                 </tr>
                             </tbody>
                         </table>
-                    </div>
+                    </div> -->
                  </nb-card-body>
             </nb-card>
         </div>

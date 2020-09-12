@@ -450,14 +450,74 @@ ORDER BY H.Timestamp", new
         )]
         [SwaggerResponse(200, type: typeof(PayoutUSDModel[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public PayoutUSDModel[] GetUSDPayoutsForDataHolder([FromQuery, SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity)
+        public IActionResult GetUSDPayoutsForDataHolder([FromQuery, SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity,
+                [FromQuery] string _sort,
+    [FromQuery] string _order,
+    [FromQuery] bool export,
+    [FromQuery] int? exportType,
+    [FromQuery] string OfferId_like)
         {
+            if (OfferId_like != null && OfferId_like.Length > 200)
+            {
+                OfferId_like = null;
+            }
+
+            string orderBy = String.Empty;
+
+            switch (_sort)
+            {
+                case "TRACAmount":
+                    orderBy = "ORDER BY TRACAmount";
+                    break;
+                case "USDAmount":
+                    orderBy = "ORDER BY USDAmount";
+                    break;
+                case "PayoutTimestamp":
+                    orderBy = "ORDER BY PayoutTimestamp";
+                    break;
+                case "TickerTimestamp":
+                    orderBy = "ORDER BY TickerTimestamp";
+                    break;
+                case "TickerUSDPrice":
+                    orderBy = "ORDER BY TickerUSDPrice";
+                    break;
+            }
+
+            if (!String.IsNullOrWhiteSpace(orderBy))
+            {
+                switch (_order)
+                {
+                    case "ASC":
+                        orderBy += " ASC";
+                        break;
+                    case "DESC":
+                        orderBy += " DESC";
+                        break;
+                }
+            }
+
+
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                return connection.Query<PayoutUSDModel>(DataHolderSql.GetUSDPayoutsForDataHolder, new
+                var rows = connection.Query<PayoutUSDModel>(DataHolderSql.GetUSDPayoutsForDataHolder + Environment.NewLine + orderBy, new
                 {
-                    identity = identity
+                    identity = identity,
+                    OfferId_like
                 }).ToArray();
+
+                if (export)
+                {
+                    if (exportType == 0)
+                    {
+                        return File(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(rows)), "application/json", "payoutsinusd.json", false);
+                    }
+                    else if (exportType == 1)
+                    {
+                        return File(Encoding.UTF8.GetBytes(CsvSerializer.SerializeToCsv(rows)), "text/csv", "payoutsinusd.csv", false);
+                    }
+                }
+
+                return new OkObjectResult(rows);
             }
         }
 
