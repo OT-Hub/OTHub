@@ -26,7 +26,7 @@ left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity
 left JOIN otcontract_profile_profilecreated pc on pc.Profile = I.Identity
 WHERE I.Identity = @identity";
 
-        public const String GetJobs = @"SELECT h.OfferId, 
+        public const String GetJobs = @"SELECT h.Holder Identity, h.OfferId, 
                 h.IsOriginalHolder,
                 o.FinalizedTimestamp, 
                 o.HoldingTimeInMinutes, 

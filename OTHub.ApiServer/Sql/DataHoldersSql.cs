@@ -15,7 +15,7 @@ where identity = @identity";
 
         public const String GetRecentPayoutGasPricesSql = @"
 SELECT GasPrice, AVG(GasUsed) GasUsed, COUNT(*) TotalCount FROM otcontract_holding_paidout
-WHERE Timestamp >= DATE_Add(NOW(), INTERVAL -7 DAY)
+WHERE Timestamp >= DATE_Add(NOW(), INTERVAL -3 DAY)
 GROUP BY GasPrice
 ORDER BY GasPrice";
 

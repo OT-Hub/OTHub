@@ -4,6 +4,7 @@ namespace OTHub.APIServer.Sql.Models.Nodes
 {
     public class NodeProfileDetailedModel_OfferSummary
     {
+        public string Identity { get; set; }
         public String OfferId { get; set; }
         public DateTime FinalizedTimestamp { get; set; }
         public UInt64 HoldingTimeInMinutes { get; set; }

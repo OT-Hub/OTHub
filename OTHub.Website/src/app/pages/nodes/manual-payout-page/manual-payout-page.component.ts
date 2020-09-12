@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 declare const $: any;
 declare const ethereum: any;
+declare const web3: any;
 import Web3 from 'web3';
 import { HubHttpService } from '../../hub-http-service';
 import { ContractAddress, RecentPayoutGasPrice, BeforePayoutResult } from './manual-payout-models';
@@ -45,9 +46,9 @@ export class ManualPayoutPageComponent implements OnInit {
 
   ngOnInit() {
 
-    $(function () {
-      $('#gasPriceInput').inputmask('99.9', { placeholder: '__._' });
-    });
+    // $(function () {
+    //   $('#gasPriceInput').inputmask('99.9', { placeholder: '__._' });
+    // });
 
     this.RouteObservable = this.route.params.subscribe(params => {
       this.identity = params.identity;
@@ -192,6 +193,19 @@ export class ManualPayoutPageComponent implements OnInit {
     this.gasPrice = parseFloat((event.target as HTMLInputElement).value);
   }
 
+  onGasPriceKeyDown(event): boolean {
+    const charCode = (event.which) ? event.which : event.keyCode;
+
+    if (charCode == 46)
+    return true;
+
+    if (charCode > 31 && (charCode < 48 || charCode > 57)) {
+      return false;
+    }
+    return true;
+
+  }
+
   getHoldingAddresses() {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
@@ -242,7 +256,7 @@ export class ManualPayoutPageComponent implements OnInit {
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
     // tslint:disable-next-line:max-line-length
-    let url = this.httpService.ApiUrl + '/api/nodes/dataholders/cantrypayout?identity=' + this.identity + '&offerId=' + this.offerId + '&holdingAddress=' + this.holdingAddress.Address + '&holdingStorageAddress=' + this.holdingStorageAddress.Address + '&litigationStorageAddress=' + this.litigationStorageAddress.Address;
+    let url = this.httpService.ApiUrl + '/api/nodes/dataholder/cantrypayout?identity=' + this.identity + '&offerId=' + this.offerId + '&holdingAddress=' + this.holdingAddress.Address + '&holdingStorageAddress=' + this.holdingStorageAddress.Address + '&litigationStorageAddress=' + this.litigationStorageAddress.Address;
     url += '&' + (new Date()).getTime();
     return this.http.get<BeforePayoutResult>(url, { headers });
   }
@@ -262,8 +276,17 @@ export class ManualPayoutPageComponent implements OnInit {
   }
 
   async enableMetaMask() {
-    const accounts = await ethereum.enable();
-    this.loadAccount(accounts);
+
+    ethereum
+    .request({
+      method: 'eth_requestAccounts',
+    })
+    .then((result) => {
+      this.loadAccount(result);
+    })
+    .catch((error) => {
+      alert(error);
+    });
   }
 
   sendTransaction() {
@@ -278,7 +301,7 @@ export class ManualPayoutPageComponent implements OnInit {
       return;
     }
 
-    const provider = window['web3'].currentProvider;
+    const provider = web3.currentProvider;
     if (provider == null) {
       this.sendError = 'The transaction was not sent. There appears to be a problem interacting with MetaMask.';
       return;
@@ -353,8 +376,10 @@ export class ManualPayoutPageComponent implements OnInit {
           const self = this;
 
           // Call a function of the contract:
-          contractInstance.methods.payOut(this.identity, this.offerId, {
-            from: this.selectedAddress, value: 0, gas: 300000,
+          let builder = contractInstance.methods.payOut(this.identity, this.offerId);
+          let response = builder.send({
+            from: providerAddress, value: 0, gas: 300000,
+            to: this.holdingAddress.Address,
             gasPrice: web3.utils.toWei(this.gasPrice.toString(), 'gwei')
           },
             (err, res) => {

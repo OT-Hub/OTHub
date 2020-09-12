@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import * as moment from 'moment';
 import { MyNodeService } from '../../mynodeservice';
 import { OfferIdColumnComponent } from '../../../miscellaneous/offeridcolumn.component';
+import { PaidoutColumnComponent } from './paidoutcolumns.component';
 
 @Component({
   selector: 'ngx-jobs',
@@ -118,17 +119,18 @@ delete: false
       Paidout: {
         sort: true,
         title: 'Paidout',
-        type: 'html',
+        type: 'custom',
+        renderComponent: PaidoutColumnComponent,
         filter: false,
-        valuePrepareFunction: (value, row) => {
-          if (row.CanPayout === true) {
-            if (this.myNodeService.Get(this.identity)) {
-              return 'No (<a href="/nodes/dataholders/' + this.identity + '/payout/' + row.OfferId + '">Payout</a>)';
-            }
-          }
+        // valuePrepareFunction: (value, row) => {
+        //   if (row.CanPayout === true) {
+        //     if (this.myNodeService.Get(this.identity)) {
+        //       return 'No (<a href="/nodes/dataholders/' + this.identity + '/payout/' + row.OfferId + '">Payout</a>)';
+        //     }
+        //   }
           
-          return row.Paidout === true ? 'Yes' : 'No';
-        }
+        //   return row.Paidout === true ? 'Yes' : 'No';
+        // }
       }
     },
     pager: {

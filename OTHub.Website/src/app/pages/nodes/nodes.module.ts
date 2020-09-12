@@ -23,6 +23,7 @@ import { TransfersComponent as DCTransfersComponent } from './datacreator/transf
 import { LitigationsComponent as DCLitigationsComponent } from './datacreator/litigations/litigations.component';
 import { JobsComponent as DCJobsComponent } from './datacreator/jobs/jobs.component';
 import { OnlineIndicatorRenderComponent } from './dataholders/onlineindicator.component';
+import { PaidoutColumnComponent } from './dataholder/jobs/paidoutcolumns.component';
 @NgModule({
   declarations: [DataHoldersComponent, DataHolderComponent, DatacreatorsComponent,
      DatacreatorComponent, MynodesComponent, FindbymanagementwalletComponent, ManualPayoutPageComponent, SafePipe,
@@ -30,7 +31,7 @@ import { OnlineIndicatorRenderComponent } from './dataholders/onlineindicator.co
      JobsComponent,
      LitigationsComponent,
      PayoutsComponent,
-     TransfersComponent, OnlineIndicatorRenderComponent, DCTransfersComponent, DCLitigationsComponent, DCJobsComponent ],
+     TransfersComponent, OnlineIndicatorRenderComponent, DCTransfersComponent, DCLitigationsComponent, DCJobsComponent, PaidoutColumnComponent ],
   imports: [
     CommonModule,
     NodesRoutingModule,
