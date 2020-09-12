@@ -86,13 +86,26 @@ delete: false
           return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
         }
       },
-      Timestamp: {
+      CreatedTimestamp: {
         sort: true,
         sortDirection: 'desc',
-        title: 'Time',
+        title: 'Created',
         type: 'string',
         filter: false,
         valuePrepareFunction: (value) => {
+          const stillUtc = moment.utc(value).toDate();
+          const local = moment(stillUtc).local().format('DD/MM/YYYY HH:mm');
+          return local;
+        }
+      },
+      FinalizedTimestamp: {
+        sort: true,
+        title: 'Started',
+        type: 'string',
+        filter: false,
+        valuePrepareFunction: (value) => {
+          if (value == null)
+          return '';
           const stillUtc = moment.utc(value).toDate();
           const local = moment(stillUtc).local().format('DD/MM/YYYY HH:mm');
           return local;

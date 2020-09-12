@@ -27,13 +27,13 @@ export class DatacreatorComponent implements OnInit, OnDestroy {
   failedLoading: boolean;
   isLoading: boolean;
   NodeModel: DataCreatedDetailedModel;
-  litigationsExportOptionsObj: any;
-  litigationsDataTable: any;
+  //litigationsExportOptionsObj: any;
+  //litigationsDataTable: any;
   identity: string;
-  jobsDataTable: any;
-  profileDataTable: any;
-  jobsExportOptionsObj: any;
-  profileExportOptionsObj: any;
+  //jobsDataTable: any;
+  //profileDataTable: any;
+  //jobsExportOptionsObj: any;
+  //profileExportOptionsObj: any;
   GetNodeObservable: any;
   RouteObservable: any;
   identityIconUrl: string;
@@ -59,7 +59,7 @@ export class DatacreatorComponent implements OnInit, OnDestroy {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
-    const url = this.httpService.ApiUrl + '/api/nodes/datacreators/' + this.identity + '?' + (new Date()).getTime();
+    const url = this.httpService.ApiUrl + '/api/nodes/datacreator/' + this.identity + '?' + (new Date()).getTime();
     return this.http.get<DataCreatedDetailedModel>(url, { headers });
   }
 

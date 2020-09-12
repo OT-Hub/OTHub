@@ -9,7 +9,7 @@ namespace OTHub.APIServer.Sql
     public static class JobSql
     {
         public const String GetJobDetailed =
-            @"SELECT O.OfferId, O.EstimatedLambda, O.CreatedTimestamp as Timestamp, O.FinalizedTimestamp, O.LitigationIntervalInMinutes, O.DataSetId, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
+            @"SELECT O.OfferId, O.EstimatedLambda, O.CreatedTimestamp as CreatedTimestamp, O.FinalizedTimestamp, O.LitigationIntervalInMinutes, O.DataSetId, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
 (CASE WHEN IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
 	ELSE (CASE WHEN O.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)

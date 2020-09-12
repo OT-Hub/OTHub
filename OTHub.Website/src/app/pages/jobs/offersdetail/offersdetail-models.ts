@@ -1,7 +1,7 @@
 export class OTOfferDetailModel {
     OfferId: string;
     DataSetId: string;
-    Timestamp: Date;
+    CreatedTimestamp: Date;
     DataSetSizeInBytes: number;
     HoldingTimeInMinutes: number;
     TokenAmountPerHolder: number;

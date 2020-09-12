@@ -48,7 +48,7 @@ Data Included:
 
         [Route("{identity}/Jobs")]
         [HttpGet]
-        public IActionResult GetJobs([FromQuery]
+        public IActionResult GetJobs(
             string identity,
             [FromQuery]
             int _limit,
@@ -57,16 +57,25 @@ Data Included:
             [FromQuery] string _sort,
             [FromQuery] string _order,
             [FromQuery] bool export,
-            [FromQuery] int? exportType)
+            [FromQuery] int? exportType,
+            [FromQuery] string OfferId_like)
         {
             _page--;
+
+            if (OfferId_like != null && OfferId_like.Length > 200)
+            {
+                OfferId_like = null;
+            }
 
             string orderBy = String.Empty;
 
             switch (_sort)
             {
-                case "Timestamp":
-                    orderBy = "ORDER BY Timestamp";
+                case "CreatedTimestamp":
+                    orderBy = "ORDER BY CreatedTimestamp";
+                    break;
+                case "FinalizedTimestamp":
+                    orderBy = "ORDER BY FinalizedTimestamp";
                     break;
                 case "DataSetSizeInBytes":
                     orderBy = "ORDER BY DataSetSizeInBytes";
@@ -111,9 +120,9 @@ Data Included:
                 var offers = connection.Query<OfferSummaryModel>(
                     DataCreatorSql.GetJobs + $@"
 {orderBy}
-{limit}", new { identity = identity }).ToArray();
+{limit}", new { identity = identity, OfferId_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetJobsCount, new { identity = identity });
+                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetJobsCount, new { identity = identity, OfferId_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -136,7 +145,7 @@ Data Included:
 
         [Route("{identity}/ProfileTransfers")]
         [HttpGet]
-        public IActionResult GetProfileTransfers([FromQuery]
+        public IActionResult GetProfileTransfers(
             string identity,
             [FromQuery] string TransactionHash_like,
             [FromQuery]
@@ -225,7 +234,7 @@ Data Included:
 
         [Route("{identity}/Litigations")]
         [HttpGet]
-        public IActionResult GetLitigations([FromQuery]
+        public IActionResult GetLitigations(
             string identity,
             [FromQuery]
             int _limit,
@@ -234,9 +243,21 @@ Data Included:
             [FromQuery] string _sort,
             [FromQuery] string _order,
             [FromQuery] bool export,
-            [FromQuery] int? exportType)
+            [FromQuery] int? exportType,
+            [FromQuery] string OfferId_like,
+            [FromQuery] string HolderIdentity_like)
         {
             _page--;
+
+            if (OfferId_like != null && OfferId_like.Length > 200)
+            {
+                OfferId_like = null;
+            }
+
+            if (HolderIdentity_like != null && HolderIdentity_like.Length > 200)
+            {
+                HolderIdentity_like = null;
+            }
 
             string orderBy = String.Empty;
 
@@ -282,9 +303,9 @@ Data Included:
                 var litigations = connection.Query<DataCreatorLitigationSummary>(
                     DataCreatorSql.GetLitigations + $@"
 {orderBy}
-{limit}", new { identity = identity }).ToArray();
+{limit}", new { identity = identity, OfferId_like, HolderIdentity_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetLitigationsCount, new { identity = identity });
+                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetLitigationsCount, new { identity = identity, OfferId_like, HolderIdentity_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();

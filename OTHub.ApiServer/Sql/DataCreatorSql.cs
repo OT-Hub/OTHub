@@ -24,7 +24,7 @@ WHERE I.Identity = @identity
 GROUP BY I.Identity";
 
         public const String GetJobs =
-            @"SELECT o.OfferId, o.CreatedTimestamp as Timestamp, o.DataSetSizeInBytes, o.TokenAmountPerHolder, o.HoldingTimeInMinutes, o.IsFinalized,
+            @"SELECT o.OfferId, o.CreatedTimestamp as CreatedTimestamp, o.FinalizedTimestamp as FinalizedTimestamp, o.DataSetSizeInBytes, o.TokenAmountPerHolder, o.HoldingTimeInMinutes, o.IsFinalized,
                     (CASE WHEN o.IsFinalized = 1 
                     	THEN (CASE WHEN NOW() <= DATE_Add(o.FinalizedTimeStamp, INTERVAL +o.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
                     	ELSE (CASE WHEN o.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)
@@ -37,26 +37,26 @@ GROUP BY I.Identity";
                     join otidentity i on i.NodeId = o.DCNodeId
                     join otcontract_holding_offercreated oc on oc.OfferID = o.OfferID
                     left join otcontract_holding_offerfinalized of on of.OfferID = o.OfferID
-                    WHERE i.Identity = @identity";
+                    WHERE i.Identity = @identity AND (@OfferId_like is null OR o.OfferId = @OfferId_like)";
 
         public const String GetJobsCount =
             @"SELECT COUNT(o.OfferId)
                     FROM OTOffer o
                     join otidentity i on i.NodeId = o.DCNodeId
-                    WHERE i.Identity = @identity";
+                    WHERE i.Identity = @identity AND (@OfferId_like is null OR o.OfferId = @OfferId_like)";
 
         public const String GetLitigations =
             @"SELECT li.TransactionHash, li.Timestamp, li.OfferId, li.HolderIdentity, li.requestedBlockIndex RequestedBlockIndex, li.requestedObjectIndex RequestedObjectIndex
                     FROM otcontract_litigation_litigationinitiated li
                     JOIN OTOffer O ON O.OfferId = li.OfferId
                     JOIN OTIdentity I ON I.NodeId = O.DCNodeId
-                    WHERE I.Identity = @identity";
+                    WHERE I.Identity = @identity AND (@OfferId_like is null OR o.OfferId = @OfferId_like) AND (@HolderIdentity_like is null OR li.HolderIdentity=@HolderIdentity_like)";
 
         public const String GetLitigationsCount =
             @"SELECT COUNT(li.TransactionHash)
                     FROM otcontract_litigation_litigationinitiated li
                     JOIN OTOffer O ON O.OfferId = li.OfferId
                     JOIN OTIdentity I ON I.NodeId = O.DCNodeId
-                    WHERE I.Identity = @identity";
+                    WHERE I.Identity = @identity AND (@OfferId_like is null OR o.OfferId = @OfferId_like) AND (@HolderIdentity_like is null OR li.HolderIdentity=@HolderIdentity_like)";
     }
 }

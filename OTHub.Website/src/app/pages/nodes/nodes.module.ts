@@ -19,6 +19,9 @@ import { JobsComponent } from './dataholder/jobs/jobs.component';
 import { LitigationsComponent } from './dataholder/litigations/litigations.component';
 import { PayoutsComponent } from './dataholder/payouts/payouts.component';
 import { TransfersComponent } from './dataholder/transfers/transfers.component';
+import { TransfersComponent as DCTransfersComponent } from './datacreator/transfers/transfers.component';
+import { LitigationsComponent as DCLitigationsComponent } from './datacreator/litigations/litigations.component';
+import { JobsComponent as DCJobsComponent } from './datacreator/jobs/jobs.component';
 import { OnlineIndicatorRenderComponent } from './dataholders/onlineindicator.component';
 @NgModule({
   declarations: [DataHoldersComponent, DataHolderComponent, DatacreatorsComponent,
@@ -27,7 +30,7 @@ import { OnlineIndicatorRenderComponent } from './dataholders/onlineindicator.co
      JobsComponent,
      LitigationsComponent,
      PayoutsComponent,
-     TransfersComponent, OnlineIndicatorRenderComponent ],
+     TransfersComponent, OnlineIndicatorRenderComponent, DCTransfersComponent, DCLitigationsComponent, DCJobsComponent ],
   imports: [
     CommonModule,
     NodesRoutingModule,

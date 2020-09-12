@@ -80,12 +80,12 @@
                         <nb-list>
                          
                             <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastSuccess">
-                                Last Seen Online: <span
+                                Last Seen Online:&nbsp;<span
                                 [title]="NodeModel?.NodeUptime?.LastSuccess | amFromUtc | amLocal | amDateFormat:'LL h:mm A'"
                                 *ngIf="NodeModel?.NodeUptime?.LastSuccess">{{NodeModel?.NodeUptime?.LastSuccess  | amFromUtc | amLocal | amTimeAgo }}</span>
                             </nb-list-item>
                             <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastCheck">
-                                Last Uptime Check: <span
+                                Last Uptime Check:&nbsp;<span
                                     [title]="NodeModel?.NodeUptime?.LastCheck | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">{{NodeModel?.NodeUptime?.LastCheck  | amFromUtc | amLocal | amTimeAgo }}</span>
                             </nb-list-item>
                             <!-- <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastSuccess">

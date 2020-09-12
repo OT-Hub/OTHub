@@ -18,8 +18,11 @@ namespace OTHub.APIServer.Sql
 
             switch (sort)
             {
-                case "Timestamp":
-                    orderBy = "ORDER BY Timestamp";
+                case "CreatedTimestamp":
+                    orderBy = "ORDER BY CreatedTimestamp";
+                    break;
+                case "FinalizedTimestamp":
+                    orderBy = "ORDER BY FinalizedTimestamp";
                     break;
                 case "DataSetSizeInBytes":
                     orderBy = "ORDER BY DataSetSizeInBytes";
@@ -56,7 +59,7 @@ namespace OTHub.APIServer.Sql
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 OfferSummaryModel[] rows = connection.Query<OfferSummaryModel>(
-                    $@"SELECT I.Identity DCIdentity, O.OfferId, O.CreatedTimestamp as Timestamp, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
+                    $@"SELECT I.Identity DCIdentity, O.OfferId, O.CreatedTimestamp as CreatedTimestamp, o.FinalizedTimestamp as FinalizedTimestamp, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
 (CASE WHEN O.IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
 	ELSE (CASE WHEN O.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)

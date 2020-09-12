@@ -13,7 +13,6 @@ namespace OTHub.APIServer.Sql.Models.Jobs
         public Int32 OffersTotal { get; set; }
         public Int32 OffersLast7Days { get; set; }
         public String PaidoutTokensTotal { get; set; }
-        public DateTime? FinalizedTimestamp { get; set; }
         public UInt64? FinalizedBlockNumber { get; set; }
         public String FinalizedTransactionHash { get; set; }
         public UInt64 CreatedGasUsed { get; set; }

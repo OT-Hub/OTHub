@@ -7,7 +7,8 @@ namespace OTHub.APIServer.Sql.Models.Jobs
     {
         public string DCIdentity { get; set; }
         public string OfferId { get; set; }
-        public DateTime Timestamp { get; set; }
+        public DateTime CreatedTimestamp { get; set; }
+        public DateTime? FinalizedTimestamp { get; set; }
         public BigInteger DataSetSizeInBytes { get; set; }
         public BigInteger HoldingTimeInMinutes { get; set; }
         public String TokenAmountPerHolder { get; set; }

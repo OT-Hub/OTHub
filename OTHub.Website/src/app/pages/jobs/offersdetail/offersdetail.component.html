@@ -21,7 +21,7 @@
                         </nb-list-item>
                         <nb-list-item>
                             Created:
-                            {{OfferModel?.Timestamp  | amFromUtc | amLocal | amDateFormat:'LL h:mm A'}}
+                            {{OfferModel?.CreatedTimestamp  | amFromUtc | amLocal | amDateFormat:'LL h:mm A'}}
                         </nb-list-item>
                         <nb-list-item *ngIf="OfferModel?.FinalizedTransactionHash !== null">
                             Finalized:
