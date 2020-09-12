@@ -33,7 +33,7 @@ namespace OTHub.BackendSync.Nodes.Tasks
 
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var nodesToCheck = connection.Query<string>($@"select I.NodeId FROM (
+                var nodesToCheck = connection.Query<string>($@"select distinct I.NodeId FROM (
 select r.NewIdentity, MAX(Timestamp) Timestamp from otcontract_profile_identitycreated r
 join ethblock b on r.BlockNumber = b.BlockNumber
 GROUP BY r.NewIdentity

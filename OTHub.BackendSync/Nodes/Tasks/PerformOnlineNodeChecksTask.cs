@@ -23,7 +23,51 @@ namespace OTHub.BackendSync.Nodes.Tasks
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var allNodeIpInfos = connection.Query<IpInfo>(@"select * from otnode_ipinfo").ToList();
+                var allNodeIpInfos = connection.Query<IpInfo>(@"SELECT distinct ii.* FROM (
+select r.NewIdentity, MAX(Timestamp) Timestamp from otcontract_profile_identitycreated r
+join ethblock b on r.BlockNumber = b.BlockNumber
+GROUP BY r.NewIdentity
+union all
+select r.NewIdentity, MAX(Timestamp) from otcontract_profile_identitytransferred r
+join ethblock b on r.BlockNumber = b.BlockNumber
+GROUP BY r.NewIdentity
+union all
+select r.Profile, MAX(Timestamp) from otcontract_profile_profilecreated r
+join ethblock b on r.BlockNumber = b.BlockNumber
+group by r.Profile
+union all
+select r.Profile, MAX(Timestamp) from otcontract_profile_tokensdeposited r
+join ethblock b on r.BlockNumber = b.BlockNumber
+group by r.Profile
+union all
+select r.Profile, MAX(Timestamp) from otcontract_profile_tokensreleased r
+join ethblock b on r.BlockNumber = b.BlockNumber
+group by r.Profile
+union all
+select r.Profile, MAX(Timestamp) from otcontract_profile_tokensreserved r
+join ethblock b on r.BlockNumber = b.BlockNumber
+group by r.Profile
+union all
+select r.Profile, MAX(Timestamp) from otcontract_profile_tokenswithdrawn r
+join ethblock b on r.BlockNumber = b.BlockNumber
+group by r.Profile
+union all
+select h.Holder, MAX(b.Timestamp) from otoffer_holders h
+join otoffer o on o.offerid = h.offerid
+join ethblock b on b.blocknumber = o.finalizedblocknumber
+group by h.Holder
+union all
+select p.holder, MAX(b.Timestamp) from otcontract_holding_paidout p
+join ethblock b on b.blocknumber = p.blocknumber
+group by p.holder) x
+JOIN OTIdentity i on x.NewIdentity = i.Identity
+JOIN otnode_ipinfo ii ON ii.NodeId = I.NodeId
+LEFT JOIN otnode_history h ON h.NodeId = i.NodeId AND h.Timestamp >= DATE_ADD(NOW(), INTERVAL -1 MONTH)
+WHERE 
+I.VERSION != 0
+GROUP BY NewIdentity, I.NodeId
+HAVING MAX(h.Success) = 1 OR MAX(x.Timestamp) > DATE_ADD(NOW(), INTERVAL -3 MONTH)
+ORDER BY MAX(x.Timestamp) DESC").ToList();
                 return new ConcurrentQueue<IpInfo>(allNodeIpInfos);
             }
         }

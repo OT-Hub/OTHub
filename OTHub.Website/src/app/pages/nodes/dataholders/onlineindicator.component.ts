@@ -48,10 +48,7 @@ export class OnlineIndicatorRenderComponent implements ViewCell, OnInit {
         this.WarnAboutOTHubIssues = false;
     }
 
-
-    ngOnInit() {
-        this.renderValue = null;
-
+    recalculate() {
         if (this.rowData.LastSeenOnline) {
 
             const now = moment();
@@ -91,6 +88,12 @@ export class OnlineIndicatorRenderComponent implements ViewCell, OnInit {
         }
     }
 
+
+    ngOnInit() {
+        this.renderValue = null;
+        this.recalculate();
+    }
+
     config: NbToastrConfig;
     toastStatus: NbComponentStatus;
 
@@ -109,7 +112,7 @@ export class OnlineIndicatorRenderComponent implements ViewCell, OnInit {
 
             if (data.Success) {
                 this.toastStatus = 'success';
-                this.LastSeenOnline = moment().format('DD/MM/YYYY HH:mm');;
+                this.rowData.LastSeenOnline = new Date();
             } else {
                 this.toastStatus = 'danger';
             }
@@ -118,6 +121,8 @@ export class OnlineIndicatorRenderComponent implements ViewCell, OnInit {
             this.config.status = this.toastStatus;
             this.config.icon = data.Success ? 'checkmark-circle' : 'alert-triangle';
             this.toastrService.show(data.Message, data.Header, this.config);
+
+            this.recalculate();
         }, err => {
 
         });
