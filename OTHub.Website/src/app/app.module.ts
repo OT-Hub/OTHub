@@ -21,6 +21,7 @@ import {
   NbWindowModule,
   NbThemeService,
 } from '@nebular/theme';
+import { EllipsisModule } from 'ngx-ellipsis';
 import { RouterModule } from '@angular/router';
 
 @NgModule({
@@ -40,7 +41,8 @@ import { RouterModule } from '@angular/router';
       messageGoogleMapKey: 'AIzaSyA_wNuCzia92MAmdLRzmqitRGvCF7wCZPY',
     }),
     CoreModule.forRoot(),
-    ThemeModule.forRoot()
+    ThemeModule.forRoot(),
+    EllipsisModule
   ],
   bootstrap: [AppComponent],
 })

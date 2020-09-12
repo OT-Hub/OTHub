@@ -278,6 +278,7 @@ export class DatacreatorsComponent implements OnInit  {
     } else {
       this.config = new NbToastrConfig({duration: 8000});
       this.config.status = "warning";
+      this.config.icon = 'alert-triangle';
       this.toastrService.show(
         'A data creator node was not found by searching for the identity ' + newData.Identity + '. Identities must have created at least one job to qualify as a data creator.',  'Add Node', this.config);
     }
@@ -343,7 +344,8 @@ export class DatacreatorsComponent implements OnInit  {
           type: 'number',
           filter: false,
           editable: false,
-          addable: false
+          addable: false,
+          width: '1%'
           // valuePrepareFunction: (value) => {
           //   const stillUtc = moment.utc(value).toDate();
           //   const local = moment(stillUtc).local().format('DD/MM/YYYY HH:mm');
@@ -357,7 +359,8 @@ export class DatacreatorsComponent implements OnInit  {
           type: 'number',
           filter: false,
           editable: false,
-          addable: false
+          addable: false,
+          width: '1%'
           // valuePrepareFunction: (value) => { return (value / 1000).toFixed(2).replace(/[.,]00$/, '') + ' KB';}
         },
         LastJob: {
@@ -371,7 +374,8 @@ export class DatacreatorsComponent implements OnInit  {
             const stillUtc = moment.utc(value).toDate();
             const local = moment(stillUtc).local().format('DD/MM/YYYY');
             return local;
-          }
+          },
+          width: '1%'
         },
         StakeTokens: {
           sort: true,
@@ -382,7 +386,8 @@ export class DatacreatorsComponent implements OnInit  {
           addable: false,
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
-          }
+          },
+          width: '1%'
         },
         StakeReservedTokens: {
           sort: true,
@@ -393,7 +398,8 @@ export class DatacreatorsComponent implements OnInit  {
           addable: false,
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
-          }
+          },
+          width: '1%'
         },
         AvgDataSetSizeKB: {
           sort: true,
@@ -404,7 +410,8 @@ export class DatacreatorsComponent implements OnInit  {
           addable: false,
           valuePrepareFunction: (value) => {
             return this.formatAmount(value) + 'KB';
-          }
+          },
+          width: '1%'
         },
         AvgHoldingTimeInMinutes: {
           title: 'Offer Holding Time (Avg)',
@@ -421,14 +428,16 @@ export class DatacreatorsComponent implements OnInit  {
             }
   
             return rounded + text;
-          }
+          },
+          width: '1%'
         },
         AvgTokenAmountPerHolder: {
           title: 'Offer Token Amount (Avg)',
           filter: false,
           sort: true,
           editable: false,
-          addable: false
+          addable: false,
+          width: '1%'
         }
       },
       pager: {

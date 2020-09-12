@@ -1,6 +1,6 @@
 import { FailedLoadingPageComponent } from './ui/failed-loading-page/failed-loading-page.component';
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, SlicePipe } from '@angular/common';
 import { CopyclipboardiconComponent } from './ui/copyclipboardicon/copyclipboardicon.component';
 import { NbIconModule, NbPopoverModule } from '@nebular/theme';
 import { OfferIdColumnComponent } from './miscellaneous/offeridcolumn.component';
@@ -13,10 +13,15 @@ import { DataHolderIdentityColumnComponent, DataCreatorIdentityColumnComponent }
   imports: [
     NbIconModule,
     NbPopoverModule,
-    RouterModule
+    RouterModule,
+    CommonModule
   ],
   declarations: [
-  CopyclipboardiconComponent, FailedLoadingPageComponent, OfferIdColumnComponent, DataHolderIdentityColumnComponent, DataCreatorIdentityColumnComponent
+    CopyclipboardiconComponent,
+    FailedLoadingPageComponent,
+    OfferIdColumnComponent,
+    DataHolderIdentityColumnComponent,
+    DataCreatorIdentityColumnComponent
   ],
   exports: [
     CopyclipboardiconComponent, FailedLoadingPageComponent

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
+import { Component, Input, OnInit, EventEmitter, Output, HostListener } from '@angular/core';
 import * as moment from 'moment';
 import { ViewCell } from 'ng2-smart-table';
 import { NbIconLibraries, NbIconComponent, NbComponentStatus } from '@nebular/theme';
@@ -9,7 +9,7 @@ import { HubHttpService } from '../hub-http-service';
     selector: 'offeridcolumn',
     template: `
     <a [routerLink]="[link]">
-   {{value}}
+    {{value}}
     </a>
   `,
 })
@@ -26,9 +26,8 @@ export class OfferIdColumnComponent implements ViewCell, OnInit {
 
     }
 
-
     ngOnInit() {
-        this.renderValue = null;
+        this.renderValue = this.value;
         this.link = '/offers/' + this.value;
     }
 }

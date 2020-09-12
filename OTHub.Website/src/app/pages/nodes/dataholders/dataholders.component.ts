@@ -247,7 +247,8 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         this.source.refresh();
       } else {
         this.config = new NbToastrConfig({duration: 8000});
-        this.config.status = "warning";
+        this.config.status = "warning";        
+      this.config.icon = 'alert-triangle';
         this.toastrService.show(
           'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
       }
@@ -257,13 +258,16 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
   onDelete(event) {
     var deleteData = event.data;
 
-    const model = new MyNodeModel();
-    model.Identity = deleteData.Identity;
-    model.DisplayName = '';
-    this.myNodeService.Remove(model);
-    this.resetSource();
-    event.confirm.resolve();
-  }
+    var r = confirm("Are you sure you want to delete this node?");
+    if (r == true) {
+      const model = new MyNodeModel();
+      model.Identity = deleteData.Identity;
+      model.DisplayName = '';
+      this.myNodeService.Remove(model);
+      this.resetSource();
+      event.confirm.resolve();
+    }
+}
 
   onCreate(event) {
   var newData = event.newData;
@@ -279,6 +283,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     } else {
       this.config = new NbToastrConfig({duration: 8000});
       this.config.status = "warning";
+      this.config.icon = 'alert-triangle';
       this.toastrService.show(
         'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
     }
@@ -314,13 +319,15 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
       },
       columns: {
         LastSeenOnline: {
-          title: 'Online',
+          title: '',
           type: 'custom',
+          class: "onlineIndicator",
           renderComponent: OnlineIndicatorRenderComponent,
           filter: false,
           sort: false,
           editable: false,
           addable: false,
+          width: '1%'
           // valuePrepareFunction: (value, row) => {
           //   return '<div style="font-size:30px;"><i class="nb-checkmark-circle"></i></div>';
           // }
@@ -356,7 +363,8 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           type: 'number',
           filter: false,
           editable: false,
-          addable: false
+          addable: false,
+          width: '1%'
           // valuePrepareFunction: (value) => {
           //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
           // }
@@ -368,7 +376,8 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           type: 'number',
           filter: false,
           editable: false,
-          addable: false
+          addable: false,
+          width: '7%'
           // valuePrepareFunction: (value) => {
           //   const stillUtc = moment.utc(value).toDate();
           //   const local = moment(stillUtc).local().format('DD/MM/YYYY HH:mm');
@@ -381,7 +390,8 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           type: 'number',
           filter: false,
           editable: false,
-          addable: false
+          addable: false,
+          width: '1%'
           // valuePrepareFunction: (value) => { return (value / 1000).toFixed(2).replace(/[.,]00$/, '') + ' KB';}
         },
         PaidTokens: {
@@ -391,6 +401,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
+          width: '1%',
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }
@@ -402,6 +413,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
+          width: '1%',
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }
@@ -413,6 +425,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
+          width: '1%',
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }

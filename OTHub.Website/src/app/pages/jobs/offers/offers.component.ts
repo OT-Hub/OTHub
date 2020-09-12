@@ -65,6 +65,7 @@ delete: false
     columns: {
       DCIdentity: {
         title: 'DC',
+        width: '1%',
         type: 'custom',
         filter: false,
         sort: false,
@@ -93,6 +94,7 @@ delete: false
       CreatedTimestamp: {
         sort: true,
         sortDirection: 'desc',
+        width: '10%',
         title: 'Created',
         type: 'string',
         filter: false,
@@ -105,6 +107,7 @@ delete: false
       FinalizedTimestamp: {
         sort: true,
         title: 'Started',
+        width: '10%',
         type: 'string',
         filter: false,
         valuePrepareFunction: (value) => {
@@ -117,6 +120,7 @@ delete: false
       },
       DataSetSizeInBytes: {
         sort: true,
+        width: '5%',
         title: 'Data Set Size',
         type: 'string',
         filter: false,
@@ -124,6 +128,7 @@ delete: false
       },
       HoldingTimeInMinutes: {
         sort: true,
+        width: '5%',
         title: 'Holding Time',
         type: 'string',
         filter: false,
@@ -138,6 +143,7 @@ delete: false
       TokenAmountPerHolder: {
         sort: true,
         title: 'Token Amount',
+        width: '5%',
         type: 'number',
         filter: false,
         valuePrepareFunction: (value) => {
@@ -149,6 +155,7 @@ delete: false
         sort: false,
         title: 'Status',
         type: 'string',
+        width: '5%',
         filter: false
       }
     },
