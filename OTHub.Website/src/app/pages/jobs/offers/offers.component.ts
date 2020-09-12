@@ -13,6 +13,7 @@ import * as moment from 'moment';
 import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { MyNodeService } from '../../nodes/mynodeservice';
 import { DataCreatorColumnComponent } from './datacreatorcolumn.component';
+import { OfferIdColumnComponent } from '../../miscellaneous/offeridcolumn.component';
 
 @Component({
   selector: 'ngx-offers',
@@ -39,9 +40,7 @@ export class OffersComponent implements OnInit, OnDestroy {
 
   source: ServerDataSource;
 
-  getIdentityIcon(identity: string) {
-    return this.httpService.ApiUrl + '/api/icon/node/' + identity + '/' + (this.isDarkTheme ? 'dark' : 'light') + '/16';
-  }
+
 
   ExportToJson() {
     const url = this.httpService.ApiUrl + '/api/jobs/paging?export=true&exporttype=0';
@@ -85,10 +84,11 @@ delete: false
       OfferId: {
         sort: false,
         title: 'Offer ID',
-        type: 'html',
-        valuePrepareFunction: (value) => {
-          return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
-        }
+        type: 'custom',
+        renderComponent: OfferIdColumnComponent,
+        // valuePrepareFunction: (value) => {
+        //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
+        // }
       },
       CreatedTimestamp: {
         sort: true,
