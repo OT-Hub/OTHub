@@ -33,7 +33,7 @@ namespace OTHub.BackendSync.Nodes.Tasks
 
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var nodesToCheck = connection.Query<string>($@"select I.NodeId, x.Timestamp, MAX(h.Success) FROM (
+                var nodesToCheck = connection.Query<string>($@"select I.NodeId FROM (
 select r.NewIdentity, MAX(Timestamp) Timestamp from otcontract_profile_identitycreated r
 join ethblock b on r.BlockNumber = b.BlockNumber
 GROUP BY r.NewIdentity
@@ -75,7 +75,7 @@ LEFT JOIN otnode_history h ON h.NodeId = i.NodeId AND h.Timestamp >= DATE_ADD(NO
 WHERE 
 I.VERSION != 0
 GROUP BY NewIdentity, I.NodeId
-HAVING (MAX(h.Id) IS NULL OR MAX(h.Success) != 1) AND x.Timestamp > DATE_ADD(NOW(), INTERVAL -3 MONTH)
+HAVING (MAX(h.Id) IS NULL OR MAX(h.Success) != 1) AND MAX(x.Timestamp) > DATE_ADD(NOW(), INTERVAL -3 MONTH)
 ORDER BY MAX(x.Timestamp) DESC")
                     .ToArray();
 
