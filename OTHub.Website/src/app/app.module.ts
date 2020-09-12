@@ -21,6 +21,7 @@ import {
   NbWindowModule,
   NbThemeService,
 } from '@nebular/theme';
+import { RouterModule } from '@angular/router';
 
 @NgModule({
   declarations: [AppComponent],
@@ -39,7 +40,7 @@ import {
       messageGoogleMapKey: 'AIzaSyA_wNuCzia92MAmdLRzmqitRGvCF7wCZPY',
     }),
     CoreModule.forRoot(),
-    ThemeModule.forRoot(),
+    ThemeModule.forRoot()
   ],
   bootstrap: [AppComponent],
 })

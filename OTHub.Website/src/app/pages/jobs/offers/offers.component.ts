@@ -12,6 +12,7 @@ import Web3 from 'web3';
 import * as moment from 'moment';
 import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { MyNodeService } from '../../nodes/mynodeservice';
+import { DataCreatorColumnComponent } from './datacreatorcolumn.component';
 
 @Component({
   selector: 'ngx-offers',
@@ -64,19 +65,22 @@ delete: false
     },
     columns: {
       DCIdentity: {
-        sort: false,
         title: 'DC',
-        type: 'html',
+        type: 'custom',
         filter: false,
-        valuePrepareFunction: (value) => {
-          if (!value) {
-            return 'Unknown';
-          }
+        sort: false,
+        editable: false,
+        addable: false,
+        renderComponent: DataCreatorColumnComponent,
+        // valuePrepareFunction: (value) => {
+        //   if (!value) {
+        //     return 'Unknown';
+        //   }
 
-          return '<a target=_self href="/nodes/datacreators/' + value +
-           '""><img class="lazy" style="height:16px;width:16px;" title="' +
-            value + '" src="' + this.getIdentityIcon(value) + '"></a>';
-        }
+        //   return '<a target=_self href="/nodes/datacreators/' + value +
+        //    '""><img class="lazy" style="height:16px;width:16px;" title="' +
+        //     value + '" src="' + this.getIdentityIcon(value) + '"></a>';
+        // }
       },
       OfferId: {
         sort: false,

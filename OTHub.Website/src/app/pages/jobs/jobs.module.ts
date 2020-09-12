@@ -8,8 +8,10 @@ import { OffersDetailComponent } from './offersdetail/offersdetail.component';
 import { SharedModule } from '../shared.module';
 import { NbAlertModule, NbCardModule, NbIconModule, NbPopoverModule, NbSearchModule, NbSelectModule, NbOptionModule, NbButtonModule, NbStepperModule, NbListModule, NbBadgeModule } from '@nebular/theme';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
+import { RouterModule } from '@angular/router';
+import {DataCreatorColumnComponent} from './offers/datacreatorcolumn.component';
 @NgModule({
-  declarations: [ OffersComponent, OffersDetailComponent],
+  declarations: [ OffersComponent, OffersDetailComponent, DataCreatorColumnComponent],
   imports: [
     CommonModule,
     JobsRoutingModule,
@@ -24,7 +26,8 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
     NbStepperModule,
     NbPopoverModule,
     NbListModule,
-    NbBadgeModule
+    NbBadgeModule,
+    RouterModule,
   ]
 })
 export class JobsModule { }
