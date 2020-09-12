@@ -4,7 +4,7 @@ import { Component } from '@angular/core';
   selector: 'ngx-two-columns-layout',
   styleUrls: ['./two-columns.layout.scss'],
   template: `
-    <nb-layout windowMode>
+    <nb-layout>
       <nb-layout-header fixed>
         <ngx-header></ngx-header>
       </nb-layout-header>
