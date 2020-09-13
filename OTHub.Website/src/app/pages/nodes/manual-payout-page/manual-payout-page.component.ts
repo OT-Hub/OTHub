@@ -328,10 +328,10 @@ export class ManualPayoutPageComponent implements OnInit {
       return;
     }
 
-    if (this.gasPrice > 20) {
-      this.sendError = 'The transaction was not sent. Please lower your gas price!';
-      return;
-    }
+    // if (this.gasPrice > 20) {
+    //   this.sendError = 'The transaction was not sent. Please lower your gas price!';
+    //   return;
+    // }
 
     this.isBusySending = true;
 
