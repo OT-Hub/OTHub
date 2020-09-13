@@ -8,6 +8,7 @@
       <nb-toggle status="primary" [checked]="showDataCreators" style="margin-left:10px;" (checkedChange)="showDataCreatorsChanged($event)">Show Data Creators</nb-toggle>
   
       <nb-toggle status="primary" [checked]="showRecentActivity" style="margin-left:10px;" (checkedChange)="showRecentActivityChanged($event)">Show Recent Activity</nb-toggle></div>
+  </div>
 
     <div #dataHoldersView >
       <app-dataholders hideBreadcrumb="true" showOnlyMyNodes="true" [hidden]="showDataHolders != true"
@@ -22,15 +23,39 @@
           </div>
    
           </div> -->
-      <!-- <div class="col-lg-4 col-md-12 col-sm-12 col-xs-12" style="overflow-y: auto;" #recentActivityView>
+
+
+    <app-datacreators [hidden]="showDataCreators != true" hideBreadcrumb="true" showOnlyMyNodes="true" (afterLoadWithCount)="afterDataCreatorsLoad($event)" #dataCreators>
+    </app-datacreators>
+
+    <div class="row clearfix" *ngIf="showRecentActivity == true">
+      <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12" style="overflow-y: auto;" #recentActivityView>
         <nb-card>
-          <nb-card-header>        <h2>
-            <strong>Recent</strong> Activity</h2></nb-card-header>
-          <nb-card-body>
-            <p *ngIf="recentActivity == null || recentActivity.length === 0">
+          <nb-card-header>Recent Activity</nb-card-header>
+          <nb-card-body *ngIf="recentActivity == null || recentActivity.length === 0">
+            <p>
               There is no activity to show for the last 7 days! Check back later.
             </p>
-        <ul class="timeline" *ngIf="recentActivity != null">
+          </nb-card-body>
+            <nb-list *ngIf="recentActivity != null">
+              <nb-list-item *ngFor="let activity of recentActivity">
+                <nb-user [name]="myNodeService.GetName(activity.Identity, false)" 
+                [title]="'Chosen for job ' + activity.OfferId + ' at ' + (activity.Timestamp | amFromUtc | amLocal | amDateFormat:'LL h:mm A')" [picture]="getIdentityIcon(activity.Identity, 32)"></nb-user>
+                <!-- <div>                <a routerLink="/nodes/dataholders/{{activity.Identity}}"><img style="padding-right:5px;" [title]="myNodeService.GetName(activity.Identity, false)" class="notice-object" [src]="getIdentityIcon(activity.Identity, 32)">{{myNodeService.GetName(activity.Identity, false)}}</a>
+                </div>
+                <div>&nbsp;was chosen for job:&nbsp;<a routerLink="/offers/{{activity.OfferId}}" [title]="activity.OfferId">{{activity.OfferId | slice:0:30}}...</a>
+                </div>
+                <br>
+                <div>
+                  <p><span [title]="activity.Timestamp | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">{{activity.Timestamp | amFromUtc | amLocal | amTimeAgo}}</span>
+
+                    <span style="margin-left:8px;">{{formatAmount(activity.TokenAmountPerHolder)}} TRAC</span>
+                    <span style="margin-left:8px;">Ends {{activity.EndTimestamp | amFromUtc | amLocal | amDateFormat:'LL h:mm A'}}</span>
+                  </p>
+                </div> -->
+              </nb-list-item>
+            </nb-list>
+        <!-- <ul class="timeline" *ngIf="recentActivity != null">
           <li *ngFor="let activity of recentActivity">
             <div class="timeline-badge primary">
               <a routerLink="/nodes/dataholders/{{activity.Identity}}"><img [title]="myNodeService.GetName(activity.Identity, false)" class="notice-object" [src]="getIdentityIcon(activity.Identity, 32)"></a>
@@ -50,14 +75,11 @@
               </div>
             </div>
           </li>
-        </ul>
-         </nb-card-body>
+        </ul> -->
+    
       </nb-card>
-      </div> -->
+      </div>
     </div>
-
-    <app-datacreators [hidden]="showDataCreators != true" hideBreadcrumb="true" showOnlyMyNodes="true" (afterLoadWithCount)="afterDataCreatorsLoad($event)" #dataCreators>
-    </app-datacreators>
     <!-- <div class="row clearfix">
       <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <nb-card>
