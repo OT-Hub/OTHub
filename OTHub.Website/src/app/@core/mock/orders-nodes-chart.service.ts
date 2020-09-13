@@ -1,11 +1,11 @@
 import { of as observableOf,  Observable } from 'rxjs';
 import { Injectable } from '@angular/core';
 import { OrdersChart, OrdersChartData } from '../data/orders-chart';
-import { OrderProfitChartSummary, OrdersProfitChartData } from '../data/orders-profit-chart';
-import { ProfitChart, ProfitChartData } from '../data/profit-chart';
+import { OrderNodesChartSummary, OrdersNodesChartData } from '../data/orders-nodes-chart';
+import { NodesChart, NodesChartData } from '../data/nodes-chart';
 
 @Injectable()
-export class OrdersProfitChartService extends OrdersProfitChartData {
+export class OrdersNodesChartService extends OrdersNodesChartData {
 
   private summary = [
     {
@@ -27,11 +27,11 @@ export class OrdersProfitChartService extends OrdersProfitChartData {
   ];
 
   constructor(private ordersChartService: OrdersChartData,
-              private profitChartService: ProfitChartData) {
+              private nodesChartService: NodesChartData) {
     super();
   }
 
-  getOrderProfitChartSummary(): Observable<OrderProfitChartSummary[]> {
+  getOrderProfitChartSummary(): Observable<OrderNodesChartSummary[]> {
     return observableOf(this.summary);
   }
 
@@ -39,7 +39,7 @@ export class OrdersProfitChartService extends OrdersProfitChartData {
     return observableOf(this.ordersChartService.getOrdersChartData(period));
   }
 
-  getProfitChartData(period: string): Observable<ProfitChart> {
-    return observableOf(this.profitChartService.getProfitChartData(period));
+  getNodesChartData(period: string): Observable<NodesChart> {
+    return observableOf(this.nodesChartService.getNodesChartData(period));
   }
 }

@@ -1,53 +1,30 @@
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { AfterViewInit, Component, Input, OnChanges, OnDestroy } from '@angular/core';
 import { NbThemeService } from '@nebular/theme';
 import { delay, takeWhile } from 'rxjs/operators';
-import { HubHttpService } from './../../../hub-http-service';
-import { OTHomeJobsChartData } from './OTHomeJobsChartData';
 
-import {
-	HttpClient, HttpHeaders
-} from '@angular/common/http';
-import { OrdersChart } from '../../../../@core/data/orders-chart';
+import { NodesChart } from '../../../../@core/data/nodes-chart';
 import { LayoutService } from '../../../../@core/utils/layout.service';
+import { HubHttpService } from '../../../hub-http-service';
+import { OTHomeJobsChartData, OTHomeNodesChartData } from './OTHomeJobsChartData';
 
 @Component({
-  selector: 'ngx-orders-chart',
+  selector: 'ngx-nodes-chart',
   styleUrls: ['./charts-common.component.scss'],
   template: `
-    <div echarts
-         [options]="option"
-         [merge]="option"
-         class="echart"
-         (chartInit)="onChartInit($event)">
-    </div>
+    <div echarts [options]="options" class="echart" (chartInit)="onChartInit($event)"></div>
   `,
 })
-export class OrdersChartComponent implements AfterViewInit, OnDestroy, OnChanges {
+export class NodesChartComponent implements AfterViewInit, OnDestroy, OnChanges {
 
   @Input()
-  ordersChartData: OrdersChart;
-
-
+  nodesChartData: NodesChart;
 
   private alive = true;
 
   echartsIntance: any;
-  option: any;
-  jobsData: OTHomeJobsChartData;
-
-  getJobsChartData() {
-		const headers = new HttpHeaders()
-			.set('Content-Type', 'application/json')
-			.set('Accept', 'application/json');
-		const url = this.httpService.ApiUrl + '/api/home/jobschartdatav2?' + (new Date()).getTime();
-		return this.http.get<OTHomeJobsChartData>(url, { headers });
-	}
-
-  ngOnChanges(): void {
-    if (this.option) {
-      this.updateOrdersChartOptions(this.ordersChartData);
-    }
-  }
+  options: any = {};
+  nodesData: OTHomeNodesChartData;
 
   constructor(private theme: NbThemeService,
               private layoutService: LayoutService, private httpService: HubHttpService,
@@ -59,57 +36,69 @@ export class OrdersChartComponent implements AfterViewInit, OnDestroy, OnChanges
       .subscribe(() => this.resizeChart());
   }
 
-  ngAfterViewInit(): void {
+  getNodesChartData() {
+		const headers = new HttpHeaders()
+			.set('Content-Type', 'application/json')
+			.set('Accept', 'application/json');
+		const url = this.httpService.ApiUrl + '/api/home/nodeschartdatav2?' + (new Date()).getTime();
+		return this.http.get<OTHomeNodesChartData>(url, { headers });
+	}
+
+  ngOnChanges(): void {
+    if (this.echartsIntance) {
+      this.updateNodesChartOptions(this.nodesChartData);
+    }
+  }
+
+  ngAfterViewInit() {
+
     this.theme.getJsTheme()
-      .pipe(
-        takeWhile(() => this.alive),
-        delay(1),
-      )
-      .subscribe(config => {
+    .pipe(
+      takeWhile(() => this.alive),
+      delay(1),
+    )
+    .subscribe(config => {
 
-        this.getJobsChartData().subscribe(data => {
+      this.getNodesChartData().subscribe(data => {
 
-        this.jobsData = data;
+      this.nodesData = data;
 
-        const eTheme: any = config.variables.orders;
+      const eTheme: any = config.variables.orders;
 
-        this.setOptions(eTheme);
-        this.updateOrdersChartOptions(this.ordersChartData);
+   
 
-        });
+      this.setOptions(eTheme);
+      this.updateNodesChartOptions(this.nodesChartData);
+
       });
+    });
+
+    // this.theme.getJsTheme()
+    //   .pipe(takeWhile(() => this.alive))
+    //   .subscribe(config => {
+    //     const eTheme: any = config.variables.profit;
+
+    //     this.setOptions(eTheme);
+    //   });
   }
 
   setOptions(eTheme) {
-    this.option = {
-      grid: {
-        left: 50,
-        top: 20,
-        right: 30,
-        bottom: 40,
-      },
+    this.options = {
+      backgroundColor: eTheme.bg,
       tooltip: {
-        trigger: 'item',
+        trigger: 'axis',
         axisPointer: {
-          type: 'line',
-          lineStyle: {
-            color: eTheme.tooltipLineColor,
-            width: eTheme.tooltipLineWidth,
+          type: 'shadow',
+          shadowStyle: {
+            color: 'rgba(0, 0, 0, 0.3)',
           },
         },
-        textStyle: {
-          color: eTheme.tooltipTextColor,
-          fontSize: eTheme.tooltipFontSize,
-          fontWeight: eTheme.tooltipFontWeight,
-        },
-        position: 'top',
-        backgroundColor: eTheme.tooltipBg,
-        borderColor: eTheme.tooltipBorderColor,
-        borderWidth: 1,
-        formatter: (params) => {
-          return Math.round(parseInt(params.value, 10));
-        },
-        extraCssText: eTheme.tooltipExtraCss,
+      },
+      grid: {
+        left: '3%',
+        right: '4%',
+        bottom: '3%',
+        containLabel: true,
       },
       xAxis: {
         type: 'category',
@@ -153,44 +142,61 @@ export class OrdersChartComponent implements AfterViewInit, OnDestroy, OnChanges
         },
       ],
       series: [
-        //this.getFirstLine(eTheme),
         this.getSecondLine(eTheme),
         this.getThirdLine(eTheme),
+        // {
+        //   name: 'Canceled',
+        //   type: 'bar',
+        //   barGap: 0,
+        //   barWidth: '20%',
+        //   itemStyle: {
+        //     normal: {
+        //       color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+        //         offset: 0,
+        //         color: eTheme.firstLineGradFrom,
+        //       }, {
+        //         offset: 1,
+        //         color: eTheme.firstLineGradTo,
+        //       }]),
+        //     },
+        //   },
+        //   data: [],
+        // },
+        // {
+        //   name: 'Payment',
+        //   type: 'bar',
+        //   barWidth: '20%',
+        //   itemStyle: {
+        //     normal: {
+        //       color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+        //         offset: 0,
+        //         color: eTheme.secondLineGradFrom,
+        //       }, {
+        //         offset: 1,
+        //         color: eTheme.secondLineGradTo,
+        //       }]),
+        //     },
+        //   },
+        //   data: [],
+        // },
+        // {
+        //   name: 'All orders',
+        //   type: 'bar',
+        //   barWidth: '20%',
+        //   itemStyle: {
+        //     normal: {
+        //       color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
+        //         offset: 0,
+        //         color: eTheme.thirdLineGradFrom,
+        //       }, {
+        //         offset: 1,
+        //         color: eTheme.thirdLineGradTo,
+        //       }]),
+        //     },
+        //   },
+        //   data: [],
+        // },
       ],
-    };
-  }
-
-  getFirstLine(eTheme) {
-    return {
-      type: 'line',
-      smooth: true,
-      symbolSize: 20,
-      itemStyle: {
-        normal: {
-          opacity: 0,
-        },
-        emphasis: {
-          opacity: 0,
-        },
-      },
-      lineStyle: {
-        normal: {
-          width: 0,
-        },
-      },
-      areaStyle: {
-        normal: {
-          color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [{
-            offset: 0,
-            color: eTheme.firstAreaGradFrom,
-          }, {
-            offset: 1,
-            color: eTheme.firstAreaGradTo,
-          }]),
-          opacity: 1,
-        },
-      },
-      data: [],
     };
   }
 
@@ -282,22 +288,23 @@ export class OrdersChartComponent implements AfterViewInit, OnDestroy, OnChanges
     };
   }
 
-  updateOrdersChartOptions(ordersChartData: OrdersChart) {
-    const options = this.option;
+  updateNodesChartOptions(nodesChartData: NodesChart) {
+
+    const options = this.options;
 
     let data;
     let labels;
 
-    if (ordersChartData.period == '12 Months') {
-      data = this.jobsData.Month;
-      labels = this.jobsData.MonthLabels;
+    if (nodesChartData.period == '12 Months') {
+      data = this.nodesData.Month;
+      labels = this.nodesData.MonthLabels;
     }
-    else if (ordersChartData.period == 'All Years') {
-      data = this.jobsData.Year;
-      labels = this.jobsData.YearLabels;
+    else if (nodesChartData.period == 'All Years') {
+      data = this.nodesData.Year;
+      labels = this.nodesData.YearLabels;
     } else {
-      data = this.jobsData.Week;
-      labels = this.jobsData.WeekLabels;
+      data = this.nodesData.Week;
+      labels = this.nodesData.WeekLabels;
     }
     
     const series = this.getNewSeries(options.series, data);
@@ -305,20 +312,28 @@ export class OrdersChartComponent implements AfterViewInit, OnDestroy, OnChanges
     //const series = this.getNewSeries(options.series, ordersChartData.linesData);
     //const xAxis = this.getNewXAxis(options.xAxis, ordersChartData.chartLabel);
 
-    this.option = {
+    this.options = {
       ...options,
       xAxis,
       series,
     };
+
+    // const options = this.options;
+    // const series = this.getNewSeries(options.series, nodesChartData.data);
+
+    // this.echartsIntance.setOption({
+    //   series: series,
+    //   xAxis: {
+    //     data: this.nodesChartData.chartLabel,
+    //   },
+    // });
   }
 
-  
-
-  getNewSeries(series, linesData: number[][]) {
+  getNewSeries(series, data: number[][]) {
     return series.map((line, index) => {
       return {
         ...line,
-        data: linesData[index],
+        data: data[index],
       };
     });
   }
@@ -344,7 +359,7 @@ export class OrdersChartComponent implements AfterViewInit, OnDestroy, OnChanges
     }
   }
 
-  ngOnDestroy() {
+  ngOnDestroy(): void {
     this.alive = false;
   }
 }

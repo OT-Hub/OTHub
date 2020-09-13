@@ -2,13 +2,13 @@ import { Component, OnDestroy, ViewChild } from '@angular/core';
 import { takeWhile } from 'rxjs/operators';
 
 import { OrdersChartComponent } from './charts/orders-chart.component';
-import { ProfitChartComponent } from './charts/profit-chart.component';
+import { NodesChartComponent } from './charts/nodes-chart.component';
 import { OrdersChart } from '../../../@core/data/orders-chart';
-import { ProfitChart } from '../../../@core/data/profit-chart';
-import { OrderProfitChartSummary, OrdersProfitChartData } from '../../../@core/data/orders-profit-chart';
+import { NodesChart } from '../../../@core/data/nodes-chart';
+import { OrderNodesChartSummary, OrdersNodesChartData } from '../../../@core/data/orders-nodes-chart';
 import { HubHttpService } from '../../hub-http-service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { JobChartDataV2SummaryModel } from './charts/OTHomeJobsChartData';
+import { HomeNodesInfoV2SummaryModel, JobChartDataV2SummaryModel } from './charts/OTHomeJobsChartData';
 
 @Component({
   selector: 'ngx-ecommerce-charts',
@@ -19,50 +19,96 @@ export class ECommerceChartsPanelComponent implements OnDestroy {
 
   private alive = true;
 
-  chartPanelSummary: OrderProfitChartSummary[];
+  chartPanelSummary: OrderNodesChartSummary[];
   period: string = '7 Days';
   ordersChartData: OrdersChart;
-  profitChartData: ProfitChart;
+  nodesChartData: NodesChart;
+
+  jobsSummary: JobChartDataV2SummaryModel;
+  nodesSummary: HomeNodesInfoV2SummaryModel;
 
   @ViewChild('ordersChart', { static: true }) ordersChart: OrdersChartComponent;
-  @ViewChild('profitChart', { static: true }) profitChart: ProfitChartComponent;
+  @ViewChild('nodesChart', { static: true }) nodesChart: NodesChartComponent;
 
-  getJobsChartData() {
-		const headers = new HttpHeaders()
-			.set('Content-Type', 'application/json')
-			.set('Accept', 'application/json');
-		const url = this.httpService.ApiUrl + '/api/home/JobsChartDataSummaryV2?' + (new Date()).getTime();
-		return this.http.get<JobChartDataV2SummaryModel>(url, { headers });
-	}
+  getJobsSummary() {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/home/JobsChartDataSummaryV2?' + (new Date()).getTime();
+    return this.http.get<JobChartDataV2SummaryModel>(url, { headers });
+  }
 
+  getNodesSummary() {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/home/HomeNodesInfoV2?' + (new Date()).getTime();
+    return this.http.get<HomeNodesInfoV2SummaryModel>(url, { headers });
+  }
 
-  constructor(private ordersProfitChartService: OrdersProfitChartData, private httpService: HubHttpService,
+  setJobsSummary() {
+    if (this.jobsSummary)
+    this.chartPanelSummary = [
+      {
+        title: 'Active',
+        value: this.jobsSummary.OffersActive,
+      },
+      {
+        title: 'Started Last Month',
+        value: this.jobsSummary.OffersLastMonth,
+      },
+      {
+        title: 'Started Last Week',
+        value: this.jobsSummary.OffersLast7Days,
+      },
+      {
+        title: 'Started Today',
+        value: this.jobsSummary.OffersLast24Hours,
+      },
+    ];
+  }
+
+  setNodesSummary() {
+    if (this.nodesSummary)
+    this.chartPanelSummary = [
+      {
+        title: 'Online Nodes',
+        value: this.nodesSummary.OnlineNodesCount,
+      },
+      {
+        title: 'Nodes with Active Jobs',
+        value: this.nodesSummary.NodesWithActiveJobs,
+      },
+      {
+        title: 'Nodes Chosen for Jobs this Week',
+        value: this.nodesSummary.NodesWithJobsThisWeek,
+      },
+      {
+        title: 'Nodes Chosen for Jobs this Month',
+        value: this.nodesSummary.NodesWithJobsThisMonth,
+      },
+    ];
+  }
+
+  constructor(private ordersNodesChartService: OrdersNodesChartData, private httpService: HubHttpService,
     private http: HttpClient) {
 
 
-      this.getJobsChartData().pipe(takeWhile(() => this.alive)).subscribe(data => {
+    this.getNodesSummary().pipe(takeWhile(() => this.alive)).subscribe(data => {
 
+      this.nodesSummary = data;
 
-        this.chartPanelSummary = [
-          {
-            title: 'Active',
-            value: data.OffersActive,
-          },
-          {
-            title: 'Started Last Month',
-            value: data.OffersLastMonth,
-          },
-          {
-            title: 'Started Last Week',
-            value: data.OffersLast7Days,
-          },
-          {
-            title: 'Started Today',
-            value: data.OffersLast24Hours,
-          },
-        ];
+      this.setNodesSummary();
 
-        });
+    });
+
+    this.getJobsSummary().pipe(takeWhile(() => this.alive)).subscribe(data => {
+
+      this.jobsSummary = data;
+
+      this.setJobsSummary();
+
+    });
 
     // this.ordersProfitChartService.getOrderProfitChartSummary()
     //   .pipe(takeWhile(() => this.alive))
@@ -89,7 +135,7 @@ export class ECommerceChartsPanelComponent implements OnDestroy {
     //   });
 
     this.getOrdersChartData(this.period);
-    this.getProfitChartData(this.period);
+    this.getNodesChartData(this.period);
   }
 
   setPeriodAndGetChartData(value: string): void {
@@ -98,19 +144,21 @@ export class ECommerceChartsPanelComponent implements OnDestroy {
     }
 
     this.getOrdersChartData(value);
-    this.getProfitChartData(value);
+    this.getNodesChartData(value);
   }
 
   changeTab(selectedTab) {
-    if (selectedTab.tabTitle === 'Profit') {
-      this.profitChart.resizeChart();
+    if (selectedTab.tabTitle === 'Nodes') {
+      this.setNodesSummary();
+      this.nodesChart.resizeChart();
     } else {
+      this.setJobsSummary();
       this.ordersChart.resizeChart();
     }
   }
 
   getOrdersChartData(period: string) {
-    this.ordersProfitChartService.getOrdersChartData(period)
+    this.ordersNodesChartService.getOrdersChartData(period)
       .pipe(takeWhile(() => this.alive))
       .subscribe(ordersChartData => {
         ordersChartData.period = period;
@@ -118,11 +166,12 @@ export class ECommerceChartsPanelComponent implements OnDestroy {
       });
   }
 
-  getProfitChartData(period: string) {
-    this.ordersProfitChartService.getProfitChartData(period)
+  getNodesChartData(period: string) {
+    this.ordersNodesChartService.getNodesChartData(period)
       .pipe(takeWhile(() => this.alive))
-      .subscribe(profitChartData => {
-        this.profitChartData = profitChartData;
+      .subscribe(nodesChartData => {
+        nodesChartData.period = period;
+        this.nodesChartData = nodesChartData;
       });
   }
 

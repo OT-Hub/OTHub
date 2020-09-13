@@ -17,7 +17,7 @@ import { ECommerceComponent } from './e-commerce.component';
 import { ProfitCardComponent } from './profit-card/profit-card.component';
 import { ECommerceChartsPanelComponent } from './charts-panel/charts-panel.component';
 import { OrdersChartComponent } from './charts-panel/charts/orders-chart.component';
-import { ProfitChartComponent } from './charts-panel/charts/profit-chart.component';
+import { NodesChartComponent } from './charts-panel/charts/nodes-chart.component';
 import { ChartPanelHeaderComponent } from './charts-panel/chart-panel-header/chart-panel-header.component';
 import { ChartPanelSummaryComponent } from './charts-panel/chart-panel-summary/chart-panel-summary.component';
 import { ChartModule } from 'angular2-chartjs';
@@ -82,7 +82,7 @@ import { EarningLiveUpdateChartComponent } from './earning-card/front-side/earni
     ChartPanelHeaderComponent,
     ChartPanelSummaryComponent,
     OrdersChartComponent,
-    ProfitChartComponent,
+    NodesChartComponent,
     StatsCardBackComponent,
     TrafficRevealCardComponent,
     TrafficBarChartComponent,

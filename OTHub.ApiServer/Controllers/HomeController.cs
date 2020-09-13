@@ -41,7 +41,27 @@ namespace OTHub.APIServer.Controllers
             }
         }
 
-            [HttpGet]
+        [HttpGet]
+        [Route("HomeNodesInfoV2")]
+        public HomeNodesInfo HomeNodesInfoV2()
+        {
+            using (var connection =
+    new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                //	(SELECT count(distinct nodeId) as OnlineNodesCount FROM otnode_history WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY) AND Success = 1) as OnlineNodesCount,
+                //  ((SELECT count(distinct nodeId) FROM OTContract_Approval_NodeApproved) -(SELECT count(distinct nodeId) FROM OTContract_Approval_NodeRemoved)) as ApprovedNodesCount,
+
+                var homeInfo = connection.QuerySingle<HomeNodesInfo>($@"SELECT 
+    (SELECT count(distinct h.nodeId) as OnlineNodesCount FROM otnode_history h join otnode_ipinfo i on i.nodeid = h.nodeid WHERE h.TimeStamp >= DATE_Add(NOW(), INTERVAL -3 HOUR) AND h.Success = 1) OnlineNodesCount,
+    (SELECT count(distinct H.Holder) FROM OTOffer_Holders H JOIN OTOffer O on O.OfferID = H.OfferID WHERE O.IsFinalized = 1 AND O.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -7 DAY)) NodesWithJobsThisWeek,
+    (SELECT count(distinct H.Holder) FROM OTOffer_Holders H JOIN OTOffer O on O.OfferID = H.OfferID WHERE O.IsFinalized = 1 AND O.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 MONTH)) NodesWithJobsThisMonth,
+    (SELECT COUNT(distinct H.Holder) FROM OTOffer O JOIN OTOffer_Holders H ON H.OfferID = O.OfferId WHERE O.IsFinalized = 1 AND NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)) NodesWithActiveJobs");
+
+                return homeInfo;
+            }
+        }
+
+        [HttpGet]
         [Route("JobsChartDataV2")]
         public JobsChartDataV2 JobsChartDataV2()
         {
@@ -169,6 +189,49 @@ GROUP BY x.Date").ToArray();
                 };
 
                 response.YearLabels = data.Select(d => d.Label).ToArray();
+
+                return response;
+            }
+        }
+
+        [HttpGet]
+        [Route("NodesChartDataV2")]
+        public NodesChartDataV2 NodesChartDataV2()
+        {
+            var response = new NodesChartDataV2();
+
+            using (var connection =
+               new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var data = connection.Query<HomeNodesChartDataModel>(@"SELECT 
+x.Date,
+DAYNAME(x.Date) Label,
+(SELECT COUNT(DISTINCT h.NodeId) FROM otnode_history h WHERE x.Date = DATE(h.Timestamp) AND h.Success = 1) OnlineNodes,
+(SELECT COUNT(distinct H.Holder) FROM OTOffer O JOIN OTOffer_Holders H ON H.OfferID = O.OfferId WHERE O.IsFinalized = 1 AND x.Date <= DATE(DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE))) NodesWithActiveJobs
+FROM (
+SELECT CURDATE() Date
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 1 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 2 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 3 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 4 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 5 DAY)
+UNION 
+SELECT DATE_Add(CURDATE(), INTERVAL - 6 DAY)
+) x 
+GROUP BY x.Date").ToArray();
+
+                response.Week = new int[][]
+                {
+                    data.Select(d => d.NodesWithActiveJobs).ToArray(),
+                    data.Select(d => d.OnlineNodes).ToArray()
+                };
+
+                response.WeekLabels = data.Select(d => d.Label).ToArray();
 
                 return response;
             }
@@ -328,14 +391,14 @@ Please note market price information is not currently available within the respo
     (SELECT COUNT(distinct H.Holder) FROM OTOffer O JOIN OTOffer_Holders H ON H.OfferID = O.OfferId WHERE O.IsFinalized = 1 AND NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)) NodesWithActiveJobs,
 	(select sum(StakeReserved) from otidentity where version = (select max(ii.version) from otidentity ii)) LockedTokensTotal");
 
-                var lastApprovals = connection.QueryFirstOrDefault(
-                    @"SELECT Timestamp, COUNT(*) Amount FROM otcontract_approval_nodeapproved
-GROUP BY Timestamp
-ORDER BY Timestamp DESC
-LIMIT 1");
+//                var lastApprovals = connection.QueryFirstOrDefault(
+//                    @"SELECT Timestamp, COUNT(*) Amount FROM otcontract_approval_nodeapproved
+//GROUP BY Timestamp
+//ORDER BY Timestamp DESC
+//LIMIT 1");
 
-                homeInfo.LastApprovalTimestamp = (DateTime?)lastApprovals?.Timestamp;
-                homeInfo.LastApprovalAmount = (Int32?) lastApprovals?.Amount;
+                //homeInfo.LastApprovalTimestamp = (DateTime?)lastApprovals?.Timestamp;
+                //homeInfo.LastApprovalAmount = (Int32?) lastApprovals?.Amount;
           
                 var offersInfo = connection.QuerySingle<HomeOffersInfo>(@"SELECT
 	(SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1) as OffersTotal,

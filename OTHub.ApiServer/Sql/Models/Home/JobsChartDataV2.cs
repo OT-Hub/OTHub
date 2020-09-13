@@ -19,6 +19,12 @@ namespace OTHub.APIServer.Sql.Models.Home
         public string[] YearLabels { get; set; }
     }
 
+    public class NodesChartDataV2
+    {
+        public int[][] Week { get; set; }
+        public string[] WeekLabels { get; set; }
+    }
+
     public class JobChartDataV2SummaryModel
     {
         public int OffersLast24Hours { get; set; }

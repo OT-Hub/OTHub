@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output } from '@angular/core';
 import { NbMediaBreakpoint, NbMediaBreakpointsService, NbThemeService } from '@nebular/theme';
 import { takeWhile } from 'rxjs/operators';
 
@@ -8,13 +8,14 @@ import { takeWhile } from 'rxjs/operators';
   styleUrls: ['./chart-panel-header.component.scss'],
   templateUrl: './chart-panel-header.component.html',
 })
-export class ChartPanelHeaderComponent implements OnDestroy {
+export class ChartPanelHeaderComponent implements OnDestroy, OnInit {
 
   private alive = true;
 
   @Output() periodChange = new EventEmitter<string>();
 
   @Input() type: string = '7 Days';
+  @Input() isjobschart: string;
 
   types: string[] = ['7 Days', '12 Months', 'All Years'];
   chartLegend: {iconColor: string; title: string}[];
@@ -42,14 +43,15 @@ export class ChartPanelHeaderComponent implements OnDestroy {
   }
 
   setLegendItems(orderProfitLegend) {
+
     this.chartLegend = [
       {
         iconColor: orderProfitLegend.firstItem,
-        title: 'Jobs Started',
+        title: this.isjobschart == 'true' ? 'Jobs Started' : 'Online Nodes',
       },
       {
         iconColor: orderProfitLegend.secondItem,
-        title: 'Jobs Completed',
+        title: this.isjobschart == 'true' ? 'Jobs Completed' : 'Nodes with Active Jobs',
       }
     ];
   }
@@ -57,6 +59,12 @@ export class ChartPanelHeaderComponent implements OnDestroy {
   changePeriod(period: string): void {
     this.type = period;
     this.periodChange.emit(period);
+  }
+
+  ngOnInit() {
+    this.themeService.getJsTheme().subscribe(j => {
+      this.setLegendItems(j.variables.orderProfitLegend);
+    });
   }
 
   ngOnDestroy() {

@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { PeriodsService } from './periods.service';
-import { ProfitChart, ProfitChartData } from '../data/profit-chart';
+import { NodesChart, NodesChartData } from '../data/nodes-chart';
 
 @Injectable()
-export class ProfitChartService extends ProfitChartData {
+export class NodesChartService extends NodesChartData {
 
   private year = [
     '2012',
@@ -15,21 +15,22 @@ export class ProfitChartService extends ProfitChartData {
     '2018',
   ];
 
-  private data = { };
+  private data = {};
 
   constructor(private period: PeriodsService) {
     super();
     this.data = {
-      week: this.getDataForWeekPeriod(),
-      month: this.getDataForMonthPeriod(),
-      year: this.getDataForYearPeriod(),
+      '7 Days': this.getDataForWeekPeriod(),
+      '12 Months': this.getDataForMonthPeriod(),
+      'All Years': this.getDataForYearPeriod(),
     };
   }
 
-  private getDataForWeekPeriod(): ProfitChart {
+  private getDataForWeekPeriod(): NodesChart {
     const nPoint = this.period.getWeeks().length;
 
     return {
+      period: '7 Days',
       chartLabel: this.period.getWeeks(),
       data: [
         this.getRandomData(nPoint),
@@ -39,10 +40,11 @@ export class ProfitChartService extends ProfitChartData {
     };
   }
 
-  private getDataForMonthPeriod(): ProfitChart {
+  private getDataForMonthPeriod(): NodesChart {
     const nPoint = this.period.getMonths().length;
 
     return {
+      period: 'month',
       chartLabel: this.period.getMonths(),
       data: [
         this.getRandomData(nPoint),
@@ -52,10 +54,11 @@ export class ProfitChartService extends ProfitChartData {
     };
   }
 
-  private getDataForYearPeriod(): ProfitChart {
+  private getDataForYearPeriod(): NodesChart {
     const nPoint = this.year.length;
 
     return {
+      period: 'year',
       chartLabel: this.year,
       data: [
         this.getRandomData(nPoint),
@@ -71,7 +74,7 @@ export class ProfitChartService extends ProfitChartData {
     });
   }
 
-  getProfitChartData(period: string): ProfitChart {
+  getNodesChartData(period: string): NodesChart {
     return this.data[period];
   }
 }

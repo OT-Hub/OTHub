@@ -1,6 +1,6 @@
 <ngx-legend-chart [legendItems]="chartLegend"></ngx-legend-chart>
 
-<nb-select class="period-select" [selected]="type" (selectedChange)="changePeriod($event)" style="min-width:120px;">
+<nb-select class="period-select" [selected]="type" *ngIf="isjobschart == 'true'" (selectedChange)="changePeriod($event)" style="min-width:120px;">
   <nb-option *ngFor="let period of types" [value]="period">
     {{ period }}
   </nb-option>
