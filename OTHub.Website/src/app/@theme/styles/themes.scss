@@ -3,6 +3,8 @@
 // @nebular out of the box themes
 @import '~@nebular/theme/styles/themes';
 
+
+
 $nb-themes: nb-register-theme((
   layout-padding-top: 2.25rem,
 
@@ -114,3 +116,4 @@ $nb-themes: nb-register-theme((
 .uptimeOffline {
   fill: red;
 }
+

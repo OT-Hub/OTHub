@@ -47,6 +47,9 @@ export class OffersDetailComponent implements OnInit {
   }
 
   getTimelineItemColour(timeline: OTOfferDetailTimelineModel) {
+
+    return '#ffffff';
+
     if (timeline.Name === 'Offer Created') {
       return '#3949ab';
     } else if (timeline.Name === 'Offer Finalized') {

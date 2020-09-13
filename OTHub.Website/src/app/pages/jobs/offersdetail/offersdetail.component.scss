@@ -1,1 +1,31 @@
 
+.ng-star-inserted mgl-timeline-entry-dot {
+    text-align:center;
+}
+
+.ng-star-inserted mgl-timeline-entry-dot i {
+    font-size: 20px;
+    margin-top:15px;
+    }
+
+.ng-star-inserted.expanded mgl-timeline-entry-dot i {
+font-size: 30px;
+margin-top:10px;
+}
+
+.ng-star-inserted.expanded mgl-timeline-entry-dot {
+    font-size: 30px;
+    text-align: left;
+    padding-left:15px;
+
+    }
+
+ .ng-star-inserted.expanded mgl-timeline-entry-header {
+
+        color:white;
+    
+        }
+
+        mgl-timeline-entry {
+margin-bottom: 25px;
+        }

@@ -12,8 +12,8 @@
                     <nb-card-header>Job</nb-card-header>
                     <nb-list>
                         <nb-list-item class="dont-break-out">
-                            Offer Id: {{OfferModel?.OfferId}}&nbsp;<app-copyclipboardicon [textToCopy]="OfferModel?.OfferId"
-                                style="vertical-align:middle">
+                            Offer Id: {{OfferModel?.OfferId}}&nbsp;<app-copyclipboardicon
+                                [textToCopy]="OfferModel?.OfferId" style="vertical-align:middle">
                             </app-copyclipboardicon>
                         </nb-list-item>
                         <nb-list-item>
@@ -40,8 +40,8 @@
                     <nb-list>
                         <nb-list-item class="dont-break-out">
                             Dataset Id: {{OfferModel?.DataSetId}}&nbsp;<app-copyclipboardicon
-                            [textToCopy]="OfferModel?.DataSetId" style="vertical-align:middle">
-                        </app-copyclipboardicon>
+                                [textToCopy]="OfferModel?.DataSetId" style="vertical-align:middle">
+                            </app-copyclipboardicon>
                         </nb-list-item>
                         <nb-list-item>
                             Dataset Size: {{OfferModel?.DataSetSizeInBytes / 1000 | number:'1.2-2'}} KB
@@ -56,32 +56,33 @@
                         </nb-list-item>
                         <nb-list-item *ngIf="OfferModel?.EstimatedLambda !== null">
                             Estimated Price Factor: {{toFixed(OfferModel?.EstimatedLambda, 0)}}&nbsp;<i
-                            class="fas fa-info-circle" 
-                            [nbPopover]="'This is only an estimate. The closest matching price factor found by OT Hub was ' + OfferModel?.EstimatedLambda + '.'"
-                            nbPopoverTrigger="hover"></i>
+                                class="fas fa-info-circle"
+                                [nbPopover]="'This is only an estimate. The closest matching price factor found by OT Hub was ' + OfferModel?.EstimatedLambda + '.'"
+                                nbPopoverTrigger="hover"></i>
                         </nb-list-item>
                         <nb-list-item>
                             Time Between Litigation Checks: {{OfferModel?.LitigationIntervalInMinutes}}
                             minutes
                         </nb-list-item>
                     </nb-list>
-                </nb-card></div>
-                <div class="col-lg-6 col-md-12 col-sm-12">
-                    <nb-card>
-                        <nb-card-header>Data Creator</nb-card-header>
-                        <nb-list class="dont-break-out">
-                            <nb-list-item>
-                                <a *ngIf="OfferModel?.DCIdentity != null"
-                                        routerLink="/nodes/datacreators/{{OfferModel?.DCIdentity}}" [title]="OfferModel?.DCIdentity"
-                                        onClick="return false;"><img style="width:16px;height:16px;"
-                                            [src]="getIdentityIcon(OfferModel?.DCIdentity)">
-                                        {{myNodeService.GetName(OfferModel?.DCIdentity)}}</a>
-                
-                                    <span *ngIf="OfferModel?.DCIdentity == null">Unknown Node Id:
-                                        {{OfferModel?.DCNodeId}}</span>
-                            </nb-list-item>
-                        </nb-list>
-                        <!-- <nb-card-body>
+                </nb-card>
+            </div>
+            <div class="col-lg-6 col-md-12 col-sm-12">
+                <nb-card>
+                    <nb-card-header>Data Creator</nb-card-header>
+                    <nb-list class="dont-break-out">
+                        <nb-list-item>
+                            <a *ngIf="OfferModel?.DCIdentity != null"
+                                routerLink="/nodes/datacreators/{{OfferModel?.DCIdentity}}"
+                                [title]="OfferModel?.DCIdentity" onClick="return false;"><img
+                                    style="width:16px;height:16px;" [src]="getIdentityIcon(OfferModel?.DCIdentity)">
+                                {{myNodeService.GetName(OfferModel?.DCIdentity)}}</a>
+
+                            <span *ngIf="OfferModel?.DCIdentity == null">Unknown Node Id:
+                                {{OfferModel?.DCNodeId}}</span>
+                        </nb-list-item>
+                    </nb-list>
+                    <!-- <nb-card-body>
                             <ul class="list-group">
                                 <li class="list-group-item"><a *ngIf="OfferModel?.DCIdentity != null"
                                         routerLink="/nodes/datacreators/{{OfferModel?.DCIdentity}}" [title]="OfferModel?.DCIdentity"
@@ -94,28 +95,30 @@
                                 </li>
                             </ul>
                         </nb-card-body> -->
-                    </nb-card>
-                </div>
-                <div class="col-lg-6 col-md-12 col-sm-12" *ngIf="OfferModel?.FinalizedTransactionHash !== null">
-                    <nb-card>
-                        <nb-card-header style="position: relative;">Data Holders
-                        </nb-card-header>
-                        <nb-list class="dont-break-out">
-                            <nb-list-item style="position: relative;" *ngFor="let holder of OfferModel?.Holders">
-                                <a                              routerLink="/nodes/dataholders/{{holder.Identity}}" [title]="holder.Identity"
+                </nb-card>
+            </div>
+            <div class="col-lg-6 col-md-12 col-sm-12" *ngIf="OfferModel?.FinalizedTransactionHash !== null">
+                <nb-card>
+                    <nb-card-header style="position: relative;">Data Holders
+                    </nb-card-header>
+                    <nb-list class="dont-break-out">
+                        <nb-list-item style="position: relative;" *ngFor="let holder of OfferModel?.Holders">
+                            <a routerLink="/nodes/dataholders/{{holder.Identity}}" [title]="holder.Identity"
                                 onClick="return false;"><img style="width:16px;height:16px;"
                                     [src]="getIdentityIcon(holder.Identity)">
                                 {{myNodeService.GetName(holder.Identity)}}</a>
-                                <nb-badge [text]="holder.LitigationStatusText" status="{{holder.LitigationStatus === null ? 'success' : 'danger'}}" position="top right"></nb-badge>
+                            <nb-badge [text]="holder.LitigationStatusText"
+                                status="{{holder.LitigationStatus === null ? 'success' : 'danger'}}"
+                                position="top right"></nb-badge>
 
                             <!-- <span class="badge" [ngClass]="{
                                     'btn-primary': holder.LitigationStatus === null,
                                  'bg-red': holder.LitigationStatus === 3 || holder.LitigationStatus === 4 || holder.LitigationStatus === 0,
                                   'bg-orange': holder.LitigationStatus === 1 || holder.LitigationStatus === 2
                                 }" [textContent]="holder.LitigationStatusText"></span> -->
-                            </nb-list-item>
-                        </nb-list>
-                        <!-- <nb-card-body>
+                        </nb-list-item>
+                    </nb-list>
+                    <!-- <nb-card-body>
                             <ul class="list-group">
                                 <li class="list-group-item" *ngFor="let holder of OfferModel?.Holders"><a                              routerLink="/nodes/dataholders/{{holder.Identity}}" [title]="holder.Identity"
                                     onClick="return false;"><img style="width:16px;height:16px;"
@@ -131,7 +134,7 @@
                     </nb-card-body> -->
                 </nb-card>
             </div>
-            <!-- <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" *ngIf="OfferModel?.Timeline != null">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" *ngIf="OfferModel?.Timeline != null">
                 <nb-card>
                     <nb-card-header>Timeline</nb-card-header>
                     <nb-card-body>
@@ -139,26 +142,42 @@
                             <div class="col-md-12">
 
 
-                                <nb-stepper orientation="vertical">
-                                    <nb-step completed='true'
-                                        *ngFor="let timeline of OfferModel?.Timeline"
-                                        [label]="timeline.Test">
-                                        <h6>{{timeline.Name}}</h6>
-                                        <p class="lorem">
-                                            Proin varius accumsan semper. Praesent consequat tincidunt sagittis.
-                                            Curabitur egestas sem a ipsum bibendum,
-                                            sit amet fringilla orci efficitur. Nam bibendum lectus ut viverra tristique.
-                                            Fusce eu pulvinar magna, quis
-                                            viverra ex. Lorem ipsum dolor sit amet, consectetur adipiscing elit.
-                                            Praesent metus turpis, commodo vel
-                                            placerat quis, lobortis in ligula.
-                                        </p>
-                                    </nb-step>
-                                </nb-stepper>
 
+                                <mgl-timeline alternate="false" toggle="false">
+                                    <mgl-timeline-entry *ngFor="let timeline of OfferModel?.Timeline">
+                                        <mgl-timeline-entry-header>{{timeline.Name}}
+                                            
+                                        </mgl-timeline-entry-header>
+                                        <mgl-timeline-entry-content>
 
+                                            <nb-list>
+                                                <nb-list-item *ngIf="timeline.TransactionHash != null">
+                                                    <a target="_blank"
+                                                    href="https://www.etherscan.io/tx/{{timeline.TransactionHash}}">View
+                                                    on Etherscan</a>
+                                                </nb-list-item>
+                                                <nb-list-item *ngIf="timeline.RelatedTo != null">
+                                                    <a routerLink="/nodes/dataholders/{{timeline.RelatedTo}}"
+                                                    style="float:right;" [title]="timeline.RelatedTo"
+                                                    onClick="return false;">
+                                                    <img style="width:16px;height:16px;"
+                                                        [src]="getIdentityIcon(timeline.RelatedTo)">
+                                                    {{myNodeService.GetName(timeline.RelatedTo)}}</a>
+                                                </nb-list-item>
+                                            </nb-list>
+                                        </mgl-timeline-entry-content>
+                                        <mgl-timeline-entry-dot class="btn-primary">
+                                            <i [ngClass]="getTimelineItemIcon(timeline)"
+                                             [style.color]="getTimelineItemColour(timeline)"></i>
+                                        </mgl-timeline-entry-dot>
+                                        <mgl-timeline-entry-side>
+                                            {{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'LL'}}
+                                            {{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'h:mm A'}}
+                                        </mgl-timeline-entry-side>
+                                    </mgl-timeline-entry>
+                                </mgl-timeline>
 
-                            <ul class="left-timeline">
+                                <!-- <ul class="left-timeline">
                                             <li *ngFor="let timeline of OfferModel?.Timeline">
                                                 <time class="left-time"><span
                                                         class="hidden">{{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'LL'}}</span>
@@ -174,12 +193,12 @@
                                                     {{myNodeService.GetName(timeline.RelatedTo)}}</a>
                                                 </div>
                                             </li>                                   
-                                        </ul>
+                                        </ul> -->
                             </div>
                         </div>
                     </nb-card-body>
                 </nb-card>
-            </div> -->
+            </div>
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <nb-card>
                     <nb-card-header>Blockchain</nb-card-header>
@@ -187,8 +206,8 @@
                     <nb-list>
                         <nb-list-item class="dont-break-out">
                             Transaction Hash: {{OfferModel?.CreatedTransactionHash}}&nbsp;<app-copyclipboardicon
-                            [textToCopy]="OfferModel?.CreatedTransactionHash" style="vertical-align:middle">
-                        </app-copyclipboardicon>
+                                [textToCopy]="OfferModel?.CreatedTransactionHash" style="vertical-align:middle">
+                            </app-copyclipboardicon>
                         </nb-list-item>
                         <nb-list-item>
                             Block Height: {{OfferModel?.CreatedBlockNumber}}
@@ -200,7 +219,8 @@
                         </nb-list-item>
                     </nb-list>
                     <br *ngIf="OfferModel?.FinalizedTransactionHash !== null">
-                    <span style="margin: 10px 20px;" *ngIf="OfferModel?.FinalizedTransactionHash !== null">Job Finalized</span>
+                    <span style="margin: 10px 20px;" *ngIf="OfferModel?.FinalizedTransactionHash !== null">Job
+                        Finalized</span>
                     <nb-list *ngIf="OfferModel?.FinalizedTransactionHash !== null">
                         <nb-list-item class="dont-break-out">
                             Transaction Hash: {{OfferModel?.FinalizedTransactionHash}}&nbsp;
@@ -212,8 +232,8 @@
                         </nb-list-item>
                         <nb-list-item>
                             Transaction Fee:
-                                {{OfferModel?.FinalizedGasUsed * (OfferModel?.FinalizedGasPrice / 1000000000000000000) | number:'1.0-8'}}
-                                ETH ({{OfferModel?.FinalizedGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
+                            {{OfferModel?.FinalizedGasUsed * (OfferModel?.FinalizedGasPrice / 1000000000000000000) | number:'1.0-8'}}
+                            ETH ({{OfferModel?.FinalizedGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
                         </nb-list-item>
                     </nb-list>
                 </nb-card>

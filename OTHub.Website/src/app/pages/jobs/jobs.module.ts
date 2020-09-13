@@ -10,6 +10,8 @@ import { NbAlertModule, NbCardModule, NbIconModule, NbPopoverModule, NbSearchMod
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { RouterModule } from '@angular/router';
 import {DataCreatorColumnComponent} from './offers/datacreatorcolumn.component';
+import { MglTimelineModule } from 'angular-mgl-timeline';
+
 @NgModule({
   declarations: [ OffersComponent, OffersDetailComponent, DataCreatorColumnComponent],
   imports: [
@@ -28,6 +30,7 @@ import {DataCreatorColumnComponent} from './offers/datacreatorcolumn.component';
     NbListModule,
     NbBadgeModule,
     RouterModule,
+    MglTimelineModule
   ]
 })
 export class JobsModule { }
