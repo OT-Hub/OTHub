@@ -23,7 +23,6 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
 
   constructor(private http: HttpClient, private myNodeService: MyNodeService, private httpService: HubHttpService,
               private cdr: ChangeDetectorRef) {
-    this.isNewIdentityValid = false;
     this.web3 = new Web3();
     this.recentActivityHeight = '0px';
   }
@@ -32,10 +31,11 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   recentActivityHeight: string;
   showDataHolders: boolean;
   showDataCreators: boolean;
-  isNewIdentityValid: boolean;
+  showRecentActivity: boolean;
+  //isNewIdentityValid: boolean;
   canImportOldNodes = false;
-  showAddNodeWizard = false;
-  showEditNodeWizard = false;
+  // showAddNodeWizard = false;
+  // showEditNodeWizard = false;
   newIdentity: DataHolderDetailedModel;
   MyNodes: { [key: string]: MyNodeModel; };
   MyNodesKeys: string[];
@@ -160,87 +160,102 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
     this.MyNodesKeys = Object.keys(this.MyNodes);
     this.MyNodesValues = Object.values(this.MyNodes);
 
-    if (this.MyNodesKeys.length > 0) {
-      this.showDataCreators = true;
-      this.showDataHolders = true;
-    } else {
-      this.showDataCreators = false;
-      this.showDataHolders = false;
-    }
+    // if (this.MyNodesKeys.length > 0) {
+    //   this.showDataCreators = true;
+    //   this.showDataHolders = true;
+    // } else {
+    //   this.showDataCreators = false;
+    //   this.showDataHolders = false;
+    // }
   }
 
-  addMyNode(model: MyNodeModel, showAlerts: boolean) {
-    if (this.myNodeService.Add(model)) {
-      this.loadMyNodes();
-      this.showDataCreators = true;
-      this.showDataHolders = true;
-      if (this.dataHolders.first != null) {
-        this.dataHolders.first.Reload();
-      }
-      if (this.dataCreators.first != null) {
-        this.dataCreators.first.Reload();
-      }
-      this.showAddNodeWizard = false;
-      if (showAlerts) {
-      swal('You have added a node to My Nodes.', 'Success!', 'success');
-      }
-    } else if (showAlerts) {
-      swal('You have already added this node.', 'Warning!', 'warning');
-    }
-  }
+  // addMyNode(model: MyNodeModel, showAlerts: boolean) {
+  //   if (this.myNodeService.Add(model)) {
+  //     this.loadMyNodes();
+  //     this.showDataCreators = true;
+  //     this.showDataHolders = true;
+  //     if (this.dataHolders.first != null) {
+  //       this.dataHolders.first.Reload();
+  //     }
+  //     if (this.dataCreators.first != null) {
+  //       this.dataCreators.first.Reload();
+  //     }
+  //     this.showAddNodeWizard = false;
+  //     if (showAlerts) {
+  //     swal('You have added a node to My Nodes.', 'Success!', 'success');
+  //     }
+  //   } else if (showAlerts) {
+  //     swal('You have already added this node.', 'Warning!', 'warning');
+  //   }
+  // }
 
   afterDataHoldersLoad(count: number) {
-    this.showDataHolders = count > 0;
+    //this.showDataHolders = count > 0;
   }
 
   afterDataCreatorsLoad(count: number) {
-    this.showDataCreators = count > 0;
+    //this.showDataCreators = count > 0;
   }
 
-  ImportPrevious() {
-    const text = localStorage.getItem('OTHub_FavouriteNodes');
-    if (!text) {
-      return;
-    }
-
-    const split = text.split(';');
-    if (split.length > 0) {
-      // tslint:disable-next-line:prefer-for-of
-      for (let i = 0; i < split.length; i++) {
-        const entry = split[i];
-        const identityNameSplit = entry.split('~');
-        const model = new MyNodeModel();
-        if (identityNameSplit.length === 1) {
-          model.Identity = identityNameSplit[0];
-          this.addMyNode(model, false);
-        } else if (identityNameSplit.length === 2) {
-          model.Identity = identityNameSplit[0];
-          model.DisplayName = identityNameSplit[1];
-          this.addMyNode(model, false);
-        }
-      }
-      this.canImportOldNodes = false;
-    }
+  showDataHoldersChanged(value: boolean) {
+    this.showDataHolders = value;
+    localStorage.setItem('MyNodes_ShowDataHolders', value.toString().toLowerCase());
   }
 
-  checkForOldFavouriteNodes() {
-    if (this.MyNodesKeys.length > 0) {
-      this.canImportOldNodes = false;
-      return;
-    }
-    const text = localStorage.getItem('OTHub_FavouriteNodes');
-    if (!text) {
-      this.canImportOldNodes = false;
-      return;
-    }
-
-    const split = text.split(';');
-    if (split.length > 0) {
-      this.canImportOldNodes = true;
-    } else {
-      this.canImportOldNodes = false;
-    }
+  showDataCreatorsChanged(value: boolean) {
+    this.showDataCreators = value;
+    localStorage.setItem('MyNodes_ShowDataCreators', value.toString().toLowerCase());
   }
+
+  showRecentActivityChanged(value: boolean) {
+    this.showRecentActivity = value;
+    localStorage.setItem('MyNodes_ShowRecentActivity', value.toString().toLowerCase());
+  }
+
+  // ImportPrevious() {
+  //   const text = localStorage.getItem('OTHub_FavouriteNodes');
+  //   if (!text) {
+  //     return;
+  //   }
+
+  //   const split = text.split(';');
+  //   if (split.length > 0) {
+  //     // tslint:disable-next-line:prefer-for-of
+  //     for (let i = 0; i < split.length; i++) {
+  //       const entry = split[i];
+  //       const identityNameSplit = entry.split('~');
+  //       const model = new MyNodeModel();
+  //       if (identityNameSplit.length === 1) {
+  //         model.Identity = identityNameSplit[0];
+  //         this.addMyNode(model, false);
+  //       } else if (identityNameSplit.length === 2) {
+  //         model.Identity = identityNameSplit[0];
+  //         model.DisplayName = identityNameSplit[1];
+  //         this.addMyNode(model, false);
+  //       }
+  //     }
+  //     this.canImportOldNodes = false;
+  //   }
+  // }
+
+  // checkForOldFavouriteNodes() {
+  //   if (this.MyNodesKeys.length > 0) {
+  //     this.canImportOldNodes = false;
+  //     return;
+  //   }
+  //   const text = localStorage.getItem('OTHub_FavouriteNodes');
+  //   if (!text) {
+  //     this.canImportOldNodes = false;
+  //     return;
+  //   }
+
+  //   const split = text.split(';');
+  //   if (split.length > 0) {
+  //     this.canImportOldNodes = true;
+  //   } else {
+  //     this.canImportOldNodes = false;
+  //   }
+  // }
 
   getIdentityIcon(identity: string, size: number) {
     return this.httpService.ApiUrl + '/api/icon/node/' + identity + '/' + (this.isDarkTheme ? 'dark' : 'light') + '/' + size;
@@ -289,7 +304,16 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
       self.recentActivity = data;
     });
 
-    self.checkForOldFavouriteNodes();
+    let rawValue = localStorage.getItem('MyNodes_ShowDataHolders');
+    this.showDataHolders = rawValue ? rawValue == 'true' : true;
+
+    rawValue = localStorage.getItem('MyNodes_ShowDataCreators');
+    this.showDataCreators = rawValue ? rawValue == 'true' : false;
+
+    rawValue = localStorage.getItem('MyNodes_ShowRecentActivity');
+    this.showRecentActivity = rawValue ? rawValue == 'true' : true;
+
+    //self.checkForOldFavouriteNodes();
 
     this.isDarkTheme = $('body').hasClass('dark');
 
@@ -398,10 +422,10 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
     //   });
     // });
 
-    function setButtonWavesEffect(event) {
-      $(event.currentTarget).find('[role="menu"] li a').removeClass('waves-effect');
-      $(event.currentTarget).find('[role="menu"] li:not(.disabled) a').addClass('waves-effect');
-    }
+    // function setButtonWavesEffect(event) {
+    //   $(event.currentTarget).find('[role="menu"] li a').removeClass('waves-effect');
+    //   $(event.currentTarget).find('[role="menu"] li:not(.disabled) a').addClass('waves-effect');
+    // }
   }
 
 }

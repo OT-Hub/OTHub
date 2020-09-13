@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, ChangeDetectorRef } from '@angular/core';
 import * as moment from 'moment';
 import { ViewCell } from 'ng2-smart-table';
 import { NbIconLibraries, NbIconComponent, NbComponentStatus, NbToastrConfig, NbToastrService } from '@nebular/theme';
@@ -44,11 +44,13 @@ export class OnlineIndicatorRenderComponent implements ViewCell, OnInit {
     LastSeenOffline: string;
     WarnAboutOTHubIssues: boolean;
 
-    constructor(private httpService: HubHttpService, private http: HttpClient, private toastrService: NbToastrService) {
+    constructor(private httpService: HubHttpService, private http: HttpClient, private toastrService: NbToastrService,
+         private cdr: ChangeDetectorRef) {
         this.WarnAboutOTHubIssues = false;
     }
 
     recalculate() {
+
         if (this.rowData.LastSeenOnline) {
 
             const now = moment();
@@ -123,6 +125,7 @@ export class OnlineIndicatorRenderComponent implements ViewCell, OnInit {
             this.toastrService.show(data.Message, data.Header, this.config);
 
             this.recalculate();
+            this.cdr.detectChanges();
         }, err => {
 
         });

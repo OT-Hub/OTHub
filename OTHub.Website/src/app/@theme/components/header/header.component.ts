@@ -36,20 +36,51 @@ export class HeaderComponent implements OnInit, OnDestroy {
     },
   ];
 
+  networks = [
+    {
+      name: 'Mainnet',
+      url: 'https://othub.origin-trail.network'
+    },
+    {
+      name: 'Testnet',
+      url: 'https://othub-testnet.origin-trail.network'
+    }
+  ];
+
+  currentNetwork = 'Mainnet';
   currentTheme = 'default';
 
-  userMenu = [ { title: 'Profile' }, { title: 'Log out' } ];
+  userMenu = [{ title: 'Profile' }, { title: 'Log out' }];
 
   constructor(private sidebarService: NbSidebarService,
-              private menuService: NbMenuService,
-              private themeService: NbThemeService,
-              private userService: UserData,
-              private layoutService: LayoutService,
-              private breakpointService: NbMediaBreakpointsService) {
+    private menuService: NbMenuService,
+    private themeService: NbThemeService,
+    private userService: UserData,
+    private layoutService: LayoutService,
+    private breakpointService: NbMediaBreakpointsService) {
   }
 
   ngOnInit() {
     this.currentTheme = this.themeService.currentTheme;
+
+    if (location.hostname === "localhost") {
+      const url = 'http://' + location.host;
+      this.networks.push({
+        name: 'Localhost',
+        url: url
+      });
+
+      this.currentNetwork = url;
+    } else {
+      for (let i = 0; i < this.networks.length; i++) {
+        const network = this.networks[i];
+
+        if (network.url.includes(location.hostname)) {
+          this.currentNetwork = network.url;
+          break;
+        }
+      }
+    }
 
     this.userService.getUsers()
       .pipe(takeUntil(this.destroy$))
@@ -78,6 +109,12 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   changeTheme(themeName: string) {
     this.themeService.changeTheme(themeName);
+  }
+
+  changeNetwork(networkName: string) {
+    if (!window.location.href.includes(networkName)) {
+      window.location.href = networkName;
+    }
   }
 
   toggleSidebar(): boolean {

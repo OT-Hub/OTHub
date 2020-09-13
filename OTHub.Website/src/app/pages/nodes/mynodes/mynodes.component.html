@@ -1,12 +1,16 @@
 <section class="content">
   <div class="container-fluid">
 
-    <div class="alert alert-info">
-      Recent activity is currently disabled. This will be coming back soon.
-    </div>
 
-    <div #dataHoldersView>
-      <app-dataholders hideBreadcrumb="true" showOnlyMyNodes="true"
+    <div style="   align-items: center;margin-bottom:10px;">
+      <nb-toggle status="primary" [checked]="showDataHolders" style="margin-left:10px;" (checkedChange)="showDataHoldersChanged($event)">Show Data Holders</nb-toggle>
+
+      <nb-toggle status="primary" [checked]="showDataCreators" style="margin-left:10px;" (checkedChange)="showDataCreatorsChanged($event)">Show Data Creators</nb-toggle>
+  
+      <nb-toggle status="primary" [checked]="showRecentActivity" style="margin-left:10px;" (checkedChange)="showRecentActivityChanged($event)">Show Recent Activity</nb-toggle></div>
+
+    <div #dataHoldersView >
+      <app-dataholders hideBreadcrumb="true" showOnlyMyNodes="true" [hidden]="showDataHolders != true"
       (afterLoadWithCount)="afterDataHoldersLoad($event)">
     </app-dataholders>
 
@@ -52,7 +56,7 @@
       </div> -->
     </div>
 
-    <app-datacreators hideBreadcrumb="true" showOnlyMyNodes="true" (afterLoadWithCount)="afterDataCreatorsLoad($event)" #dataCreators>
+    <app-datacreators [hidden]="showDataCreators != true" hideBreadcrumb="true" showOnlyMyNodes="true" (afterLoadWithCount)="afterDataCreatorsLoad($event)" #dataCreators>
     </app-datacreators>
     <!-- <div class="row clearfix">
       <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
