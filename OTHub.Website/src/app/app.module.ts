@@ -12,18 +12,13 @@ import { ThemeModule } from './@theme/theme.module';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
 import {
-  NbChatModule,
-  NbDatepickerModule,
   NbDialogModule,
   NbMenuModule,
   NbSidebarModule,
   NbToastrModule,
   NbWindowModule,
-  NbThemeService,
-  NbSidebarService,
+  NbThemeService
 } from '@nebular/theme';
-import { EllipsisModule } from 'ngx-ellipsis';
-import { RouterModule, Router, NavigationStart } from '@angular/router';
 
 @NgModule({
   declarations: [AppComponent],
@@ -34,16 +29,11 @@ import { RouterModule, Router, NavigationStart } from '@angular/router';
     AppRoutingModule,
     NbSidebarModule.forRoot(),
     NbMenuModule.forRoot(),
-    NbDatepickerModule.forRoot(),
     NbDialogModule.forRoot(),
     NbWindowModule.forRoot(),
     NbToastrModule.forRoot(),
-    NbChatModule.forRoot({
-      messageGoogleMapKey: 'AIzaSyA_wNuCzia92MAmdLRzmqitRGvCF7wCZPY',
-    }),
     CoreModule.forRoot(),
-    ThemeModule.forRoot(),
-    EllipsisModule
+    ThemeModule.forRoot()
   ],
   bootstrap: [AppComponent],
 })
