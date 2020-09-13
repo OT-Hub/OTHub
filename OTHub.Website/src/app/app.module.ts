@@ -20,9 +20,10 @@ import {
   NbToastrModule,
   NbWindowModule,
   NbThemeService,
+  NbSidebarService,
 } from '@nebular/theme';
 import { EllipsisModule } from 'ngx-ellipsis';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router, NavigationStart } from '@angular/router';
 
 @NgModule({
   declarations: [AppComponent],
