@@ -290,6 +290,9 @@ export class NodesChartComponent implements AfterViewInit, OnDestroy, OnChanges 
 
   updateNodesChartOptions(nodesChartData: NodesChart) {
 
+    if (this.nodesData == null)
+    return;
+
     const options = this.options;
 
     let data;
@@ -306,6 +309,9 @@ export class NodesChartComponent implements AfterViewInit, OnDestroy, OnChanges 
       data = this.nodesData.Week;
       labels = this.nodesData.WeekLabels;
     }
+
+    if (data == null)
+    return;
     
     const series = this.getNewSeries(options.series, data);
     const xAxis = this.getNewXAxis(options.xAxis, labels);

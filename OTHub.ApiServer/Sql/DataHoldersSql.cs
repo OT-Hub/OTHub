@@ -72,7 +72,7 @@ ORDER BY GasPrice";
             }
 
             //History is expensive which can be improved on in the future. I think I fixed the performance but better to be safe
-            bool includeHistory = true;
+            bool includeHistory = false;
 
             if (identity.Any())
             {
@@ -82,8 +82,7 @@ ORDER BY GasPrice";
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                NodeDataHolderSummaryModel[] summary = connection.Query<NodeDataHolderSummaryModel>(
-                    $@"select I.Identity,
+                var sql = $@"select I.Identity,
 SUM(CASE WHEN O.IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END)
 	ELSE 0
@@ -100,7 +99,10 @@ LEFT JOIN OTOffer O ON O.OfferID = OH.OfferID
 WHERE (@Identity_like IS NULL OR I.Identity = @Identity_like) AND {(identity.Any() ? "I.Identity in @identity AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version
 GROUP BY I.Identity
 {orderBy}
-{limitSql}", new {version = ercVersion, identity, managementWallet, Identity_like}).ToArray();
+{limitSql}";
+
+                NodeDataHolderSummaryModel[] summary = connection.Query<NodeDataHolderSummaryModel>(
+                    sql, new {version = ercVersion, identity, managementWallet, Identity_like}).ToArray();
 
                 total = connection.ExecuteScalar<int>($@"select COUNT(DISTINCT I.Identity)
 from OTIdentity I

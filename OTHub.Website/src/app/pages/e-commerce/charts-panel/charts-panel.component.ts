@@ -98,8 +98,6 @@ export class ECommerceChartsPanelComponent implements OnDestroy {
 
       this.nodesSummary = data;
 
-      this.setNodesSummary();
-
     });
 
     this.getJobsSummary().pipe(takeWhile(() => this.alive)).subscribe(data => {

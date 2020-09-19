@@ -321,6 +321,8 @@ ADD COLUMN IF NOT EXISTS `NextRunDateTime` datetime NULL DEFAULT NULL");
 
                 connection.Execute(@"ALTER TABLE systemstatus
 MODIFY COLUMN `LastTriedDateTime` datetime NULL DEFAULT NULL");
+
+                connection.Execute(@"CREATE INDEX IF NOT EXISTS `otidentity_NodeID` ON otidentity  (`NodeID`) USING BTREE;");
             }
 
 

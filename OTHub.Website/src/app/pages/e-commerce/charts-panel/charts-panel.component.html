@@ -11,11 +11,16 @@
     </nb-tab>
 
     <nb-tab tabTitle="Nodes" [lazyLoad]="true">
+
       <div class="chart-container">
         <ngx-chart-panel-summary [summary]="chartPanelSummary"></ngx-chart-panel-summary>
+        <div class="alert alert-warning">
+          There is ongoing work to improve the online node count.
+        </div>
         <ngx-chart-panel-header [type]="period" isjobschart="false"
                                 (periodChange)="setPeriodAndGetChartData($event)">
         </ngx-chart-panel-header>
+
         <ngx-nodes-chart #nodesChart [nodesChartData]="nodesChartData"></ngx-nodes-chart>
       </div>
     </nb-tab>
