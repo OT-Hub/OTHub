@@ -11,8 +11,6 @@
     <PackageReference Include="CoinpaprikaAPI" Version="1.2.0" />
     <PackageReference Include="Dapper" Version="1.60.1" />
     <PackageReference Include="Dapper.SimpleCRUD" Version="2.0.1" />
-    <PackageReference Include="Discord.Net" Version="2.0.1" />
-    <PackageReference Include="FluentFTP" Version="19.2.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
     <PackageReference Include="MySqlConnector" Version="0.53.0" />
     <PackageReference Include="Nethereum.JsonRpc.WebSocketClient" Version="3.4.0" />

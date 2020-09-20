@@ -21,7 +21,6 @@
   <ItemGroup>
     <PackageReference Include="CoinGeckoAsyncApi" Version="1.2.4" />
     <PackageReference Include="CoinpaprikaAPI" Version="1.2.0" />
-    <PackageReference Include="Cyotek.CircularBuffer" Version="1.0.2" />
     <PackageReference Include="Dapper" Version="1.60.1" />
     <PackageReference Include="Jdenticon-net" Version="2.2.1" />
     <PackageReference Include="Microsoft.AspNetCore.All" Version="2.2.4" />
