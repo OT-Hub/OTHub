@@ -226,7 +226,7 @@ namespace OTHub.BackendSync.Markets.Tasks
                                         da.Update(rawData);
                                         tran.Commit();
 
-                                        if (obj != null)
+                                        if (obj != null && obj.prices != null && obj.prices.Any())
                                         {
                                             var max = obj.prices.Max(v =>
                                                 TimestampHelper.UnixTimeStampToDateTime(

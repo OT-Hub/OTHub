@@ -68,7 +68,7 @@ ORDER BY GasPrice";
 
             if (page >= 0 && limit >= 0)
             {
-                limitSql = $"LIMIT {page},{limit}";
+                limitSql = $"LIMIT {page * limit},{limit}";
             }
 
             //History is expensive which can be improved on in the future. I think I fixed the performance but better to be safe

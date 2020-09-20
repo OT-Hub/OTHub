@@ -52,7 +52,7 @@ namespace OTHub.APIServer.Sql
 
             if (page >= 0 && limit >= 0)
             {
-                limitSql = $"LIMIT {page},{limit}";
+                limitSql = $"LIMIT {page * limit},{limit}";
             }
 
             using (var connection =

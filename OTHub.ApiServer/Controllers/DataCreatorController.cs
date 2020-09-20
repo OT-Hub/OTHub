@@ -111,7 +111,7 @@ Data Included:
 
             if (_page >= 0 && _limit >= 0)
             {
-                limit = $"LIMIT {_page},{_limit}";
+                limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
             using (var connection =
@@ -200,7 +200,7 @@ Data Included:
 
             if (_page >= 0 && _limit >= 0)
             {
-                limit = $"LIMIT {_page},{_limit}";
+                limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
             using (var connection =
@@ -294,7 +294,7 @@ Data Included:
 
             if (_page >= 0 && _limit >= 0)
             {
-                limit = $"LIMIT {_page},{_limit}";
+                limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
             using (var connection =

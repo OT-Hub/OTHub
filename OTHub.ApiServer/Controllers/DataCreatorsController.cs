@@ -95,7 +95,7 @@ If you want to get more information about a specific data creator you should use
 
             if (_page >= 0 && _limit >= 0)
             {
-                limit = $"LIMIT {_page},{_limit}";
+                limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
             using (var connection =
