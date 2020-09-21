@@ -8,7 +8,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;

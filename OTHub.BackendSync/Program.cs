@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Ethereum.Tasks;
 using OTHub.BackendSync.Logging;

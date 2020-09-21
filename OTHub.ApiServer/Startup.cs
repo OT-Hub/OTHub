@@ -39,7 +39,7 @@ namespace OTHub.APIServer
 #endif
 
             origins.Add(OTHubSettings.Instance.WebServer.AccessControlAllowOrigin);
-        
+
 
             services.AddSwaggerExamples();
             services.AddCors(options =>
@@ -59,16 +59,24 @@ namespace OTHub.APIServer
             //    //services.AddHostedService<MarketTickerService>();
             //}
 
-            services.AddMvc().AddJsonOptions(opt =>
-            {
-                opt.SerializerSettings.ContractResolver = new DefaultContractResolver { NamingStrategy = new DefaultNamingStrategy() };
-            });
+            //.AddNewtonsoftJson(opt =>
+            //{
+            //    opt.JsonSerializerOptions.ContractResolver = new DefaultContractResolver { NamingStrategy = new DefaultNamingStrategy() };
+            //});
+
+            services.AddControllers()
+                .AddNewtonsoftJson(
+                opt =>
+                {
+                    opt.SerializerSettings.ContractResolver = new DefaultContractResolver { NamingStrategy = new DefaultNamingStrategy() };
+                }
+                );
 
             services.AddSwaggerGen(c =>
             {
                 c.EnableAnnotations();
                 c.ExampleFilters();
-                c.SwaggerDoc(OTHubSettings.Instance.Blockchain.Network.ToString().ToLower(), new Info { Title = "OT Hub", Version = "1.0.0" });
+                c.SwaggerDoc(OTHubSettings.Instance.Blockchain.Network.ToString().ToLower(), new Microsoft.OpenApi.Models.OpenApiInfo { Title = "OT Hub", Version = "1.0.0" });
             });
         }
 
@@ -107,7 +115,12 @@ namespace OTHub.APIServer
             //    app.UseSignalR(route => { route.MapHub<LogHub>("/signalr/testnet/log"); });
             //}
 
-            app.UseMvc();
+            app.UseRouting();
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapControllers();
+            });
         }
     }
 }

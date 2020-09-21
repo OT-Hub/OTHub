@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OTHub.APIServer.Sql;
 using OTHub.APIServer.Sql.Models;
 using OTHub.APIServer.Sql.Models.System;

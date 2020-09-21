@@ -109,8 +109,8 @@ The following sizes in pixels are supported:
                 BackColor = theme == "light" ? Color.FromRgb(241, 242, 247) : Color.FromRgb(89, 99, 114),
                 ColorSaturation = 1.0f,
                 GrayscaleSaturation = 0.2f,
-                ColorLightness = Range.Create(0.1f, 0.9f),
-                GrayscaleLightness = Range.Create(0.1f, 0.5f),
+                ColorLightness = Jdenticon.Range.Create(0.1f, 0.9f),
+                GrayscaleLightness = Jdenticon.Range.Create(0.1f, 0.5f),
             };
 
             var icon = Identicon.FromValue("identity:" + identity, size);

@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;

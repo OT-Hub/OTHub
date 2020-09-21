@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Newtonsoft.Json;
 using OTHub.APIServer.Sql.Models;
 using OTHub.APIServer.Sql.Models.GlobalActivity;

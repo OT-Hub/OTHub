@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using Dapper;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace OTHub.BackendSync.Database.Models
 {

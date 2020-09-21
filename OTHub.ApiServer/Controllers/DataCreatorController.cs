@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Newtonsoft.Json;
 using OTHub.APIServer.Sql;
 using OTHub.APIServer.Sql.Models.Jobs;

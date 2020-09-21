@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Nethereum.Contracts;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC.Eth.DTOs;

@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CoinpaprikaAPI.Entity;
 using Dapper;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Newtonsoft.Json;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;

@@ -4,7 +4,7 @@ using System.Linq;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OTHub.APIServer.Sql.Models.Home;
 using OTHub.Settings;
 using Swashbuckle.AspNetCore.Annotations;

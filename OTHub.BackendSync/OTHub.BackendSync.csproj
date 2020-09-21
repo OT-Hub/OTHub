@@ -2,22 +2,22 @@
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.2</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>14849f46-26cf-410d-bd05-3ec2b19fb47a</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="CoinMarketCap-API" Version="2.0.0" />
-    <PackageReference Include="CoinpaprikaAPI" Version="1.2.0" />
-    <PackageReference Include="Dapper" Version="1.60.1" />
-    <PackageReference Include="Dapper.SimpleCRUD" Version="2.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.2.0" />
-    <PackageReference Include="MySqlConnector" Version="0.53.0" />
-    <PackageReference Include="Nethereum.JsonRpc.WebSocketClient" Version="3.4.0" />
-    <PackageReference Include="Nethereum.StandardTokenEIP20" Version="3.4.0" />
-    <PackageReference Include="Nethereum.Web3" Version="3.4.0" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.1" />
-    <PackageReference Include="RestSharp" Version="106.6.9" />
+    <PackageReference Include="CoinpaprikaAPI" Version="1.2.8" />
+    <PackageReference Include="Dapper" Version="2.0.35" />
+    <PackageReference Include="Dapper.SimpleCRUD" Version="2.2.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.8" />
+    <PackageReference Include="MySqlConnector" Version="1.0.1" />
+    <PackageReference Include="Nethereum.JsonRpc.WebSocketClient" Version="3.8.0" />
+    <PackageReference Include="Nethereum.StandardTokenEIP20" Version="3.8.0" />
+    <PackageReference Include="Nethereum.Web3" Version="3.8.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="RestSharp" Version="106.11.5" />
   </ItemGroup>
   <PropertyGroup>
     <RuntimeIdentifiers>ubuntu.18.04-x64</RuntimeIdentifiers>

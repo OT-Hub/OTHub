@@ -1,6 +1,6 @@
 ﻿using System;
 using Dapper;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OTHub.BackendSync.Markets.Models;
 
 namespace OTHub.BackendSync.Database.Models

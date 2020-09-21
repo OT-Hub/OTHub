@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
 using Nethereum.JsonRpc.Client;

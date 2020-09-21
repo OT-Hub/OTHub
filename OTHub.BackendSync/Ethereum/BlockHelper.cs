@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using Nethereum.Hex.HexTypes;
 using Nethereum.Web3;
 using OTHub.BackendSync.Database.Models;
