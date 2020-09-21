@@ -83,8 +83,8 @@ ORDER BY GasPrice";
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var sql = $@"select I.Identity,
-SUM(CASE WHEN O.IsFinalized = 1 
-	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END)
+COUNT(DISTINCT CASE WHEN O.IsFinalized = 1 
+	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN O.OfferId ELSE null END)
 	ELSE 0
 END) as ActiveOffers,
  substring(I.NodeId, 1, 40) as NodeId, I.Version, COALESCE(I.Stake, 0) as StakeTokens,
