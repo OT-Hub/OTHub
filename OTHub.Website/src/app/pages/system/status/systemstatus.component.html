@@ -9,6 +9,11 @@
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <nb-card>
                     <nb-card-header>System Status</nb-card-header>
+                    <nb-card-body>
+                        <span style="padding:5 10px;">This page shows the status of the OT Hub Website.<br>
+                            <br>
+                        If you're experiencing problems with this website you can check here to see if there are any known issues.</span>
+                    </nb-card-body>
                     <nb-list>
                         <nb-list-item *ngFor="let data of Data?.Items" style="position: relative;">
                             <nb-icon icon="sync" title="Running now" status="warning" *ngIf="data.IsRunning == true"></nb-icon>
