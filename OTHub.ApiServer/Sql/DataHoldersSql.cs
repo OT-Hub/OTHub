@@ -85,7 +85,7 @@ ORDER BY GasPrice";
                 var sql = $@"select I.Identity,
 COUNT(DISTINCT CASE WHEN O.IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN O.OfferId ELSE null END)
-	ELSE 0
+	ELSE null
 END) as ActiveOffers,
  substring(I.NodeId, 1, 40) as NodeId, I.Version, COALESCE(I.Stake, 0) as StakeTokens,
 COALESCE(I.StakeReserved, 0) as StakeReservedTokens, COALESCE(I.Paidout, 0) as PaidTokens, COALESCE(I.TotalOffers, 0) as TotalWonOffers, 

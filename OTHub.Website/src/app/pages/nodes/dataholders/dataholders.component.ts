@@ -47,12 +47,12 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
   source: OTHubServerDataSource;
 
   ExportToJson() {
-    const url = this.httpService.ApiUrl + '/api/nodes/dataholders?ercVersion=1&export=true&exporttype=0';
+    const url = this.getUrl() + '&export=true&exporttype=0';
     window.location.href = url;
   }
 
   ExportToCsv() {
-    const url = this.httpService.ApiUrl + '/api/nodes/dataholders?ercVersion=1&export=true&exporttype=1';
+    const url = this.getUrl() + '&export=true&exporttype=1';
     window.location.href = url;
   }
 
@@ -445,7 +445,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     this.resetSource();
   }
 
-  resetSource() {
+  getUrl() {
     let url = this.httpService.ApiUrl + '/api/nodes/dataholders?ercVersion=1';
     if (this.showOnlyMyNodes === 'true') {
       const myNodes = this.myNodeService.GetAll();
@@ -462,6 +462,12 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     } else if (this.managementWallet) {
       url += '&managementWallet=' + this.managementWallet;
     }
+
+    return url;
+  }
+
+  resetSource() {
+    let url = this.getUrl();
 
     if (this.source == null) {
     this.source = new OTHubServerDataSource(this.http, this.myNodeService,

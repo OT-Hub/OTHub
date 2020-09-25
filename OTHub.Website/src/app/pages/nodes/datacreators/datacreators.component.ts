@@ -47,12 +47,12 @@ export class DatacreatorsComponent implements OnInit  {
   }
   
   ExportToJson() {
-    const url = this.httpService.ApiUrl + '/api/nodes/datacreators?ercVersion=1&export=true&exporttype=0';
+    const url = this.getUrl() + '&export=true&exporttype=0';
     window.location.href = url;
   }
 
   ExportToCsv() {
-    const url = this.httpService.ApiUrl + '/api/nodes/datacreators?ercVersion=1&export=true&exporttype=1';
+    const url = this.getUrl() + '&export=true&exporttype=1';
     window.location.href = url;
   }
 
@@ -217,7 +217,7 @@ export class DatacreatorsComponent implements OnInit  {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
-    const url = this.httpService.ApiUrl + '/api/nodes/datacreators/' + identity + '?' + (new Date()).getTime();
+    const url = this.httpService.ApiUrl + '/api/nodes/datacreator/' + identity + '?' + (new Date()).getTime();
     return this.http.get<DataHolderDetailedModel>(url, { headers });
   }
 
@@ -453,7 +453,7 @@ export class DatacreatorsComponent implements OnInit  {
     this.resetSource();
   }
 
-  resetSource() {
+  getUrl() {
     let url = this.httpService.ApiUrl + '/api/nodes/datacreators?ercVersion=1';
     if (this.showOnlyMyNodes === 'true') {
       const myNodes = this.myNodeService.GetAll();
@@ -468,6 +468,12 @@ export class DatacreatorsComponent implements OnInit  {
         url += "&identity=N/A";
       }
     }
+
+    return url;
+  }
+
+  resetSource() {
+    let url = this.getUrl();
 
     if (this.source == null) {
     this.source = new OTHubServerDataSource(this.http, this.myNodeService,
