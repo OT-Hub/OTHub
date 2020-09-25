@@ -78,16 +78,30 @@ const PIPES = [
 export class ThemeModule {
   static forRoot(): ModuleWithProviders<ThemeModule> {
 
-    const thm = localStorage.getItem("theme");
+    let thm = localStorage.getItem("theme");
+
+    if (thm == null) {
+      thm = 'default';
+    }
+
+    switch (thm) {
+      case "default":
+      case "dark":
+      case "cosmic":
+      case "corporate":
+        break;
+      default:
+        thm = 'default';
+    }
 
     return {
       ngModule: ThemeModule,
       providers: [
         ...NbThemeModule.forRoot(
           {
-            name: thm ?? 'default'
+            name: thm
           },
-          [ DEFAULT_THEME, COSMIC_THEME, CORPORATE_THEME, DARK_THEME ],
+          [DEFAULT_THEME, COSMIC_THEME, CORPORATE_THEME, DARK_THEME],
         ).providers,
       ],
     };
