@@ -10,9 +10,11 @@
                 <nb-card>
                     <nb-card-header>System Status</nb-card-header>
                     <nb-card-body>
-                        <span style="padding:5 10px;">This page shows the status of the OT Hub Website.<br>
+                        <span style="padding:5 10px;">OT Hub is constantly updating from the Ethereum blockchain to show you the latest information.<br>
                             <br>
-                        If you're experiencing problems with this website you can check here to see if there are any known issues.</span>
+                        Occasionally, there can be issues with the website resulting in out of date information. Below you can see if any services are unavailable causing delays.</span>
+                        <br><br>
+                        <strong>This page does not indicate if your OriginTrail node is running correctly.</strong>
                     </nb-card-body>
                     <nb-list>
                         <nb-list-item *ngFor="let data of Data?.Items" style="position: relative;">

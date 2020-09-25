@@ -45,9 +45,9 @@ export const MENU_ITEMS: NbMenuItem[] = [
     icon: 'monitor-outline',
     link: '/globalactivity'
   },
-  {
-    title: 'System Status',
-    icon: 'activity-outline',
-    link: '/system/status'
-  },
+  // {
+  //   title: 'System Status',
+  //   icon: 'activity-outline',
+  //   link: '/system/status'
+  // },
 ];
