@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\OTHub.ApiServer\OTHub.ApiServer.csproj" />
+    <ProjectReference Include="..\OTHub.ApiServer\OTHub.APIServer.csproj" />
     <ProjectReference Include="..\OTHub.BackendSync\OTHub.BackendSync.csproj" />
     <ProjectReference Include="..\OTHub.Settings\OTHub.Settings.csproj" />
   </ItemGroup>
