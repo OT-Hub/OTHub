@@ -28,11 +28,6 @@
     <ProjectReference Include="..\OTHub.Settings\OTHub.Settings.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Cachet.NET.Core">
-      <HintPath>..\..\..\..\Downloads\Cachet.NET-master\Cachet.NET.Core\bin\Release\netcoreapp2.0\Cachet.NET.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-  <ItemGroup>
     <RuntimeHostConfigurationOption Include="System.Globalization.Invariant" Value="true" />
   </ItemGroup>
   <ItemGroup>
