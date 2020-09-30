@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTHub.ApiServer", "OTHub.ApiServer\OTHub.ApiServer.csproj", "{4D982814-60F3-405A-B3E1-747202F83A9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTHub.ApiServer", "OTHub.ApiServer\OTHub.APIServer.csproj", "{4D982814-60F3-405A-B3E1-747202F83A9F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTHub.BackendSync", "OTHub.BackendSync\OTHub.BackendSync.csproj", "{8786FB30-CF30-491D-B4BC-EF82C2432F45}"
 EndProject

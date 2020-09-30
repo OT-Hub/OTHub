@@ -44,12 +44,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="Cachet.NET.Core">
-      <HintPath>..\..\..\..\Downloads\Cachet.NET-master\Cachet.NET.Core\bin\Release\netcoreapp2.0\Cachet.NET.Core.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Update="appsettings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
