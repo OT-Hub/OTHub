@@ -4,6 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>14849f46-26cf-410d-bd05-3ec2b19fb47a</UserSecretsId>
+    <PackageId>OTHub.BackendSync</PackageId>
   </PropertyGroup>
 
   <ItemGroup>
