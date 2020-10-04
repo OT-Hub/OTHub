@@ -2,9 +2,10 @@
 
 OT Hub is a community-made project for live insights into the OriginTrail Decentralized Network.
 
-## Networks
+## Websites
 
 Mainnet: https://othub.origin-trail.network
+
 Testnet: https://othub-testnet.origin-trail.network
 
 ## Code Projects
@@ -17,10 +18,11 @@ Testnet: https://othub-testnet.origin-trail.network
 ## Swagger API Documentation
 
 Mainnet: https://othub-api.origin-trail.network/docs
+
 Testnet: https://testnet-api.othub.info/docs/index.html
 
-## Configuration
-Coming soon
+## Other Useful Links
 
-## Installation
-Coming soon
+Build server: https://juno.origin-trail.network/
+
+Octopus deploy server: https://othub.octopus.app/
