@@ -61,7 +61,7 @@ select p.holder, MAX(b.Timestamp) from otcontract_holding_paidout p
 join ethblock b on b.blocknumber = p.blocknumber
 group by p.holder) x
 JOIN OTIdentity i on x.NewIdentity = i.Identity
-JOIN otnode_ipinfo ii ON ii.NodeId = I.NodeId
+JOIN otnode_ipinfov2 ii ON ii.NodeId = I.NodeId
 LEFT JOIN otnode_history h ON h.NodeId = i.NodeId AND h.Timestamp >= DATE_ADD(NOW(), INTERVAL -1 MONTH)
 WHERE 
 I.VERSION != 0
@@ -128,7 +128,7 @@ ORDER BY MAX(x.Timestamp) DESC").ToList();
 
             int maxTimeout = 2000;
 
-            if (!node.LastCheckedTimestamp.HasValue)
+            if (!node.LastCheckedOnlineTimestamp.HasValue)
             {
                 maxTimeout = 5000;
                 checkIfOnline = true;
@@ -138,7 +138,7 @@ ORDER BY MAX(x.Timestamp) DESC").ToList();
                 if (checkAllOnline)
                 {
                     checkIfOnline = true;
-                    if ((DateTime.UtcNow - node.LastCheckedTimestamp.Value).TotalHours >= 12)
+                    if ((DateTime.UtcNow - node.LastCheckedOnlineTimestamp.Value).TotalHours >= 12)
                     {
                         maxTimeout = 2000;
                     }
@@ -151,14 +151,14 @@ ORDER BY MAX(x.Timestamp) DESC").ToList();
                 {
                     maxTimeout = 1500;
 
-                    if ((DateTime.UtcNow - node.LastCheckedTimestamp.Value).TotalDays >= 3)
+                    if ((DateTime.UtcNow - node.LastCheckedOnlineTimestamp.Value).TotalDays >= 3)
                     {
                         checkIfOnline = true;
                     }
                 }
                 else if ((DateTime.UtcNow - node.Timestamp).TotalDays > 90)
                 {
-                    if ((DateTime.UtcNow - node.LastCheckedTimestamp.Value).TotalDays >= 2)
+                    if ((DateTime.UtcNow - node.LastCheckedOnlineTimestamp.Value).TotalDays >= 2)
                     {
                         checkIfOnline = true;
                     }
@@ -167,7 +167,7 @@ ORDER BY MAX(x.Timestamp) DESC").ToList();
                 {
                     maxTimeout = 3500;
 
-                    if ((DateTime.UtcNow - node.LastCheckedTimestamp.Value).TotalDays >= 1)
+                    if ((DateTime.UtcNow - node.LastCheckedOnlineTimestamp.Value).TotalDays >= 1)
                     {
                         checkIfOnline = true;
                     }
@@ -176,12 +176,12 @@ ORDER BY MAX(x.Timestamp) DESC").ToList();
                 {
                     maxTimeout = 5500;
 
-                    if ((DateTime.UtcNow - node.LastCheckedTimestamp.Value).TotalHours > 6)
+                    if ((DateTime.UtcNow - node.LastCheckedOnlineTimestamp.Value).TotalHours > 6)
                     {
                         checkIfOnline = true;
                     }
                 }
-                else if ((DateTime.UtcNow - node.LastCheckedTimestamp.Value).TotalMinutes >= 4)
+                else if ((DateTime.UtcNow - node.LastCheckedOnlineTimestamp.Value).TotalMinutes >= 4)
                 {
                     maxTimeout = 7500;
                     checkIfOnline = true;
@@ -214,7 +214,7 @@ ORDER BY MAX(x.Timestamp) DESC").ToList();
                     request.ServerCertificateValidationCallback = delegate(object sender, X509Certificate certificate,
                         X509Chain chain, SslPolicyErrors errors)
                     {
-                        node.LastCheckedTimestamp = DateTime.UtcNow;
+                        node.LastCheckedOnlineTimestamp = DateTime.UtcNow;
                         node.Timestamp = history.Timestamp;
                         history.Success = true;
 

@@ -322,6 +322,38 @@ ADD COLUMN IF NOT EXISTS `NextRunDateTime` datetime NULL DEFAULT NULL");
                 connection.Execute(@"ALTER TABLE systemstatus
 MODIFY COLUMN `LastTriedDateTime` datetime NULL DEFAULT NULL");
 
+                connection.Execute(@"ALTER TABLE otnode_ipinfo
+ADD COLUMN IF NOT EXISTS `NetworkLastCheckedTimestamp` DATETIME NULL DEFAULT NULL");
+
+                connection.Execute(@"ALTER TABLE otnode_ipinfo
+ADD COLUMN IF NOT EXISTS `UnknownNodeResponse` BIT NOT NULL DEFAULT 0");
+
+                connection.Execute(@"CREATE TABLE if NOT exists `otnode_ipinfov2` (
+	`NodeId` VARCHAR(100) NOT NULL COLLATE 'latin1_swedish_ci',
+	`Wallet` VARCHAR(100) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+	`Port` INT(11) NOT NULL,
+	`Timestamp` DATETIME NOT NULL,
+	`Hostname` VARCHAR(1000) NOT NULL COLLATE 'latin1_swedish_ci',
+	`NetworkId` TEXT(65535) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+	`LastCheckedOnlineTimestamp` DATETIME NULL DEFAULT NULL,
+	`LastCheckedGetContactTimestamp` DATETIME NULL DEFAULT NULL,
+	`UnknownNodeResponseCount` int NOT NULL DEFAULT 0,
+	PRIMARY KEY (`NodeId`) USING BTREE
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                //TODO remove this line
+                connection.Execute(@"update otnode_ipinfov2 set LastCheckedGetContactTimestamp = null");
+
+                //TODO only run this once before we add otnode_ipinfov2
+                connection.Execute(@"delete from otnode_history");
+
+                //TODO remove this line
+                connection.Execute(@"delete from otnode_ipinfov2");
+
                 connection.Execute(@"CREATE INDEX IF NOT EXISTS `otidentity_NodeID` ON otidentity  (`NodeID`) USING BTREE;");
             }
 
