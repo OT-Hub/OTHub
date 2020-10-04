@@ -346,13 +346,13 @@ ENGINE=InnoDB
 ");
 
                 //TODO remove this line
-                connection.Execute(@"update otnode_ipinfov2 set LastCheckedGetContactTimestamp = null");
+                //connection.Execute(@"update otnode_ipinfov2 set LastCheckedGetContactTimestamp = null");
 
-                //TODO only run this once before we add otnode_ipinfov2
-                connection.Execute(@"delete from otnode_history");
+                ////TODO only run this once before we add otnode_ipinfov2
+                //connection.Execute(@"delete from otnode_history");
 
-                //TODO remove this line
-                connection.Execute(@"delete from otnode_ipinfov2");
+                ////TODO remove this line
+                //connection.Execute(@"delete from otnode_ipinfov2");
 
                 connection.Execute(@"CREATE INDEX IF NOT EXISTS `otidentity_NodeID` ON otidentity  (`NodeID`) USING BTREE;");
             }
