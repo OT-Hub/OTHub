@@ -115,6 +115,15 @@ ORDER BY MAX(x.Timestamp) DESC")
                         var array = dict["contact"] as Newtonsoft.Json.Linq.JArray;
                         var node = JsonConvert.DeserializeObject<ContactClass>(array.Last.ToString());
 
+                        string nodeIDInResponse = array.First.ToString();
+
+                        //Wrong responses come back... not sure why
+                        //Maybe these are correct in the P2P network stack but until that's understood more lets not ruin the data in othub
+                        if (nodeIDInResponse?.ToLower() != nodeToCheck.ToLower())
+                        {
+                            continue;
+                        }
+
                         bool isOnline = false;
 
                         Stopwatch sw = new Stopwatch();
@@ -171,11 +180,11 @@ ORDER BY MAX(x.Timestamp) DESC")
                             }
 
 
-                            info.LastCheckedTimestamp = DateTime.UtcNow;
+                            info.LastCheckedOnlineTimestamp = DateTime.UtcNow;
 
 
                             if (connection.ExecuteScalar<bool>(
-                                @"SELECT NOT EXISTS (SELECT 1 FROM OTNode_IPInfo IP WHERE IP.NodeId = @nodeId)",
+                                @"SELECT NOT EXISTS (SELECT 1 FROM OTNode_IPInfov2 IP WHERE IP.NodeId = @nodeId)",
                                 new { nodeId = nodeToCheck }))
                             {
                                 Logger.WriteLine(source,
@@ -188,7 +197,7 @@ ORDER BY MAX(x.Timestamp) DESC")
                                     "Found " + nodeToCheck + " via node API at " + url + ". Updating node ...");
 
                                 IpInfo.UpdateHost(connection, nodeToCheck, node.Hostname, (int)node.Port,
-                                    info.Timestamp, info.LastCheckedTimestamp, info.NetworkId);
+                                    info.Timestamp, info.LastCheckedOnlineTimestamp, info.NetworkId);
                             }
 
                             OTNode_History history = new OTNode_History();

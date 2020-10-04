@@ -622,7 +622,7 @@ ORDER BY Timestamp DESC LIMIT 1", new { identity = identity });
                 }
 
                 var row = connection.QueryFirstOrDefault(@"SELECT IP.Hostname, IP.Port FROM OTIdentity I
-JOIN OTNode_IPInfo IP on IP.NodeID = I.NodeID
+JOIN OTNode_IPInfoV2 IP on IP.NodeID = I.NodeID
 WHERE I.Identity = @identity", new { identity = identity });
 
                 if (row == null)

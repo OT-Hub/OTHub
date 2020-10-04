@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using MySqlConnector;
@@ -7,6 +9,7 @@ using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Ethereum.Tasks;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Markets.Tasks;
+using OTHub.BackendSync.Nodes.Models;
 using OTHub.BackendSync.Nodes.Tasks;
 using OTHub.BackendSync.System.Tasks;
 using OTHub.Settings;
@@ -62,8 +65,13 @@ namespace OTHub.BackendSync
             tasks.Add(Task.Run(() =>
             {
                 TaskController controller = new TaskController(Source.NodeApi);
+
+                Thread.Sleep(3000);
+
                 controller.Schedule(new SearchForNewlyCreatedNodesTask(), TimeSpan.FromHours(16), true);
+                controller.Schedule(new CleanupNodesFromDifferentNetworksTask(), TimeSpan.FromHours(24), true);
                 controller.Schedule(new OptimiseDatabaseTask(), TimeSpan.FromDays(1), false);
+
                 controller.Start();
             }));
 
