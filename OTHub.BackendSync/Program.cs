@@ -9,8 +9,6 @@ using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Ethereum.Tasks;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Markets.Tasks;
-using OTHub.BackendSync.Nodes.Models;
-using OTHub.BackendSync.Nodes.Tasks;
 using OTHub.BackendSync.System.Tasks;
 using OTHub.Settings;
 
@@ -66,10 +64,6 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.NodeApi);
 
-                Thread.Sleep(3000);
-
-                controller.Schedule(new SearchForNewlyCreatedNodesTask(), TimeSpan.FromHours(16), true);
-                controller.Schedule(new CleanupNodesFromDifferentNetworksTask(), TimeSpan.FromHours(24), true);
                 controller.Schedule(new OptimiseDatabaseTask(), TimeSpan.FromDays(1), false);
 
                 controller.Start();
@@ -83,19 +77,14 @@ namespace OTHub.BackendSync
 
                     if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet)
                     {
-                        controller.Schedule(new GetMarketDataTask(), TimeSpan.FromMinutes(60), true);
+                        controller.Schedule(new GetMarketDataTask(), TimeSpan.FromMinutes(120), true);
 
                         controller.Schedule(new CalculateOfferLambdaTask(), TimeSpan.FromMinutes(60), true);
                     }
 
-                    int upTimeCheckInMinutes = 55;
-
-                    controller.Schedule(new PerformOnlineNodeChecksTask(), TimeSpan.FromMinutes(upTimeCheckInMinutes), true);
-
                     controller.Schedule(new MarkOldContractsAsArchived(), TimeSpan.FromDays(1),
                         false); //TODO needs to do litigation contracts
-
-                    //controller.Schedule(new GetMarketDataTask(), TimeSpan.FromHours(20), true);
+                    
                     controller.Start();
                 }));
 
@@ -107,7 +96,7 @@ namespace OTHub.BackendSync
                 
                 controller.Schedule(new RefreshAllHolderLitigationStatusesTask(), TimeSpan.FromHours(2), true);
 
-                controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(4), true);
+                controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(5), true);
                 controller.Schedule(new LoadProfileBalancesTask(), TimeSpan.FromMinutes(5), true);
 
                 controller.Start();
