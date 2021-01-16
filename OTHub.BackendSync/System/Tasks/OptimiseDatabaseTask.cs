@@ -14,7 +14,7 @@ namespace OTHub.BackendSync.System.Tasks
 
         }
 
-        public override async Task Execute(Source source)
+        public override async Task Execute(Source source, Blockchain blockchain, Network network)
         {
 //            using (var connection =
 //            new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))

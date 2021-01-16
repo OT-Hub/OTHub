@@ -9,9 +9,9 @@ using OTHub.Settings;
 
 namespace OTHub.BackendSync.System.Tasks
 {
-    public class DatabaseUpgradeTask : TaskRun
+    public static class DatabaseUpgradeTask
     {
-        public override async Task Execute(Source source)
+        public static void Execute()
         {
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
@@ -684,10 +684,6 @@ ADD CONSTRAINT `{fkName}` FOREIGN KEY
                     }
                 }
             }
-        }
-
-        public DatabaseUpgradeTask() : base("Database Upgrade")
-        {
         }
     }
 }

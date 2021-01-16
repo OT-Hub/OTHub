@@ -59,7 +59,7 @@ namespace OTHub.BackendSync
             _childTasks.Add(task);
         }
 
-        protected async Task RunChildren(Source source)
+        protected async Task RunChildren(Source source, Blockchain blockchain, Network network)
         {
             var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();
             LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - 1);
@@ -76,7 +76,7 @@ namespace OTHub.BackendSync
                         status.InsertOrUpdate(connection, true, null, true);
                     }
 
-                    await childTask.Execute(source);
+                    await childTask.Execute(source, blockchain, network);
                 }
                 catch
                 {
@@ -115,6 +115,6 @@ namespace OTHub.BackendSync
         {
             Name = name;
         }
-        public abstract Task Execute(Source source);
+        public abstract Task Execute(Source source, Blockchain blockchain, Network network);
     }
 }

@@ -18,9 +18,9 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             Add(new SyncReplacementContractTask());
         }
 
-        public override async Task Execute(Source source)
+        public override async Task Execute(Source source, Blockchain blockchain, Network network)
         {
-            await RunChildren(source);
+            await RunChildren(source, blockchain, network);
 
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {

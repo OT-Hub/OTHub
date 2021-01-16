@@ -17,7 +17,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 {
     public class GetLatestContractsTask : TaskRun
     {
-        public override async Task Execute(Source source)
+        public override async Task Execute(Source source, Blockchain blockchain, Network network)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
