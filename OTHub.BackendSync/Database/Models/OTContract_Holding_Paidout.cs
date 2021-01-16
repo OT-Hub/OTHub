@@ -18,15 +18,18 @@ namespace OTHub.BackendSync.Database.Models
         public UInt64 GasUsed { get; set; }
         public string Data { get; set; }
         public UInt64 GasPrice { get; set; }
+        public int BlockchainID { get; set; }
 
         public static void InsertIfNotExist(MySqlConnection connection, OTContract_Holding_Paidout model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Holding_Paidout WHERE OfferID = @offerID AND Holder = @holder AND TransactionHash = @hash AND Amount = @amount", new
+            var count = connection.QueryFirstOrDefault<Int32>(@"SELECT COUNT(*) FROM OTContract_Holding_Paidout
+WHERE OfferID = @offerID AND Holder = @holder AND TransactionHash = @hash AND Amount = @amount AND BlockchainID = @blockchainID", new
             {
                 offerID = model.OfferID,
                 holder = model.Holder,
                 hash = model.TransactionHash,
-                amount = model.Amount
+                amount = model.Amount,
+                blockchainID = model.BlockchainID
             });
 
             if (count == 0)
@@ -35,7 +38,8 @@ namespace OTHub.BackendSync.Database.Models
 
                 var inserted = connection.Execute(
                     @"
-INSERT INTO OTContract_Holding_Paidout(OfferID, Holder, Amount, Timestamp, TransactionHash, ContractAddress, BlockNumber, AmountInUSD, GasUsed, Data, GasPrice) VALUES(@OfferID, @Holder, @Amount, @Timestamp, @TransactionHash, @ContractAddress, @BlockNumber, @AmountInUSD, @GasUsed, @Data, @GasPrice)",
+INSERT INTO OTContract_Holding_Paidout(OfferID, Holder, Amount, Timestamp, TransactionHash, ContractAddress, BlockNumber, AmountInUSD, GasUsed, Data, GasPrice, BlockchainID) 
+VALUES(@OfferID, @Holder, @Amount, @Timestamp, @TransactionHash, @ContractAddress, @BlockNumber, @AmountInUSD, @GasUsed, @Data, @GasPrice, @BlockchainID)",
                     new
                     {
                         model.OfferID,
@@ -48,28 +52,22 @@ INSERT INTO OTContract_Holding_Paidout(OfferID, Holder, Amount, Timestamp, Trans
                         AmountInUSD = close.HasValue ? close.Value * model.Amount : (Decimal?)null,
                         model.GasUsed,
                         model.Data,
-                        model.GasPrice
+                        model.GasPrice,
+                        model.BlockchainID
                     });
-
-                if (inserted == 0)
-                {
-
-                }
-            }
-            else
-            {
-                
             }
         }
 
-        public static bool Exists(MySqlConnection connection, string offerId, string holder, decimal amount, string hash)
+        public static bool Exists(MySqlConnection connection, string offerId, string holder, decimal amount, string hash, int blockchainID)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Holding_Paidout WHERE OfferID = @offerID AND Holder = @holder AND TransactionHash = @hash AND Amount = @amount", new
+            var count = connection.QueryFirstOrDefault<Int32>(@"SELECT COUNT(*) FROM OTContract_Holding_Paidout
+WHERE OfferID = @offerID AND Holder = @holder AND TransactionHash = @hash AND Amount = @amount AND BlockchainID = @blockchainID", new
             {
                 offerID = offerId,
                 holder = holder,
                 hash = hash,
-                amount = amount
+                amount = amount,
+                blockchainID = blockchainID
             });
 
             return count > 0;

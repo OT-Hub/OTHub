@@ -18,19 +18,21 @@ namespace OTHub.BackendSync.Database.Models
         public UInt64 GasUsed { get; set; }
         public string Data { get; set; }
         public UInt64 GasPrice { get; set; }
+        public int BlockchainID { get; set; }
 
         public static void InsertIfNotExist(MySqlConnection connection, OTContract_Holding_OfferFinalized model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Holding_OfferFinalized WHERE OfferID = @offerID", new
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Holding_OfferFinalized WHERE OfferID = @offerID AND BlockchainID = @blockchainID", new
             {
-                offerID = model.OfferID
+                offerID = model.OfferID,
+                blockchainID = model.BlockchainID
             });
 
             if (count == 0)
             {
                 connection.Execute(
                     @"INSERT INTO OTContract_Holding_OfferFinalized (OfferID, Timestamp,
-BlockNumber, TransactionHash, Holder1, Holder2, Holder3, ContractAddress, GasUsed, Processed, Data, GasPrice) VALUES(@OfferID, @Timestamp, @BlockNumber, @TransactionHash, @Holder1, @Holder2, @Holder3, @ContractAddress, @GasUsed, 0, @Data, @GasPrice)",
+BlockNumber, TransactionHash, Holder1, Holder2, Holder3, ContractAddress, GasUsed, Processed, Data, GasPrice, BlockchainID) VALUES(@OfferID, @Timestamp, @BlockNumber, @TransactionHash, @Holder1, @Holder2, @Holder3, @ContractAddress, @GasUsed, 0, @Data, @GasPrice, @BlockchainID)",
                     new
                     {
                         model.OfferID,
@@ -43,16 +45,25 @@ BlockNumber, TransactionHash, Holder1, Holder2, Holder3, ContractAddress, GasUse
                         model.ContractAddress,
                         model.GasUsed,
                         model.Data,
-                        model.GasPrice
+                        model.GasPrice,
+                        model.BlockchainID
                     });
 
                 foreach (var holder in new[] { model.Holder1, model.Holder2, model.Holder3 })
                 {
                     if (connection.QuerySingle<Int32>(
-                            "SELECT COUNT(*) FROM OtOffer_Holders WHERE OfferID = @OfferID AND Holder = @holder",
-                            new { OfferID = model.OfferID, holder = holder }) == 0)
+                            "SELECT COUNT(*) FROM OtOffer_Holders WHERE OfferID = @OfferID AND Holder = @holder AND BlockchainID = @blockchainID",
+                            new { OfferID = model.OfferID, holder = holder, blockchainID = model.BlockchainID }) == 0)
                     {
-                        connection.Execute("INSERT INTO OtOffer_Holders(OfferID, Holder, IsOriginalHolder) VALUES (@OfferID, @holder, @IsOriginalHolder)", new { OfferID = model.OfferID, holder = holder, IsOriginalHolder = true });
+                        connection.Execute(
+                            "INSERT INTO OtOffer_Holders(OfferID, Holder, IsOriginalHolder, BlockchainID) VALUES (@OfferID, @holder, @IsOriginalHolder, @BlockchainID)",
+                            new
+                            {
+                                OfferID = model.OfferID, 
+                                holder = holder, 
+                                IsOriginalHolder = true,
+                                BlockchainID = model.BlockchainID
+                            });
                     }
                 }
 
@@ -96,21 +107,30 @@ BlockNumber, TransactionHash, Holder1, Holder2, Holder3, ContractAddress, GasUse
         //left join otcontract_holding_paidout po on po.Holder = h.Holder and po.OfferId = h.OfferId WHERE h.OfferId = @offerId", new { offerId }).ToArray();
         //        }
 
-        public static OTContract_Holding_OfferFinalized[] GetUnprocessed(MySqlConnection connection)
+        public static OTContract_Holding_OfferFinalized[] GetUnprocessed(MySqlConnection connection, int blockchainID)
         {
-            return connection.Query<OTContract_Holding_OfferFinalized>("SELECT * FROM OTContract_Holding_OfferFinalized WHERE Processed = 0").ToArray();
+            return connection.Query<OTContract_Holding_OfferFinalized>("SELECT * FROM OTContract_Holding_OfferFinalized WHERE Processed = 0 AND BlockchainID = @blockchainID", 
+                new
+                {
+                    blockchainID = blockchainID
+                }).ToArray();
         }
 
         public static void SetProcessed(MySqlConnection connection, OTContract_Holding_OfferFinalized offerToAdd)
         {
-            connection.Execute(@"UPDATE OTContract_Holding_OfferFinalized SET Processed = 1 WHERE OfferID = @offerID", new { offerID = offerToAdd.OfferID });
+            connection.Execute(@"UPDATE OTContract_Holding_OfferFinalized SET Processed = 1 WHERE OfferID = @offerID AND BlockchainID = @blockchainID", new
+            {
+                offerID = offerToAdd.OfferID,
+                blockchainID = offerToAdd.BlockchainID
+            });
         }
 
-        public static bool Exists(MySqlConnection connection, string offerId)
+        public static bool Exists(MySqlConnection connection, string offerId, int blockchainID)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Holding_OfferFinalized WHERE OfferID = @offerID", new
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Holding_OfferFinalized WHERE OfferID = @offerID AND BlockchainID = @blockchainID", new
             {
-                offerID = offerId
+                offerID = offerId,
+                blockchainID = blockchainID
             });
 
             return count > 0;

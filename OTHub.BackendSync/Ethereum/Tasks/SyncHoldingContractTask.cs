@@ -25,7 +25,9 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                foreach (var contract in OTContract.GetByType(connection, (int)ContractTypeEnum.Holding))
+                int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Holding, blockchainID))
                 {
                     if (contract.IsArchived && contract.LastSyncedTimestamp.HasValue && (DateTime.Now - contract.LastSyncedTimestamp.Value).TotalDays <= 5)
                     {
@@ -69,7 +71,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                             try
                             {
                                 await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent,
-                                    ownershipTransferredEvent, offerTaskEvent, source, currentStart, currentEnd);
+                                    ownershipTransferredEvent, offerTaskEvent, source, currentStart, currentEnd, blockchainID);
                             }
                             catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
                             {
@@ -97,7 +99,9 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     }
                     else
                     {
-                        await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent, ownershipTransferredEvent, offerTaskEvent, source, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value);
+                        await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent,
+                            ownershipTransferredEvent, offerTaskEvent, source, contract.SyncBlockNumber,
+                            (ulong) LatestBlockNumber.Value, blockchainID);
                     }
                 }
             }
@@ -105,7 +109,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
         private async Task Sync(MySqlConnection connection, OTContract contract, Event offerCreatedEvent,
             Event offerFinalizedEvent, Event paidOutEvent, Event ownershipTransferredEvent, Event offerTaskEvent,
-            Source source, ulong start, ulong end)
+            Source source, ulong start, ulong end, int blockchainID)
         {
             Logger.WriteLine(source, "Syncing holding " + start + " to " + end);
 
@@ -173,10 +177,10 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             {
                 string offerID = HexHelper.ByteArrayToString(eventLog.Event.offerId);
 
-                if (OTContract_Holding_OfferCreated.Exists(connection, offerID))
+                if (OTContract_Holding_OfferCreated.Exists(connection, offerID, blockchainID))
                     continue;
 
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl);
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl, blockchainID);
 
                 var receipt = cl.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
                 await Task.Delay(100);
@@ -201,7 +205,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     ContractAddress = contract.Address,
                     GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                     GasPrice = (UInt64)transaction.Result.GasPrice.Value,
-                    Data = eventLog.Log.Data
+                    Data = eventLog.Log.Data,
+                    BlockchainID = blockchainID
                 };
 
                 if (row.DCNodeId.Length > 40)
@@ -218,11 +223,11 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     HexHelper.ByteArrayToString((byte[])eventLog.Event
                         .First(e => e.Parameter.Name == "offerId").Result);
 
-                if (OTContract_Holding_OfferFinalized.Exists(connection, offerId))
+                if (OTContract_Holding_OfferFinalized.Exists(connection, offerId, blockchainID))
                     continue;
 
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                    cl, blockchainID);
 
 
                 var holder1 = (string)eventLog.Event.FirstOrDefault(e => e.Parameter.Name == "holder1")
@@ -252,6 +257,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                     Data = eventLog.Log.Data,
                     GasPrice = (UInt64)transaction.Result.GasPrice.Value,
+                    BlockchainID = blockchainID
                 };
 
                 OTContract_Holding_OfferFinalized.InsertIfNotExist(connection, row);
@@ -269,12 +275,12 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 var holder = (string)eventLog.Event.FirstOrDefault(e => e.Parameter.Name == "holder")
                     .Result;
 
-                if (OTContract_Holding_Paidout.Exists(connection, offerId, holder, amount, eventLog.Log.TransactionHash))
+                if (OTContract_Holding_Paidout.Exists(connection, offerId, holder, amount, eventLog.Log.TransactionHash, blockchainID))
                     continue;
 
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash,
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
                     eventLog.Log.BlockNumber,
-                    cl);
+                    cl, blockchainID);
 
 
                 var receipt = cl.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
@@ -296,13 +302,14 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                     Data = eventLog.Log.Data,
                     GasPrice = (UInt64)transaction.Result.GasPrice.Value,
+                    BlockchainID = blockchainID
                 });
             }
 
             foreach (EventLog<List<ParameterOutput>> eventLog in ownershipTransferredEvents)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                    cl, blockchainID);
                 var previousOwner = (string)eventLog.Event
                     .FirstOrDefault(e => e.Parameter.Name == "previousOwner").Result;
                 var newOwner = (string)eventLog.Event.FirstOrDefault(e => e.Parameter.Name == "newOwner")
@@ -324,14 +331,15 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                         NewOwner = newOwner,
                         PreviousOwner = previousOwner,
                         GasPrice = (UInt64)transaction.Result.GasPrice.Value,
-                        GasUsed = (UInt64)receipt.Result.GasUsed.Value
+                        GasUsed = (UInt64)receipt.Result.GasUsed.Value,
+                        BlockchainID = blockchainID
                     });
             }
 
             foreach (EventLog<List<ParameterOutput>> eventLog in offerTaskEvents)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                    cl, blockchainID);
 
                 var dataSetId =
                     HexHelper.ByteArrayToString((byte[])eventLog.Event
@@ -362,7 +370,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     DataSetId = dataSetId,
                     OfferId = offerId,
                     GasPrice = (UInt64)transaction.Result.GasPrice.Value,
-                    GasUsed = (UInt64)receipt.Result.GasUsed.Value
+                    GasUsed = (UInt64)receipt.Result.GasUsed.Value,
+                    BlockchainID = blockchainID
                 });
             }
 

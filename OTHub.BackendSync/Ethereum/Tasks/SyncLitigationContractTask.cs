@@ -194,7 +194,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             foreach (EventLog<List<ParameterOutput>> eventLog in litigationInitiatedEventsEventLogs)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                     cl);
 
                 var offerId =
@@ -233,7 +233,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             foreach (EventLog<List<ParameterOutput>> eventLog in litigationAnsweredEvents)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                     cl);
 
                 var offerId =
@@ -263,7 +263,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             foreach (EventLog<List<ParameterOutput>> eventLog in litigationTimedOutEvents)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                     cl);
 
                 var offerId =
@@ -293,7 +293,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             foreach (EventLog<List<ParameterOutput>> eventLog in litigationCompletedEvents)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                     cl);
 
                 var offerId =
@@ -327,7 +327,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             foreach (EventLog<List<ParameterOutput>> eventLog in replacementStartedEvents)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                     cl);
 
                 var offerId =

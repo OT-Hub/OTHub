@@ -221,7 +221,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             foreach (EventLog<List<ParameterOutput>> eventLog in identityCreatedEvents)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                     cl);
 
                 var profile = (string)eventLog.Event
@@ -253,7 +253,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             foreach (EventLog<List<ParameterOutput>> eventLog in profileCreatedEvents)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                     cl);
 
                 var profile = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "profile")
@@ -296,7 +296,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             foreach (EventLog<List<ParameterOutput>> eventLog in identityTransferredEvents)
             {
-                var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                     cl);
 
                 var oldIdentity = (string)eventLog.Event
@@ -349,7 +349,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
                 foreach (var eventLog in group)
                 {
-                    var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl);
+                    var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl);
 
                     var profile = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "profile")
                         .Result;
@@ -388,7 +388,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
                 foreach (var eventLog in group)
                 {
-                    var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash,
+                    var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
                         eventLog.Log.BlockNumber,
                         cl);
 
@@ -427,7 +427,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
                 foreach (var eventLog in group)
                 {
-                    var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash,
+                    var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
                         eventLog.Log.BlockNumber,
                         cl);
 
@@ -469,7 +469,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
                 foreach (var eventLog in group)
                 {
-                    var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash,
+                    var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
                         eventLog.Log.BlockNumber,
                         cl);
 
@@ -513,7 +513,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
                 foreach (var eventLog in group)
                 {
-                    var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash,
+                    var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
                         eventLog.Log.BlockNumber,
                         cl);
 

@@ -66,7 +66,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     {
                         await Task.Delay(50);
 
-                        var block = await BlockHelper.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
+                        var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                             cl);
                         var offerId =
                             HexHelper.ByteArrayToString((byte[])eventLog.Event

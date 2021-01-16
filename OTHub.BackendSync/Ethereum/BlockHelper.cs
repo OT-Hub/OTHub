@@ -11,9 +11,9 @@ namespace OTHub.BackendSync.Ethereum
     public static class BlockHelper
     {
         private static readonly object _getEthBlockLock = new object();
-        public static async Task<EthBlock> GetEthBlock(MySqlConnection connection, string blockHash, HexBigInteger blockNumber, Web3 cl)
+        public static async Task<EthBlock> GetBlock(MySqlConnection connection, string blockHash, HexBigInteger blockNumber, Web3 cl, int blockchainID)
         {
-            var block = EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value);
+            var block = EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value, blockchainID);
 
             if (block == null)
             {
@@ -21,7 +21,7 @@ namespace OTHub.BackendSync.Ethereum
 
                 lock (_getEthBlockLock)
                 {
-                    block = EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value);
+                    block = EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value, blockchainID);
 
                     if (block == null)
                     {
@@ -32,7 +32,8 @@ namespace OTHub.BackendSync.Ethereum
                         {
                             BlockHash = blockHash,
                             BlockNumber = (UInt64)blockNumber.Value,
-                            Timestamp = TimestampHelper.UnixTimeStampToDateTime((double)apiBlock.Timestamp.Value)
+                            Timestamp = TimestampHelper.UnixTimeStampToDateTime((double)apiBlock.Timestamp.Value),
+                            BlockchainID = blockchainID
                         };
 
                         EthBlock.Insert(connection, block);
