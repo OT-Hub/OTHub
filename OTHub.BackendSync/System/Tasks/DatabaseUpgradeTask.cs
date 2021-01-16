@@ -367,12 +367,12 @@ ENGINE=InnoDB
 	(2, 'Ethereum', 'Rinkeby');"); //TODO these probably shouldn't be hard coded
 
 
-                bool isUpgradedForMultiChain = connection.ExecuteScalar<int>(@"SELECT 
+                bool isUpgradedForMultiChain = connection.ExecuteScalar<int>(@$"SELECT 
   COUNT(*)
 FROM
   INFORMATION_SCHEMA.KEY_COLUMN_USAGE
 WHERE
-REFERENCED_TABLE_SCHEMA = 'othubmainnet' AND
+REFERENCED_TABLE_SCHEMA = '{OTHubSettings.Instance.MariaDB.Database}' AND
   REFERENCED_TABLE_NAME = 'ethblock' AND
   REFERENCED_COLUMN_NAME = 'BlockchainID'") > 0;
 
