@@ -22,10 +22,10 @@ COALESCE(MAX(O.FinalizedTimestamp), MAX(CreatedTimestamp)) LastJob
 from OTIdentity I
 JOIN OTOffer O ON O.DCNodeId = I.NodeId
 JOIN (SELECT I.Identity, COALESCE(PCB.Timestamp, ICB.Timestamp) as Timestamp FROM OTIdentity I
-LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity
-LEFT JOIN EthBlock PCB ON PCB.BlockNumber = PC.BlockNumber
-LEFT JOIN OTContract_Profile_IdentityCreated IC ON IC.NewIdentity = I.Identity
-LEFT JOIN EthBlock ICB ON ICB.BlockNumber = IC.BlockNumber
+LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity AND PC.BlockchainID = I.BlockchainID
+LEFT JOIN EthBlock PCB ON PCB.BlockNumber = PC.BlockNumber AND PCB.BlockchainID = I.BlockchainID
+LEFT JOIN OTContract_Profile_IdentityCreated IC ON IC.NewIdentity = I.Identity AND IC.BlockchainID = I.BlockchainID
+LEFT JOIN EthBlock ICB ON ICB.BlockNumber = IC.BlockNumber AND ICB.BlockchainID = I.BlockchainID
 WHERE IC.NewIdentity is not null OR PC.Profile is not null) x on x.Identity = I.Identity
 WHERE {(identity.Any() ? "I.Identity in @identity AND" : "")} Version = @version
 AND (@Identity_like is null OR I.Identity = @Identity_like)
@@ -38,10 +38,10 @@ GROUP BY I.Identity";
 from OTIdentity I
 JOIN OTOffer O ON O.DCNodeId = I.NodeId
 JOIN (SELECT I.Identity, COALESCE(PCB.Timestamp, ICB.Timestamp) as Timestamp FROM OTIdentity I
-LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity
-LEFT JOIN EthBlock PCB ON PCB.BlockNumber = PC.BlockNumber
-LEFT JOIN OTContract_Profile_IdentityCreated IC ON IC.NewIdentity = I.Identity
-LEFT JOIN EthBlock ICB ON ICB.BlockNumber = IC.BlockNumber
+LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity AND PC.BlockchainID = I.BlockchainID
+LEFT JOIN EthBlock PCB ON PCB.BlockNumber = PC.BlockNumber AND PCB.BlockchainID = I.BlockchainID
+LEFT JOIN OTContract_Profile_IdentityCreated IC ON IC.NewIdentity = I.Identity AND IC.BlockchainID = I.BlockchainID
+LEFT JOIN EthBlock ICB ON ICB.BlockNumber = IC.BlockNumber AND ICB.BlockchainID = I.BlockchainID
 WHERE IC.NewIdentity is not null OR PC.Profile is not null) x on x.Identity = I.Identity
 WHERE {(identity.Any() ? "I.Identity in @identity AND" : "")} Version = @version
 AND (@Identity_like is null OR I.Identity = @Identity_like)";

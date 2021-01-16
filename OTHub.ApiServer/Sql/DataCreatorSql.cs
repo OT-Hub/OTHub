@@ -17,8 +17,8 @@ COALESCE(ic.TransactionHash, pc.TransactionHash) CreateTransactionHash,
 COALESCE(ic.GasPrice, pc.GasPrice) CreateGasPrice,
 COALESCE(ic.GasUsed, pc.GasUsed) CreateGasUsed
 from OTIdentity I
-left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity
-left JOIN otcontract_profile_profilecreated pc on pc.Profile = I.Identity
+left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity AND I.BlockchainID = ic.BlockchainID
+left JOIN otcontract_profile_profilecreated pc on pc.Profile = I.Identity AND I.BlockchainID = pc.BlockchainID
 JOIN otoffer O ON O.DCNodeId = I.NodeId
 WHERE I.Identity = @identity
 GROUP BY I.Identity";

@@ -22,8 +22,8 @@ COALESCE(ic.GasPrice, pc.GasPrice) CreateGasPrice,
 COALESCE(ic.GasUsed, pc.GasUsed) CreateGasUsed,
 (SELECT COUNT(O.OfferID) FROM OTOffer O WHERE O.DCNodeId = I.NodeId) as DCOfferCount
 from OTIdentity I
-left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity
-left JOIN otcontract_profile_profilecreated pc on pc.Profile = I.Identity
+left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity AND ic.BlockchainID = I.BlockchainID
+left JOIN otcontract_profile_profilecreated pc on pc.Profile = I.Identity AND pc.BlockchainID = I.BlockchainID
 WHERE I.Identity = @identity";
 
         public const String GetJobs = @"SELECT h.Holder Identity, h.OfferId, 
@@ -81,30 +81,30 @@ WHERE holder = @identity AND (@OfferId_like is null OR OfferId = @OfferId_like) 
 WHERE holder = @identity AND (@OfferId_like is null OR OfferId = @OfferId_like) AND (@TransactionHash_like is null OR TransactionHash = @TransactionHash_like)";
 
         public const String GetProfileTransfers = @"SELECT TransactionHash, AmountDeposited as Amount, b.Timestamp, t.GasPrice, t.GasUsed FROM otcontract_profile_tokensdeposited t
-JOIN ethblock b on b.BlockNumber = t.BlockNumber
+JOIN ethblock b on b.BlockNumber = t.BlockNumber AND b.BlockchainID = t.BlockchainID
 where t.Profile = @identity AND (@TransactionHash_like is null OR t.TransactionHash = @TransactionHash_like)
 union
 SELECT TransactionHash, AmountWithdrawn * - 1 as Amount, b.Timestamp, t.GasPrice, t.GasUsed FROM otcontract_profile_tokenswithdrawn t
-JOIN ethblock b on b.BlockNumber = t.BlockNumber
+JOIN ethblock b on b.BlockNumber = t.BlockNumber AND b.BlockchainID = t.BlockchainID
 where t.Profile = @identity AND (@TransactionHash_like is null OR t.TransactionHash = @TransactionHash_like)
 union 
 select pc.TransactionHash, pc.InitialBalance as Amount, b.Timestamp, pc.GasPrice, pc.GasUsed  from otcontract_profile_profilecreated pc
-join ethblock b on b.BlockNumber = pc.BlockNumber
+join ethblock b on b.BlockNumber = pc.BlockNumber AND b.BlockchainID = pc.BlockchainID
 WHERE pc.Profile = @identity AND (@TransactionHash_like is null OR pc.TransactionHash = @TransactionHash_like)";
 
         public const String GetProfileTransfersCount = @"
 SELECT SUM(FoundCount) 
 FROM (
 SELECT COUNT(TransactionHash) FoundCount FROM otcontract_profile_tokensdeposited t
-JOIN ethblock b on b.BlockNumber = t.BlockNumber
+JOIN ethblock b on b.BlockNumber = t.BlockNumber AND b.BlockchainID = t.BlockchainID
 where t.Profile = @identity AND (@TransactionHash_like is null OR t.TransactionHash = @TransactionHash_like)
 union
 SELECT COUNT(TransactionHash) FoundCount FROM otcontract_profile_tokenswithdrawn t
-JOIN ethblock b on b.BlockNumber = t.BlockNumber
+JOIN ethblock b on b.BlockNumber = t.BlockNumber AND b.BlockchainID = t.BlockchainID
 where t.Profile = @identity AND (@TransactionHash_like is null OR t.TransactionHash = @TransactionHash_like)
 union 
 select COUNT(TransactionHash) FoundCount  from otcontract_profile_profilecreated pc
-join ethblock b on b.BlockNumber = pc.BlockNumber
+join ethblock b on b.BlockNumber = pc.BlockNumber AND b.BlockchainID = pc.BlockchainID
 WHERE pc.Profile = @identity AND (@TransactionHash_like is null OR pc.TransactionHash = @TransactionHash_like)
 ) x";
 

@@ -37,7 +37,7 @@ OF.GasPrice FinalizedGasPrice
 WHERE O.OfferId = @offerID";
 
         public const String GetJobHolders =
-            @"SELECT H.Holder as Identity, CASE WHEN H.LitigationStatus = 0 AND (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN NULL ELSE H.LitigationStatus END LitigationStatus,
+			@"SELECT H.Holder as Identity, CASE WHEN H.LitigationStatus = 0 AND (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN NULL ELSE H.LitigationStatus END LitigationStatus,
 (CASE WHEN IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN
 	(CASE 
@@ -62,7 +62,7 @@ WHERE O.OfferId = @offerID";
 END) as LitigationStatusText
  FROM OTOffer_Holders H
  JOIN OTOffer O ON O.OfferID = H.OfferID
-left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
+left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockchainID = h.BlockchainID and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
 Where H.OfferId = @offerID
 ORDER BY H.LitigationStatus";
 

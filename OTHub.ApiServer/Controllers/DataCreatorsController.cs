@@ -105,7 +105,7 @@ If you want to get more information about a specific data creator you should use
                     DataCreatorsSql.GetDataCreatorsSql(identity) +
                     $@"
 {orderBy}
-{limit}", new { version = ercVersion, identity, Identity_like }).ToArray();
+{limit}", new { version = ercVersion, identity, Identity_like }, commandTimeout: 120).ToArray();
 
                 var total = connection.ExecuteScalar<int>(DataCreatorsSql.GetDataCreatorsCountSql(identity),
 new { version = ercVersion, identity, Identity_like });
