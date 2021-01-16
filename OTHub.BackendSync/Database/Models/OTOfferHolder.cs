@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 using Newtonsoft.Json;
@@ -50,9 +51,9 @@ namespace OTHub.BackendSync.Database.Models
 //                });
 //        }
 
-        public static void UpdateLitigationForAllOffers(MySqlConnection connection)
+        public static async Task UpdateLitigationForAllOffers(MySqlConnection connection, int blockchainID)
         {
-            connection.Execute(@"UPDATE OTOffer_Holders H
+            await connection.ExecuteAsync(@"UPDATE OTOffer_Holders H
 JOIN (
 SELECT x.OfferId, x.Holder, 
 CASE 
@@ -73,12 +74,12 @@ SELECT  H.OfferId, H.Holder, H.LitigationStatus, MAX(li.BlockNumber) as LitInit,
   MAX(rs.BlockNumber) ReplaceStarted,
   GREATEST(IFNULL(MAX(li.BlockNumber), 0), IFNULL(MAX(la.BlockNumber), 0), IFNULL(MAX(lc.BlockNumber), 0), IFNULL(MAX(rs.BlockNumber), 0)) as MaxNumber
    FROM OTOffer O
-JOIN OTOffer_Holders H ON H.OfferId = O.OfferId
-LEFT JOIN otcontract_litigation_litigationinitiated li on li.OfferId = O.OfferId and li.HolderIdentity = H.Holder
-LEFT JOIN otcontract_litigation_litigationanswered la on la.OfferId = O.OfferId and la.HolderIdentity = H.Holder
-LEFT JOIN otcontract_litigation_litigationcompleted lc on lc.OfferId = O.OfferId and lc.HolderIdentity = H.Holder
-LEFT JOIN otcontract_litigation_replacementstarted rs on rs.OfferId = O.OfferId and rs.HolderIdentity = H.Holder
-WHERE O.IsFinalized = 1
+JOIN OTOffer_Holders H ON H.OfferId = O.OfferId AND H.BlockchainID = O.BlockchainID
+LEFT JOIN otcontract_litigation_litigationinitiated li on li.OfferId = O.OfferId and li.HolderIdentity = H.Holder AND li.BlockchainID = O.BlockchainID
+LEFT JOIN otcontract_litigation_litigationanswered la on la.OfferId = O.OfferId and la.HolderIdentity = H.Holder AND la.BlockchainID = O.BlockchainID
+LEFT JOIN otcontract_litigation_litigationcompleted lc on lc.OfferId = O.OfferId and lc.HolderIdentity = H.Holder AND lc.BlockchainID = O.BlockchainID
+LEFT JOIN otcontract_litigation_replacementstarted rs on rs.OfferId = O.OfferId and rs.HolderIdentity = H.Holder AND rs.BlockchainID = O.BlockchainID
+WHERE O.IsFinalized = 1 AND O.BlockchainID = @blockchainID
 GROUP BY H.OfferId, H.Holder, H.LitigationStatus) x
 WHERE CASE 
  WHEN x.ReplaceStarted = x.MaxNumber THEN 3
@@ -88,10 +89,13 @@ WHERE CASE
  WHEN x.LitInit = x.MaxNumber THEN 1
  ELSE NULL
  END != COALESCE(LitigationStatus, -1)) p on p.OfferId = H.OfferId AND p.Holder = H.Holder
- SET LitigationStatus = p.Status, LitigationStatusBlockNumber = p.MaxNumber", null, null, (int)TimeSpan.FromMinutes(5).TotalSeconds);
+ SET LitigationStatus = p.Status, LitigationStatusBlockNumber = p.MaxNumber", new
+            {
+                blockchainID = blockchainID
+            }, commandTimeout: (int)TimeSpan.FromMinutes(5).TotalSeconds);
         }
 
-        public static void UpdateLitigationStatusesForOffer(MySqlConnection connection, string offerId)
+        public static void UpdateLitigationStatusesForOffer(MySqlConnection connection, string offerId, int blockchainID)
         {
             connection.Execute(@"UPDATE OTOffer_Holders H
 JOIN (
@@ -114,12 +118,12 @@ SELECT  H.OfferId, H.Holder, H.LitigationStatus, MAX(li.BlockNumber) as LitInit,
   MAX(rs.BlockNumber) ReplaceStarted,
   GREATEST(IFNULL(MAX(li.BlockNumber), 0), IFNULL(MAX(la.BlockNumber), 0), IFNULL(MAX(lc.BlockNumber), 0), IFNULL(MAX(rs.BlockNumber), 0)) as MaxNumber
    FROM OTOffer O
-JOIN OTOffer_Holders H ON H.OfferId = O.OfferId
-LEFT JOIN otcontract_litigation_litigationinitiated li on li.OfferId = O.OfferId and li.HolderIdentity = H.Holder
-LEFT JOIN otcontract_litigation_litigationanswered la on la.OfferId = O.OfferId and la.HolderIdentity = H.Holder
-LEFT JOIN otcontract_litigation_litigationcompleted lc on lc.OfferId = O.OfferId and lc.HolderIdentity = H.Holder
-LEFT JOIN otcontract_litigation_replacementstarted rs on rs.OfferId = O.OfferId and rs.HolderIdentity = H.Holder
-WHERE O.IsFinalized = 1 AND O.OfferId = @offerID
+JOIN OTOffer_Holders H ON H.OfferId = O.OfferId AND H.BlockchainID = O.BlockchainID
+LEFT JOIN otcontract_litigation_litigationinitiated li on li.OfferId = O.OfferId and li.HolderIdentity = H.Holder AND li.BlockchainID = O.BlockchainID
+LEFT JOIN otcontract_litigation_litigationanswered la on la.OfferId = O.OfferId and la.HolderIdentity = H.Holder AND la.BlockchainID = O.BlockchainID
+LEFT JOIN otcontract_litigation_litigationcompleted lc on lc.OfferId = O.OfferId and lc.HolderIdentity = H.Holder AND lc.BlockchainID = O.BlockchainID
+LEFT JOIN otcontract_litigation_replacementstarted rs on rs.OfferId = O.OfferId and rs.HolderIdentity = H.Holder AND rs.BlockchainID = O.BlockchainID
+WHERE O.IsFinalized = 1 AND O.OfferId = @offerID AND O.BlockchainID = @blockchainID
 GROUP BY H.OfferId, H.Holder, H.LitigationStatus) x
 WHERE CASE 
  WHEN x.ReplaceStarted = x.MaxNumber THEN 3
@@ -132,20 +136,23 @@ WHERE CASE
  SET LitigationStatus = p.Status, LitigationStatusBlockNumber = p.MaxNumber",
                 new
                 {
-                    OfferId = offerId
+                    OfferId = offerId,
+                    blockchainID = blockchainID
                 });
         }
 
-        public static bool Insert(MySqlConnection connection, string offerId, string holder, bool isOriginalHolder)
+        public static bool Insert(MySqlConnection connection, string offerId, string holder, bool isOriginalHolder, int blockchainID)
         {
             bool added = false;
 
             if (connection.QuerySingle<Int32>(
-                    "SELECT COUNT(*) FROM OtOffer_Holders WHERE OfferID = @OfferID AND Holder = @holder",
-                    new { OfferID = offerId, holder = holder }) == 0)
+                    "SELECT COUNT(*) FROM OtOffer_Holders WHERE OfferID = @OfferID AND Holder = @holder AND BlockchainID = @blockchainID",
+                    new { OfferID = offerId, holder = holder, blockchainID = blockchainID }) == 0)
             {
                 added = true;
-                connection.Execute("INSERT INTO OtOffer_Holders(OfferID, Holder, IsOriginalHolder) VALUES (@OfferID, @holder, @IsOriginalHolder)", new { OfferID = offerId, holder = holder, IsOriginalHolder = isOriginalHolder });
+                connection.Execute(
+                    "INSERT INTO OtOffer_Holders(OfferID, Holder, IsOriginalHolder, BlockchainID) VALUES (@OfferID, @holder, @IsOriginalHolder, @BlockchainID)",
+                    new {OfferID = offerId, holder = holder, IsOriginalHolder = isOriginalHolder, BlockchainID  = blockchainID});
             }
 
             return added;

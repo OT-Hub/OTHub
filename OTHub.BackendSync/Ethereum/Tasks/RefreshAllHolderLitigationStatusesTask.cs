@@ -14,10 +14,12 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
         public override async Task Execute(Source source, Blockchain blockchain, Network network)
         {
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                OTOfferHolder.UpdateLitigationForAllOffers(connection);
+                int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                await OTOfferHolder.UpdateLitigationForAllOffers(connection, blockchainID);
             }
         }
     }
