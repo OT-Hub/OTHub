@@ -24,8 +24,10 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
+                int blockchainID = GetBlockchainID(connection, blockchain, network);
+
                 OTContract_Holding_OfferCreated[] offersToAdd =
-                    OTContract_Holding_OfferCreated.GetUnprocessed(connection);
+                    OTContract_Holding_OfferCreated.GetUnprocessed(connection, blockchainID);
 
                 if (offersToAdd.Any())
                 {
@@ -47,7 +49,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                         IsFinalized = false,
                         LitigationIntervalInMinutes = offerToAdd.LitigationIntervalInMinutes,
                         TransactionIndex = offerToAdd.TransactionIndex,
-                        TokenAmountPerHolder = offerToAdd.TokenAmountPerHolder
+                        TokenAmountPerHolder = offerToAdd.TokenAmountPerHolder,
+                        BlockchainID = blockchainID
                     };
 
                     OTOffer.InsertIfNotExist(connection, offer);
@@ -56,7 +59,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 }
 
                 OTContract_Holding_OfferFinalized[] offersToFinalize =
-                    OTContract_Holding_OfferFinalized.GetUnprocessed(connection);
+                    OTContract_Holding_OfferFinalized.GetUnprocessed(connection, blockchainID);
 
                 if (offersToFinalize.Any())
                 {
@@ -67,7 +70,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     OTOffer.FinalizeOffer(connection, offerToFinalize.OfferID, offerToFinalize.BlockNumber,
                         offerToFinalize.TransactionHash, offerToFinalize.Holder1, offerToFinalize.Holder2,
-                        offerToFinalize.Holder3, offerToFinalize.Timestamp);
+                        offerToFinalize.Holder3, offerToFinalize.Timestamp, blockchainID);
 
                     OTContract_Holding_OfferFinalized.SetProcessed(connection, offerToFinalize);
                 }
