@@ -318,20 +318,20 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         confirmDelete: true,
       },
       columns: {
-        LastSeenOnline: {
-          title: '',
-          type: 'custom',
-          class: "onlineIndicator",
-          renderComponent: OnlineIndicatorRenderComponent,
-          filter: false,
-          sort: false,
-          editable: false,
-          addable: false,
-          width: '1%'
-          // valuePrepareFunction: (value, row) => {
-          //   return '<div style="font-size:30px;"><i class="nb-checkmark-circle"></i></div>';
-          // }
-        },
+        // LastSeenOnline: {
+        //   title: '',
+        //   type: 'custom',
+        //   class: "onlineIndicator",
+        //   renderComponent: OnlineIndicatorRenderComponent,
+        //   filter: false,
+        //   sort: false,
+        //   editable: false,
+        //   addable: false,
+        //   width: '1%'
+        //   // valuePrepareFunction: (value, row) => {
+        //   //   return '<div style="font-size:30px;"><i class="nb-checkmark-circle"></i></div>';
+        //   // }
+        // },
         Identity: {
           sort: false,
           title: 'Identity',

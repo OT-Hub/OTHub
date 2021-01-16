@@ -71,10 +71,10 @@ export class ECommerceChartsPanelComponent implements OnDestroy {
   setNodesSummary() {
     if (this.nodesSummary)
     this.chartPanelSummary = [
-      {
-        title: 'Online Nodes',
-        value: this.nodesSummary.OnlineNodesCount,
-      },
+      // {
+      //   title: 'Online Nodes',
+      //   value: this.nodesSummary.OnlineNodesCount,
+      // },
       {
         title: 'Nodes with Active Jobs',
         value: this.nodesSummary.NodesWithActiveJobs,

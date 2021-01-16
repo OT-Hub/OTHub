@@ -27,7 +27,7 @@ export class JobChartDataV2SummaryModel {
 
 
 export class HomeNodesInfoV2SummaryModel {
-    OnlineNodesCount: number;
+    //OnlineNodesCount: number;
     NodesWithActiveJobs: number;
     NodesWithJobsThisWeek: number;
     NodesWithJobsThisMonth: number;
