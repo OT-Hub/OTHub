@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Dapper;
 using MySqlConnector;
 using Nethereum.Hex.HexTypes;
 using Nethereum.JsonRpc.Client;
@@ -38,6 +39,18 @@ namespace OTHub.BackendSync
 
             RequestInterceptor r = new LogRequestInterceptor();
             cl.Client.OverridingRequestInterceptor = r;
+        }
+
+        protected int GetBlockchainID(MySqlConnection connection, Blockchain blockchain, Network network)
+        {
+            var id = connection.ExecuteScalar<int?>(
+                "select ID FROM blockchains where BlockchainName = @blockchainName AND NetworkName = @networkName", new
+                {
+                    blockchainName = blockchain.ToString(),
+                    networkName = network.ToString()
+                });
+
+            return id.Value;
         }
 
         public HexBigInteger LatestBlockNumber

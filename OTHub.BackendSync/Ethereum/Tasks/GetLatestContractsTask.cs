@@ -23,36 +23,22 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                //if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                //{
-                //    OTContract.InsertOrUpdate(connection, new OTContract
-                //    {
-                //        Address = "0x94d3370de31a9a16eb29195f2e9e44bc83656677",
-                //        Type = (int)ContractType.Holding,
-                //        IsLatest = true
-                //    }, true);
-                //    return;
-                //}
+                var allHubAddresses = new List<String>();
+                allHubAddresses.Add(OTHubSettings.Instance.Blockchain.HubAddress);
+                var addresses = allHubAddresses.Distinct();
 
-                //if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet)
-                //{
-                    var allHubAddresses = new List<String>();
-                    allHubAddresses.Add(OTHubSettings.Instance.Blockchain.HubAddress);
-                    var addresses = allHubAddresses.Distinct();
+                int blockchainID = GetBlockchainID(connection, blockchain, network);
 
-                    foreach (var address in addresses)
-                    {
-                        await NewTestnetMethod(connection, address, address == OTHubSettings.Instance.Blockchain.HubAddress);
-                    }
-                //}
-                //else
-                //{
-                //    await OldLiveMethod(connection);
-                //}
+
+                foreach (var address in addresses)
+                {
+                    await PopulateSmartContracts(connection, address,
+                        address == OTHubSettings.Instance.Blockchain.HubAddress, blockchainID);
+                }
             }
         }
 
-        private static async Task NewTestnetMethod(MySqlConnection connection, string hubAddress, bool isLatest)
+        private static async Task PopulateSmartContracts(MySqlConnection connection, string hubAddress, bool isLatest, int blockchainID)
         {
             var hubContract = new Contract(TaskRun.eth, AbiHelper.GetContractAbi(ContractTypeEnum.Hub), hubAddress);
 
@@ -79,13 +65,14 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             var replacementAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Replacement.ToString());
             await Task.Delay(250);
 
-            if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet)
+            if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet && OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet)
             {
                 OTContract.InsertOrUpdate(connection, new OTContract
                 {
                     Address = "0xefa914bd9ea22848df987d344eb75bc4dfd92b42",
                     Type = (int)ContractTypeEnum.Profile,
-                    IsLatest = false
+                    IsLatest = false,
+                    BlockchainID = blockchainID
                 }, true);
 
                 OTContract.InsertOrUpdate(connection,
@@ -93,7 +80,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     {
                         Address = "0x407da012319e0d97c6f17ac72e8dd8a56c3e1556",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Holding
+                        Type = (int)ContractTypeEnum.Holding,
+                        BlockchainID = blockchainID
                     }, true);
 
 
@@ -102,105 +90,120 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     {
                         Address = "0xcae2df21e532d92b05d55c9ec75d579ea24d8521",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Profile
+                        Type = (int)ContractTypeEnum.Profile,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0xaa7a9ca87d3694b5755f213b5d04094b8d0f0a6f",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Token
+                        Type = (int)ContractTypeEnum.Token,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x2be3cf5bd3609fd63b77aa40d0971c778db77c8a",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.HoldingStorage
+                        Type = (int)ContractTypeEnum.HoldingStorage,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0xf130e4df48aeef509a3e106223febcde1f9d1a4b",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Holding
+                        Type = (int)ContractTypeEnum.Holding,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x24d4ce2c8538290b9f283fad8ff423c601d1e114",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Approval
+                        Type = (int)ContractTypeEnum.Approval,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x306d5e8af6aeb73359dcc5e22c894e2588f76ffb",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.ProfileStorage
+                        Type = (int)ContractTypeEnum.ProfileStorage,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x1ea5cc419c6167ae8712d5bb1ba67120f37cbec8",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Profile
+                        Type = (int)ContractTypeEnum.Profile,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x951a11842f8a81e8f1ab31d029e4f11cf80c697a",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Profile
+                        Type = (int)ContractTypeEnum.Profile,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0xc3af0b170a02d108f55e224d6b2605fc3e93d68e",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Profile
+                        Type = (int)ContractTypeEnum.Profile,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0xe7db7f713b2ea963d0dcb67514b50394f1295cc1",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Profile
+                        Type = (int)ContractTypeEnum.Profile,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x6763c4c8293796b8726d9450a988d374a8e9f994",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Profile
+                        Type = (int)ContractTypeEnum.Profile,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x2b29bcc72a7420f791722da79e255852f171b38d",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Holding
+                        Type = (int)ContractTypeEnum.Holding,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x283a70a58c65112da7ee377a21a1fd3286581ffb",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Holding
+                        Type = (int)ContractTypeEnum.Holding,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x8d92ee115c126b751cfb0849efa629d2aadb8753",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Holding
+                        Type = (int)ContractTypeEnum.Holding,
+                        BlockchainID = blockchainID
                     }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract
                     {
                         Address = "0x87e04af76ecbb0114fc2d681c89a11eee457a268",
                         IsLatest = false,
-                        Type = (int)ContractTypeEnum.Holding
+                        Type = (int)ContractTypeEnum.Holding,
+                        BlockchainID = blockchainID
                     }, true);
             }
 
@@ -234,7 +237,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                         {
                             Address = newContractAddress,
                             IsLatest = false,
-                            Type = (int)result
+                            Type = (int)result,
+                            BlockchainID = blockchainID
                         }, true);
                 }
             }
@@ -245,7 +249,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     Address = approvalAddress,
                     IsLatest = isLatest,
-                    Type = (int)ContractTypeEnum.Approval
+                    Type = (int)ContractTypeEnum.Approval,
+                    BlockchainID = blockchainID
                 },
                 true);
             OTContract.InsertOrUpdate(connection,
@@ -253,7 +258,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     Address = holdingAddress,
                     IsLatest = isLatest,
-                    Type = (int)ContractTypeEnum.Holding
+                    Type = (int)ContractTypeEnum.Holding,
+                    BlockchainID = blockchainID
                 },
                 true);
             OTContract.InsertOrUpdate(connection,
@@ -261,14 +267,16 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     Address = holdingStorageAddress,
                     IsLatest = isLatest,
-                    Type = (int)ContractTypeEnum.HoldingStorage
+                    Type = (int)ContractTypeEnum.HoldingStorage,
+                    BlockchainID = blockchainID
                 }, true);
             OTContract.InsertOrUpdate(connection,
                 new OTContract
                 {
                     Address = profileAddress,
                     IsLatest = isLatest,
-                    Type = (int)ContractTypeEnum.Profile
+                    Type = (int)ContractTypeEnum.Profile,
+                    BlockchainID = blockchainID
                 },
                 true);
             OTContract.InsertOrUpdate(connection,
@@ -276,17 +284,21 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     Address = profileStorageAddress,
                     IsLatest = isLatest,
-                    Type = (int)ContractTypeEnum.ProfileStorage
+                    Type = (int)ContractTypeEnum.ProfileStorage,
+                    BlockchainID = blockchainID
                 }, true);
             OTContract.InsertOrUpdate(connection,
-                new OTContract { Address = tokenAddress, IsLatest = isLatest, Type = (int)ContractTypeEnum.Token },
+                new OTContract { Address = tokenAddress, IsLatest = isLatest, Type = (int)ContractTypeEnum.Token,
+                    BlockchainID = blockchainID
+                },
                 true);
             OTContract.InsertOrUpdate(connection,
                 new OTContract
                 {
                     Address = readingAddress,
                     IsLatest = isLatest,
-                    Type = (int)ContractTypeEnum.Reading
+                    Type = (int)ContractTypeEnum.Reading,
+                    BlockchainID = blockchainID
                 },
                 true);
             OTContract.InsertOrUpdate(connection,
@@ -294,224 +306,34 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     Address = readingStorageAddress,
                     IsLatest = isLatest,
-                    Type = (int)ContractTypeEnum.ReadingStorage
+                    Type = (int)ContractTypeEnum.ReadingStorage,
+                    BlockchainID = blockchainID
                 }, true);
             OTContract.InsertOrUpdate(connection,
                 new OTContract
                 {
                     Address = litigationAddress,
                     IsLatest = true,
-                    Type = (int)ContractTypeEnum.Litigation
+                    Type = (int)ContractTypeEnum.Litigation,
+                    BlockchainID = blockchainID
                 }, true);
             OTContract.InsertOrUpdate(connection,
                 new OTContract
                 {
                     Address = litigationStorageAddress,
                     IsLatest = isLatest,
-                    Type = (int)ContractTypeEnum.LitigationStorage
+                    Type = (int)ContractTypeEnum.LitigationStorage,
+                    BlockchainID = blockchainID
                 }, true);
             OTContract.InsertOrUpdate(connection,
                 new OTContract
                 {
                     Address = replacementAddress,
                     IsLatest = isLatest,
-                    Type = (int)ContractTypeEnum.Replacement
+                    Type = (int)ContractTypeEnum.Replacement,
+                    BlockchainID = blockchainID
                 }, true);
-
         }
-
-        //private static async Task OldLiveMethod(MySqlConnection connection)
-        //{
-        //    var hubContract = new Contract(eth, Constants.OldHubAbi, OTHubSettings.Instance.Blockchain.HubAddress);
-        //    var approvalAddress = await hubContract.GetFunction("approvalAddress").CallAsync<string>();
-        //    var tokenAddress = await hubContract.GetFunction("tokenAddress").CallAsync<string>();
-        //    var holdingStorageAddress = await hubContract.GetFunction("holdingStorageAddress").CallAsync<string>();
-        //    var holdingAddress = await hubContract.GetFunction("holdingAddress").CallAsync<string>();
-        //    var profileStorageAddress = await hubContract.GetFunction("profileStorageAddress").CallAsync<string>();
-        //    var profileAddress = await hubContract.GetFunction("profileAddress").CallAsync<string>();
-        //    var readingAddress = await hubContract.GetFunction("readingAddress").CallAsync<string>();
-        //    var readingStorageAddress = await hubContract.GetFunction("readingStorageAddress").CallAsync<string>();
-
-        //    //temp... added a load of ERC 0.0 profiles
-        //    OTContract.InsertOrUpdate(connection, new OTContract
-        //    {
-        //        Address = "0xefa914bd9ea22848df987d344eb75bc4dfd92b42",
-        //        Type = (int) ContractType.Profile,
-        //        IsLatest = false
-        //    }, true);
-
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x407da012319e0d97c6f17ac72e8dd8a56c3e1556",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Holding
-        //        }, true);
-
-
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0xcae2df21e532d92b05d55c9ec75d579ea24d8521",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Profile
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0xaa7a9ca87d3694b5755f213b5d04094b8d0f0a6f",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Token
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x2be3cf5bd3609fd63b77aa40d0971c778db77c8a",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.HoldingStorage
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0xf130e4df48aeef509a3e106223febcde1f9d1a4b",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Holding
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x24d4ce2c8538290b9f283fad8ff423c601d1e114",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Approval
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x306d5e8af6aeb73359dcc5e22c894e2588f76ffb",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.ProfileStorage
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x1ea5cc419c6167ae8712d5bb1ba67120f37cbec8",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Profile
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x951a11842f8a81e8f1ab31d029e4f11cf80c697a",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Profile
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0xc3af0b170a02d108f55e224d6b2605fc3e93d68e",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Profile
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0xe7db7f713b2ea963d0dcb67514b50394f1295cc1",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Profile
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x6763c4c8293796b8726d9450a988d374a8e9f994",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Profile
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x2b29bcc72a7420f791722da79e255852f171b38d",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Holding
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x283a70a58c65112da7ee377a21a1fd3286581ffb",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Holding
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x8d92ee115c126b751cfb0849efa629d2aadb8753",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Holding
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = "0x87e04af76ecbb0114fc2d681c89a11eee457a268",
-        //            IsLatest = false,
-        //            Type = (int) ContractType.Holding
-        //        }, true);
-
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = approvalAddress,
-        //            IsLatest = true,
-        //            Type = (int) ContractType.Approval
-        //        },
-        //        true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = holdingAddress,
-        //            IsLatest = true,
-        //            Type = (int) ContractType.Holding
-        //        },
-        //        true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = holdingStorageAddress,
-        //            IsLatest = true,
-        //            Type = (int) ContractType.HoldingStorage
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = profileAddress,
-        //            IsLatest = true,
-        //            Type = (int) ContractType.Profile
-        //        },
-        //        true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = profileStorageAddress,
-        //            IsLatest = true,
-        //            Type = (int) ContractType.ProfileStorage
-        //        }, true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract {Address = tokenAddress, IsLatest = true, Type = (int) ContractType.Token},
-        //        true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = readingAddress,
-        //            IsLatest = true,
-        //            Type = (int) ContractType.Reading
-        //        },
-        //        true);
-        //    OTContract.InsertOrUpdate(connection,
-        //        new OTContract
-        //        {
-        //            Address = readingStorageAddress,
-        //            IsLatest = true,
-        //            Type = (int) ContractType.ReadingStorage
-        //        }, true);
-        //}
 
         public GetLatestContractsTask() : base("Get Latest Contracts")
         {
