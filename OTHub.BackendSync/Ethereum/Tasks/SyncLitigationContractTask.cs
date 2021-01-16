@@ -25,10 +25,12 @@ namespace OTHub.BackendSync.Ethereum.Tasks
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                foreach (var contract in OTContract.GetByType(connection, (int)ContractTypeEnum.Litigation))
+                int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Litigation, blockchainID))
                 {
                     if (contract.IsArchived && contract.LastSyncedTimestamp.HasValue &&
                         (DateTime.Now - contract.LastSyncedTimestamp.Value).TotalDays <= 5)
@@ -77,7 +79,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                                     litigationCompletedEvent,
                                     replacementStartedEvent,
                                     contract, source, currentStart,
-                                    currentEnd);
+                                    currentEnd, blockchainID);
                             }
                             catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
                             {
@@ -109,14 +111,16 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                             litigationTimedOutEvent,
                             litigationCompletedEvent,
                             replacementStartedEvent,
-                            contract, source, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value);
+                            contract, source, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockchainID);
                     }
                 }
 
             }
         }
 
-        private async Task Sync(MySqlConnection connection, Event litigationInitiatedEvent, Event litigationAnsweredEvent, Event litigationTimedOutEvent, Event litigationCompletedEvent, Event replacementStartedEvent, OTContract contract, Source source, ulong start, ulong end)
+        private async Task Sync(MySqlConnection connection, Event litigationInitiatedEvent,
+            Event litigationAnsweredEvent, Event litigationTimedOutEvent, Event litigationCompletedEvent,
+            Event replacementStartedEvent, OTContract contract, Source source, ulong start, ulong end, int blockchainID)
         {
             Logger.WriteLine(source, "Syncing litigation " + start + " to " + end);
 
@@ -195,7 +199,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             foreach (EventLog<List<ParameterOutput>> eventLog in litigationInitiatedEventsEventLogs)
             {
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                    cl, blockchainID);
 
                 var offerId =
                     HexHelper.ByteArrayToString((byte[])eventLog.Event
@@ -215,7 +219,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 await Task.Delay(100);
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
-                var row = new OTContract_Litigation_LitigationInitiated()
+                var row = new OTContract_Litigation_LitigationInitiated
                 {
                     TransactionHash = eventLog.Log.TransactionHash,
                     BlockNumber = (UInt64)eventLog.Log.BlockNumber.Value,
@@ -225,7 +229,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     RequestedBlockIndex = (UInt64)requestedBlockIndex,
                     HolderIdentity = holderIdentity,
                     GasPrice = (UInt64)transaction.GasPrice.Value,
-                    GasUsed = (UInt64)receipt.GasUsed.Value
+                    GasUsed = (UInt64)receipt.GasUsed.Value,
+                    BlockchainID = blockchainID
                 };
 
                 OTContract_Litigation_LitigationInitiated.InsertIfNotExist(connection, row);
@@ -234,7 +239,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             foreach (EventLog<List<ParameterOutput>> eventLog in litigationAnsweredEvents)
             {
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                    cl, blockchainID);
 
                 var offerId =
                     HexHelper.ByteArrayToString((byte[])eventLog.Event
@@ -255,7 +260,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     OfferId = offerId,
                     HolderIdentity = holderIdentity,
                     GasPrice = (UInt64)transaction.GasPrice.Value,
-                    GasUsed = (UInt64)receipt.GasUsed.Value
+                    GasUsed = (UInt64)receipt.GasUsed.Value,
+                    BlockchainID = blockchainID
                 };
 
                 OTContract_Litigation_LitigationAnswered.InsertIfNotExist(connection, row);
@@ -264,7 +270,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             foreach (EventLog<List<ParameterOutput>> eventLog in litigationTimedOutEvents)
             {
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                    cl, blockchainID);
 
                 var offerId =
                     HexHelper.ByteArrayToString((byte[])eventLog.Event
@@ -285,7 +291,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     OfferId = offerId,
                     HolderIdentity = holderIdentity,
                     GasPrice = (UInt64)transaction.GasPrice.Value,
-                    GasUsed = (UInt64)receipt.GasUsed.Value
+                    GasUsed = (UInt64)receipt.GasUsed.Value,
+                    BlockchainID = blockchainID
                 };
 
                 OTContract_Litigation_LitigationTimedOut.InsertIfNotExist(connection, row);
@@ -294,7 +301,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             foreach (EventLog<List<ParameterOutput>> eventLog in litigationCompletedEvents)
             {
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                    cl, blockchainID);
 
                 var offerId =
                     HexHelper.ByteArrayToString((byte[])eventLog.Event
@@ -319,7 +326,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     HolderIdentity = holderIdentity,
                     DHWasPenalized = dhWasPenalized,
                     GasPrice = (UInt64)transaction.GasPrice.Value,
-                    GasUsed = (UInt64)receipt.GasUsed.Value
+                    GasUsed = (UInt64)receipt.GasUsed.Value,
+                    BlockchainID = blockchainID
                 };
 
                 OTContract_Litigation_LitigationCompleted.InsertIfNotExist(connection, row);
@@ -328,7 +336,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             foreach (EventLog<List<ParameterOutput>> eventLog in replacementStartedEvents)
             {
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                    cl, blockchainID);
 
                 var offerId =
                     HexHelper.ByteArrayToString((byte[])eventLog.Event
@@ -357,7 +365,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     ChallengerIdentity = challengerIdentity,
                     LitigationRootHash = litigationRootHash,
                     GasPrice = (UInt64)transaction.GasPrice.Value,
-                    GasUsed = (UInt64)receipt.GasUsed.Value
+                    GasUsed = (UInt64)receipt.GasUsed.Value,
+                    BlockchainID = blockchainID
                 };
 
                 OTContract_Litigation_ReplacementStarted.InsertIfNotExist(connection, row);

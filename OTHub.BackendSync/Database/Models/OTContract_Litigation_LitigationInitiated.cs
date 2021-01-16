@@ -15,20 +15,22 @@ namespace OTHub.BackendSync.Database.Models
         public ulong GasUsed { get; set; }
         public ulong RequestedObjectIndex { get; set; }
         public ulong RequestedBlockIndex { get; set; }
+        public int BlockchainID { get; set; }
 
         public static void InsertIfNotExist(MySqlConnection connection, OTContract_Litigation_LitigationInitiated model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Litigation_LitigationInitiated WHERE TransactionHash = @hash", new
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Litigation_LitigationInitiated WHERE TransactionHash = @hash AND BlockchainID = @blockchainID", new
             {
-                hash = model.TransactionHash
+                hash = model.TransactionHash,
+                blockchainID = model.BlockchainID
             });
 
             if (count == 0)
             {
                 connection.Execute(
                     @"INSERT INTO OTContract_Litigation_LitigationInitiated
-(TransactionHash, BlockNumber, Timestamp, OfferId, HolderIdentity, RequestedObjectIndex, GasPrice, GasUsed, RequestedBlockIndex)
-VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @RequestedObjectIndex, @GasPrice, @GasUsed, @RequestedBlockIndex)",
+(TransactionHash, BlockNumber, Timestamp, OfferId, HolderIdentity, RequestedObjectIndex, GasPrice, GasUsed, RequestedBlockIndex, BlockchainID)
+VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @RequestedObjectIndex, @GasPrice, @GasUsed, @RequestedBlockIndex, @BlockchainID)",
                     new
                     {
                         model.TransactionHash,
@@ -39,10 +41,11 @@ VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @R
                         model.RequestedObjectIndex,
                         model.RequestedBlockIndex,
                         model.GasPrice,
-                        model.GasUsed
+                        model.GasUsed,
+                        model.BlockchainID
                     });
 
-                OTOfferHolder.UpdateLitigationStatusesForOffer(connection, model.OfferId);
+                OTOfferHolder.UpdateLitigationStatusesForOffer(connection, model.OfferId, model.BlockchainID);
             }
         }
     }

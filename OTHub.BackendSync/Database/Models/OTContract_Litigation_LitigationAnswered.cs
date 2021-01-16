@@ -13,10 +13,11 @@ namespace OTHub.BackendSync.Database.Models
         public String HolderIdentity { get; set; }
         public ulong GasPrice { get; set; }
         public ulong GasUsed { get; set; }
+        public int BlockchainID { get; set; }
 
         public static void InsertIfNotExist(MySqlConnection connection, OTContract_Litigation_LitigationAnswered model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Litigation_LitigationAnswered WHERE TransactionHash = @hash", new
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Litigation_LitigationAnswered WHERE TransactionHash = @hash AND BlockchainID = @blockchainID", new
             {
                 hash = model.TransactionHash
             });
@@ -25,8 +26,8 @@ namespace OTHub.BackendSync.Database.Models
             {
                 connection.Execute(
                     @"INSERT INTO OTContract_Litigation_LitigationAnswered
-(TransactionHash, BlockNumber, Timestamp, OfferId, HolderIdentity, GasPrice, GasUsed)
-VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @GasPrice, @GasUsed)",
+(TransactionHash, BlockNumber, Timestamp, OfferId, HolderIdentity, GasPrice, GasUsed, BlockchainID)
+VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @GasPrice, @GasUsed, @BlockchainID)",
                     new
                     {
                         model.TransactionHash,
@@ -35,10 +36,11 @@ VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @G
                         model.OfferId,
                         model.HolderIdentity,
                         model.GasPrice,
-                        model.GasUsed
+                        model.GasUsed,
+                        model.BlockchainID
                     });
 
-                OTOfferHolder.UpdateLitigationStatusesForOffer(connection, model.OfferId);
+                OTOfferHolder.UpdateLitigationStatusesForOffer(connection, model.OfferId, model.BlockchainID);
             }
         }
     }
