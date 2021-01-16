@@ -32,7 +32,9 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 //Contract storageContract = new Contract((EthApiService)cl.Eth, Constants.GetContractAbi(ContractType.LitigationStorage), litigationStorageContract.Address);
                // Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
 
-                foreach (var contract in OTContract.GetByType(connection, (int)ContractTypeEnum.Replacement))
+               int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Replacement, blockchainID))
                 {
                     if (contract.IsArchived && contract.LastSyncedTimestamp.HasValue &&
                         (DateTime.Now - contract.LastSyncedTimestamp.Value).TotalDays <= 5)
@@ -67,7 +69,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                         await Task.Delay(50);
 
                         var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                            cl);
+                            cl, blockchainID);
                         var offerId =
                             HexHelper.ByteArrayToString((byte[])eventLog.Event
                                 .First(e => e.Parameter.Name == "offerId").Result);
@@ -91,14 +93,15 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                             ChosenHolder = chosenHolder,
                             ChallengerIdentity = challengerIdentity,
                             GasPrice = (UInt64)transaction.GasPrice.Value,
-                            GasUsed = (UInt64)receipt.GasUsed.Value
+                            GasUsed = (UInt64)receipt.GasUsed.Value,
+                            BlockchainID = blockchainID
                         };
 
                         OTContract_Replacement_ReplacementCompleted.InsertIfNotExist(connection, row);
 
-                        OTOfferHolder.Insert(connection, offerId, chosenHolder, false);
+                        OTOfferHolder.Insert(connection, offerId, chosenHolder, false, blockchainID);
 
-                        OTOfferHolder.UpdateLitigationStatusesForOffer(connection, offerId);
+                        OTOfferHolder.UpdateLitigationStatusesForOffer(connection, offerId, blockchainID);
                     }
 
                     contract.LastSyncedTimestamp = DateTime.Now;
