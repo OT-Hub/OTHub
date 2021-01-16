@@ -14,13 +14,15 @@ namespace OTHub.BackendSync.Database.Models
         public decimal NewBalance { get; set; }
         public ulong GasUsed { get; set; }
         public ulong GasPrice { get; set; }
+        public int BlockchainID { get; set; }
 
-        public static bool TransactionExists(MySqlConnection connection, string transactionHash)
+        public static bool TransactionExists(MySqlConnection connection, string transactionHash, int blockchainID)
         {
             var count = connection.QueryFirstOrDefault<Int32>(
-                "SELECT COUNT(*) FROM OTContract_Profile_TokensWithdrawn WHERE TransactionHash = @transactionHash", new
+                "SELECT COUNT(*) FROM OTContract_Profile_TokensWithdrawn WHERE TransactionHash = @transactionHash AND BlockchainID = @blockchainID", new
                 {
-                    transactionHash
+                    transactionHash,
+                    blockchainID = blockchainID
                 });
 
             if (count == 0)
@@ -29,11 +31,11 @@ namespace OTHub.BackendSync.Database.Models
             return true;
         }
 
-        public static void Insert(MySqlConnection connection, OTContract_Profile_TokensWithdrawn model, DateTime timestamp)
+        public static void Insert(MySqlConnection connection, OTContract_Profile_TokensWithdrawn model)
         {
             connection.Execute(
-                @"INSERT INTO OTContract_Profile_TokensWithdrawn(TransactionHash, ContractAddress, Profile, AmountWithdrawn, NewBalance, BlockNumber, GasPrice,  GasUsed)
-VALUES(@TransactionHash, @ContractAddress, @Profile, @AmountWithdrawn, @NewBalance, @BlockNumber, @GasPrice, @GasUsed)",
+                @"INSERT INTO OTContract_Profile_TokensWithdrawn(TransactionHash, ContractAddress, Profile, AmountWithdrawn, NewBalance, BlockNumber, GasPrice, GasUsed, BlockchainID)
+VALUES(@TransactionHash, @ContractAddress, @Profile, @AmountWithdrawn, @NewBalance, @BlockNumber, @GasPrice, @GasUsed, @BlockchainID)",
                 new
                 {
                     model.TransactionHash,
@@ -43,7 +45,8 @@ VALUES(@TransactionHash, @ContractAddress, @Profile, @AmountWithdrawn, @NewBalan
                     model.NewBalance,
                     model.BlockNumber,
                     model.GasPrice,
-                    model.GasUsed
+                    model.GasUsed,
+                    model.BlockchainID
                 });
         }
     }

@@ -23,10 +23,12 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
             
 
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                foreach (var contract in OTContract.GetByType(connection, (int)ContractTypeEnum.Profile))
+                int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Profile, blockchainID))
                 {
                     if (contract.IsArchived && contract.LastSyncedTimestamp.HasValue &&
                         (DateTime.Now - contract.LastSyncedTimestamp.Value).TotalDays <= 5)
@@ -83,7 +85,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                                     tokensReleasedEvent, tokensWithdrawnEvent, tokensTransferredEvent,
                                     tokensReservedEvent,
                                     contract, source, createProfileFunction, transferProfileFunction, currentStart,
-                                    currentEnd);
+                                    currentEnd, blockchainID);
                             }
                             catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
                             {
@@ -114,7 +116,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                         await Sync(connection, profileCreatedEvent, identityCreatedEvent, identityTransferredEvent,
                             tokensDepositedEvent,
                             tokensReleasedEvent, tokensWithdrawnEvent, tokensTransferredEvent, tokensReservedEvent,
-                            contract, source, createProfileFunction, transferProfileFunction, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value);
+                            contract, source, createProfileFunction, transferProfileFunction, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockchainID);
                     }
                 }
             }
@@ -123,7 +125,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
         private async Task Sync(MySqlConnection connection, Event profileCreatedEvent, Event identityCreatedEvent,
             Event identityTransferredEvent, Event tokensDepositedEvent, Event tokensReleasedEvent,
             Event tokensWithdrawnEvent, Event tokensTransferredEvent, Event tokensReservedEvent, OTContract contract,
-            Source source, Function createProfileFunction, Function transferProfileFunction, ulong start, ulong end)
+            Source source, Function createProfileFunction, Function transferProfileFunction, ulong start, ulong end,
+            int blockchainID)
         {
             Logger.WriteLine(source, "Syncing profile " + start + " to " + end);
 
@@ -222,7 +225,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             foreach (EventLog<List<ParameterOutput>> eventLog in identityCreatedEvents)
             {
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                    cl, blockchainID);
 
                 var profile = (string)eventLog.Event
                     .FirstOrDefault(p => p.Parameter.Name == "profile").Result;
@@ -246,6 +249,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     BlockNumber = (UInt64)eventLog.Log.BlockNumber.Value,
                     GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                     GasPrice = (UInt64)transaction.Result.GasPrice.Value,
+                    BlockchainID = blockchainID
                 };
 
                 OTContract_Profile_IdentityCreated.InsertOrUpdate(connection, row);
@@ -254,7 +258,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             foreach (EventLog<List<ParameterOutput>> eventLog in profileCreatedEvents)
             {
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                    cl, blockchainID);
 
                 var profile = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "profile")
                     .Result;
@@ -278,6 +282,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     InitialBalance = initialBalance,
                     GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                     GasPrice = (UInt64)transaction.Result.GasPrice.Value,
+                    BlockchainID = blockchainID
                 };
 
                 var createProfileInputData = createProfileFunction.DecodeInput(transaction.Result.Input);
@@ -297,7 +302,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             foreach (EventLog<List<ParameterOutput>> eventLog in identityTransferredEvents)
             {
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
-                    cl);
+                    cl, blockchainID);
 
                 var oldIdentity = (string)eventLog.Event
                     .FirstOrDefault(p => p.Parameter.Name == "oldIdentity").Result;
@@ -326,6 +331,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     NodeId = nodeId,
                     GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                     GasPrice = (UInt64)transaction.Result.GasPrice.Value,
+                    BlockchainID = blockchainID
                 };
 
                 var transferProfileFunctionData = transferProfileFunction.DecodeInput(transaction.Result.Input);
@@ -342,14 +348,14 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             foreach (var group in tokensDepositedEvents.GroupBy(t => t.Log.TransactionHash))
             {
-                if (OTContract_Profile_TokensDeposited.TransactionExists(connection, group.Key))
+                if (OTContract_Profile_TokensDeposited.TransactionExists(connection, group.Key, blockchainID))
                 {
                     continue;
                 }
 
                 foreach (var eventLog in group)
                 {
-                    var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl);
+                    var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl, blockchainID);
 
                     var profile = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "profile")
                         .Result;
@@ -375,13 +381,14 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                         NewBalance = newBalance,
                         GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                         GasPrice = (UInt64)transaction.Result.GasPrice.Value,
-                    }, block.Timestamp);
+                        BlockchainID = blockchainID
+                    });
                 }
             }
 
             foreach (var group in tokensReleasedEvents.GroupBy(t => t.Log.TransactionHash))
             {
-                if (OTContract_Profile_TokensReleased.TransactionExists(connection, group.Key))
+                if (OTContract_Profile_TokensReleased.TransactionExists(connection, group.Key, blockchainID))
                 {
                     continue;
                 }
@@ -390,7 +397,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
                         eventLog.Log.BlockNumber,
-                        cl);
+                        cl, blockchainID);
 
                     var profile = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "profile")
                         .Result;
@@ -414,13 +421,14 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                             Profile = profile,
                             GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                             GasPrice = (UInt64)transaction.Result.GasPrice.Value,
+                            BlockchainID = blockchainID
                         });
                 }
             }
 
             foreach (var group in tokensWithdrawnEvents.GroupBy(t => t.Log.TransactionHash))
             {
-                if (OTContract_Profile_TokensWithdrawn.TransactionExists(connection, group.Key))
+                if (OTContract_Profile_TokensWithdrawn.TransactionExists(connection, group.Key, blockchainID))
                 {
                     continue;
                 }
@@ -429,7 +437,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
                         eventLog.Log.BlockNumber,
-                        cl);
+                        cl, blockchainID);
 
                     var profile = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "profile")
                         .Result;
@@ -456,13 +464,14 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                             AmountWithdrawn = amountWithdrawn,
                             GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                             GasPrice = (UInt64)transaction.Result.GasPrice.Value,
-                        }, block.Timestamp);
+                            BlockchainID = blockchainID
+                        });
                 }
             }
 
             foreach (var group in tokensTransferredEvents.GroupBy(t => t.Log.TransactionHash))
             {
-                if (OTContract_Profile_TokensTransferred.TransactionExists(connection, group.Key))
+                if (OTContract_Profile_TokensTransferred.TransactionExists(connection, group.Key, blockchainID))
                 {
                     continue;
                 }
@@ -471,7 +480,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
                         eventLog.Log.BlockNumber,
-                        cl);
+                        cl, blockchainID);
 
                     var sender = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "sender")
                         .Result;
@@ -500,13 +509,14 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                             Sender = sender,
                             GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                             GasPrice = (UInt64)transaction.Result.GasPrice.Value,
+                            BlockchainID = blockchainID
                         });
                 }
             }
 
             foreach (var group in tokensReservedEvents.GroupBy(t => t.Log.TransactionHash))
             {
-                if (OTContract_Profile_TokensReserved.TransactionExists(connection, group.Key))
+                if (OTContract_Profile_TokensReserved.TransactionExists(connection, group.Key, blockchainID))
                 {
                     continue;
                 }
@@ -515,7 +525,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 {
                     var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
                         eventLog.Log.BlockNumber,
-                        cl);
+                        cl, blockchainID);
 
                     var profile = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "profile")
                         .Result;
@@ -539,6 +549,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                             AmountReserved = amountReserved,
                             GasUsed = (UInt64)receipt.Result.GasUsed.Value,
                             GasPrice = (UInt64)transaction.Result.GasPrice.Value,
+                            BlockchainID = blockchainID
                         });
                 }
             }
