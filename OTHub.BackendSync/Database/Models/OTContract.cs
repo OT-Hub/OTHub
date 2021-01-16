@@ -127,9 +127,9 @@ WHERE Address = @address and type = @type", new
             return connection.Query<OTContract>("SELECT * FROM OTContract").ToArray();
         }
 
-        public static OTContract[] GetByType(MySqlConnection connection, int type)
+        public static OTContract[] GetByTypeAndBlockchain(MySqlConnection connection, int type, int blockchainID)
         {
-            return connection.Query<OTContract>("SELECT * FROM OTContract where Type = @type", new {type = type}).ToArray();
+            return connection.Query<OTContract>("SELECT * FROM OTContract where Type = @type AND BlockchainID = @blockchainID", new { type = type, blockchainID = blockchainID }).ToArray();
         }
     }
 }
