@@ -27,6 +27,7 @@ namespace OTHub.BackendSync.Database.Models
         public DateTime? LastSyncedTimestamp { get; set; }
         public DateTime? LastSeenTimestamp { get; set; }
         public String ManagementWallet { get; set; }
+        public int BlockchainID { get; set; }
 
         public static void InsertIfNotExist(MySqlConnection connection, OTIdentity model)
         {
@@ -60,13 +61,14 @@ namespace OTHub.BackendSync.Database.Models
         public static void Insert(MySqlConnection connection, OTIdentity model)
         {
             connection.Execute(
-                @"INSERT INTO OTIdentity(Identity, TransactionHash, Version)
-VALUES(@Identity, @TransactionHash, @Version)",
+                @"INSERT INTO OTIdentity(Identity, TransactionHash, Version, BlockchainID)
+VALUES(@Identity, @TransactionHash, @Version, @BlockchainID)",
                 new
                 {
                     model.Identity,
                     model.TransactionHash,
-                    model.Version
+                    model.Version,
+                    model.BlockchainID
                 });
         }
 

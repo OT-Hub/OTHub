@@ -47,17 +47,20 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
         public override async Task Execute(Source source, Blockchain blockchain, Network network)
         {
-            DateTime start = DateTime.UtcNow;
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
             Random random = new Random();
 
             var randomMinutes = random.Next(0, 60);
 
-            using (var connection =
+          
+
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                await CreateMissingIdentities(connection, cl);
+                int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                await CreateMissingIdentities(connection, cl, blockchainID);
 
                 var profileStorageContractAddress = OTContract
                     .GetByType(connection, (int)ContractTypeEnum.ProfileStorage).Single(a => a.IsLatest);
@@ -71,23 +74,25 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
                 Dictionary<string, decimal> paidOutBalances = connection
                     .Query<PayoutGroupHolder>(
-                        @"SELECT Holder, SUM(Amount) Amount FROM OTContract_Holding_Paidout GROUP BY Holder")
+                        @"SELECT Holder, SUM(Amount) Amount FROM OTContract_Holding_Paidout WHERE BlockchainID = @blockchainID GROUP BY Holder",
+                        new
+                        {
+                            blockchainID = blockchainID
+                        })
                     .ToDictionary(k => k.Holder, k => k.Amount);
-                Dictionary<string, int> approvedNodes = connection
-                    .Query<ApprovedGroupNode>(
-                        @"select NodeId, COUNT(*) as Count from otcontract_approval_nodeapproved GROUP BY NodeId")
-                    .ToDictionary(k => k.NodeId, k => k.Count);
+
                 Dictionary<string, OfferGroupHolder> offerTotals = connection.Query<OfferGroupHolder>(
                     @"select i.Identity, COUNT(h.Holder) as OffersTotal,
-(SELECT count(sh.ID) FROM otoffer_holders sh join otoffer so on so.OfferID = sh.OfferID where sh.Holder = i.Identity AND so.CreatedTimestamp >= Date_Add(NOW(), INTERVAL -7 DAY)) as OffersLast7Days
+(SELECT count(sh.ID) FROM otoffer_holders sh join otoffer so on so.OfferID = sh.OfferID
+    where sh.Holder = i.Identity AND so.CreatedTimestamp >= Date_Add(NOW(), INTERVAL -7 DAY)) as OffersLast7Days
  from otidentity i
-join otoffer_holders h on h.Holder = i.Identity
-join otoffer o on o.OfferID = h.OfferID
+join otoffer_holders h on h.Holder = i.Identity AND h.BlockchainID = i.BlockchainID
+join otoffer o on o.OfferID = h.OfferID AND o.BlockchainID = h.BlockchainID
 GROUP BY i.Identity").ToDictionary(k => k.Identity, k => k);
                 NodeManagementWallet[] managementWallets = connection.Query<NodeManagementWallet>(
                     @"SELECT I.Identity, PC.ManagementWallet as CreateWallet, IT.ManagementWallet TransferWallet FROM OTIdentity I
-LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity
-LEFT JOIN OTContract_Profile_IdentityTransferred IT ON IT.NewIdentity = I.Identity
+LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity AND PC.BlockchainID = I.BlockchainID
+LEFT JOIN OTContract_Profile_IdentityTransferred IT ON IT.NewIdentity = I.Identity AND IT.BlockchainID = I.BlockchainID
 WHERE I.Version > 0").ToArray();
 
 
@@ -109,40 +114,40 @@ WHERE I.Version > 0").ToArray();
                     {
                         var dates = connection.Query<DateTime?>(@"
 select MAX(Timestamp) from otcontract_profile_identitycreated r
-join ethblock b on r.BlockNumber = b.BlockNumber
+join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.NewIdentity = @identity
 union
 select MAX(Timestamp) from otcontract_profile_identitytransferred r
-join ethblock b on r.BlockNumber = b.BlockNumber
+join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.NewIdentity = @identity
 union
 select MAX(Timestamp) from otcontract_profile_profilecreated r
-join ethblock b on r.BlockNumber = b.BlockNumber
+join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.Profile = @identity
 union
 select MAX(Timestamp) from otcontract_profile_tokensdeposited r
-join ethblock b on r.BlockNumber = b.BlockNumber
+join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.Profile = @identity
 union
 select MAX(Timestamp) from otcontract_profile_tokensreleased r
-join ethblock b on r.BlockNumber = b.BlockNumber
+join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.Profile = @identity
 union
 select MAX(Timestamp) from otcontract_profile_tokensreserved r
-join ethblock b on r.BlockNumber = b.BlockNumber
+join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.Profile = @identity
 union
 select MAX(Timestamp) from otcontract_profile_tokenstransferred r
-join ethblock b on r.BlockNumber = b.BlockNumber
+join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.Sender = @identity OR r.Receiver = @identity
 union
 select MAX(Timestamp) from otcontract_profile_tokenswithdrawn r
-join ethblock b on r.BlockNumber = b.BlockNumber
+join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.Profile = @identity
 union
 select MAX(b.Timestamp) from otoffer_holders h
-join otoffer o on o.offerid = h.offerid
-join ethblock b on b.blocknumber = o.finalizedblocknumber
+join otoffer o on o.offerid = h.offerid and o.BlockchainID = h.BlockchainID
+join ethblock b on b.blocknumber = o.finalizedblocknumber AND h.BlockchainID = b.BlockchainID
 where h.Holder = @identity
 union
 SELECT MAX(Timestamp)
@@ -150,13 +155,13 @@ FROM otcontract_litigation_litigationcompleted lc
 WHERE lc.HolderIdentity = @identity AND lc.DHWasPenalized = 1
 union
 select MAX(b.Timestamp) from otcontract_holding_paidout p
-join ethblock b on b.blocknumber = p.blocknumber
+join ethblock b on b.blocknumber = p.blocknumber and b.BlockchainID = p.BlockchainID
 where p.holder = @identity
 union
 select MAX(b.Timestamp)  from otcontract_holding_offerfinalized of
-join otcontract_holding_offercreated oc on oc.OfferId = of.OfferId
-join OTIdentity i on i.NodeId = oc.DCNodeId
-join ethblock b on of.BlockNumber = b.BlockNumber
+join otcontract_holding_offercreated oc on oc.OfferId = of.OfferId and oc.BlockchainID = of.BlockchainID
+join OTIdentity i on i.NodeId = oc.DCNodeId and i.BlockchainID = oc.BlockchainID
+join ethblock b on of.BlockNumber = b.BlockNumber and b.BlockchainID = of.BlockchainID
 where i.Identity = @identity", new
                         {
                             identity = currentIdentity.Identity
@@ -252,22 +257,15 @@ where i.Identity = @identity", new
                         paidRow = 0;
                     }
 
-                    if (!approvedNodes.TryGetValue(currentIdentity.NodeId, out var approvedRow))
-                    {
-                        approvedRow = 0;
-                    }
-
                     offerTotals.TryGetValue(currentIdentity.Identity, out var offerRow);
 
                     if (currentIdentity.Paidout != paidRow
-                        || currentIdentity.Approved != (approvedRow != 0)
                         || currentIdentity.TotalOffers != (offerRow?.OffersTotal ?? 0)
                         || currentIdentity.OffersLast7Days != (offerRow?.OffersLast7Days ?? 0)
                         || currentIdentity.ActiveOffers != 0
                         || updateManagementWallet)
                     {
                         currentIdentity.Paidout = paidRow;
-                        currentIdentity.Approved = (approvedRow != 0);
                         currentIdentity.TotalOffers = offerRow?.OffersTotal ?? 0;
                         currentIdentity.OffersLast7Days = offerRow?.OffersLast7Days ?? 0;
                         currentIdentity.ActiveOffers = 0;
@@ -279,11 +277,15 @@ where i.Identity = @identity", new
         }
 
 
-        private static async Task<OTContract_Profile_IdentityCreated[]> CreateMissingIdentities(MySqlConnection connection, Web3 cl)
+        private static async Task CreateMissingIdentities(
+            MySqlConnection connection, Web3 cl, int blockchainId)
         {
             var allIdentitiesCreated = connection
                 .Query<OTContract_Profile_IdentityCreated>(@"select * from OTContract_Profile_IdentityCreated IC
-            WHERE IC.NewIdentity not in (SELECT OTIdentity.Identity FROM OTIdentity)")
+            WHERE IC.NewIdentity not in (SELECT OTIdentity.Identity FROM OTIdentity WHERE BlockchainID = @BlockchainID) AND IC.BlockchainID = @blockchainID", new
+                {
+                    blockchainId = blockchainId
+                })
                 .ToArray();
 
             foreach (var identity in allIdentitiesCreated)
@@ -292,7 +294,7 @@ where i.Identity = @identity", new
 
                 var otVersionFunction = ercContract.GetFunction("otVersion");
 
-                await Task.Delay(50);
+                await Task.Delay(100);
 
                 var value = await otVersionFunction.CallAsync<BigInteger>();
 
@@ -300,14 +302,18 @@ where i.Identity = @identity", new
                 {
                     TransactionHash = identity.TransactionHash,
                     Identity = identity.NewIdentity,
-                    Version = (int) value
+                    Version = (int) value,
+                    BlockchainID = blockchainId
                 });
             }
 
             //This only happens due to missing blockchain events (only happened in December 2018)
             var profilesCreatedWithoutIdentities = connection.Query(
                 @"select TransactionHash, Profile from otcontract_profile_profilecreated
-WHERE Profile not in (select otidentity.Identity from otidentity)").ToArray();
+WHERE Profile not in (select otidentity.Identity from otidentity WHERE BlockchainID = @blockchainID) AND BlockchainID = @blockchainID", new
+                {
+                    blockchainId = blockchainId
+                }).ToArray();
 
             foreach (var profilesCreatedWithoutIdentity in profilesCreatedWithoutIdentities)
             {
@@ -318,7 +324,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity)").ToArray();
 
                 var otVersionFunction = ercContract.GetFunction("otVersion");
 
-                await Task.Delay(50);
+                await Task.Delay(100);
 
                 var value = await otVersionFunction.CallAsync<BigInteger>();
 
@@ -326,11 +332,10 @@ WHERE Profile not in (select otidentity.Identity from otidentity)").ToArray();
                 {
                     TransactionHash = hash,
                     Identity = identity,
-                    Version = (int) value
+                    Version = (int) value,
+                    BlockchainID = blockchainId
                 });
             }
-
-            return allIdentitiesCreated;
         }
 
         public LoadProfileBalancesTask() : base("Load Profile Balances")
