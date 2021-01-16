@@ -4,6 +4,7 @@ namespace OTHub.Settings
 {
     public class BlockchainSettings
     {
+        public BlockchainType Type { get; set; }
         public BlockchainNetwork Network { get; set; }
 
         public String HubAddress { get; set; }
@@ -28,5 +29,11 @@ namespace OTHub.Settings
     {
         Mainnet,
         Testnet
+    }
+
+    public enum BlockchainType
+    {
+        Ethereum,
+        Starfleet
     }
 }
