@@ -6,18 +6,30 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Abis\approval.json" />
-    <None Remove="Abis\erc725.json" />
-    <None Remove="Abis\holding-storage.json" />
-    <None Remove="Abis\holding.json" />
-    <None Remove="Abis\hub.json" />
-    <None Remove="Abis\litigation-storage.json" />
-    <None Remove="Abis\litigation.json" />
-    <None Remove="Abis\profile-storage.json" />
-    <None Remove="Abis\profile.json" />
-    <None Remove="Abis\reading.json" />
-    <None Remove="Abis\replacement.json" />
-    <None Remove="Abis\token.json" />
+    <None Remove="Abis\Ethereum\Mainnet\approval.json" />
+    <None Remove="Abis\Ethereum\Mainnet\erc725.json" />
+    <None Remove="Abis\Ethereum\Mainnet\holding-storage.json" />
+    <None Remove="Abis\Ethereum\Mainnet\holding.json" />
+    <None Remove="Abis\Ethereum\Mainnet\hub.json" />
+    <None Remove="Abis\Ethereum\Mainnet\litigation-storage.json" />
+    <None Remove="Abis\Ethereum\Mainnet\litigation.json" />
+    <None Remove="Abis\Ethereum\Mainnet\profile-storage.json" />
+    <None Remove="Abis\Ethereum\Mainnet\profile.json" />
+    <None Remove="Abis\Ethereum\Mainnet\reading.json" />
+    <None Remove="Abis\Ethereum\Mainnet\replacement.json" />
+    <None Remove="Abis\Ethereum\Mainnet\token.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\approval.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\erc725.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\holding-storage.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\holding.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\hub.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\litigation-storage.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\litigation.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\profile-storage.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\profile.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\reading.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\replacement.json" />
+    <None Remove="Abis\Ethereum\Rinkeby\token.json" />
   </ItemGroup>
 
   <ItemGroup>
@@ -29,17 +41,32 @@
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Abis\approval.json" />
-    <EmbeddedResource Include="Abis\erc725.json" />
-    <EmbeddedResource Include="Abis\holding-storage.json" />
-    <EmbeddedResource Include="Abis\holding.json" />
-    <EmbeddedResource Include="Abis\hub.json" />
-    <EmbeddedResource Include="Abis\litigation-storage.json" />
-    <EmbeddedResource Include="Abis\litigation.json" />
-    <EmbeddedResource Include="Abis\profile-storage.json" />
-    <EmbeddedResource Include="Abis\profile.json" />
-    <EmbeddedResource Include="Abis\reading.json" />
-    <EmbeddedResource Include="Abis\replacement.json" />
-    <EmbeddedResource Include="Abis\token.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\approval.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\erc725.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\holding-storage.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\holding.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\hub.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\litigation-storage.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\litigation.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\profile-storage.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\profile.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\reading.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\replacement.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\token.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\approval.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\erc725.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\holding-storage.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\holding.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\hub.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\litigation-storage.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\litigation.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\profile-storage.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\profile.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\reading.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\replacement.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Rinkeby\token.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Abis\Starfleet\" />
   </ItemGroup>
 </Project>

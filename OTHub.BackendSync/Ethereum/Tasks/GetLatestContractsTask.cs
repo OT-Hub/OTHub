@@ -17,7 +17,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 {
     public class GetLatestContractsTask : TaskRun
     {
-        public override async Task Execute(Source source, Blockchain blockchain, Network network)
+        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
@@ -33,14 +33,14 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 foreach (var address in addresses)
                 {
                     await PopulateSmartContracts(connection, address,
-                        address == OTHubSettings.Instance.Blockchain.HubAddress, blockchainID);
+                        address == OTHubSettings.Instance.Blockchain.HubAddress, blockchainID, blockchain, network);
                 }
             }
         }
 
-        private static async Task PopulateSmartContracts(MySqlConnection connection, string hubAddress, bool isLatest, int blockchainID)
+        private static async Task PopulateSmartContracts(MySqlConnection connection, string hubAddress, bool isLatest, int blockchainID, BlockchainType blockchain, BlockchainNetwork network)
         {
-            var hubContract = new Contract(TaskRun.eth, AbiHelper.GetContractAbi(ContractTypeEnum.Hub), hubAddress);
+            var hubContract = new Contract(TaskRun.eth, AbiHelper.GetContractAbi(ContractTypeEnum.Hub, blockchain, network), hubAddress);
 
             var tokenAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Token.ToString());
             await Task.Delay(250);

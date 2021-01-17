@@ -17,7 +17,7 @@ namespace OTHub.BackendSync.Markets.Tasks
 {
     public class GetMarketDataTask : TaskRun
     {
-        public override async Task Execute(Source source, Blockchain blockchain, Network network)
+        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             Logger.WriteLine(source, "Syncing TRAC Market (USD)");
 

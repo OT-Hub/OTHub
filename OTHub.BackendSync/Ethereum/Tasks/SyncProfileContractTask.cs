@@ -18,7 +18,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 {
     public class SyncProfileContractTask : TaskRun
     {
-        public override async Task Execute(Source source, Blockchain blockchain, Network network)
+        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
             
@@ -41,7 +41,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
                     Logger.WriteLine(source, "     Using contract: " + contract.Address);
 
-                    string abi = AbiHelper.GetContractAbi(ContractTypeEnum.Profile);
+                    string abi = AbiHelper.GetContractAbi(ContractTypeEnum.Profile, blockchain, network);
 
 
                     var profileContract = new Contract(eth, abi, contract.Address);

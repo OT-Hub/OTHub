@@ -13,22 +13,22 @@ namespace OTHub.BackendSync
 {
     public class TaskController
     {
-        private readonly Blockchain _blockchain;
-        private readonly Network _network;
+        private readonly BlockchainType _blockchain;
+        private readonly BlockchainNetwork _network;
         private readonly Source _source;
         private readonly ConcurrentBag<TaskControllerItem> _items = new ConcurrentBag<TaskControllerItem>();
 
         private class TaskControllerItem
         {
-            private readonly Blockchain _blockchain;
-            private readonly Network _network;
+            private readonly BlockchainType _blockchain;
+            private readonly BlockchainNetwork _network;
             private readonly Source _source;
             private readonly TaskRun _task;
             private readonly TimeSpan _runEveryTimeSpan;
             private DateTime _lastRunDateTime;
             private SystemStatus _systemStatus;
 
-            internal TaskControllerItem(Blockchain blockchain, Network network, Source source, TaskRun task, TimeSpan runEveryTimeSpan, bool startNow)
+            internal TaskControllerItem(BlockchainType blockchain, BlockchainNetwork network, Source source, TaskRun task, TimeSpan runEveryTimeSpan, bool startNow)
             {
                 _blockchain = blockchain;
                 _network = network;
@@ -107,8 +107,8 @@ namespace OTHub.BackendSync
                     string blockchainName = blockchain.BlockchainName;
                     string networkName = blockchain.NetworkName;
 
-                    Blockchain blockchainEnum = Enum.Parse<Blockchain>(blockchainName);
-                    Network networkNameEnum = Enum.Parse<Network>(networkName);
+                    BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
+                    BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
 
                     var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, runEveryTimeSpan, startNow);
                     _items.Add(item);

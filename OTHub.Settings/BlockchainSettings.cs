@@ -28,7 +28,7 @@ namespace OTHub.Settings
     public enum BlockchainNetwork
     {
         Mainnet,
-        Testnet
+        Rinkeby
     }
 
     public enum BlockchainType

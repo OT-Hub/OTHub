@@ -45,7 +45,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             public Int32 Count { get; set; }
         }
 
-        public override async Task Execute(Source source, Blockchain blockchain, Network network)
+        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
@@ -60,13 +60,13 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             {
                 int blockchainID = GetBlockchainID(connection, blockchain, network);
 
-                await CreateMissingIdentities(connection, cl, blockchainID);
+                await CreateMissingIdentities(connection, cl, blockchainID, blockchain, network);
 
                 var profileStorageContractAddress = OTContract
                     .GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.ProfileStorage, blockchainID).Single(a => a.IsLatest);
                 var profileStorageContract =
                     new Contract(new EthApiService(cl.Client),
-                        AbiHelper.GetContractAbi(ContractTypeEnum.ProfileStorage),
+                        AbiHelper.GetContractAbi(ContractTypeEnum.ProfileStorage, blockchain, network),
                         profileStorageContractAddress.Address);
                 var profileFunction = profileStorageContract.GetFunction("profile");
 
@@ -278,7 +278,7 @@ where i.Identity = @identity", new
 
 
         private static async Task CreateMissingIdentities(
-            MySqlConnection connection, Web3 cl, int blockchainId)
+            MySqlConnection connection, Web3 cl, int blockchainId, BlockchainType blockchain, BlockchainNetwork network)
         {
             var allIdentitiesCreated = connection
                 .Query<OTContract_Profile_IdentityCreated>(@"select * from OTContract_Profile_IdentityCreated IC
@@ -290,7 +290,7 @@ where i.Identity = @identity", new
 
             foreach (var identity in allIdentitiesCreated)
             {
-                var ercContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.ERC725), identity.NewIdentity);
+                var ercContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.ERC725, blockchain, network), identity.NewIdentity);
 
                 var otVersionFunction = ercContract.GetFunction("otVersion");
 
@@ -320,7 +320,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
                 string hash = profilesCreatedWithoutIdentity.TransactionHash;
                 string identity = profilesCreatedWithoutIdentity.Profile;
 
-                var ercContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.ERC725), identity);
+                var ercContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.ERC725, blockchain, network), identity);
 
                 var otVersionFunction = ercContract.GetFunction("otVersion");
 

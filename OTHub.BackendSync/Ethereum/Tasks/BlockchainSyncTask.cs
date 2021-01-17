@@ -18,7 +18,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             Add(new SyncReplacementContractTask());
         }
 
-        public override async Task Execute(Source source, Blockchain blockchain, Network network)
+        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             await RunChildren(source, blockchain, network);
 

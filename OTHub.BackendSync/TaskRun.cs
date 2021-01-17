@@ -41,7 +41,7 @@ namespace OTHub.BackendSync
             cl.Client.OverridingRequestInterceptor = r;
         }
 
-        protected int GetBlockchainID(MySqlConnection connection, Blockchain blockchain, Network network)
+        protected int GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
         {
             var id = connection.ExecuteScalar<int?>(
                 "select ID FROM blockchains where BlockchainName = @blockchainName AND NetworkName = @networkName", new
@@ -72,7 +72,7 @@ namespace OTHub.BackendSync
             _childTasks.Add(task);
         }
 
-        protected async Task RunChildren(Source source, Blockchain blockchain, Network network)
+        protected async Task RunChildren(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();
             LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - 1);
@@ -128,6 +128,6 @@ namespace OTHub.BackendSync
         {
             Name = name;
         }
-        public abstract Task Execute(Source source, Blockchain blockchain, Network network);
+        public abstract Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network);
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.IO;
 using System.Reflection;
 
@@ -6,9 +7,9 @@ namespace OTHub.Settings.Abis
 {
     public static class AbiHelper
     {
-        public static string GetContractAbi(ContractTypeEnum ContractTypeEnum)
+        public static string GetContractAbi(ContractTypeEnum ContractTypeEnum, BlockchainType type, BlockchainNetwork network)
         {
-            string path = "OTHub.Settings.Abis.";
+            string path = $"OTHub.Settings.Abis.{type}.{network}.";
 
             switch (ContractTypeEnum)
             {

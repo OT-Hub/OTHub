@@ -20,7 +20,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
         {
         }
 
-        public override async Task Execute(Source source, Blockchain blockchain, Network network)
+        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
@@ -47,7 +47,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
                     Logger.WriteLine(source, "     Using contract: " + contract.Address);
 
-                    var holdingContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.Replacement), contract.Address);
+                    var holdingContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.Replacement, blockchain, network), contract.Address);
 
                     var replacementCompletedEvent = holdingContract.GetEvent("ReplacementCompleted");
 
