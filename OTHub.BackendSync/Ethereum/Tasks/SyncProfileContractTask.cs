@@ -7,6 +7,7 @@ using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
 using Nethereum.JsonRpc.Client;
+using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
 using OTHub.BackendSync.Database.Models;
@@ -27,6 +28,10 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                var cl = GetWeb3(connection, blockchainID);
+
+                var eth = new EthApiService(cl.Client);
 
                 foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Profile, blockchainID))
                 {
@@ -85,7 +90,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                                     tokensReleasedEvent, tokensWithdrawnEvent, tokensTransferredEvent,
                                     tokensReservedEvent,
                                     contract, source, createProfileFunction, transferProfileFunction, currentStart,
-                                    currentEnd, blockchainID);
+                                    currentEnd, blockchainID, cl);
                             }
                             catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
                             {
@@ -116,7 +121,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                         await Sync(connection, profileCreatedEvent, identityCreatedEvent, identityTransferredEvent,
                             tokensDepositedEvent,
                             tokensReleasedEvent, tokensWithdrawnEvent, tokensTransferredEvent, tokensReservedEvent,
-                            contract, source, createProfileFunction, transferProfileFunction, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockchainID);
+                            contract, source, createProfileFunction, transferProfileFunction, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockchainID, cl);
                     }
                 }
             }
@@ -126,7 +131,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             Event identityTransferredEvent, Event tokensDepositedEvent, Event tokensReleasedEvent,
             Event tokensWithdrawnEvent, Event tokensTransferredEvent, Event tokensReservedEvent, OTContract contract,
             Source source, Function createProfileFunction, Function transferProfileFunction, ulong start, ulong end,
-            int blockchainID)
+            int blockchainID, Web3 cl)
         {
             Logger.WriteLine(source, "Syncing profile " + start + " to " + end);
 
@@ -220,7 +225,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 Logger.WriteLine(source, "Found " + tokensReservedEvents.Count + " tokens reserved events");
             }
 
-
+            var eth = new EthApiService(cl.Client);
 
             foreach (EventLog<List<ParameterOutput>> eventLog in identityCreatedEvents)
             {

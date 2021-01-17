@@ -19,12 +19,8 @@ namespace OTHub.APIServer.Ethereum
 {
     public static class BlockchainHelper
     {
-        private static Web3 cl = new Web3(OTHubSettings.Instance.Infura.Url);
-
         public static async Task<BeforePayoutResult> CanTryPayout(string identity, string offerId, string holdingAddress, string holdingStorageAddress, string litigationStorageAddress)
         {
-
-
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var holdingStorageAddressModel = connection.QueryFirstOrDefault<ContractAddress>(ContractsSql.GetHoldingStorageAddressByAddress, new
@@ -51,6 +47,13 @@ namespace OTHub.APIServer.Ethereum
 
                 BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
                 BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
+
+                string nodeUrl = connection.ExecuteScalar<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                {
+                    id = blockchainID
+                });
+
+                var cl = new Web3(nodeUrl);
 
                 var holdingStorageAbi = AbiHelper.GetContractAbi(ContractTypeEnum.HoldingStorage, blockchainEnum, networkNameEnum);
 

@@ -7,7 +7,9 @@ using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
 using Nethereum.JsonRpc.Client;
+using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
+using Nethereum.Web3;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -29,6 +31,9 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                var cl = GetWeb3(connection, blockchainID);
+                var eth = new EthApiService(cl.Client);
 
                 foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Litigation, blockchainID))
                 {
@@ -79,7 +84,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                                     litigationCompletedEvent,
                                     replacementStartedEvent,
                                     contract, source, currentStart,
-                                    currentEnd, blockchainID);
+                                    currentEnd, blockchainID, cl);
                             }
                             catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
                             {
@@ -111,7 +116,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                             litigationTimedOutEvent,
                             litigationCompletedEvent,
                             replacementStartedEvent,
-                            contract, source, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockchainID);
+                            contract, source, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockchainID, cl);
                     }
                 }
 
@@ -120,7 +125,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
         private async Task Sync(MySqlConnection connection, Event litigationInitiatedEvent,
             Event litigationAnsweredEvent, Event litigationTimedOutEvent, Event litigationCompletedEvent,
-            Event replacementStartedEvent, OTContract contract, Source source, ulong start, ulong end, int blockchainID)
+            Event replacementStartedEvent, OTContract contract, Source source, ulong start, ulong end, int blockchainID,
+            Web3 cl)
         {
             Logger.WriteLine(source, "Syncing litigation " + start + " to " + end);
 
@@ -195,6 +201,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             //        await Program.GetEthBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl);
             //    }
             //});
+
+            var eth = new EthApiService(cl.Client);
 
             foreach (EventLog<List<ParameterOutput>> eventLog in litigationInitiatedEventsEventLogs)
             {

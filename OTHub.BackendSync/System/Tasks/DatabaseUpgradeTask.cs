@@ -1,6 +1,8 @@
-﻿using System;
+﻿
+using System;
 using System.Data;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
@@ -359,12 +361,18 @@ ENGINE=InnoDB
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `BlockchainName` varchar(100) NOT NULL,
   `NetworkName` varchar(100) NOT NULL,
+  `HubAddress` varchar(100) NOT NULL,
+  `FromBlockNumber` BIGINT(20) UNSIGNED ZEROFILL NOT NULL DEFAULT '00000000000000000000',
+  `BlockchainNodeUrl` varchar(500) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;");
 
-                connection.Execute(@"INSERT IGNORE INTO `blockchains` (`ID`, `BlockchainName`, `NetworkName`) VALUES
-	(1, 'Ethereum', 'Mainnet'),
-	(2, 'Ethereum', 'Rinkeby');"); //TODO these probably shouldn't be hard coded
+
+                if (connection.ExecuteScalar<int>(@"SELECT COUNT(*) FROM blockchains") <= 0)
+                {
+                    Thread.Sleep(10000);
+                    throw new Exception("Blockchains table needs to be populated. Make sure blockchain ID 1 is used for the original blockchain to make historical data correct.");
+                }
 
 
                 bool isUpgradedForMultiChain = connection.ExecuteScalar<int>(@$"SELECT 

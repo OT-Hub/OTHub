@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
@@ -17,11 +18,10 @@ namespace OTHub.BackendSync
         private readonly List<TaskRun> _childTasks = new List<TaskRun>();
 
         private HexBigInteger _latestBlockNumber;
-        public static Web3 cl { get; } 
-        public static EthApiService eth { get; }
 
-        public static uint SyncBlockNumber { get; }
-        public static uint FromBlockNumber { get; }
+
+        //public static uint SyncBlockNumber { get; }
+        //public static uint FromBlockNumber { get; }
         
         
         
@@ -31,14 +31,10 @@ namespace OTHub.BackendSync
         static TaskRun()
         {
 
-            SyncBlockNumber = OTHubSettings.Instance.Blockchain.StartSyncFromBlockNumber;
-            FromBlockNumber = OTHubSettings.Instance.Blockchain.StartSyncFromBlockNumber;
+            //SyncBlockNumber = OTHubSettings.Instance.Blockchain.StartSyncFromBlockNumber;
+            //FromBlockNumber = OTHubSettings.Instance.Blockchain.StartSyncFromBlockNumber;
 
-            cl = new Web3(OTHubSettings.Instance.Infura.Url);
-            eth = new EthApiService(cl.Client);
 
-            RequestInterceptor r = new LogRequestInterceptor();
-            cl.Client.OverridingRequestInterceptor = r;
         }
 
         protected int GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
@@ -72,52 +68,69 @@ namespace OTHub.BackendSync
             _childTasks.Add(task);
         }
 
+        protected Web3 GetWeb3(MySqlConnection connection, int blockchainID)
+        {
+            string nodeUrl = connection.ExecuteScalar<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+            {
+                id = blockchainID
+            });
+
+            var cl = new Web3(nodeUrl);
+
+            RequestInterceptor r = new LogRequestInterceptor();
+            cl.Client.OverridingRequestInterceptor = r;
+
+            return cl;
+        }
+
         protected async Task RunChildren(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
-            var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-            LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - 1);
-
-            foreach (var childTask in _childTasks)
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var status = new SystemStatus(childTask.Name);
+                var cl = GetWeb3(connection, GetBlockchainID(connection, blockchain, network));
 
-                Logger.WriteLine(Source.BlockchainSync, "Starting " + childTask.Name);
-                try
-                {
-                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-                    {
-                        status.InsertOrUpdate(connection, true, null, true);
-                    }
+                var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+                LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - 1);
 
-                    await childTask.Execute(source, blockchain, network);
-                }
-                catch
+                foreach (var childTask in _childTasks)
                 {
+                    var status = new SystemStatus(childTask.Name);
+
+                    Logger.WriteLine(Source.BlockchainSync, "Starting " + childTask.Name);
                     try
                     {
-                        using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+
+                        status.InsertOrUpdate(connection, true, null, true);
+
+
+                        await childTask.Execute(source, blockchain, network);
+                    }
+                    catch
+                    {
+                        try
                         {
+
                             status.InsertOrUpdate(connection, false, null, false);
+
                         }
+                        catch
+                        {
+
+                        }
+
+                        throw;
+                    }
+
+                    try
+                    {
+
+                        status.InsertOrUpdate(connection, true, null, false);
+
                     }
                     catch
                     {
 
                     }
-
-                    throw;
-                }
-
-                try
-                {
-                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-                    {
-                        status.InsertOrUpdate(connection, true, null, false);
-                    }
-                }
-                catch
-                {
-
                 }
             }
         }

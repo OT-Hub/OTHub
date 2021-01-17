@@ -17,41 +17,37 @@ namespace OTHub.BackendSync
     {
         public void RunUntilExit()
         {
-
-
-
-
             List<Task> tasks = new List<Task>();
 
 
             //Task controller 1
-            tasks.Add(Task.Run(() =>
-            {
-                TaskController controller = new TaskController(Source.NodeApi);
+            //tasks.Add(Task.Run(() =>
+            //{
+            //    TaskController controller = new TaskController(Source.NodeApi);
 
-                controller.Schedule(new OptimiseDatabaseTask(), TimeSpan.FromDays(1), false);
+            //    controller.Schedule(new OptimiseDatabaseTask(), TimeSpan.FromDays(1), false);
 
-                controller.Start();
-            }));
+            //    controller.Start();
+            //}));
 
             //Task controller 2
-            tasks.Add(Task.Run(() =>
-            {
-                TaskController controller = new TaskController(Source.NodeUptimeAndMisc);
+            //tasks.Add(Task.Run(() =>
+            //{
+            //    TaskController controller = new TaskController(Source.NodeUptimeAndMisc);
 
 
-                if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet)
-                {
-                    controller.Schedule(new GetMarketDataTask(), TimeSpan.FromMinutes(120), true);
+            //    if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet)
+            //    {
+            //        controller.Schedule(new GetMarketDataTask(), TimeSpan.FromMinutes(180), true);
 
-                    controller.Schedule(new CalculateOfferLambdaTask(), TimeSpan.FromMinutes(60), true);
-                }
+            //        controller.Schedule(new CalculateOfferLambdaTask(), TimeSpan.FromMinutes(60), true);
+            //    }
 
-                controller.Schedule(new MarkOldContractsAsArchived(), TimeSpan.FromDays(1),
-                    false); //TODO needs to do litigation contracts
+            //    controller.Schedule(new MarkOldContractsAsArchived(), TimeSpan.FromDays(1),
+            //        false); //TODO needs to do litigation contracts
 
-                controller.Start();
-            }));
+            //    controller.Start();
+            //}));
 
 
             //Task controller 3
@@ -59,12 +55,12 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.BlockchainSync);
 
-                controller.Schedule(new GetLatestContractsTask(), TimeSpan.FromMinutes(240), true);
+                controller.Schedule(new GetLatestContractsTask(), TimeSpan.FromMinutes(300), true);
 
-                controller.Schedule(new RefreshAllHolderLitigationStatusesTask(), TimeSpan.FromHours(2), true);
+                //controller.Schedule(new RefreshAllHolderLitigationStatusesTask(), TimeSpan.FromHours(2), true);
 
-                controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(5), true);
-                controller.Schedule(new LoadProfileBalancesTask(), TimeSpan.FromMinutes(5), true);
+                //controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(6), true);
+                //controller.Schedule(new LoadProfileBalancesTask(), TimeSpan.FromMinutes(6), true);
 
                 controller.Start();
             }));

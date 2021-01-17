@@ -7,10 +7,16 @@ namespace OTHub.BackendSync.Database.Models
 {
     public class OTContract
     {
-        public OTContract()
+        public OTContract(ulong syncBlockNumber, ulong fromBlockNumber)
         {
-            SyncBlockNumber = TaskRun.SyncBlockNumber;
-            FromBlockNumber = TaskRun.FromBlockNumber;
+            SyncBlockNumber = syncBlockNumber;
+            FromBlockNumber = fromBlockNumber;
+        }
+
+        //For dapper to use
+        protected OTContract()
+        {
+            
         }
 
         public int ID { get; set; }
@@ -79,7 +85,7 @@ WHERE Type = @type AND IsLatest = 1 AND Address != @address AND BlockchainID = @
 
                 connection.Execute(@"UPDATE OTContract SET Type = @type, IsLatest = @isLatest, FromBlockNumber = @fromBlockNo, SyncBlockNumber = @syncBlockNo,
 IsArchived = @IsArchived, LastSyncedTimestamp = @LastSyncedTimestamp, BlockchainID = @blockchainID
-WHERE Address = @address and type = @type", new
+WHERE Address = @address and type = @type AND BlockchainID = @blockchainID", new
                 {
                     address = contract.Address,
                     type = contract.Type,
@@ -95,7 +101,7 @@ WHERE Address = @address and type = @type", new
 
         public static void InsertOrUpdate(MySqlConnection connection, OTContract otContract, bool onlyAllowIsLatestUpdate = false)
         {
-            if (otContract.Address == "0x0000000000000000000000000000000000000000")
+            if (otContract.Address == null || otContract.Address == "0x0000000000000000000000000000000000000000")
                 return;
 
             var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract WHERE Address = @address AND Type = @type AND BlockchainID = @blockchainID", new

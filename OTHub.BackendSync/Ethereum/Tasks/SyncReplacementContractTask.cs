@@ -6,6 +6,7 @@ using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
 using Nethereum.JsonRpc.Client;
+using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
@@ -33,6 +34,9 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                // Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
 
                int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+               var cl = GetWeb3(connection, blockchainID);
+               var eth = new EthApiService(cl.Client);
 
                 foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Replacement, blockchainID))
                 {

@@ -22,8 +22,6 @@ namespace OTHub.BackendSync
             var settings = configuration.Get<OTHubSettings>();
             settings.Validate();
 
-            Logger.WriteLine(Source.BlockchainSync, "Infura url: " + settings.Infura.Url);
-
             //Add any new tables, indexes, columns etc to the database. This can only be used to upgrade somewhat recent databases.
             DatabaseUpgradeTask.Execute();
 

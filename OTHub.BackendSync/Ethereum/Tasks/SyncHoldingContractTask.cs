@@ -7,6 +7,7 @@ using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
 using Nethereum.JsonRpc.Client;
+using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
 using OTHub.BackendSync.Database.Models;
@@ -26,6 +27,9 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                var cl = GetWeb3(connection, blockchainID);
+                var eth = new EthApiService(cl.Client);
 
                 foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Holding, blockchainID))
                 {
@@ -71,7 +75,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                             try
                             {
                                 await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent,
-                                    ownershipTransferredEvent, offerTaskEvent, source, currentStart, currentEnd, blockchainID);
+                                    ownershipTransferredEvent, offerTaskEvent, source, currentStart, currentEnd, blockchainID, cl);
                             }
                             catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
                             {
@@ -101,7 +105,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     {
                         await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent,
                             ownershipTransferredEvent, offerTaskEvent, source, contract.SyncBlockNumber,
-                            (ulong) LatestBlockNumber.Value, blockchainID);
+                            (ulong) LatestBlockNumber.Value, blockchainID, cl);
                     }
                 }
             }
@@ -109,7 +113,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
         private async Task Sync(MySqlConnection connection, OTContract contract, Event offerCreatedEvent,
             Event offerFinalizedEvent, Event paidOutEvent, Event ownershipTransferredEvent, Event offerTaskEvent,
-            Source source, ulong start, ulong end, int blockchainID)
+            Source source, ulong start, ulong end, int blockchainID, Web3 cl)
         {
             Logger.WriteLine(source, "Syncing holding " + start + " to " + end);
 
@@ -306,6 +310,8 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                 });
             }
 
+            var eth = new EthApiService(cl.Client);
+            
             foreach (EventLog<List<ParameterOutput>> eventLog in ownershipTransferredEvents)
             {
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,

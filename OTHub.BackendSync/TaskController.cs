@@ -68,7 +68,7 @@ namespace OTHub.BackendSync
 
                 try
                 {
-                    Logger.WriteLine(_source, "Starting " + _task.Name);
+                    Logger.WriteLine(_source, "Starting " + _task.Name + " on " + _blockchain + " " + _network);
 
                     using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
@@ -90,7 +90,7 @@ namespace OTHub.BackendSync
                     {
                         _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false);
                     }
-                    Logger.WriteLine(_source, "Finished " + _task.Name + " in " + (DateTime.Now - startTime).TotalSeconds + " seconds");
+                    Logger.WriteLine(_source, "Finished " + _task.Name + " in " + (DateTime.Now - startTime).TotalSeconds + " seconds on " + _blockchain + " " + _network);
                 }
             }
         }

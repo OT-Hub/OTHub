@@ -53,12 +53,13 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
             var randomMinutes = random.Next(0, 60);
 
-          
-
+     
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                var cl = GetWeb3(connection, blockchainID);
 
                 await CreateMissingIdentities(connection, cl, blockchainID, blockchain, network);
 
@@ -280,6 +281,8 @@ where i.Identity = @identity", new
         private static async Task CreateMissingIdentities(
             MySqlConnection connection, Web3 cl, int blockchainId, BlockchainType blockchain, BlockchainNetwork network)
         {
+            var eth = new EthApiService(cl.Client);
+
             var allIdentitiesCreated = connection
                 .Query<OTContract_Profile_IdentityCreated>(@"select * from OTContract_Profile_IdentityCreated IC
             WHERE IC.NewIdentity not in (SELECT OTIdentity.Identity FROM OTIdentity WHERE BlockchainID = @BlockchainID) AND IC.BlockchainID = @blockchainID", new
