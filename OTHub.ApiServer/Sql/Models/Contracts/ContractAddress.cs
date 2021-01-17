@@ -6,5 +6,6 @@ namespace OTHub.APIServer.Sql.Models.Contracts
     {
         public String Address { get; set; }
         public bool IsLatest { get; set; }
+        public int BlockchainID { get; set; }
     }
 }

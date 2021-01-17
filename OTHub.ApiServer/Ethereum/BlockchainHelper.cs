@@ -23,14 +23,17 @@ namespace OTHub.APIServer.Ethereum
 
         public static async Task<BeforePayoutResult> CanTryPayout(string identity, string offerId, string holdingAddress, string holdingStorageAddress, string litigationStorageAddress)
         {
-            var holdingStorageAbi = AbiHelper.GetContractAbi(ContractTypeEnum.HoldingStorage);
+
 
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                holdingStorageAddress = connection.QueryFirstOrDefault<ContractAddress>(ContractsSql.GetHoldingStorageAddressByAddress, new
+                var holdingStorageAddressModel = connection.QueryFirstOrDefault<ContractAddress>(ContractsSql.GetHoldingStorageAddressByAddress, new
                 {
                     holdingStorageAddress = holdingStorageAddress
-                })?.Address;
+                });
+
+                int blockchainID = holdingStorageAddressModel.BlockchainID;
+                holdingStorageAddress = holdingStorageAddressModel.Address;
 
                 if (holdingStorageAddress == null)
                 {
@@ -41,6 +44,15 @@ namespace OTHub.APIServer.Ethereum
                         Message = "OT Hub is not familiar with this holding storage smart contract address. Unknown addresses can not be used."
                     };
                 }
+
+                var blockchainRow = connection.QueryFirst("SELECT * FROM blockchains where id = @id", new {id = blockchainID});
+                string blockchainName = blockchainRow.BlockchainName;
+                string networkName = blockchainRow.NetworkName;
+
+                BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
+                BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
+
+                var holdingStorageAbi = AbiHelper.GetContractAbi(ContractTypeEnum.HoldingStorage, blockchainEnum, networkNameEnum);
 
                 holdingAddress = connection.QueryFirstOrDefault<ContractAddress>(ContractsSql.GetHoldingAddressByAddress, new
                 {
@@ -137,7 +149,7 @@ where Type = 9 AND Address = @litigationStorageAddress", new
                     }
 
                     Contract storageContract = new Contract((EthApiService) cl.Eth,
-                        AbiHelper.GetContractAbi(ContractTypeEnum.LitigationStorage), litigationStorageAddress);
+                        AbiHelper.GetContractAbi(ContractTypeEnum.LitigationStorage, blockchainEnum, networkNameEnum), litigationStorageAddress);
                     Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
 
                     Function getLitigationTimestampFunction = storageContract.GetFunction("getLitigationTimestamp");

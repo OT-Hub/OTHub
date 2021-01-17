@@ -1,4 +1,5 @@
 using System;
+using OTHub.Settings;
 using OTHub.Settings.Abis;
 using Xunit;
 
@@ -22,7 +23,12 @@ namespace OTHub.Tests
         [InlineData(ContractTypeEnum.Hub)]
         public void GetContractAbi(ContractTypeEnum type)
         {
-            string abi = AbiHelper.GetContractAbi(type);
+            string abi = AbiHelper.GetContractAbi(type, BlockchainType.Ethereum, BlockchainNetwork.Mainnet);
+
+            Assert.NotNull(abi);
+            Assert.NotEmpty(abi);
+
+            abi = AbiHelper.GetContractAbi(type, BlockchainType.Ethereum, BlockchainNetwork.Rinkeby);
 
             Assert.NotNull(abi);
             Assert.NotEmpty(abi);
