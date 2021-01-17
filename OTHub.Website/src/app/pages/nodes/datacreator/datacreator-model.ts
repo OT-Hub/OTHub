@@ -17,6 +17,9 @@ export class DataCreatedDetailedModel   {
     Offers: OTOfferSummaryModel[];
     ProfileTransfers: DataHolderDetailedProfileTransfer[];
     Litigations: DataCreatorLitigation[];
+
+    BlockchainName: string;
+    NetworkName: string;
 }
 
 export class DataHolderDetailedProfileTransfer {

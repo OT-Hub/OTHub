@@ -17,5 +17,9 @@ namespace OTHub.APIServer.Sql.Models.Nodes.DataCreators
         public Int32 AvgTokenAmountPerHolder { get; set; }
         public DateTime CreatedTimestamp { get; set; }
         public DateTime? LastJob { get; set; }
+
+
+        public string BlockchainName { get; set; }
+        public string NetworkName { get; set; }
     }
 }

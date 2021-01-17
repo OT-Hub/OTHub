@@ -11,12 +11,6 @@
                 <nb-card>
                     <nb-card-header>Job</nb-card-header>
                     <nb-list>
-                        <nb-list-item>
-                            Blockchain: {{OfferModel?.BlockchainName}}
-                        </nb-list-item>
-                        <nb-list-item>
-                            Network: {{OfferModel?.NetworkName}}
-                        </nb-list-item>
                         <nb-list-item class="dont-break-out">
                             Offer Id: {{OfferModel?.OfferId}}&nbsp;<app-copyclipboardicon
                                 [textToCopy]="OfferModel?.OfferId" style="vertical-align:middle">
@@ -208,7 +202,15 @@
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <nb-card>
                     <nb-card-header>Blockchain</nb-card-header>
-                    <span style="margin: 10px 20px;">Job Creation</span>
+                    <nb-list>
+                        <nb-list-item>
+                            Blockchain: {{OfferModel?.BlockchainName}}
+                        </nb-list-item>
+                        <nb-list-item>
+                            Network: {{OfferModel?.NetworkName}}
+                        </nb-list-item>
+                    </nb-list>
+                    <span style="margin: 10px 20px;color:gray;">Job Creation</span>
                     <nb-list>
                         <nb-list-item class="dont-break-out">
                             Transaction Hash: {{OfferModel?.CreatedTransactionHash}}&nbsp;<app-copyclipboardicon
@@ -224,8 +226,8 @@
                             ETH ({{OfferModel?.CreatedGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
                         </nb-list-item>
                     </nb-list>
-                    <br *ngIf="OfferModel?.FinalizedTransactionHash !== null">
-                    <span style="margin: 10px 20px;" *ngIf="OfferModel?.FinalizedTransactionHash !== null">Job
+                    <!-- <br *ngIf="OfferModel?.FinalizedTransactionHash !== null"> -->
+                    <span style="margin: 10px 20px 10px 20px;color:gray;" *ngIf="OfferModel?.FinalizedTransactionHash !== null">Job
                         Finalized</span>
                     <nb-list *ngIf="OfferModel?.FinalizedTransactionHash !== null">
                         <nb-list-item class="dont-break-out">

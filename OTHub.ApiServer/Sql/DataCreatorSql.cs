@@ -15,8 +15,11 @@ namespace OTHub.APIServer.Sql
 I.ManagementWallet,
 COALESCE(ic.TransactionHash, pc.TransactionHash) CreateTransactionHash,
 COALESCE(ic.GasPrice, pc.GasPrice) CreateGasPrice,
-COALESCE(ic.GasUsed, pc.GasUsed) CreateGasUsed
+COALESCE(ic.GasUsed, pc.GasUsed) CreateGasUsed,
+bc.BlockchainName,
+bc.NetworkName
 from OTIdentity I
+JOIN blockchains bc ON bc.ID = I.BlockchainID
 left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity AND I.BlockchainID = ic.BlockchainID
 left JOIN otcontract_profile_profilecreated pc on pc.Profile = I.Identity AND I.BlockchainID = pc.BlockchainID
 JOIN otoffer O ON O.DCNodeId = I.NodeId

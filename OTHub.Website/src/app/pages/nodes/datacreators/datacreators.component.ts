@@ -338,6 +338,18 @@ export class DatacreatorsComponent implements OnInit  {
           editable: true,
           addable: true,
         },
+        BlockchainName: {
+          type: 'string',
+          sort: false,
+          filter: false,
+          title: 'Blockchain'
+        },
+        NetworkName: {
+          type: 'string',
+          sort: false,
+          filter: false,
+          title: 'Network'
+        },
         OffersTotal: {
           sort: true,
           title: 'Jobs',

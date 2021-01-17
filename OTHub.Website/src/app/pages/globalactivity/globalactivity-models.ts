@@ -5,6 +5,8 @@ export class GlobalActivityModel   {
     RelatedEntity2: string;
     TransactionHash: string;
     Message: string;
+    BlockchainName: string;
+    NetworkName: string;
 }
 
 export class GlobalActivityModelWithPaging   {

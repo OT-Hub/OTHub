@@ -93,9 +93,11 @@ COUNT(DISTINCT CASE WHEN O.IsFinalized = 1
 END) as ActiveOffers,
  substring(I.NodeId, 1, 40) as NodeId, I.Version, COALESCE(I.Stake, 0) as StakeTokens,
 COALESCE(I.StakeReserved, 0) as StakeReservedTokens, COALESCE(I.Paidout, 0) as PaidTokens, COALESCE(I.TotalOffers, 0) as TotalWonOffers, 
-COALESCE(I.OffersLast7Days, 0) WonOffersLast7Days, I.Approved
-
+COALESCE(I.OffersLast7Days, 0) WonOffersLast7Days, I.Approved,
+bc.BlockchainName,
+bc.NetworkName
 from OTIdentity I
+JOIN blockchains bc ON bc.ID = I.BlockchainID
 LEFT JOIN OTOffer_Holders OH ON OH.Holder = I.Identity
 LEFT JOIN OTOffer O ON O.OfferID = OH.OfferID
 WHERE (@Identity_like IS NULL OR I.Identity = @Identity_like) AND {(identity.Any() ? "I.Identity in @identity AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version

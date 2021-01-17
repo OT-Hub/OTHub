@@ -20,8 +20,11 @@ I.ManagementWallet,
 COALESCE(ic.TransactionHash, pc.TransactionHash) CreateTransactionHash,
 COALESCE(ic.GasPrice, pc.GasPrice) CreateGasPrice,
 COALESCE(ic.GasUsed, pc.GasUsed) CreateGasUsed,
-(SELECT COUNT(O.OfferID) FROM OTOffer O WHERE O.DCNodeId = I.NodeId) as DCOfferCount
+(SELECT COUNT(O.OfferID) FROM OTOffer O WHERE O.DCNodeId = I.NodeId) as DCOfferCount,
+bc.BlockchainName,
+bc.NetworkName
 from OTIdentity I
+JOIN blockchains bc ON bc.ID = I.BlockchainID
 left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity AND ic.BlockchainID = I.BlockchainID
 left JOIN otcontract_profile_profilecreated pc on pc.Profile = I.Identity AND pc.BlockchainID = I.BlockchainID
 WHERE I.Identity = @identity";

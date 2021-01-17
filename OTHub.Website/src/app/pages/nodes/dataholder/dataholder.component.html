@@ -15,6 +15,12 @@
                        width:24px;height:24px;margin-right:5px" />
                         Data Holder</nb-card-header>
                     <nb-list>
+                        <nb-list-item>
+                            Blockchain: {{NodeModel?.BlockchainName}}
+                        </nb-list-item>
+                        <nb-list-item>
+                            Network: {{NodeModel?.NetworkName}}
+                        </nb-list-item>
                         <nb-list-item *ngIf="DisplayName" class="dont-break-out">
                             Display Name: {{DisplayName}}
                         </nb-list-item>

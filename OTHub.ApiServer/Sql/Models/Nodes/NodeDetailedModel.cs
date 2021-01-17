@@ -20,5 +20,8 @@ namespace OTHub.APIServer.Sql.Models.Nodes
         public String CreateTransactionHash { get; set; }
         public UInt64? CreateGasPrice { get; set; }
         public UInt64? CreateGasUsed { get; set; }
+
+        public string BlockchainName { get; set; }
+        public string NetworkName { get; set; }
     }
 }

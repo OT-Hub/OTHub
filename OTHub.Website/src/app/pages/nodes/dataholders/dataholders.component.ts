@@ -357,6 +357,18 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           editable: true,
           addable: true,
         },
+        BlockchainName: {
+          type: 'string',
+          sort: false,
+          filter: false,
+          title: 'Blockchain'
+        },
+        NetworkName: {
+          type: 'string',
+          sort: false,
+          filter: false,
+          title: 'Network'
+        },
         TotalWonOffers: {
           sort: true,
           title: 'Jobs',

@@ -23,6 +23,9 @@ export class DataHolderDetailedModel   {
     ProfileTransfers: DataHolderDetailedProfileTransfer[];
     NodeUptime: DataHolderDetailedNodeUptime;
     Litigations: DataHolderLitigation[];
+
+    BlockchainName: string;
+    NetworkName: string;
 }
 
 export class DataHolderDetailedOfferModel {

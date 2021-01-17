@@ -18,8 +18,11 @@ ROUND(AVG(O.DataSetSizeInBytes) / 1000) AvgDataSetSizeKB,
 ROUND(AVG(O.HoldingTimeInMinutes)) AvgHoldingTimeInMinutes,
 ROUND(AVG(O.TokenAmountPerHolder)) AvgTokenAmountPerHolder,
 x.Timestamp as CreatedTimestamp,
-COALESCE(MAX(O.FinalizedTimestamp), MAX(CreatedTimestamp)) LastJob
+COALESCE(MAX(O.FinalizedTimestamp), MAX(CreatedTimestamp)) LastJob,
+bc.BlockchainName,
+bc.NetworkName
 from OTIdentity I
+JOIN blockchains bc ON bc.ID = I.BlockchainID
 JOIN OTOffer O ON O.DCNodeId = I.NodeId
 JOIN (SELECT I.Identity, COALESCE(PCB.Timestamp, ICB.Timestamp) as Timestamp FROM OTIdentity I
 LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity AND PC.BlockchainID = I.BlockchainID

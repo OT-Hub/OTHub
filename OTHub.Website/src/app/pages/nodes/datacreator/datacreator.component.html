@@ -21,6 +21,12 @@
                         width:24px;height:24px;margin-right:5px" />
                          Data Creator</nb-card-header>
                     <nb-list>
+                        <nb-list-item>
+                            Blockchain: {{NodeModel?.BlockchainName}}
+                        </nb-list-item>
+                        <nb-list-item>
+                            Network: {{NodeModel?.NetworkName}}
+                        </nb-list-item>
                         <nb-list-item *ngIf="myNodeService.GetName(NodeModel?.Identity, true)">
                             Display Name: {{myNodeService.GetName(NodeModel?.Identity, true)}}
                         </nb-list-item>

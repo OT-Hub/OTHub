@@ -17,5 +17,9 @@ namespace OTHub.APIServer.Sql.Models.Nodes.DataHolders
 
         public DateTime? LastSeenOnline { get; set; }
         public DateTime? LastSeenOffline { get; set; }
+
+
+        public string BlockchainName { get; set; }
+        public string NetworkName { get; set; }
     }
 }
