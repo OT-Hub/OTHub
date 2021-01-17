@@ -82,6 +82,18 @@ delete: false
         //     value + '" src="' + this.getIdentityIcon(value) + '"></a>';
         // }
       },
+      BlockchainName: {
+        type: 'string',
+        sort: false,
+        filter: false,
+        title: 'Blockchain'
+      },
+      NetworkName: {
+        type: 'string',
+        sort: false,
+        filter: false,
+        title: 'Network'
+      },
       OfferId: {
         sort: false,
         title: 'Offer ID',

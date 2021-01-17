@@ -11,6 +11,12 @@
                 <nb-card>
                     <nb-card-header>Job</nb-card-header>
                     <nb-list>
+                        <nb-list-item>
+                            Blockchain: {{OfferModel?.BlockchainName}}
+                        </nb-list-item>
+                        <nb-list-item>
+                            Network: {{OfferModel?.NetworkName}}
+                        </nb-list-item>
                         <nb-list-item class="dont-break-out">
                             Offer Id: {{OfferModel?.OfferId}}&nbsp;<app-copyclipboardicon
                                 [textToCopy]="OfferModel?.OfferId" style="vertical-align:middle">

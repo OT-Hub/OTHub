@@ -9,7 +9,7 @@ namespace OTHub.APIServer.Sql
     public static class JobSql
     {
         public const String GetJobDetailed =
-            @"SELECT O.OfferId, O.EstimatedLambda, O.CreatedTimestamp as CreatedTimestamp, O.FinalizedTimestamp, O.LitigationIntervalInMinutes, O.DataSetId, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
+			@"SELECT O.OfferId, O.EstimatedLambda, O.CreatedTimestamp as CreatedTimestamp, O.FinalizedTimestamp, O.LitigationIntervalInMinutes, O.DataSetId, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
 (CASE WHEN IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
 	ELSE (CASE WHEN O.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)
@@ -29,8 +29,11 @@ O.FinalizedTransactionHash,
 OC.GasUsed CreatedGasUsed,
 OF.GasUsed FinalizedGasUsed,
 OC.GasPrice CreatedGasPrice,
-OF.GasPrice FinalizedGasPrice
+OF.GasPrice FinalizedGasPrice,
+bc.BlockchainName,
+bc.NetworkName
  FROM OTOffer O
+JOIN blockchains bc ON bc.ID = O.BlockchainID
  JOIN OTContract_Holding_OfferCreated OC ON OC.OfferID = O.OfferID
  LEFT JOIN OTContract_Holding_OfferFinalized OF ON OF.OfferID = O.OfferID
  LEFT JOIN OTIdentity DCI ON DCI.NodeId = O.DCNodeId

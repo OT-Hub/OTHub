@@ -15,5 +15,7 @@ namespace OTHub.APIServer.Sql.Models.Jobs
         public bool IsFinalized { get; set; }
         public String Status { get; set; }
         public DateTime? EndTimestamp { get; set; }
+        public string BlockchainName { get; set; }
+        public string NetworkName { get; set; }
     }
 }
