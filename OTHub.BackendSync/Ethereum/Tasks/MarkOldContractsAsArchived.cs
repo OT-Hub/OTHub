@@ -99,7 +99,7 @@ WHERE r.ContractAddress = @contract AND r.BlockchainID = @blockchainID", new
                 foreach (var otContract in profiles)
                 {
                     var dates = connection.Query<DateTime?>(@"select MAX(Timestamp) from otcontract_holding_offertask r
-join ethblock b on r.BlockNumber = b.BlockNumber 
+join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.ContractAddress = @contract AND b.BlockchainID = r.BlockchainID
 union all
 select MAX(Timestamp) from otcontract_holding_ownershiptransferred r
