@@ -690,7 +690,20 @@ ADD CONSTRAINT `{fkName}` FOREIGN KEY
 
                         tran.Commit();
                     }
+
+                    connection.Execute("DELETE FROM systemstatus");
+
+                    connection.Execute(@"ALTER TABLE systemstatus
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL");
+
+                    connection.Execute(@"ALTER TABLE `systemstatus`
+ADD CONSTRAINT `FK_systemstatus_blockchains` FOREIGN KEY IF NOT EXISTS
+(`blockchainid`) REFERENCES `blockchains` (`id`);");
+
                 }
+
+
+
             }
         }
     }

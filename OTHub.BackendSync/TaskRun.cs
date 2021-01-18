@@ -83,7 +83,8 @@ namespace OTHub.BackendSync
             return cl;
         }
 
-        protected async Task RunChildren(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        protected async Task RunChildren(Source source, BlockchainType blockchain, BlockchainNetwork network,
+            int blockchainId)
         {
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -94,7 +95,7 @@ namespace OTHub.BackendSync
 
                 foreach (var childTask in _childTasks)
                 {
-                    var status = new SystemStatus(childTask.Name);
+                    var status = new SystemStatus(childTask.Name, blockchainId);
 
                     Logger.WriteLine(Source.BlockchainSync, "Starting " + childTask.Name);
                     try

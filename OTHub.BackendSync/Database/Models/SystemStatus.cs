@@ -7,17 +7,20 @@ namespace OTHub.BackendSync.Database.Models
     public class SystemStatus
     {
         public string Name { get; }
+        public int BlockchainID { get; }
 
-        public SystemStatus(string name)
+        public SystemStatus(string name, int blockchainID)
         {
             Name = name;
+            BlockchainID = blockchainID;
         }
 
         public void InsertOrUpdate(MySqlConnection connection, bool? success, DateTime? nextRunDateTime, bool isRunning)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM systemstatus WHERE Name = @Name", new
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM systemstatus WHERE Name = @Name AND BlockchainID = @blockchainID", new
             {
-               Name = Name
+               Name = Name,
+               blockchainID = BlockchainID
             });
 
             if (count == 0)
@@ -34,8 +37,8 @@ namespace OTHub.BackendSync.Database.Models
         {
             var now = DateTime.Now;
 
-            connection.Execute(@"INSERT INTO systemstatus(Name, LastSuccessDateTime, LastTriedDateTime, Success, IsRunning, NextRunDateTime) 
-VALUES(@Name, @LastSuccessDateTime, @LastTriedDateTime, @Success, @IsRunning, @NextRunDateTime)",
+            connection.Execute(@"INSERT INTO systemstatus(Name, LastSuccessDateTime, LastTriedDateTime, Success, IsRunning, NextRunDateTime, BlockchainID) 
+VALUES(@Name, @LastSuccessDateTime, @LastTriedDateTime, @Success, @IsRunning, @NextRunDateTime, @BlockchainID)",
                 new
                 {
                     Name = Name,
@@ -43,7 +46,8 @@ VALUES(@Name, @LastSuccessDateTime, @LastTriedDateTime, @Success, @IsRunning, @N
                     LastTriedDateTime = now,
                     LastSuccessDateTime = success == true ? (DateTime?)now : null,
                     NextRunDateTime = nextRunDateTime,
-                    IsRunning = isRunning
+                    IsRunning = isRunning,
+                    BlockchainID = BlockchainID
                 });
         }
 
@@ -52,14 +56,15 @@ VALUES(@Name, @LastSuccessDateTime, @LastTriedDateTime, @Success, @IsRunning, @N
             var now = DateTime.Now;
 
             connection.Execute(@"UPDATE systemstatus SET Success = COALESCE(@Success, Success), LastTriedDateTime = @LastTriedDateTime, IsRunning = @IsRunning, NextRunDateTime = @NextRunDateTime,
-LastSuccessDateTime = COALESCE(@LastSuccessDateTime, LastSuccessDateTime) WHERE Name = @Name", new
+LastSuccessDateTime = COALESCE(@LastSuccessDateTime, LastSuccessDateTime) WHERE Name = @Name AND BlockchainID = @BlockchainID", new
             {
                 Name = Name,
                 Success = success,
                 LastTriedDateTime = now,
                 LastSuccessDateTime = success == true ? (DateTime?)now : null,
                 NextRunDateTime = nextRunDateTime,
-                IsRunning = isRunning
+                IsRunning = isRunning,
+                BlockchainID = BlockchainID
             });
         }
     }

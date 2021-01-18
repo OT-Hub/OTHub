@@ -27,6 +27,8 @@
                             <div style="margin-left:10px;">
                                 {{data.Name}}
                                 <br>
+                                {{data.BlockchainName}} {{data.NetworkName}}
+                                <br>
                                 <span *ngIf="data.NextRunDateTime != null">
                                     Next run at
                                     {{data.NextRunDateTime| amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}

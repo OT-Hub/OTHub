@@ -20,11 +20,13 @@ namespace OTHub.BackendSync.Ethereum.Tasks
 
         public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
-            await RunChildren(source, blockchain, network);
+   
 
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int blockchainID = GetBlockchainID(connection, blockchain, network);
+
+                await RunChildren(source, blockchain, network, blockchainID);
 
                 OTContract_Holding_OfferCreated[] offersToAdd =
                     OTContract_Holding_OfferCreated.GetUnprocessed(connection, blockchainID);

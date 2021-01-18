@@ -28,7 +28,8 @@ namespace OTHub.BackendSync
             private DateTime _lastRunDateTime;
             private SystemStatus _systemStatus;
 
-            internal TaskControllerItem(BlockchainType blockchain, BlockchainNetwork network, Source source, TaskRun task, TimeSpan runEveryTimeSpan, bool startNow)
+            internal TaskControllerItem(BlockchainType blockchain, BlockchainNetwork network, Source source,
+                TaskRun task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID)
             {
                 _blockchain = blockchain;
                 _network = network;
@@ -36,7 +37,7 @@ namespace OTHub.BackendSync
                 _task = task;
                 _runEveryTimeSpan = runEveryTimeSpan;
                 _lastRunDateTime = startNow ? DateTime.MinValue : DateTime.Now;
-                _systemStatus = new SystemStatus(task.Name);
+                _systemStatus = new SystemStatus(task.Name, blockchainID);
 
                 using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
@@ -110,7 +111,7 @@ namespace OTHub.BackendSync
                     BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
                     BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
 
-                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, runEveryTimeSpan, startNow);
+                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, runEveryTimeSpan, startNow, id);
                     _items.Add(item);
                 }
             }
