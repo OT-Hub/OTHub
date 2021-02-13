@@ -76,7 +76,7 @@ namespace OTHub.APIServer
             {
                 c.EnableAnnotations();
                 c.ExampleFilters();
-                c.SwaggerDoc(OTHubSettings.Instance.Blockchain.Network.ToString().ToLower(), new Microsoft.OpenApi.Models.OpenApiInfo { Title = "OT Hub", Version = "1.0.0" });
+                c.SwaggerDoc("Mainnet", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "OT Hub", Version = "1.0.0" });
             });
         }
 
@@ -105,7 +105,7 @@ namespace OTHub.APIServer
             {
                 c.DocumentTitle = "OT Hub - API Documentation";
                 c.RoutePrefix = "docs";
-                c.SwaggerEndpoint($"/docs/{OTHubSettings.Instance.Blockchain.Network.ToString().ToLower()}/swagger.json", $"OT Hub {OTHubSettings.Instance.Blockchain.Network.ToString()}");
+                c.SwaggerEndpoint($"/docs/Mainnet/swagger.json", $"OT Hub Mainnet");
             });
 
             app.UseCors(MyAllowSpecificOrigins);

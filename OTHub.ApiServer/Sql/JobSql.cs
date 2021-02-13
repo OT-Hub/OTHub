@@ -72,7 +72,8 @@ ORDER BY H.LitigationStatus";
         public static String GetJobTimeline()
         {
             return
-                $@"select Timestamp, 'Offer Created' as Name, null as 'RelatedTo', TransactionHash  from otcontract_holding_offercreated
+                $@"
+select Timestamp, 'Offer Created' as Name, null as 'RelatedTo', TransactionHash  from otcontract_holding_offercreated
 where OfferId = @offerID
 union all
 select Timestamp, 'Offer Finalized', null, TransactionHash from otcontract_holding_offerfinalized
@@ -100,7 +101,9 @@ union all
 select Timestamp, 'Data Holder Chosen', ChosenHolder, TransactionHash from otcontract_replacement_replacementcompleted
 where OfferId = @offerID
 union all
-select Timestamp, CONCAT('Offer Paidout for ', (CAST(TRUNCATE(`Amount`, 3) AS CHAR)+0), ' {(OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Rinkeby ? "ATRAC" : "TRAC")}'), Holder, TransactionHash from otcontract_holding_paidout
+select po.Timestamp, CONCAT('Offer Paidout for ', (CAST(TRUNCATE(po.Amount, 3) AS CHAR)+0),' ', b.TokenTicker), po.Holder, po.TransactionHash 
+from otcontract_holding_paidout po
+JOIN blockchains b ON b.id = po.BlockchainID
 where OfferId = @offerID
 union all
 select DATE_Add(of.Timestamp, INTERVAL + oc.HoldingTimeInMinutes MINUTE), 'Offer Completed', null, null from otcontract_holding_offerfinalized of

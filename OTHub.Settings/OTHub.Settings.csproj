@@ -6,6 +6,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Abis\Ethereum\Kovan\approval.json" />
+    <None Remove="Abis\Ethereum\Kovan\erc725.json" />
+    <None Remove="Abis\Ethereum\Kovan\holding-storage.json" />
+    <None Remove="Abis\Ethereum\Kovan\holding.json" />
+    <None Remove="Abis\Ethereum\Kovan\hub.json" />
+    <None Remove="Abis\Ethereum\Kovan\litigation-storage.json" />
+    <None Remove="Abis\Ethereum\Kovan\litigation.json" />
+    <None Remove="Abis\Ethereum\Kovan\profile-storage.json" />
+    <None Remove="Abis\Ethereum\Kovan\profile.json" />
+    <None Remove="Abis\Ethereum\Kovan\reading.json" />
+    <None Remove="Abis\Ethereum\Kovan\replacement.json" />
+    <None Remove="Abis\Ethereum\Kovan\token.json" />
     <None Remove="Abis\Ethereum\Mainnet\approval.json" />
     <None Remove="Abis\Ethereum\Mainnet\erc725.json" />
     <None Remove="Abis\Ethereum\Mainnet\holding-storage.json" />
@@ -41,6 +53,18 @@
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\approval.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\erc725.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\holding-storage.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\holding.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\hub.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\litigation-storage.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\litigation.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\profile-storage.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\profile.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\reading.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\replacement.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Kovan\token.json" />
     <EmbeddedResource Include="Abis\Ethereum\Mainnet\approval.json" />
     <EmbeddedResource Include="Abis\Ethereum\Mainnet\erc725.json" />
     <EmbeddedResource Include="Abis\Ethereum\Mainnet\holding-storage.json" />

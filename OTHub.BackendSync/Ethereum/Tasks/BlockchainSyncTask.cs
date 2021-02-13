@@ -22,7 +22,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
         {
    
 
-            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int blockchainID = GetBlockchainID(connection, blockchain, network);
 

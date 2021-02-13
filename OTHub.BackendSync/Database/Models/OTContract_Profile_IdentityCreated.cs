@@ -49,7 +49,7 @@ ContractAddress = @contractAddress, BlockchainID = @BlockchainID WHERE Transacti
 
         public static void InsertOrUpdate(MySqlConnection connection, OTContract_Profile_IdentityCreated model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Profile_IdentityCreated WHERE TransactionHash = @hash BlockchainID = @BlockchainID", new
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Profile_IdentityCreated WHERE TransactionHash = @hash AND BlockchainID = @BlockchainID", new
             {
                 hash = model.TransactionHash,
                 model.BlockchainID

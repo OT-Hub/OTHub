@@ -77,12 +77,12 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             var replacementAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Replacement.ToString());
             await Task.Delay(250);
 
-            ulong fromBlockNumber = connection.ExecuteScalar<UInt64>("SELECT FromBlockNumber FROM blockchains where id = @id", new
+            ulong fromBlockNumber = await connection.ExecuteScalarAsync<UInt64>("SELECT FromBlockNumber FROM blockchains where id = @id", new
             {
                 id = blockchainID
             });
 
-            if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet && OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet)
+            if (blockchain == BlockchainType.Ethereum && network == BlockchainNetwork.Mainnet)
             {
                 OTContract.InsertOrUpdate(connection, new OTContract(fromBlockNumber, fromBlockNumber)
                 {

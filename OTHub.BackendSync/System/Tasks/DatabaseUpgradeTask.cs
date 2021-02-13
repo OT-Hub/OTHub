@@ -364,6 +364,7 @@ ENGINE=InnoDB
   `HubAddress` varchar(100) NOT NULL,
   `FromBlockNumber` BIGINT(20) UNSIGNED ZEROFILL NOT NULL DEFAULT '00000000000000000000',
   `BlockchainNodeUrl` varchar(500) NOT NULL,
+  `TokenTicker` varchar(10) NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;");
 
@@ -701,9 +702,6 @@ ADD CONSTRAINT `FK_systemstatus_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
 
                 }
-
-
-
             }
         }
     }
