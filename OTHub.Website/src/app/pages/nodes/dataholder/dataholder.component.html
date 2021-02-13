@@ -59,6 +59,9 @@
                         <nb-list-item>
                             Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
                         </nb-list-item>
+                        <nb-list-item *ngIf="MyNode == null">
+                            <button nbButton status="primary" outline (click)="AddToMyNodes()">Add to My Nodes</button>
+                        </nb-list-item>
                     </nb-list>
                 </nb-card>
 

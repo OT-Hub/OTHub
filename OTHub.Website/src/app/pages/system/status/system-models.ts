@@ -7,6 +7,11 @@ export class SystemStatusItemModel   {
     NetworkName: string;
 }
 
-export class SystemStatusModel   {
+export class SystemStatusGroupModel   {
     Items: SystemStatusItemModel[];
 }
+
+export class SystemStatusModel   {
+    Groups: SystemStatusGroupModel[];
+}
+

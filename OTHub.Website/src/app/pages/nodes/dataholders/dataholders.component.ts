@@ -361,13 +361,15 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           type: 'string',
           sort: false,
           filter: false,
-          title: 'Blockchain'
+          title: 'Blockchain',
+          editable: false,
         },
         NetworkName: {
           type: 'string',
           sort: false,
           filter: false,
-          title: 'Network'
+          title: 'Network',
+          editable: false,
         },
         TotalWonOffers: {
           sort: true,

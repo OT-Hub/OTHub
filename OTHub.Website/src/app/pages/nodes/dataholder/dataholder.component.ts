@@ -68,6 +68,16 @@ export class DataHolderComponent implements OnInit, OnDestroy {
     return this.http.get<DataHolderDetailedModel>(url, { headers });
   }
 
+  AddToMyNodes() {
+    if (this.myNodeService.Get(this.NodeModel.Identity) == null) {
+      const model = new MyNodeModel();
+      model.Identity = this.NodeModel.Identity;
+      model.DisplayName = null;
+      this.myNodeService.Add(model);
+      this.MyNode = model;
+    }
+  }
+
   formatAmount(amount) {
     if (amount === null) {
       return null;

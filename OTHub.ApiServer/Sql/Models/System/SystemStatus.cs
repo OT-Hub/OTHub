@@ -2,7 +2,13 @@
 {
     public class SystemStatus
     {
-        public SystemStatusItem[] Items { get; set; }
+        public SystemStatusGroup[] Groups { get; set; }
     }
 
+    public class SystemStatusGroup
+    {
+        public string Name { get; set; }
+
+        public SystemStatusItem[] Items { get; set; }
+    }
 }

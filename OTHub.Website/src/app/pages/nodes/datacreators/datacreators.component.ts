@@ -342,13 +342,15 @@ export class DatacreatorsComponent implements OnInit  {
           type: 'string',
           sort: false,
           filter: false,
-          title: 'Blockchain'
+          title: 'Blockchain',
+          editable: false,
         },
         NetworkName: {
           type: 'string',
           sort: false,
           filter: false,
-          title: 'Network'
+          title: 'Network',
+          editable: false,
         },
         OffersTotal: {
           sort: true,

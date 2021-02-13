@@ -1,4 +1,6 @@
 ﻿using System.Linq;
+using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
@@ -16,13 +18,19 @@ namespace OTHub.APIServer.Controllers
         [HttpGet]
         [SwaggerResponse(200, type: typeof(SystemStatus))]
         [SwaggerResponse(500, "Internal server error")]
-        public SystemStatus Get()
+        public async Task<SystemStatus> Get()
         {
             SystemStatus status = new SystemStatus();
 
-            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                status.Items = connection.Query<SystemStatusItem>(SystemSql.GetSql).ToArray();
+                SystemStatusItem[] items = (await connection.QueryAsync<SystemStatusItem>(SystemSql.GetSql)).ToArray();
+
+                SystemStatusGroup[] groups = items.GroupBy(i => i.BlockchainName + " " + i.NetworkName)
+                    .Select(g => new SystemStatusGroup() {Name = g.Key, Items = g.ToArray()})
+                    .ToArray();
+
+                status.Groups = groups;
             }
 
             return status;
