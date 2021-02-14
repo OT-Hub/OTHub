@@ -7,6 +7,7 @@ namespace OTHub.APIServer.Sql.Models.Contracts
 {
     public class CompactContractModelGroup
     {
+        public string HubAddress { get; set; }
         public string Name { get; set; }
 
         public List<CompactContractModel> Items { get; set; }
@@ -14,6 +15,7 @@ namespace OTHub.APIServer.Sql.Models.Contracts
 
     public class CompactContractModel
     {
+        public string HubAddress { get; set; }
         public string BlockchainName { get; set; }
         public string NetworkName { get; set; }
         public string Address { get; set; }

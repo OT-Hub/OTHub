@@ -22,6 +22,9 @@
             <div class="col-lg-12 col-md-12 col-sm-12" *ngFor="let group of Data">
                 <nb-card>
                     <nb-card-header>{{group.Name}}</nb-card-header>                 
+                    <nb-card-body>
+                        <span style="padding:5 10px;">Hub Address: {{group.HubAddress}}</span>
+                    </nb-card-body>
                     <nb-list>
                         <nb-list-item *ngFor="let data of group.Items" style="position: relative;">
 

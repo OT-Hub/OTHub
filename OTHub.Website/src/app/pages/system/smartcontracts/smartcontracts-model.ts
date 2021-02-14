@@ -13,4 +13,5 @@ export class SmartContractItemModel   {
 export class SmartContractGroupModel   {
     Items: SmartContractItemModel[];
     Name: string;
+    HubAddress: string;
 }
