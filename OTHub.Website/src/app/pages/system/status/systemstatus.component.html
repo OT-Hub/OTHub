@@ -24,12 +24,7 @@
                     <nb-card-header>{{group.Name}}</nb-card-header>                 
                     <nb-list>
                         <nb-list-item *ngFor="let data of group.Items" style="position: relative;">
-                            <nb-icon icon="sync" title="Running now" status="warning" *ngIf="data.IsRunning == true"></nb-icon>
-                            <nb-icon icon="checkmark-circle" title="No known issues" status="success" *ngIf="data.Success == true"></nb-icon>
-                            <nb-icon icon="close-circle" title="An error occurred" status="danger"
-                                *ngIf="data.Success == false && data.LastTriedDateTime != null"></nb-icon>
-                            <nb-icon icon="clock" status="info"
-                                *ngIf="data.Success == false && data.LastTriedDateTime == null"></nb-icon>
+
                             <div style="margin-left:10px;">
                                 {{data.Name}}
                                 <br>
@@ -39,17 +34,30 @@
                                 </span>
                             </div>
 
-                            <nb-badge style="font-size: 12px;padding:6px;margin-right:10px;"
-                                text="Last successfully run at {{data.LastSuccessDateTime| amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}"
-                                status="success" position="middle right"
-                                *ngIf="data.Success == true && data.LastSuccessDateTime != null"></nb-badge>
-                            <!-- <nb-badge style="font-size: 12px;padding:6px;margin-right:10px;" 
-                             text="This has not run since restart." 
-                             status="warning"
-                              position="middle right" *ngIf="data.Success == true && data.LastSuccessDateTime == null"></nb-badge> -->
-                            <nb-badge style="font-size: 12px;padding:6px;margin-right:10px;"
-                                text="There was an error during processing." status="danger" position="middle right"
-                                *ngIf="data.Success != true && data.LastTriedDateTime != null"></nb-badge>
+                            <nb-list>
+                                <nb-list-item *ngFor="let child of data.Children">
+                                    <nb-icon icon="sync" title="Running now" status="warning" *ngIf="child.IsRunning == true"></nb-icon>
+                                    <nb-icon icon="checkmark-circle" title="No known issues" status="success" *ngIf="child.Success == true"></nb-icon>
+                                    <nb-icon icon="close-circle" title="An error occurred" status="danger"
+                                        *ngIf="child.Success == false && child.LastTriedDateTime != null"></nb-icon>
+                                    <nb-icon icon="clock" status="info"
+                                        *ngIf="child.Success == false && child.LastTriedDateTime == null"></nb-icon>
+                                        <div style="margin-left:10px;">
+                                            {{child.Name}}
+                                        </div>
+                                        <nb-badge style="font-size: 12px;padding:6px;margin-right:10px;"
+                                        text="Last successfully run at {{child.LastSuccessDateTime| amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}"
+                                        status="success" position="middle right"
+                                        *ngIf="child.Success == true && child.LastSuccessDateTime != null"></nb-badge>
+        
+                                    <nb-badge style="font-size: 12px;padding:6px;margin-right:10px;"
+                                        text="There was an error during processing." status="danger" position="middle right"
+                                        *ngIf="child.Success != true && child.LastTriedDateTime != null"></nb-badge>
+                                </nb-list-item>
+                            </nb-list>
+                      
+
+     
 
 
                         </nb-list-item>

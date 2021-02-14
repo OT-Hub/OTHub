@@ -26,9 +26,24 @@ namespace OTHub.APIServer.Controllers
             {
                 SystemStatusItem[] items = (await connection.QueryAsync<SystemStatusItem>(SystemSql.GetSql)).ToArray();
 
-                SystemStatusGroup[] groups = items.GroupBy(i => i.BlockchainName + " " + i.NetworkName)
-                    .Select(g => new SystemStatusGroup() {Name = g.Key, Items = g.ToArray()})
+                SystemStatusGroup[] groups = items.GroupBy(i => i.BlockchainName != null ? i.BlockchainName + " " + i.NetworkName : i.ParentName ?? i.Name)
+                    .Select(g => new SystemStatusGroup() {Name = g.Key, Items = g.ToList()})
                     .ToArray();
+
+                foreach (SystemStatusGroup group in groups)
+                {
+                    SystemStatusItem[] itemsWhichNeedMoving = group.Items.Where(it => it.ParentName != null).ToArray();
+
+                    foreach (SystemStatusItem systemStatusItem in itemsWhichNeedMoving)
+                    {
+                        SystemStatusItem foundItem = group.Items.FirstOrDefault(i => i.Name == systemStatusItem.ParentName);
+                        if (foundItem != null)
+                        {
+                            group.Items.Remove(systemStatusItem);
+                            foundItem.Children.Add(systemStatusItem);
+                        }
+                    }
+                }
 
                 status.Groups = groups;
             }

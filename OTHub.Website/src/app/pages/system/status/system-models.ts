@@ -5,6 +5,8 @@ export class SystemStatusItemModel   {
     Name: string;
     BlockchainName: string;
     NetworkName: string;
+
+    Children: SystemStatusItemModel[];
 }
 
 export class SystemStatusGroupModel   {

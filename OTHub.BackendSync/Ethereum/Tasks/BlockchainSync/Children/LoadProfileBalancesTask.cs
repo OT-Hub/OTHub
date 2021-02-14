@@ -17,7 +17,7 @@ using OTHub.Settings.Abis;
 
 namespace OTHub.BackendSync.Ethereum.Tasks
 {
-    public class LoadProfileBalancesTask : TaskRun
+    public class LoadProfileBalancesTask : TaskRunBlockchain
     {
         public class OfferGroupHolder
         {

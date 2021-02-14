@@ -9,13 +9,13 @@ using OTHub.Settings;
 
 namespace OTHub.BackendSync.Ethereum.Tasks
 {
-    public class CalculateOfferLambdaTask : TaskRun
+    public class CalculateOfferLambdaTask : TaskRunGeneric
     {
         public CalculateOfferLambdaTask() : base("Calculate New Offers Estimated Lambda")
         {
         }
 
-        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task Execute(Source source)
         {
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))

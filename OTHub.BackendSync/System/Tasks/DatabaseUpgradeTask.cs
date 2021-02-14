@@ -695,11 +695,14 @@ ADD CONSTRAINT `{fkName}` FOREIGN KEY
                     connection.Execute("DELETE FROM systemstatus");
 
                     connection.Execute(@"ALTER TABLE systemstatus
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL");
 
                     connection.Execute(@"ALTER TABLE `systemstatus`
 ADD CONSTRAINT `FK_systemstatus_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
+
+                    connection.Execute(@"ALTER TABLE systemstatus
+ADD COLUMN IF NOT EXISTS `ParentName` VARCHAR(100) NULL");
 
                 }
             }

@@ -6,7 +6,7 @@ using OTHub.Settings;
 
 namespace OTHub.BackendSync.Ethereum.Tasks
 {
-    public class RefreshAllHolderLitigationStatusesTask : TaskRun
+    public class RefreshAllHolderLitigationStatusesTask : TaskRunBlockchain
     {
         public RefreshAllHolderLitigationStatusesTask() : base("Refresh All Holder Litigation Statuses")
         {

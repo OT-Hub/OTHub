@@ -15,7 +15,7 @@ using OTHub.Settings.Abis;
 
 namespace OTHub.BackendSync.Ethereum.Tasks
 {
-    public class SyncReplacementContractTask : TaskRun
+    public class SyncReplacementContractTask : TaskRunBlockchain
     {
         public SyncReplacementContractTask() : base("Sync Replacement Contract")
         {

@@ -8,7 +8,7 @@ using OTHub.Settings;
 
 namespace OTHub.BackendSync.Ethereum.Tasks
 {
-    public class BlockchainSyncTask : TaskRun
+    public class BlockchainSyncTask : TaskRunBlockchain
     {
         public BlockchainSyncTask() : base("Blockchain Sync")
         {
@@ -16,6 +16,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
             Add(new SyncHoldingContractTask());
             Add(new SyncLitigationContractTask());
             Add(new SyncReplacementContractTask());
+            Add(new LoadProfileBalancesTask());
         }
 
         public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)

@@ -7,14 +7,14 @@ using OTHub.Settings;
 
 namespace OTHub.BackendSync.System.Tasks
 {
-    public class OptimiseDatabaseTask : TaskRun
+    public class OptimiseDatabaseTask : TaskRunGeneric
     {
         public OptimiseDatabaseTask() : base("Optimise Database")
         {
 
         }
 
-        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task Execute(Source source)
         {
 //            using (var connection =
 //            new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))

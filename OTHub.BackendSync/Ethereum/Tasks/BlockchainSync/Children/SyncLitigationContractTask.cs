@@ -17,7 +17,7 @@ using OTHub.Settings.Abis;
 
 namespace OTHub.BackendSync.Ethereum.Tasks
 {
-    public class SyncLitigationContractTask : TaskRun
+    public class SyncLitigationContractTask : TaskRunBlockchain
     {
         public SyncLitigationContractTask() : base("Sync Litigation Contract")
         {

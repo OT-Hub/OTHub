@@ -10,7 +10,7 @@ using OTHub.Settings.Abis;
 
 namespace OTHub.BackendSync.Ethereum.Tasks
 {
-    public class MarkOldContractsAsArchived : TaskRun
+    public class MarkOldContractsAsArchived : TaskRunBlockchain
     {
         public MarkOldContractsAsArchived() : base("Mark Old Smart Contracts as Archived")
         {

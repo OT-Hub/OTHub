@@ -17,7 +17,7 @@ using OTHub.Settings.Abis;
 
 namespace OTHub.BackendSync.Ethereum.Tasks
 {
-    public class GetLatestContractsTask : TaskRun
+    public class GetLatestContractsTask : TaskRunBlockchain
     {
         public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {

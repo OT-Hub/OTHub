@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace OTHub.APIServer.Sql.Models.System
 {
@@ -12,5 +13,8 @@ namespace OTHub.APIServer.Sql.Models.System
         public DateTime? NextRunDateTime { get; set; }
         public string BlockchainName { get; set; }
         public string NetworkName { get; set; }
+        public string ParentName { get; set; }
+
+        public List<SystemStatusItem> Children { get; set; } = new List<SystemStatusItem>();
     }
 }

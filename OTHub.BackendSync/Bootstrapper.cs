@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Dapper;
-using MySqlConnector;
 using OTHub.BackendSync.Ethereum.Tasks;
+using OTHub.BackendSync.Ethereum.Tasks.BlockchainMaintenance;
+using OTHub.BackendSync.Ethereum.Tasks.Misc;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Markets.Tasks;
-using OTHub.BackendSync.System.Tasks;
-using OTHub.Settings;
 
 namespace OTHub.BackendSync
 {
@@ -23,12 +19,7 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.NodeUptimeAndMisc);
 
-                controller.Schedule(new GetMarketDataTask(), TimeSpan.FromMinutes(180), true);
-
-                controller.Schedule(new CalculateOfferLambdaTask(), TimeSpan.FromMinutes(60), true);
-
-                controller.Schedule(new MarkOldContractsAsArchived(), TimeSpan.FromDays(1),
-                    false); //TODO needs to do litigation contracts
+                controller.Schedule(new MiscTask(), TimeSpan.FromHours(2), true);
 
                 controller.Start();
             }));
@@ -38,13 +29,8 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.BlockchainSync);
 
-                controller.Schedule(new GetLatestContractsTask(), TimeSpan.FromMinutes(300), true);
-
-                controller.Schedule(new RefreshAllHolderLitigationStatusesTask(), TimeSpan.FromHours(2), true);
-
+                controller.Schedule(new BlockchainMaintenanceTask(), TimeSpan.FromHours(3), true);
                 controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(6), true);
-
-                controller.Schedule(new LoadProfileBalancesTask(), TimeSpan.FromMinutes(6), true);
 
                 controller.Start();
             }));

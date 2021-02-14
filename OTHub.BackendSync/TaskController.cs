@@ -13,8 +13,6 @@ namespace OTHub.BackendSync
 {
     public class TaskController
     {
-        private readonly BlockchainType _blockchain;
-        private readonly BlockchainNetwork _network;
         private readonly Source _source;
         private readonly ConcurrentBag<TaskControllerItem> _items = new ConcurrentBag<TaskControllerItem>();
 
@@ -23,13 +21,13 @@ namespace OTHub.BackendSync
             private readonly BlockchainType _blockchain;
             private readonly BlockchainNetwork _network;
             private readonly Source _source;
-            private readonly TaskRun _task;
+            private readonly TaskRunBase _task;
             private readonly TimeSpan _runEveryTimeSpan;
             private DateTime _lastRunDateTime;
             private SystemStatus _systemStatus;
 
             internal TaskControllerItem(BlockchainType blockchain, BlockchainNetwork network, Source source,
-                TaskRun task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID)
+                TaskRunBase task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID)
             {
                 _blockchain = blockchain;
                 _network = network;
@@ -41,7 +39,22 @@ namespace OTHub.BackendSync
 
                 using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
-                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false);
+                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName);
+                }
+            }
+
+            internal TaskControllerItem(Source source,
+                TaskRunBase task, TimeSpan runEveryTimeSpan, bool startNow)
+            {
+                _source = source;
+                _task = task;
+                _runEveryTimeSpan = runEveryTimeSpan;
+                _lastRunDateTime = startNow ? DateTime.MinValue : DateTime.Now;
+                _systemStatus = new SystemStatus(task.Name);
+
+                using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                {
+                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName);
                 }
             }
 
@@ -73,10 +86,22 @@ namespace OTHub.BackendSync
 
                     using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
-                        _systemStatus.InsertOrUpdate(connection, true, null, true);
+                        _systemStatus.InsertOrUpdate(connection, true, null, true, _task.ParentName);
                     }
 
-                    await _task.Execute(_source, _blockchain, _network);
+                    if (_task is TaskRunBlockchain taskB)
+                    {
+                        await taskB.Execute(_source, _blockchain, _network);
+                    }
+                    else if (_task is TaskRunGeneric taskG)
+                    {
+                        await taskG.Execute(_source);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("Task of type " + _task.GetType().FullName +
+                                                          " is not supported.");
+                    }
 
                     success = true;
                 }
@@ -89,14 +114,23 @@ namespace OTHub.BackendSync
                     _lastRunDateTime = DateTime.Now;
                     using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
-                        _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false);
+                        _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false, _task.ParentName);
                     }
                     Logger.WriteLine(_source, "Finished " + _task.Name + " in " + (DateTime.Now - startTime).TotalSeconds + " seconds on " + _blockchain + " " + _network);
                 }
             }
         }
 
-        public void Schedule(TaskRun task, TimeSpan runEveryTimeSpan, bool startNow)
+        public void Schedule(TaskRunGeneric task, TimeSpan runEveryTimeSpan, bool startNow)
+        {
+            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var item = new TaskControllerItem(_source, task, runEveryTimeSpan, startNow);
+                _items.Add(item);
+            }
+        }
+
+        public void Schedule(TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow)
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -111,7 +145,8 @@ namespace OTHub.BackendSync
                     BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
                     BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
 
-                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, runEveryTimeSpan, startNow, id);
+                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task,
+                        runEveryTimeSpan, startNow, id);
                     _items.Add(item);
                 }
             }
