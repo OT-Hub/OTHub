@@ -227,7 +227,6 @@ GROUP BY x.Date").ToArray();
                 var data = connection.Query<HomeNodesChartDataModel>(@"SELECT 
 x.Date,
 DAYNAME(x.Date) Label,
-0 as OnlineNodes,
 (SELECT COUNT(distinct H.Holder) FROM OTOffer O JOIN OTOffer_Holders H ON H.OfferID = O.OfferId WHERE O.IsFinalized = 1 AND x.Date <= DATE(DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE))) NodesWithActiveJobs
 FROM (
 SELECT CURDATE() Date
@@ -248,8 +247,7 @@ GROUP BY x.Date").ToArray();
 
                 response.Week = new int[][]
                 {
-                    data.Select(d => d.NodesWithActiveJobs).ToArray(),
-                    data.Select(d => d.OnlineNodes).ToArray()
+                    data.Select(d => d.NodesWithActiveJobs).ToArray()
                 };
 
                 response.WeekLabels = data.Select(d => d.Label).ToArray();

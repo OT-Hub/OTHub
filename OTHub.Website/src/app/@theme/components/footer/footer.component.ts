@@ -4,7 +4,10 @@ import { Component } from '@angular/core';
   selector: 'ngx-footer',
   styleUrls: ['./footer.component.scss'],
   template: `
-<a href="/system/status">OT Hub Status</a>
+  <div>
+  <a href="/system/status">OT Hub Status</a>&nbsp;
+  <a href="/system/smartcontracts">Smart Contracts</a>
+  </div>
   `,
 })
 export class FooterComponent {

@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
@@ -12,6 +13,23 @@ namespace OTHub.APIServer.Controllers
     [Route("api/[controller]")]
     public class ContractsController : Controller
     {
+        [Route("GetAllContracts")]
+        [HttpGet]
+        public async Task<CompactContractModelGroup[]> GetAllContracts()
+        {
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                CompactContractModel[] items = (await connection.QueryAsync<CompactContractModel>(@"SELECT b.BlockchainName, b.NetworkName, c.Address, c.`Type`, c.IsLatest, c.FromBlockNumber, c.IsArchived, c.SyncBlockNumber, c.LastSyncedTimestamp FROM otcontract c
+JOIN blockchains b ON b.id = c.BlockchainID
+ORDER BY b.ID, c.IsLatest desc, c.`Type`")).ToArray();
+
+                CompactContractModelGroup[] groups = items.GroupBy(i => i.BlockchainName + " " + i.NetworkName)
+                    .Select(g => new CompactContractModelGroup(){Name = g.Key, Items = g.ToList()}).ToArray();
+
+                return groups;
+            }
+        }
+
         [Route("GetHoldingAddress")]
         [HttpGet]
         [SwaggerOperation(
