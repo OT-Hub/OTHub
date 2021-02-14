@@ -5,6 +5,7 @@ namespace OTHub.APIServer.Sql.Models.System
 {
     public class SystemStatusItem
     {
+        internal string ID { get; set; }
         public String Name { get; set; }
         public DateTime? LastSuccessDateTime { get; set; }
         public DateTime? LastTriedDateTime { get; set; }

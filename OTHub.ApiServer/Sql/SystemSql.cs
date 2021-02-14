@@ -8,7 +8,7 @@ namespace OTHub.APIServer.Sql
     public static class SystemSql
     {
         public const string GetSql =
-            @"SELECT 
+            @"SELECT s.ID, 
 s.Name, s.LastSuccessDateTime, s.LastTriedDateTime, s.Success, s.IsRunning, s.NextRunDateTime, b.BlockchainName, b.NetworkName, s.ParentName
 from systemstatus s 
 LEFT JOIN blockchains b ON b.id = s.BlockchainID 
