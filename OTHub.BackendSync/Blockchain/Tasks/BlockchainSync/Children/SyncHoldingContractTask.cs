@@ -15,7 +15,7 @@ using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
 
-namespace OTHub.BackendSync.Ethereum.Tasks
+namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 {
     public class SyncHoldingContractTask : TaskRunBlockchain
     {
@@ -360,7 +360,7 @@ namespace OTHub.BackendSync.Ethereum.Tasks
                     (byte[])eventLog.Event.First(e => e.Parameter.Name == "task").Result);
 
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+                
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;

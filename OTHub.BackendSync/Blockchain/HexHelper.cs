@@ -1,6 +1,6 @@
 ﻿using System.Text;
 
-namespace OTHub.BackendSync.Ethereum
+namespace OTHub.BackendSync.Blockchain
 {
     public static class HexHelper
     {

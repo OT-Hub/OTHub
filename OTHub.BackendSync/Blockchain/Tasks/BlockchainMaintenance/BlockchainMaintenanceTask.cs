@@ -1,9 +1,10 @@
 ﻿using System.Threading.Tasks;
 using MySqlConnector;
+using OTHub.BackendSync.Blockchain.Tasks.Misc.Children;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 
-namespace OTHub.BackendSync.Ethereum.Tasks.BlockchainMaintenance
+namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainMaintenance
 {
     public class BlockchainMaintenanceTask : TaskRunBlockchain
     {

@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using OTHub.BackendSync.Ethereum.Tasks;
-using OTHub.BackendSync.Ethereum.Tasks.BlockchainMaintenance;
-using OTHub.BackendSync.Ethereum.Tasks.Misc;
+using OTHub.BackendSync.Blockchain.Tasks.BlockchainMaintenance;
+using OTHub.BackendSync.Blockchain.Tasks.BlockchainSync;
+using OTHub.BackendSync.Blockchain.Tasks.Misc;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Markets.Tasks;
 

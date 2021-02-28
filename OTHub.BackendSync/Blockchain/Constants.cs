@@ -1,4 +1,4 @@
-﻿namespace OTHub.BackendSync.Ethereum
+﻿namespace OTHub.BackendSync.Blockchain
 {
     public class Constants
     {

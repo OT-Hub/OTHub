@@ -4,7 +4,7 @@ using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 
-namespace OTHub.BackendSync.Ethereum.Tasks
+namespace OTHub.BackendSync.Blockchain.Tasks
 {
     public class RefreshAllHolderLitigationStatusesTask : TaskRunBlockchain
     {

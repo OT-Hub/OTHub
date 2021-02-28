@@ -6,7 +6,7 @@ using Nethereum.Web3;
 using OTHub.BackendSync.Database.Models;
 using OTHub.Settings.Helpers;
 
-namespace OTHub.BackendSync.Ethereum
+namespace OTHub.BackendSync.Blockchain
 {
     public static class BlockHelper
     {

@@ -8,7 +8,7 @@ using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
 
-namespace OTHub.BackendSync.Ethereum.Tasks
+namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 {
     public class MarkOldContractsAsArchived : TaskRunBlockchain
     {

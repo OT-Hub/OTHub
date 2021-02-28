@@ -7,7 +7,7 @@ using MySqlConnector;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 
-namespace OTHub.BackendSync.Ethereum.Tasks
+namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 {
     public class CalculateOfferLambdaTask : TaskRunGeneric
     {

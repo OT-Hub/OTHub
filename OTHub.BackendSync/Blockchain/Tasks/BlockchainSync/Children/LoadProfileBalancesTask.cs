@@ -9,13 +9,13 @@ using Nethereum.Contracts;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.Web3;
+using OTHub.BackendSync.Blockchain.Models;
 using OTHub.BackendSync.Database.Models;
-using OTHub.BackendSync.Ethereum.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
 
-namespace OTHub.BackendSync.Ethereum.Tasks
+namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 {
     public class LoadProfileBalancesTask : TaskRunBlockchain
     {

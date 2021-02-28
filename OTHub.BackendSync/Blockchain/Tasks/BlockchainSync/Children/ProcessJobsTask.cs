@@ -1,14 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using MySqlConnector;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 
-namespace OTHub.BackendSync.Ethereum.Tasks.BlockchainSync.Children
+namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 {
     public class ProcessJobsTask : TaskRunBlockchain
     {

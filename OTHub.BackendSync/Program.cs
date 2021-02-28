@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
-using OTHub.BackendSync.Ethereum.Tasks;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Markets.Tasks;
 using OTHub.BackendSync.System.Tasks;

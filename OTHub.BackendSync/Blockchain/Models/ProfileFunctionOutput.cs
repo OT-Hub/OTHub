@@ -1,7 +1,7 @@
 ﻿using System.Numerics;
 using Nethereum.ABI.FunctionEncoding.Attributes;
 
-namespace OTHub.BackendSync.Ethereum.Models
+namespace OTHub.BackendSync.Blockchain.Models
 {
     [FunctionOutput]
     public class ProfileFunctionOutput
