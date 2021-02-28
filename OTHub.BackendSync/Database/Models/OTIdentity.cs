@@ -39,9 +39,12 @@ namespace OTHub.BackendSync.Database.Models
             }
         }
 
-        public static OTIdentity[] GetAll(MySqlConnection connection)
+        public static OTIdentity[] GetAll(MySqlConnection connection, int blockchainID)
         {
-            return connection.Query<OTIdentity>("SELECT * FROM OTIdentity").ToArray();
+            return connection.Query<OTIdentity>("SELECT * FROM OTIdentity where BlockchainID = @blockchainID", new
+            {
+                blockchainID = blockchainID
+            }).ToArray();
         }
 
         public static OTIdentity[] GetByVersion(MySqlConnection connection, int version)

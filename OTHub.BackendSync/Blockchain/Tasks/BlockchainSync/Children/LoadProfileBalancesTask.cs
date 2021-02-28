@@ -71,7 +71,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                         profileStorageContractAddress.Address);
                 var profileFunction = profileStorageContract.GetFunction("profile");
 
-                var currentIdentities = OTIdentity.GetAll(connection);
+                var currentIdentities = OTIdentity.GetAll(connection, blockchainID);
 
                 Dictionary<string, decimal> paidOutBalances = connection
                     .Query<PayoutGroupHolder>(
