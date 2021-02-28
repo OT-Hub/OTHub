@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
@@ -21,6 +22,59 @@ namespace OTHub.APIServer.Controllers
             _cache = cache;
         }
 
+        [HttpGet]
+        [Route(("HomeV3"))]
+        public async Task<HomeV3Model> HomeV3()
+        {
+            using (var connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var summary = connection.QuerySingle<HomeV3Model>(@"SELECT
+ (
+SELECT COUNT(DISTINCT H.Holder)
+FROM OTOffer O
+JOIN OTOffer_Holders H ON H.OfferID = O.OfferId
+WHERE O.IsFinalized = 1 AND NOW() <= DATE_ADD(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)) ActiveNodes,
+(
+SELECT COUNT(*)
+FROM otoffer
+WHERE otoffer.IsFinalized = 1
+) TotalJobs,
+(
+SELECT SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_ADD(FinalizedTimeStamp, INTERVAL +HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END)
+FROM OTOffer) AS ActiveJobs,
+(select sum(Stake) from otidentity where version = (select max(ii.version) from otidentity ii)) StakedTokens,
+(SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H");
+
+                summary.FeesByBlockchain = connection.Query<HomeFeesModel>(@"SELECT 
+bc.BlockchainName, bc.NetworkName,
+bc.ShowCostInUSD,
+CAST(AVG((CAST(oc.GasUsed AS DECIMAL(20,4)) * (oc.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20,6)) JobCreationCost, 
+CAST(AVG((CAST(of.GasUsed AS DECIMAL(20,4)) * (of.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ofTicker.Price ELSE 1 END)) AS DECIMAL(20,6)) JobFinalisedCost
+FROM otcontract_holding_offercreated oc
+JOIN otcontract_holding_offerfinalized of ON of.OfferID = oc.OfferID AND of.BlockchainID = oc.BlockchainID
+JOIN blockchains bc ON bc.ID = of.BlockchainID
+JOIN ticker_trac ocTicker ON ocTicker.Timestamp = (
+SELECT MAX(TIMESTAMP)
+FROM ticker_trac
+WHERE TIMESTAMP <= oc.Timestamp)
+JOIN ticker_trac ofTicker ON ofTicker.Timestamp = (
+SELECT MAX(TIMESTAMP)
+FROM ticker_trac
+WHERE TIMESTAMP <= of.Timestamp)
+GROUP BY of.BlockchainID").ToArray();
+
+                summary.StakedByBlockchain = connection.Query<HomeStakedModel>(@"SELECT bc.BlockchainName, bc.NetworkName, SUM(i.Stake) StakedTokens
+FROM otidentity i
+JOIN blockchains bc ON bc.ID = i.BlockchainID
+WHERE i.version = (
+SELECT MAX(ii.version)
+FROM otidentity ii)
+GROUP BY bc.ID").ToArray();
+
+                return summary;
+            }
+        }
       
 
         [HttpGet]

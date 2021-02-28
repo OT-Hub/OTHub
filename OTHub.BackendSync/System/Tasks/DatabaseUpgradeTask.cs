@@ -365,6 +365,8 @@ ENGINE=InnoDB
   `FromBlockNumber` BIGINT(20) UNSIGNED ZEROFILL NOT NULL DEFAULT '00000000000000000000',
   `BlockchainNodeUrl` varchar(500) NOT NULL,
   `TokenTicker` varchar(10) NOT NULL,
+  `GasTicker` varchar(10) NOT NULL,
+  `ShowCostInUSD` bit NOT NULL,
   PRIMARY KEY (`ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=latin1;");
 
