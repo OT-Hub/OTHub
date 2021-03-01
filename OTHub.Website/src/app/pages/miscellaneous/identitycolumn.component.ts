@@ -9,7 +9,7 @@ import { HubHttpService } from '../hub-http-service';
     selector: 'identitycolumn',
     template: `
     <a [routerLink]="[link]">
-    <img style="height:16px;width:16px;" [title]="value" [src]="iconUrl" />{{value}}
+    {{value}}
     </a>
   `,
 })
@@ -44,7 +44,7 @@ export class DataHolderIdentityColumnComponent implements ViewCell, OnInit {
     selector: 'identitycolumn',
     template: `
     <a [routerLink]="[link]">
-    <img style="height:16px;width:16px;" [title]="value" [src]="iconUrl" />{{value}}
+    {{value}}
     </a>
   `,
 })
@@ -72,5 +72,4 @@ export class DataCreatorIdentityColumnComponent implements ViewCell, OnInit {
     getIdentityIcon(identity: string) {
         return this.httpService.ApiUrl + '/api/icon/node/' + identity + '/' + (false ? 'dark' : 'light') + '/16';
       }
-
 }

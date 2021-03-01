@@ -57,7 +57,7 @@ export class GlobalActivityComponent {
         const url = this.httpService.ApiUrl + '/api/globalactivity?export=true&exporttype=0';
         window.location.href = url;
       }
-    
+
       ExportToCsv() {
         const url = this.httpService.ApiUrl + '/api/globalactivity?export=true&exporttype=1';
         window.location.href = url;
@@ -117,7 +117,7 @@ export class GlobalActivityComponent {
                         row.EventName === 'Litigation Passed' || row.EventName === 'Litigation Answered' || row.EventName === 'Litigation Initiated' ||
                         row.EventName === 'Replacement Started' || row.EventName === 'Data Holder Chosen as Replacement' || row.EventName === 'Data Holder Chosen') {
                         const name = this.myNodeService.GetName(value, false);
-                        return '<a class="navigateJqueryToAngular" href="/nodes/dataholders/' + value + '" onclick="return false;"><img class="lazy" style="height:16px;width:16px;" title="' + value + '" src="' + this.getIdentityIcon(value) + '"> ' + name + '</a>';
+                        return '<a class="navigateJqueryToAngular" href="/nodes/dataholders/' + value + '" onclick="return false;">' + name + '</a>';
                     }
                     if (row.EventName === 'New Offer' || row.EventName === 'Finalized Offer') {
                         return '<a title="' + value + '" class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;">' + value.substring(0, 40) + '...</a>';

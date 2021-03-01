@@ -31,6 +31,10 @@
   },
   "dependencies": {
     "@akveo/ng2-completer": "^9.0.1",
+    "@amcharts/amcharts4": "^4.10.15",
+    "@amcharts/amcharts4-fonts": "^4.0.1",
+    "@amcharts/amcharts4-geodata": "^4.1.19",
+    "@amcharts/editor4": "^4.0.0",
     "@angular/animations": "^10.0.10",
     "@angular/cdk": "^10.1.3",
     "@angular/common": "^10.0.10",

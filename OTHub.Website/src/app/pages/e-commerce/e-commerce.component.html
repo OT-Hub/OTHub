@@ -9,11 +9,15 @@
 -->
 <div class="row">
   <div class="col-md-8 col-xxxl-8">
-    <nb-card>
+    <nb-card class="homeCard" status="basic" accent="success">
       <nb-card-header>
         <img src="assets/images/2467.png" alt="OriginTrail" height="32" width="32" class="otLogo" />
         OriginTrail
         <small class="tokenSmall">TRAC</small>
+        <div style="display:inline-block;">
+          ${{Data?.PriceUsd | number: '1.2-4'}}
+          <small class="btn-sm" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0" [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
+        </div>
       </nb-card-header>
       <nb-card-body>
         <div class="row">
@@ -34,27 +38,40 @@
           </span>
             </div>
             <div class="homeField">
-              All Staked tokens:
+              Active nodes:
               <span class="homeData">
-            {{formatAmount(Data?.StakedTokens)}}
+            {{Data?.ActiveNodes}}
           </span>
             </div>
+            <div class="homeField">
+              Staked tokens:
+              <span class="homeData">
+              <ng-template #stakedTokensPopupTemplate>
+                <div style="padding:10px; border-radius: 2px; border: 1px solid gray;">
+                              <div *ngFor="let bc of Data?.StakedByBlockchain">
+                              <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
 
-            <div *ngFor="let bc of Data?.StakedByBlockchain">
-              <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
-
-              <div class="homeField">
-                Staked tokens:
-                <span class="homeData">
-            {{formatAmount(bc.StakedTokens)}}
+                              <div class="homeField">
+                                Staked tokens:
+                                <span class="homeData">
+                            {{formatAmount(bc.StakedTokens)}}
+                          </span>
+                              </div>
+                            </div>
+                </div>
+              </ng-template>
+            {{formatAmount(Data?.StakedTokens)}} / {{Data?.CirculatingSupply}} {{(Data?.StakedTokens / Data?.CirculatingSupply) * 100 | number: '1.0-2'}}% <nb-icon icon="info-outline" nbPopoverTrigger="hover"
+                                                          [nbPopover]="stakedTokensPopupTemplate" nbButton status="primary"></nb-icon>
           </span>
-              </div>
+
             </div>
+
+
           </div>
 
           <div class="col-md-4 col-sm-6 col-xs-6">
             <div class="homeHeader">
-              24h Stats
+              24h Job Stats
             </div>
             <div class="homeField">
               Jobs:
@@ -63,10 +80,28 @@
           </span>
             </div>
             <div class="homeField">
-              Jobs per hour:
+              Average job reward:
               <span class="homeData">
-            {{(Data?.Jobs24H / 24) | number: '1.0-0'}}
+            {{Data?.JobsReward24H != null ? (Data?.JobsReward24H | number:'1.0-2') : '?'}}
           </span>
+            </div>
+            <div class="homeField">
+              Average job duration:
+              <span class="homeData">
+            {{formatTime(Data?.JobsDuration24H)}}
+          </span>
+            </div>
+            <div class="homeField">
+              Average job data size:
+              <span class="homeData">
+                {{Data?.JobsSize24H != null ? ((Data?.JobsSize24H / 1000 | number:'1.2-2') + ' KB') : '?'}}
+          </span>
+            </div>
+
+          </div>
+          <div class="col-md-4 col-sm-12  col-xs-12">
+            <div class="homeHeader">
+              24h Fee Stats
             </div>
             <div *ngFor="let bc of Data?.FeesByBlockchain">
               <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
@@ -74,29 +109,36 @@
               <div class="homeField">
                 Average job fee:
                 <span class="homeData">
-            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobCreationCost + bc.JobFinalisedCost}}{{bc.ShowCostInUSD ? "" : " ETH"}}
+                                <ng-template #averagePayoutFeeTemplate>
+                <div style="padding:10px; border-radius: 2px; border: 1px solid gray;">
+                     <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
+                         <div class="homeField">
+              Average job creation:
+              <span class="homeData">
+            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobCreationCost != null ? bc.JobCreationCost : '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
+          </span>
+            </div>
+                           <div class="homeField">
+              Average job finalized:
+              <span class="homeData">
+            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobFinalisedCost != null ? bc.JobFinalisedCost : '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
+          </span>
+            </div>
+                </div>
+              </ng-template>
+            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobCreationCost != null && bc.JobFinalisedCost != null ? (bc.JobCreationCost + bc.JobFinalisedCost | number: '1.0-5') : '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
+                  <nb-icon icon="info-outline" nbPopoverTrigger="hover"
+                           [nbPopover]="averagePayoutFeeTemplate" nbButton status="primary"></nb-icon>
           </span>
               </div>
               <div class="homeField">
                 Average payout fee:
                 <span class="homeData">
-               {{bc.ShowCostInUSD ? "$" : ""}} 0.0001{{bc.ShowCostInUSD ? "" : " ETH"}}
+                          {{bc.ShowCostInUSD ? "$" : ""}}{{bc.PayoutCost != null ? bc.PayoutCost: '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
           </span>
               </div>
             </div>
 
-
-          </div>
-          <div class="col-md-4 col-sm-12  col-xs-12">
-            <div class="homeHeader">
-              Nodes
-            </div>
-            <div class="homeField">
-              Active nodes:
-              <span class="homeData">
-            {{Data?.ActiveNodes}}
-          </span>
-            </div>
           </div>
 
         </div>
@@ -104,17 +146,27 @@
     </nb-card>
   </div>
   <div class="col-md-4 col-xxxl-4">
-    <nb-card>
+    <nb-card class="homeCard" status="basic">
       <nb-card-body>
-        Work in progress
+<div class="row">
+  <div class="col-12 col-md-6">
+    <a href="https://coinmarketcap.com/currencies/origintrail/">CoinMarketCap</a>
+  </div>
+  <div class="col-12 col-md-6">
+    <a href="https://otnode.com/">OriginTrail Node Guide</a>
+  </div>
+</div>
       </nb-card-body>
     </nb-card>
   </div>
 </div>
 
-
 <div class="row">
-  <div class="col-xxl-12">
-    <ngx-ecommerce-charts></ngx-ecommerce-charts>
+  <div class="col-md-12 col-xxxl-12">
+    <nb-card class="homeCard" status="basic">
+      <nb-card-body>
+        <div id="chartdiv" style="width: 100%; height: 340px;"></div>
+      </nb-card-body>
+    </nb-card>
   </div>
 </div>

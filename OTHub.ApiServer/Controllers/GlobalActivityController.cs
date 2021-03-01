@@ -125,43 +125,63 @@ namespace OTHub.APIServer.Controllers
 select oc.Timestamp, 'New Offer' as EventName, oc.OfferId as RelatedEntity, '' as RelatedEntity2, oc.TransactionHash as TransactionHash, '' as Message, bc.BlockchainName, bc.NetworkName from otcontract_holding_offercreated oc
 join blockchains bc on bc.ID = oc.BlockchainID
 union all 
-select DATE_ADD(of.Timestamp, INTERVAL 1 MICROSECOND), 'Data Holder Chosen', h.Holder, h.OfferId, of.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otoffer_holders h
+select DATE_ADD(of.Timestamp, INTERVAL 1 MICROSECOND), 'Data Holder Chosen', i.NodeId, h.OfferId, of.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otoffer_holders h
 join otcontract_holding_offerfinalized of on of.OfferID = h.OfferId 
 join blockchains bc on bc.ID = h.BlockchainID
+JOIN otidentity i ON i.Identity = h.Holder
 where h.IsOriginalHolder = 1
+GROUP BY h.ID
 union all
 select ofi.Timestamp, 'Finalized Offer', ofi.OfferId, '', ofi.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_holding_offerfinalized ofi
 join blockchains bc on bc.ID = ofi.BlockchainID
 union all 
-select po.Timestamp, 'Offer Payout', po.Holder, '', po.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_holding_paidout po
+select po.Timestamp, 'Offer Payout', i.NodeId, '', po.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_holding_paidout po
 join blockchains bc on bc.ID = po.BlockchainID
+JOIN otidentity i ON i.Identity = po.Holder
+GROUP BY po.Id
 union all 
-select b.Timestamp, 'Tokens Deposited', Profile, '', TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_profile_tokensdeposited td
+select b.Timestamp, 'Tokens Deposited', i.NodeId, '', td.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_profile_tokensdeposited td
 join blockchains bc on bc.ID = td.BlockchainID
 JOIN EthBlock b on b.BlockNumber = td.BlockNumber AND b.BlockchainID = bc.ID
+JOIN otidentity i ON i.Identity = td.Profile
+GROUP BY td.Id
 union all 
-select b.Timestamp, 'Tokens Withdrawn', Profile, '', TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_profile_tokenswithdrawn tw
+select b.Timestamp, 'Tokens Withdrawn', i.NodeId, '', tw.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_profile_tokenswithdrawn tw
 join blockchains bc on bc.ID = tw.BlockchainID
 JOIN EthBlock b on b.BlockNumber = tw.BlockNumber AND b.BlockchainID = bc.ID
+JOIN otidentity i ON i.Identity = tw.Profile
+GROUP BY tw.Id
 union all 
-select b.Timestamp, 'Identity Created', NewIdentity, '', TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_profile_identitycreated ic
+select b.Timestamp, 'Identity Created', i.NodeId, '', ic.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_profile_identitycreated ic
 join blockchains bc on bc.ID = ic.BlockchainID
 JOIN EthBlock b on b.BlockNumber = ic.BlockNumber AND b.BlockchainID = bc.ID
+JOIN otidentity i ON i.Identity = ic.NewIdentity
+GROUP BY ic.TransactionHash
 union all 
-select li.Timestamp, 'Litigation Initiated', li.HolderIdentity, li.OfferId, li.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_litigationinitiated li
+select li.Timestamp, 'Litigation Initiated', i.NodeId, li.OfferId, li.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_litigationinitiated li
 join blockchains bc on bc.ID = li.BlockchainID
+JOIN otidentity i ON i.Identity = li.HolderIdentity
+GROUP BY li.TransactionHash
 union all 
-select la.Timestamp, 'Litigation Answered', la.HolderIdentity, la.OfferId, la.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_litigationanswered la
+select la.Timestamp, 'Litigation Answered', i.NodeId, la.OfferId, la.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_litigationanswered la
 join blockchains bc on bc.ID = la.BlockchainID
+JOIN otidentity i ON i.Identity = la.HolderIdentity
+GROUP BY la.TransactionHash
 union all 
-select lc.Timestamp, case when lc.DHWasPenalized = 1 THEN 'Litigation Failed' ELSE 'Litigation Passed' END, lc.HolderIdentity, lc.OfferId, lc.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_litigationcompleted lc
+select lc.Timestamp, case when lc.DHWasPenalized = 1 THEN 'Litigation Failed' ELSE 'Litigation Passed' END, i.NodeId, lc.OfferId, lc.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_litigationcompleted lc
 join blockchains bc on bc.ID = lc.BlockchainID
+JOIN otidentity i ON i.Identity = lc.HolderIdentity
+GROUP BY lc.TransactionHash
 union all 
-select DATE_ADD(rs.Timestamp, INTERVAL 1 MICROSECOND), 'Replacement Started', rs.HolderIdentity, rs.OfferId, rs.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_replacementstarted rs
+select DATE_ADD(rs.Timestamp, INTERVAL 1 MICROSECOND), 'Replacement Started', i.NodeId, rs.OfferId, rs.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_replacementstarted rs
 join blockchains bc on bc.ID = rs.BlockchainID
+JOIN otidentity i ON i.Identity = rs.HolderIdentity
+GROUP BY rs.TransactionHash
 union all 
-select rc.Timestamp, 'Data Holder Chosen as Replacement', rc.ChosenHolder, rc.OfferId, rc.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_replacement_replacementcompleted rc
+select rc.Timestamp, 'Data Holder Chosen as Replacement', i.NodeId, rc.OfferId, rc.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_replacement_replacementcompleted rc
 join blockchains bc on bc.ID = rc.BlockchainID
+JOIN otidentity i ON i.Identity = rc.ChosenHolder
+GROUP BY rc.TransactionHash
 ) x
 WHERE 
 (@EventName_like IS NULL OR x.EventName = @EventName_like) AND
@@ -177,42 +197,70 @@ WHERE
                         TransactionHash_like
                     }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(@"select count(*) FROM
+                var total = connection.ExecuteScalar<int>(@"select COUNT(*) FROM
 (
-select Timestamp, 'New Offer' as EventName, OfferId as RelatedEntity, '' as RelatedEntity2, TransactionHash as TransactionHash, '' as Message from otcontract_holding_offercreated
+select oc.Timestamp, 'New Offer' as EventName, oc.OfferId as RelatedEntity, '' as RelatedEntity2, oc.TransactionHash as TransactionHash, '' as Message, bc.BlockchainName, bc.NetworkName from otcontract_holding_offercreated oc
+join blockchains bc on bc.ID = oc.BlockchainID
 union all 
-select of.Timestamp, 'Data Holder Chosen', h.Holder, h.OfferId, of.TransactionHash, '' from otoffer_holders h
-join otcontract_holding_offerfinalized of on of.OfferID = h.OfferId where h.IsOriginalHolder = 1
+select DATE_ADD(of.Timestamp, INTERVAL 1 MICROSECOND), 'Data Holder Chosen', i.NodeId, h.OfferId, of.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otoffer_holders h
+join otcontract_holding_offerfinalized of on of.OfferID = h.OfferId 
+join blockchains bc on bc.ID = h.BlockchainID
+JOIN otidentity i ON i.Identity = h.Holder
+where h.IsOriginalHolder = 1
+GROUP BY h.ID
 union all
-select Timestamp, 'Finalized Offer', OfferId, '', TransactionHash, '' from otcontract_holding_offerfinalized
+select ofi.Timestamp, 'Finalized Offer', ofi.OfferId, '', ofi.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_holding_offerfinalized ofi
+join blockchains bc on bc.ID = ofi.BlockchainID
 union all 
-select Timestamp, 'Offer Payout', Holder, '', TransactionHash, '' from otcontract_holding_paidout
+select po.Timestamp, 'Offer Payout', i.NodeId, '', po.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_holding_paidout po
+join blockchains bc on bc.ID = po.BlockchainID
+JOIN otidentity i ON i.Identity = po.Holder
+GROUP BY po.Id
 union all 
-select b.Timestamp, 'Tokens Deposited', Profile, '', TransactionHash, '' from otcontract_profile_tokensdeposited td
+select b.Timestamp, 'Tokens Deposited', i.NodeId, '', td.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_profile_tokensdeposited td
 join blockchains bc on bc.ID = td.BlockchainID
 JOIN EthBlock b on b.BlockNumber = td.BlockNumber AND b.BlockchainID = bc.ID
+JOIN otidentity i ON i.Identity = td.Profile
+GROUP BY td.Id
 union all 
-select b.Timestamp, 'Tokens Withdrawn', Profile, '', TransactionHash, '' from otcontract_profile_tokenswithdrawn tw
+select b.Timestamp, 'Tokens Withdrawn', i.NodeId, '', tw.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_profile_tokenswithdrawn tw
 join blockchains bc on bc.ID = tw.BlockchainID
 JOIN EthBlock b on b.BlockNumber = tw.BlockNumber AND b.BlockchainID = bc.ID
+JOIN otidentity i ON i.Identity = tw.Profile
+GROUP BY tw.Id
 union all 
-select b.Timestamp, 'Identity Created', NewIdentity, '', TransactionHash, '' from otcontract_profile_identitycreated ic
+select b.Timestamp, 'Identity Created', i.NodeId, '', ic.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_profile_identitycreated ic
 join blockchains bc on bc.ID = ic.BlockchainID
 JOIN EthBlock b on b.BlockNumber = ic.BlockNumber AND b.BlockchainID = bc.ID
+JOIN otidentity i ON i.Identity = ic.NewIdentity
+GROUP BY ic.TransactionHash
 union all 
-select Timestamp, 'Node Approved', NodeId, '', TransactionHash, '' from otcontract_approval_nodeapproved
+select li.Timestamp, 'Litigation Initiated', i.NodeId, li.OfferId, li.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_litigationinitiated li
+join blockchains bc on bc.ID = li.BlockchainID
+JOIN otidentity i ON i.Identity = li.HolderIdentity
+GROUP BY li.TransactionHash
 union all 
-select Timestamp, 'Litigation Initiated', HolderIdentity, OfferId, TransactionHash, '' from otcontract_litigation_litigationinitiated
+select la.Timestamp, 'Litigation Answered', i.NodeId, la.OfferId, la.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_litigationanswered la
+join blockchains bc on bc.ID = la.BlockchainID
+JOIN otidentity i ON i.Identity = la.HolderIdentity
+GROUP BY la.TransactionHash
 union all 
-select Timestamp, 'Litigation Answered', HolderIdentity, OfferId, TransactionHash, '' from otcontract_litigation_litigationanswered
+select lc.Timestamp, case when lc.DHWasPenalized = 1 THEN 'Litigation Failed' ELSE 'Litigation Passed' END, i.NodeId, lc.OfferId, lc.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_litigationcompleted lc
+join blockchains bc on bc.ID = lc.BlockchainID
+JOIN otidentity i ON i.Identity = lc.HolderIdentity
+GROUP BY lc.TransactionHash
 union all 
-select Timestamp, case when DHWasPenalized = 1 THEN 'Litigation Failed' ELSE 'Litigation Passed' END, HolderIdentity, OfferId, TransactionHash, '' from otcontract_litigation_litigationcompleted
+select DATE_ADD(rs.Timestamp, INTERVAL 1 MICROSECOND), 'Replacement Started', i.NodeId, rs.OfferId, rs.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_litigation_replacementstarted rs
+join blockchains bc on bc.ID = rs.BlockchainID
+JOIN otidentity i ON i.Identity = rs.HolderIdentity
+GROUP BY rs.TransactionHash
 union all 
-select Timestamp, 'Replacement Started', HolderIdentity, OfferId, TransactionHash, '' from otcontract_litigation_replacementstarted
-union all 
-select Timestamp, 'Data Holder Chosen as Replacement', ChosenHolder, OfferId, TransactionHash, '' from otcontract_replacement_replacementcompleted
+select rc.Timestamp, 'Data Holder Chosen as Replacement', i.NodeId, rc.OfferId, rc.TransactionHash, '', bc.BlockchainName, bc.NetworkName from otcontract_replacement_replacementcompleted rc
+join blockchains bc on bc.ID = rc.BlockchainID
+JOIN otidentity i ON i.Identity = rc.ChosenHolder
+GROUP BY rc.TransactionHash
 ) x
-WHERE
+WHERE 
 (@EventName_like IS NULL OR x.EventName = @EventName_like) AND
 (@RelatedEntity_like IS NULL OR x.RelatedEntity = @RelatedEntity_like) AND 
 (@RelatedEntity2_like IS NULL OR x.RelatedEntity2 = @RelatedEntity2_like) AND 

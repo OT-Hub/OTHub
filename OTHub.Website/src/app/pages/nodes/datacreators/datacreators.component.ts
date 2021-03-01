@@ -45,7 +45,7 @@ export class DatacreatorsComponent implements OnInit  {
   pageSizeChanged(event) {
     this.source.setPaging(1, event, true);
   }
-  
+
   ExportToJson() {
     const url = this.getUrl() + '&export=true&exporttype=0';
     window.location.href = url;
@@ -96,123 +96,6 @@ export class DatacreatorsComponent implements OnInit  {
 
 
 
-  // ngOnDestroy() {
-
-  // }
-
-  // copyToClipboard() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.copyHtml5;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.copyHtml5.action.call(that, e, this.dataTable, config, button);
-  // }
-
-  // exportToCSV() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.csvHtml5;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.csvHtml5.action.call(that, e, this.dataTable, config, button);
-  // }
-
-
-  // exportToExcel() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.excelHtml5;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.excelHtml5.action.call(that, e, this.dataTable, config, button);
-  // }
-
-  // print() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.print;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.print.action.call(that, e, this.dataTable, config, button);
-  // }
-
-  // Reload() {
-  //   const startTime = new Date();
-  //   this.getNodesObserver = this.getNodes().subscribe(data => {
-  //     const endTime = new Date();
-  //     this.NodeModel = data;
-
-  //     this.chRef.detectChanges();
-
-  //     this.afterLoadWithCount.emit(this.NodeModel.length);
-
-  //     if (!this.isTableInit) {
-  //       const exportColumns = [0, 2, 3, 5, 6, 7, 8, 9, 10, 11];
-  //       this.exportOptionsObj = {
-  //         columns: exportColumns,
-  //         format: {
-  //           body(text, row, column, node) {
-  //             if (column === 7 || column === 8 || column === 9) {
-  //               text = text.replace(/[^0-9.]+/g, '');
-  //             }
-  //             return text;
-  //           },
-  //           header(text, column) {
-  //             if (column === 9) {
-  //               text += ' (KB)';
-  //             } else if (column === 10) {
-  //               text += ' (days)';
-  //             } else if (column === 11) {
-  //               //text += ' (TRAC)';
-  //             }
-  //             return text;
-  //           }
-  //         }
-  //       };
-
-  //       const table: any = $('.js-datacreators-table');
-  //       this.dataTable = table.DataTable({
-  //         responsive: true,
-  //         pageLength: 50,
-  //         columnDefs: [
-  //           { targets: 0, visible: false },
-  //           { targets: 1, visible: true, orderData: [0], searchable: false },
-  //           { targets: 2, visible: false },
-  //           { targets: 3, visible: false },
-  //           { targets: 4, visible: true, orderData: [3], searchable: false },
-  //           { targets: 5, visible: true },
-  //           { targets: 6, visible: true },
-  //           { targets: 7, visible: true },
-  //           { targets: 8, visible: true },
-  //           { targets: 9, visible: true },
-  //           { targets: 10, visible: true },
-  //           { targets: 11, visible: true }
-  //         ],
-  //         drawCallback() {
-  //           $('img.lazy').lazyload();
-  //         }
-  //       });
-  //       this.isTableInit = true;
-  //     }
-
-  //     const diff = endTime.getTime() - startTime.getTime();
-  //     let minWait = 0;
-  //     if (diff < 100) {
-  //       minWait = 100 - diff;
-  //     }
-  //     setTimeout(() => {
-  //       this.isLoading = false;
-  //       if (this.NodeModel == null) {
-  //         this.failedLoading = true;
-  //       }
-  //     }, minWait);
-  //   }, err => {
-  //     this.failedLoading = true;
-  //     this.isLoading = false;
-  //   });
-  // }
-
   getNode(identity: string) {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
@@ -254,7 +137,7 @@ export class DatacreatorsComponent implements OnInit  {
   }
 
   onDelete(event) {
-    var deleteData = event.data;
+    const deleteData = event.data;
 
     const model = new MyNodeModel();
     model.Identity = deleteData.Identity;
@@ -265,7 +148,7 @@ export class DatacreatorsComponent implements OnInit  {
   }
 
   onCreate(event) {
-  var newData = event.newData;
+  const newData = event.newData;
 
   this.getNode(newData.Identity).subscribe(data => {
     if (data) {
@@ -313,9 +196,9 @@ export class DatacreatorsComponent implements OnInit  {
         confirmDelete: true,
       },
       columns: {
-        Identity: {
+        NodeId: {
           sort: false,
-          title: 'Identity',
+          title: 'Node Id',
           type: 'custom',
           filter: true,
           renderComponent: DataCreatorIdentityColumnComponent
@@ -323,7 +206,7 @@ export class DatacreatorsComponent implements OnInit  {
           //   if (!value) {
           //     return 'Unknown';
           //   }
-  
+
           //   return '<a target=_self href="/nodes/datacreators/' + value +
           //    '""><img class="lazy" style="height:16px;width:16px;" title="' +
           //     value + '" src="' + this.getIdentityIcon(value) + '">' + value + '</a>';
@@ -338,20 +221,20 @@ export class DatacreatorsComponent implements OnInit  {
           editable: true,
           addable: true,
         },
-        BlockchainName: {
-          type: 'string',
-          sort: false,
-          filter: false,
-          title: 'Blockchain',
-          editable: false,
-        },
-        NetworkName: {
-          type: 'string',
-          sort: false,
-          filter: false,
-          title: 'Network',
-          editable: false,
-        },
+        // BlockchainName: {
+        //   type: 'string',
+        //   sort: false,
+        //   filter: false,
+        //   title: 'Blockchain',
+        //   editable: false,
+        // },
+        // NetworkName: {
+        //   type: 'string',
+        //   sort: false,
+        //   filter: false,
+        //   title: 'Network',
+        //   editable: false,
+        // },
         OffersTotal: {
           sort: true,
           title: 'Jobs',
@@ -440,7 +323,7 @@ export class DatacreatorsComponent implements OnInit  {
             if (rounded != 1) {
               text += "s";
             }
-  
+
             return rounded + text;
           },
           width: '1%'
@@ -499,7 +382,7 @@ export class DatacreatorsComponent implements OnInit  {
   }
 }
 
-class OTHubServerDataSource extends ServerDataSource { 
+class OTHubServerDataSource extends ServerDataSource {
 
   ResetEndpoint(endpoint: string) {
     this.conf.endPoint = endpoint;

@@ -2,7 +2,7 @@
 // import Big from 'big.js';
 
 export class DataHolderDetailedModel   {
-    Identity: string;
+    // Identity: string;
     NodeId: string;
     Version: number;
     StakeTokens: string;
@@ -10,22 +10,27 @@ export class DataHolderDetailedModel   {
     PaidTokens: number;
     TotalWonOffers: number;
     WonOffersLast7Days: number;
-    Approved: boolean;
-    OldIdentity: string;
-    NewIdentity: string;
-    ManagementWallet: string;
-    CreateTransactionHash: string;
-    CreateGasPrice: number;
-    CreateGasUsed: number;
+    // Approved: boolean;
+    // OldIdentity: string;
+    // NewIdentity: string;
+    // ManagementWallet: string;
+    // CreateTransactionHash: string;
+    // CreateGasPrice: number;
+    // CreateGasUsed: number;
 
     Offers: DataHolderDetailedOfferModel[];
     Payouts: DataHolderDetailedPayoutModel[];
     ProfileTransfers: DataHolderDetailedProfileTransfer[];
     NodeUptime: DataHolderDetailedNodeUptime;
     Litigations: DataHolderLitigation[];
+    Identities: DataholderIdentityModel[];
 
-    BlockchainName: string;
-    NetworkName: string;
+}
+
+export class DataholderIdentityModel {
+  Identity: string;
+  BlockchainName: string;
+  NetworkName: string;
 }
 
 export class DataHolderDetailedOfferModel {

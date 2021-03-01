@@ -72,13 +72,16 @@
                     <nb-card-header>Data Creator</nb-card-header>
                     <nb-list class="dont-break-out">
                         <nb-list-item>
-                            <a *ngIf="OfferModel?.DCIdentity != null"
-                                routerLink="/nodes/datacreators/{{OfferModel?.DCIdentity}}"
-                                [title]="OfferModel?.DCIdentity" onClick="return false;"><img
-                                    style="width:16px;height:16px;" [src]="getIdentityIcon(OfferModel?.DCIdentity)">
-                                {{myNodeService.GetName(OfferModel?.DCIdentity)}}</a>
+                            <a *ngIf="OfferModel?.DCNodeId != null"
+                                routerLink="/nodes/datacreators/{{OfferModel?.DCNodeId}}"
+                                [title]="OfferModel?.DCNodeId" onClick="return false;">
+<!--                              <img-->
+<!--                                    style="width:16px;height:16px;" [src]="getIdentityIcon(OfferModel?.DCIdentity)">-->
+<!--                                {{myNodeService.GetName(OfferModel?.DCNodeId)}}-->
+                              {{OfferModel?.DCNodeId}}
+                            </a>
 
-                            <span *ngIf="OfferModel?.DCIdentity == null">Unknown Node Id:
+                            <span *ngIf="OfferModel?.DCNodeId == null">Unknown Node Id:
                                 {{OfferModel?.DCNodeId}}</span>
                         </nb-list-item>
                     </nb-list>
@@ -89,7 +92,7 @@
                                         onClick="return false;"><img style="width:16px;height:16px;"
                                             [src]="getIdentityIcon(OfferModel?.DCIdentity)">
                                         {{myNodeService.GetName(OfferModel?.DCIdentity)}}</a>
-                
+
                                     <span *ngIf="OfferModel?.DCIdentity == null">Unknown Node Id:
                                         {{OfferModel?.DCNodeId}}</span>
                                 </li>
@@ -103,10 +106,13 @@
                     </nb-card-header>
                     <nb-list class="dont-break-out">
                         <nb-list-item style="position: relative;" *ngFor="let holder of OfferModel?.Holders">
-                            <a routerLink="/nodes/dataholders/{{holder.Identity}}" [title]="holder.Identity"
-                                onClick="return false;"><img style="width:16px;height:16px;"
-                                    [src]="getIdentityIcon(holder.Identity)">
-                                {{myNodeService.GetName(holder.Identity)}}</a>
+                            <a routerLink="/nodes/dataholders/{{holder.NodeId}}" [title]="holder.NodeId"
+                                onClick="return false;">
+<!--                              <img style="width:16px;height:16px;"-->
+<!--                                    [src]="getIdentityIcon(holder.NodeId)">-->
+<!--                                {{myNodeService.GetName(holder.NodeId)}}-->
+                              {{holder.NodeId}}
+                            </a>
                             <nb-badge [text]="holder.LitigationStatusText"
                                 status="{{holder.LitigationStatus === null ? 'success' : 'danger'}}"
                                 position="top right"></nb-badge>
@@ -146,7 +152,7 @@
                                 <mgl-timeline alternate="false" toggle="false">
                                     <mgl-timeline-entry *ngFor="let timeline of OfferModel?.Timeline">
                                         <mgl-timeline-entry-header>{{timeline.Name}}
-                                            
+
                                         </mgl-timeline-entry-header>
                                         <mgl-timeline-entry-content>
 
@@ -182,7 +188,7 @@
                                                 <time class="left-time"><span
                                                         class="hidden">{{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'LL'}}</span>
                                                     <span class="large">{{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'h:mm A'}}</span></time>
-                                                <div class="left-icon">           
+                                                <div class="left-icon">
                                                      <i [ngClass]="getTimelineItemIcon(timeline)" [style.color]="getTimelineItemColour(timeline)"></i>
                                                 </div>
                                                 <div class="left-label empty"> <span><a target="_blank" href="https://www.etherscan.io/tx/{{timeline.TransactionHash}}" title="View on Etherscan">{{timeline.Name}}</a></span>
@@ -192,7 +198,7 @@
                                                     <img style="width:16px;height:16px;" [src]="getIdentityIcon(timeline.RelatedTo)">
                                                     {{myNodeService.GetName(timeline.RelatedTo)}}</a>
                                                 </div>
-                                            </li>                                   
+                                            </li>
                                         </ul> -->
                             </div>
                         </div>
@@ -266,7 +272,7 @@
                                 </div>
                             </div>
                             <br>
-                        
+
                             <div class="row">
                                 <div class="col-4">
                                     <h5>{{OfferModel?.OffersTotal | number}}</h5>

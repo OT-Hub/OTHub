@@ -15,13 +15,13 @@ export class LitigationsComponent implements OnInit {
 
   constructor(private httpService: HubHttpService, private http: HttpClient, public myNodeService: MyNodeService) { }
 
-  @Input('identity') identity: string; 
+  @Input('identity') identity: string;
   isDarkTheme: boolean;
 
   ngOnInit(): void {
     const url = this.httpService.ApiUrl + '/api/nodes/datacreator/' + this.identity + '/litigations';
 
-    this.source = new ServerDataSource(this.http, 
+    this.source = new ServerDataSource(this.http,
       { endPoint: url });
   }
 
@@ -74,7 +74,7 @@ delete: false
           return local;
         }
       },
-      HolderIdentity: {
+      NodeId: {
         sort: false,
         title: 'Data Holder',
         type: 'custom',

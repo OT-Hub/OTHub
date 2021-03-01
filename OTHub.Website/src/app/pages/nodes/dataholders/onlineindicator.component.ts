@@ -8,27 +8,7 @@ import { HubHttpService } from '../../hub-http-service';
 declare const $: any;
 @Component({
     template: `
-    <nb-icon [icon]="icon" [status]="status" [nbPopover]="templateRef" nbPopoverTrigger="hover"></nb-icon>
-    <ng-template #templateRef>
-    <nb-card class="margin-bottom-0">
-    <nb-card-header>{{rowData.Identity}}</nb-card-header>
-    <br>
-    <p *ngIf="LastSeenOnline != null" style="padding:0px 20px;">
-    Last Seen Online: {{LastSeenOnline}}
-    </p>
-    <p *ngIf="status == 'danger' && LastSeenOffline != null && LastSeenOnline != LastSeenOffline" style="padding:0px 20px;">
-    Last Seen Offline: {{LastSeenOffline}}
-    </p>
-    <div class="alert alert-danger" *ngIf="status == 'danger' && WarnAboutOTHubIssues == true" style="margin:0px 10px;">
-    OT Hub has not checked your node in the last hour.
-    <br>
-    Check the System Status page for any outages/issues.
-  </div>
-  <button nbButton status="success" outline style="margin:10px;"
-  (click)="CheckNodeOnline()">Check Online</button>
-  </nb-card>
-
-</ng-template>
+   {{rowData.NodeId}}
   `,
 })
 export class OnlineIndicatorRenderComponent implements ViewCell, OnInit {
@@ -96,38 +76,38 @@ export class OnlineIndicatorRenderComponent implements ViewCell, OnInit {
         this.recalculate();
     }
 
-    config: NbToastrConfig;
-    toastStatus: NbComponentStatus;
-
-    CheckNodeOnline() {
-
-        const headers = new HttpHeaders()
-            .set('Content-Type', 'application/json')
-            .set('Accept', 'application/json');
-        const url = this.httpService.ApiUrl + '/api/nodes/dataholder/checkonline?identity=' + this.rowData.Identity;
-        const test = this.http.get<DataHolderTestOnlineResult>(url, { headers });
-
-        const startTime = new Date();
-        test.subscribe(data => {
-
-            this.toastStatus = 'success';
-
-            if (data.Success) {
-                this.toastStatus = 'success';
-                this.rowData.LastSeenOnline = new Date();
-            } else {
-                this.toastStatus = 'danger';
-            }
-
-            this.config = new NbToastrConfig({ duration: 8000 });
-            this.config.status = this.toastStatus;
-            this.config.icon = data.Success ? 'checkmark-circle' : 'alert-triangle';
-            this.toastrService.show(data.Message, data.Header, this.config);
-
-            this.recalculate();
-            this.cdr.detectChanges();
-        }, err => {
-
-        });
-    }
+    // config: NbToastrConfig;
+    // toastStatus: NbComponentStatus;
+    //
+    // CheckNodeOnline() {
+    //
+    //     const headers = new HttpHeaders()
+    //         .set('Content-Type', 'application/json')
+    //         .set('Accept', 'application/json');
+    //     const url = this.httpService.ApiUrl + '/api/nodes/dataholder/checkonline?identity=' + this.rowData.Identity;
+    //     const test = this.http.get<DataHolderTestOnlineResult>(url, { headers });
+    //
+    //     const startTime = new Date();
+    //     test.subscribe(data => {
+    //
+    //         this.toastStatus = 'success';
+    //
+    //         if (data.Success) {
+    //             this.toastStatus = 'success';
+    //             this.rowData.LastSeenOnline = new Date();
+    //         } else {
+    //             this.toastStatus = 'danger';
+    //         }
+    //
+    //         this.config = new NbToastrConfig({ duration: 8000 });
+    //         this.config.status = this.toastStatus;
+    //         this.config.icon = data.Success ? 'checkmark-circle' : 'alert-triangle';
+    //         this.toastrService.show(data.Message, data.Header, this.config);
+    //
+    //         this.recalculate();
+    //         this.cdr.detectChanges();
+    //     }, err => {
+    //
+    //     });
+    // }
 }

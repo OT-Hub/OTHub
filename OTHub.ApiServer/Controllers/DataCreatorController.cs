@@ -18,7 +18,7 @@ namespace OTHub.APIServer.Controllers
     [Route("api/nodes/[controller]")]
     public class DataCreatorController : Controller
     {
-        [Route("{identity}")]
+        [Route("{nodeId}")]
         [HttpGet]
         [SwaggerOperation(
             Summary = "Get detailed information about a data creator",
@@ -33,23 +33,34 @@ Data Included:
         )]
         [SwaggerResponse(200, type: typeof(NodeDataCreatorDetailedModel))]
         [SwaggerResponse(500, "Internal server error")]
-        public NodeDataCreatorDetailedModel Get([SwaggerParameter("The ERC 725 identity for the data creator.", Required = true)] string identity)
+        public NodeDataCreatorDetailedModel Get([SwaggerParameter("The ERC 725 identity for the data creator.", Required = true)] string nodeId)
         {
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var profile = connection.QueryFirstOrDefault<NodeDataCreatorDetailedModel>(
-                    DataCreatorSql.GetDetailed, new { identity = identity });
+                    DataCreatorSql.GetDetailed, new { nodeId = nodeId });
+
+                if (profile != null)
+                {
+                    profile.Identities = connection.Query<NodeDetailedIdentity>(
+                        @"SELECT i.Identity, bc.BlockchainName, bc.NetworkName FROM otidentity i
+JOIN blockchains bc ON bc.id = i.blockchainid
+WHERE i.NodeId = @NodeId", new
+                        {
+                            nodeId = nodeId
+                        }).ToArray();
+                }
 
                 return profile;
 
             }
         }
 
-        [Route("{identity}/Jobs")]
+        [Route("{nodeId}/Jobs")]
         [HttpGet]
         public IActionResult GetJobs(
-            string identity,
+            string nodeId,
             [FromQuery]
             int _limit,
             [FromQuery]
@@ -120,9 +131,9 @@ Data Included:
                 var offers = connection.Query<OfferSummaryModel>(
                     DataCreatorSql.GetJobs + $@"
 {orderBy}
-{limit}", new { identity = identity, OfferId_like }).ToArray();
+{limit}", new { nodeId = nodeId, OfferId_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetJobsCount, new { identity = identity, OfferId_like });
+                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetJobsCount, new { nodeId = nodeId, OfferId_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -143,10 +154,10 @@ Data Included:
             }
         }
 
-        [Route("{identity}/ProfileTransfers")]
+        [Route("{nodeId}/ProfileTransfers")]
         [HttpGet]
         public IActionResult GetProfileTransfers(
-            string identity,
+            string nodeId,
             [FromQuery] string TransactionHash_like,
             [FromQuery]
             int _limit,
@@ -209,9 +220,9 @@ Data Included:
                 var transfers = connection.Query<NodeProfileDetailedModel_ProfileTransfer>(
                     DataHolderSql.GetProfileTransfers + $@"
 {orderBy}
-{limit}", new { identity = identity, TransactionHash_like }).ToArray();
+{limit}", new { nodeId = nodeId, TransactionHash_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataHolderSql.GetProfileTransfersCount, new { identity = identity, TransactionHash_like });
+                var total = connection.ExecuteScalar<int>(DataHolderSql.GetProfileTransfersCount, new { nodeId = nodeId, TransactionHash_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -232,10 +243,10 @@ Data Included:
             }
         }
 
-        [Route("{identity}/Litigations")]
+        [Route("{nodeId}/Litigations")]
         [HttpGet]
         public IActionResult GetLitigations(
-            string identity,
+            string nodeId,
             [FromQuery]
             int _limit,
             [FromQuery]
@@ -303,9 +314,9 @@ Data Included:
                 var litigations = connection.Query<DataCreatorLitigationSummary>(
                     DataCreatorSql.GetLitigations + $@"
 {orderBy}
-{limit}", new { identity = identity, OfferId_like, HolderIdentity_like }).ToArray();
+{limit}", new { nodeId = nodeId, OfferId_like, HolderIdentity_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetLitigationsCount, new { identity = identity, OfferId_like, HolderIdentity_like });
+                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetLitigationsCount, new { nodeId = nodeId, OfferId_like, HolderIdentity_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();

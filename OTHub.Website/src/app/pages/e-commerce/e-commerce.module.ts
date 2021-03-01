@@ -7,7 +7,7 @@ import {
   NbUserModule,
   NbIconModule,
   NbSelectModule,
-  NbListModule,
+  NbListModule, NbPopoverModule, NbTooltipModule,
 } from '@nebular/theme';
 import { NgxEchartsModule } from 'ngx-echarts';
 import { NgxChartsModule } from '@swimlane/ngx-charts';
@@ -71,6 +71,8 @@ import { EarningLiveUpdateChartComponent } from './earning-card/front-side/earni
     NgxEchartsModule,
     NgxChartsModule,
     LeafletModule,
+    NbPopoverModule,
+    NbTooltipModule,
   ],
   declarations: [
     ECommerceComponent,

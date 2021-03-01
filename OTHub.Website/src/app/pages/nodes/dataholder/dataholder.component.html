@@ -11,63 +11,79 @@
             <div class="col-lg-12 col-md-12 col-sm-12">
 
                 <nb-card>
-                    <nb-card-header> <img [src]="identityIconUrl" style="
-                       width:24px;height:24px;margin-right:5px" />
+                    <nb-card-header>
+<!--                      <img [src]="identityIconUrl" style="-->
+<!--                       width:24px;height:24px;margin-right:5px" />-->
                         Data Holder</nb-card-header>
                     <nb-list>
-                        <nb-list-item>
-                            Blockchain: {{NodeModel?.BlockchainName}}
-                        </nb-list-item>
-                        <nb-list-item>
-                            Network: {{NodeModel?.NetworkName}}
-                        </nb-list-item>
+<!--                        <nb-list-item>-->
+<!--                            Blockchain: {{NodeModel?.BlockchainName}}-->
+<!--                        </nb-list-item>-->
+<!--                        <nb-list-item>-->
+<!--                            Network: {{NodeModel?.NetworkName}}-->
+<!--                        </nb-list-item>-->
                         <nb-list-item *ngIf="DisplayName" class="dont-break-out">
                             Display Name: {{DisplayName}}
                         </nb-list-item>
-                        <nb-list-item class="dont-break-out">
-                            Identity: {{NodeModel?.Identity}}&nbsp;<app-copyclipboardicon
-                                [textToCopy]="NodeModel?.Identity" style="vertical-align:middle">
-                            </app-copyclipboardicon>
-                        </nb-list-item>
-                        <nb-list-item *ngIf="NodeModel?.OldIdentity != null" class="dont-break-out">
-                            Old Identity: <a title="You may find more historical data for this node on this identity."
-                                routerLink="/nodes/dataholders/{{NodeModel?.OldIdentity}}">{{NodeModel?.OldIdentity}}</a>
-                        </nb-list-item>
-                        <nb-list-item *ngIf="NodeModel?.NewIdentity != null" class="dont-break-out">
-                            New Identity: <a title="You may find more historical data for this node on this identity."
-                                routerLink="/nodes/dataholders/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>
-                        </nb-list-item>
+<!--                        <nb-list-item class="dont-break-out">-->
+<!--                            Identity: {{NodeModel?.Identity}}&nbsp;<app-copyclipboardicon-->
+<!--                                [textToCopy]="NodeModel?.Identity" style="vertical-align:middle">-->
+<!--                            </app-copyclipboardicon>-->
+<!--                        </nb-list-item>-->
+<!--                        <nb-list-item *ngIf="NodeModel?.OldIdentity != null" class="dont-break-out">-->
+<!--                            Old Identity: <a title="You may find more historical data for this node on this identity."-->
+<!--                                routerLink="/nodes/dataholders/{{NodeModel?.OldIdentity}}">{{NodeModel?.OldIdentity}}</a>-->
+<!--                        </nb-list-item>-->
+<!--                        <nb-list-item *ngIf="NodeModel?.NewIdentity != null" class="dont-break-out">-->
+<!--                            New Identity: <a title="You may find more historical data for this node on this identity."-->
+<!--                                routerLink="/nodes/dataholders/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>-->
+<!--                        </nb-list-item>-->
                         <nb-list-item *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'" class="dont-break-out">
                             Node Id: {{NodeModel?.NodeId}}&nbsp;<app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
                                 style="vertical-align:middle">
                             </app-copyclipboardicon>
                         </nb-list-item>
-                        <nb-list-item *ngIf="NodeModel?.ManagementWallet != null" class="dont-break-out">
-                            Management Wallet: {{NodeModel?.ManagementWallet}}&nbsp;<app-copyclipboardicon
-                                [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">
-                            </app-copyclipboardicon>
-                            <a *ngIf="NodeModel != null" class="themeLink"
-                                routerLink="/nodes/dataholders/managementwallet/{{NodeModel?.ManagementWallet}}"
-                                style="vertical-align: middle;margin-left:5px;"
-                                title="Find Nodes with this Management Wallet">
-                                <i class="fas fa-search"></i>
-                            </a>
-                        </nb-list-item>
+<!--                        <nb-list-item *ngIf="NodeModel?.ManagementWallet != null" class="dont-break-out">-->
+<!--                            Management Wallet: {{NodeModel?.ManagementWallet}}&nbsp;<app-copyclipboardicon-->
+<!--                                [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">-->
+<!--                            </app-copyclipboardicon>-->
+<!--                            <a *ngIf="NodeModel != null" class="themeLink"-->
+<!--                                routerLink="/nodes/dataholders/managementwallet/{{NodeModel?.ManagementWallet}}"-->
+<!--                                style="vertical-align: middle;margin-left:5px;"-->
+<!--                                title="Find Nodes with this Management Wallet">-->
+<!--                                <i class="fas fa-search"></i>-->
+<!--                            </a>-->
+<!--                        </nb-list-item>-->
                         <nb-list-item>
                             Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
                         </nb-list-item>
                         <nb-list-item>
                             Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
                         </nb-list-item>
-                        <nb-list-item *ngIf="MyNode == null">
-                            <button nbButton status="primary" outline (click)="AddToMyNodes()">Add to My Nodes</button>
-                        </nb-list-item>
+<!--                        <nb-list-item *ngIf="MyNode == null">-->
+<!--                            <button nbButton status="primary" outline (click)="AddToMyNodes()">Add to My Nodes</button>-->
+<!--                        </nb-list-item>-->
                     </nb-list>
                 </nb-card>
 
             </div>
         </div>
         <div class="row clearfix" [hidden]="failedLoading === true">
+          <div class="col-lg-12 col-md-12 col-sm-12">
+            <nb-card>
+              <nb-card-header>Identities
+              </nb-card-header>
+              <nb-list>
+                  <nb-list-item *ngFor="let data of NodeModel?.Identities; let i = index">
+                    <span>{{data.Identity}}</span>
+                    <span class="tokenSmall">{{data.BlockchainName}} {{data.NetworkName}}</span>
+
+
+                  </nb-list-item>
+
+              </nb-list>
+            </nb-card>
+          </div>
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <ngx-jobs [identity]="identity"></ngx-jobs>
             </div>
@@ -81,24 +97,24 @@
                 <ngx-transfers [identity]="identity"></ngx-transfers>
             </div>
 
-            <div class="col-lg-12 col-md-12 col-sm-12">
-                <nb-card>
-                    <nb-card-header>Blockchain</nb-card-header>
-                    <span style="margin: 10px 20px;">Profile Creation</span>
-                    <nb-list>
-                        <nb-list-item class="dont-break-out">
-                            Transaction Hash: {{NodeModel?.CreateTransactionHash}}&nbsp;<app-copyclipboardicon
-                            [textToCopy]="NodeModel?.CreateTransactionHash" style="vertical-align:middle">
-                        </app-copyclipboardicon>
-                        </nb-list-item>
-                        <nb-list-item>
-                            Transaction Fee:
-                            {{NodeModel?.CreateGasUsed * (NodeModel?.CreateGasPrice / 1000000000000000000)| number:'1.0-8'}}
-                            ETH ({{NodeModel?.CreateGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
-                        </nb-list-item>
-                        </nb-list>
-                </nb-card>
-            </div>
+<!--            <div class="col-lg-12 col-md-12 col-sm-12">-->
+<!--                <nb-card>-->
+<!--                    <nb-card-header>Blockchain</nb-card-header>-->
+<!--                    <span style="margin: 10px 20px;">Profile Creation</span>-->
+<!--                    <nb-list>-->
+<!--                        <nb-list-item class="dont-break-out">-->
+<!--                            Transaction Hash: {{NodeModel?.CreateTransactionHash}}&nbsp;<app-copyclipboardicon-->
+<!--                            [textToCopy]="NodeModel?.CreateTransactionHash" style="vertical-align:middle">-->
+<!--                        </app-copyclipboardicon>-->
+<!--                        </nb-list-item>-->
+<!--                        <nb-list-item>-->
+<!--                            Transaction Fee:-->
+<!--                            {{NodeModel?.CreateGasUsed * (NodeModel?.CreateGasPrice / 1000000000000000000)| number:'1.0-8'}}-->
+<!--                            ETH ({{NodeModel?.CreateGasPrice / 1000000000 | number:'1.0-1'}} Gwei)-->
+<!--                        </nb-list-item>-->
+<!--                        </nb-list>-->
+<!--                </nb-card>-->
+<!--            </div>-->
         </div>
     </div>
 </section>

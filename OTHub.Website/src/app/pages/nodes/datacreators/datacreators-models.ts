@@ -1,11 +1,11 @@
 
 export class DataCreatorSummaryModel   {
-    Identity: string;
+    // Identity: string;
     NodeId: string;
     Version: number;
     StakeTokens: number;
     StakeReservedTokens: number;
-    Approved: boolean;
+    // Approved: boolean;
     OffersTotal: number;
     OffersLast7Days: number;
     AvgDataSetSizeKB: number;

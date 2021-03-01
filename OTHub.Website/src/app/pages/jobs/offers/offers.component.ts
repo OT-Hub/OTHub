@@ -34,7 +34,7 @@ export class OffersComponent implements OnInit, OnDestroy {
     //const url = this.httpService.ApiUrl + '/api/jobs/paging?pageLength=' + pageLength + '&start=' + start + '&filter=' + searchFilter + '&' + (new Date()).getTime();
     const url = this.httpService.ApiUrl + '/api/jobs/paging';
 
-    this.source = new ServerDataSource(http, 
+    this.source = new ServerDataSource(http,
       { endPoint: url });
   }
 
@@ -63,25 +63,25 @@ edit: false,
 delete: false
     },
     columns: {
-      DCIdentity: {
-        title: 'DC',
-        width: '1%',
-        type: 'custom',
-        filter: false,
-        sort: false,
-        editable: false,
-        addable: false,
-        renderComponent: DataCreatorColumnComponent,
-        // valuePrepareFunction: (value) => {
-        //   if (!value) {
-        //     return 'Unknown';
-        //   }
-
-        //   return '<a target=_self href="/nodes/datacreators/' + value +
-        //    '""><img class="lazy" style="height:16px;width:16px;" title="' +
-        //     value + '" src="' + this.getIdentityIcon(value) + '"></a>';
-        // }
-      },
+      // DCIdentity: {
+      //   title: 'DC',
+      //   width: '1%',
+      //   type: 'custom',
+      //   filter: false,
+      //   sort: false,
+      //   editable: false,
+      //   addable: false,
+      //   renderComponent: DataCreatorColumnComponent,
+      //   // valuePrepareFunction: (value) => {
+      //   //   if (!value) {
+      //   //     return 'Unknown';
+      //   //   }
+      //
+      //   //   return '<a target=_self href="/nodes/datacreators/' + value +
+      //   //    '""><img class="lazy" style="height:16px;width:16px;" title="' +
+      //   //     value + '" src="' + this.getIdentityIcon(value) + '"></a>';
+      //   // }
+      // },
       BlockchainName: {
         type: 'string',
         sort: false,
