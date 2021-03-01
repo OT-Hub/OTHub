@@ -67,8 +67,11 @@ namespace OTHub.APIServer.Sql
 		ELSE 'Not Started'
 	END)
 END) as Status,
-(CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp
+(CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp,
+bc.BlockchainName,
+bc.NetworkName
 FROM OTOffer O
+JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
 WHERE COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like
 GROUP BY O.OfferID
@@ -80,6 +83,7 @@ GROUP BY O.OfferID
 
                 total = connection.ExecuteScalar<int>(@"SELECT COUNT(DISTINCT O.OfferID)
 FROM OTOffer O
+JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
 WHERE COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like", new
                 {

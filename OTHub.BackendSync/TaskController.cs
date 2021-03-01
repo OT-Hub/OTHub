@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Dapper;
 using MySqlConnector;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
@@ -17,13 +18,33 @@ namespace OTHub.BackendSync
 
         private class TaskControllerItem
         {
+            private readonly BlockchainType _blockchain;
+            private readonly BlockchainNetwork _network;
             private readonly Source _source;
-            private readonly TaskRun _task;
+            private readonly TaskRunBase _task;
             private readonly TimeSpan _runEveryTimeSpan;
             private DateTime _lastRunDateTime;
             private SystemStatus _systemStatus;
 
-            internal TaskControllerItem(Source source, TaskRun task, TimeSpan runEveryTimeSpan, bool startNow)
+            internal TaskControllerItem(BlockchainType blockchain, BlockchainNetwork network, Source source,
+                TaskRunBase task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID)
+            {
+                _blockchain = blockchain;
+                _network = network;
+                _source = source;
+                _task = task;
+                _runEveryTimeSpan = runEveryTimeSpan;
+                _lastRunDateTime = startNow ? DateTime.MinValue : DateTime.Now;
+                _systemStatus = new SystemStatus(task.Name, blockchainID);
+
+                using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                {
+                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName);
+                }
+            }
+
+            internal TaskControllerItem(Source source,
+                TaskRunBase task, TimeSpan runEveryTimeSpan, bool startNow)
             {
                 _source = source;
                 _task = task;
@@ -33,7 +54,7 @@ namespace OTHub.BackendSync
 
                 using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
-                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false);
+                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName);
                 }
             }
 
@@ -61,14 +82,26 @@ namespace OTHub.BackendSync
 
                 try
                 {
-                    Logger.WriteLine(_source, "Starting " + _task.Name);
+                    Logger.WriteLine(_source, "Starting " + _task.Name + " on " + _blockchain + " " + _network);
 
                     using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
-                        _systemStatus.InsertOrUpdate(connection, true, null, true);
+                        _systemStatus.InsertOrUpdate(connection, true, null, true, _task.ParentName);
                     }
 
-                    await _task.Execute(_source);
+                    if (_task is TaskRunBlockchain taskB)
+                    {
+                        await taskB.Execute(_source, _blockchain, _network);
+                    }
+                    else if (_task is TaskRunGeneric taskG)
+                    {
+                        await taskG.Execute(_source);
+                    }
+                    else
+                    {
+                        throw new NotImplementedException("Task of type " + _task.GetType().FullName +
+                                                          " is not supported.");
+                    }
 
                     success = true;
                 }
@@ -81,17 +114,42 @@ namespace OTHub.BackendSync
                     _lastRunDateTime = DateTime.Now;
                     using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
-                        _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false);
+                        _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false, _task.ParentName);
                     }
-                    Logger.WriteLine(_source, "Finished " + _task.Name + " in " + (DateTime.Now - startTime).TotalSeconds + " seconds");
+                    Logger.WriteLine(_source, "Finished " + _task.Name + " in " + (DateTime.Now - startTime).TotalSeconds + " seconds on " + _blockchain + " " + _network);
                 }
             }
         }
 
-        public void Schedule(TaskRun task, TimeSpan runEveryTimeSpan, bool startNow)
+        public void Schedule(TaskRunGeneric task, TimeSpan runEveryTimeSpan, bool startNow)
         {
-            var item = new TaskControllerItem(_source, task, runEveryTimeSpan, startNow);
-            _items.Add(item);
+            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var item = new TaskControllerItem(_source, task, runEveryTimeSpan, startNow);
+                _items.Add(item);
+            }
+        }
+
+        public void Schedule(TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow)
+        {
+            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var blockchains = connection.Query(@"SELECT * FROM blockchains").ToArray();
+
+                foreach (var blockchain in blockchains)
+                {
+                    int id = blockchain.ID;
+                    string blockchainName = blockchain.BlockchainName;
+                    string networkName = blockchain.NetworkName;
+
+                    BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
+                    BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
+
+                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task,
+                        runEveryTimeSpan, startNow, id);
+                    _items.Add(item);
+                }
+            }
         }
 
         private bool _showSleepingLogMessage = true;

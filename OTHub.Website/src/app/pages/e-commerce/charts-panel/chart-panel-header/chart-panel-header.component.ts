@@ -47,13 +47,16 @@ export class ChartPanelHeaderComponent implements OnDestroy, OnInit {
     this.chartLegend = [
       {
         iconColor: orderProfitLegend.firstItem,
-        title: this.isjobschart == 'true' ? 'Jobs Started' : 'Online Nodes',
-      },
-      {
-        iconColor: orderProfitLegend.secondItem,
-        title: this.isjobschart == 'true' ? 'Jobs Completed' : 'Nodes with Active Jobs',
+        title: this.isjobschart == 'true' ? 'Jobs Started' : 'Nodes with Active Jobs',
       }
     ];
+
+    if (this.isjobschart == 'true') {
+      this.chartLegend.push(      {
+        iconColor: orderProfitLegend.secondItem,
+        title: this.isjobschart == 'true' ? 'Jobs Completed' : 'Nodes with Active Jobs',
+      });
+    }
   }
 
   changePeriod(period: string): void {

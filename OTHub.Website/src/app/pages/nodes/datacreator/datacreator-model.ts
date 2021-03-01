@@ -1,7 +1,8 @@
 import { OTOfferSummaryModel } from '../../jobs/offers/offers-models';
+import {DataholderIdentityModel} from "../dataholder/dataholder-models";
 
 export class DataCreatedDetailedModel   {
-    Identity: string;
+    // Identity: string;
     NodeId: string;
     Version: number;
     StakeTokens: number;
@@ -17,7 +18,14 @@ export class DataCreatedDetailedModel   {
     Offers: OTOfferSummaryModel[];
     ProfileTransfers: DataHolderDetailedProfileTransfer[];
     Litigations: DataCreatorLitigation[];
+
+    BlockchainName: string;
+    NetworkName: string;
+  Identities: DataholderIdentityModel[];
+
 }
+
+
 
 export class DataHolderDetailedProfileTransfer {
     TransactionHash: string;
@@ -34,5 +42,6 @@ export class DataCreatorLitigation {
     RequestedBlockIndex: number;
     OfferId: string;
     LitigationStatus: number;
-    HolderIdentity: string;
+    // HolderIdentity: string;
+  NodeId: string;
 }

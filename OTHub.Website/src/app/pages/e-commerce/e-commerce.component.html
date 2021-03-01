@@ -4,206 +4,169 @@
   Changes being worked on for this version of OT Hub can be tracked on <a
     href="https://github.com/lukeskinner/OTHub/milestone/1">GitHub</a>.
 </div> -->
+<!--
+
+-->
 <div class="row">
-  <!-- <div class="col-xxl-5">
-    <div class="row">
-      <div class="col-md-6">
-        <ngx-profit-card></ngx-profit-card>
-      </div>
-      <div class="col-md-6">
-        <ngx-earning-card></ngx-earning-card>
-      </div>
-    </div>
+  <div class="col-md-8 col-xxxl-8">
+    <nb-card class="homeCard" status="basic" accent="success">
+      <nb-card-header>
+        <img src="assets/images/2467.png" alt="OriginTrail" height="32" width="32" class="otLogo" />
+        OriginTrail
+        <small class="tokenSmall">TRAC</small>
+        <div style="display:inline-block;">
+          ${{Data?.PriceUsd | number: '1.2-4'}}
+          <small class="btn-sm" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0" [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
+        </div>
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-md-4 col-sm-6  col-xs-6">
+            <div class="homeHeader">
+              Stats
+            </div>
+            <div class="homeField">
+              Total jobs:
+              <span class="homeData">
+            {{Data?.TotalJobs}}
+          </span>
+            </div>
+            <div class="homeField">
+              Active jobs:
+              <span class="homeData">
+            {{Data?.ActiveJobs}}
+          </span>
+            </div>
+            <div class="homeField">
+              Active nodes:
+              <span class="homeData">
+            {{Data?.ActiveNodes}}
+          </span>
+            </div>
+            <div class="homeField">
+              Staked tokens:
+              <span class="homeData">
+              <ng-template #stakedTokensPopupTemplate>
+                <div style="padding:10px; border-radius: 2px; border: 1px solid gray;">
+                              <div *ngFor="let bc of Data?.StakedByBlockchain">
+                              <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
 
-    <ngx-traffic-reveal-card></ngx-traffic-reveal-card>
+                              <div class="homeField">
+                                Staked tokens:
+                                <span class="homeData">
+                            {{formatAmount(bc.StakedTokens)}}
+                          </span>
+                              </div>
+                            </div>
+                </div>
+              </ng-template>
+            {{formatAmount(Data?.StakedTokens)}} / {{Data?.CirculatingSupply}} {{(Data?.StakedTokens / Data?.CirculatingSupply) * 100 | number: '1.0-2'}}% <nb-icon icon="info-outline" nbPopoverTrigger="hover"
+                                                          [nbPopover]="stakedTokensPopupTemplate" nbButton status="primary"></nb-icon>
+          </span>
+
+            </div>
+
+
+          </div>
+
+          <div class="col-md-4 col-sm-6 col-xs-6">
+            <div class="homeHeader">
+              24h Job Stats
+            </div>
+            <div class="homeField">
+              Jobs:
+              <span class="homeData">
+            {{Data?.Jobs24H}}
+          </span>
+            </div>
+            <div class="homeField">
+              Average job reward:
+              <span class="homeData">
+            {{Data?.JobsReward24H != null ? (Data?.JobsReward24H | number:'1.0-2') : '?'}}
+          </span>
+            </div>
+            <div class="homeField">
+              Average job duration:
+              <span class="homeData">
+            {{formatTime(Data?.JobsDuration24H)}}
+          </span>
+            </div>
+            <div class="homeField">
+              Average job data size:
+              <span class="homeData">
+                {{Data?.JobsSize24H != null ? ((Data?.JobsSize24H / 1000 | number:'1.2-2') + ' KB') : '?'}}
+          </span>
+            </div>
+
+          </div>
+          <div class="col-md-4 col-sm-12  col-xs-12">
+            <div class="homeHeader">
+              24h Fee Stats
+            </div>
+            <div *ngFor="let bc of Data?.FeesByBlockchain">
+              <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
+
+              <div class="homeField">
+                Average job fee:
+                <span class="homeData">
+                                <ng-template #averagePayoutFeeTemplate>
+                <div style="padding:10px; border-radius: 2px; border: 1px solid gray;">
+                     <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
+                         <div class="homeField">
+              Average job creation:
+              <span class="homeData">
+            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobCreationCost != null ? bc.JobCreationCost : '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
+          </span>
+            </div>
+                           <div class="homeField">
+              Average job finalized:
+              <span class="homeData">
+            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobFinalisedCost != null ? bc.JobFinalisedCost : '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
+          </span>
+            </div>
+                </div>
+              </ng-template>
+            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobCreationCost != null && bc.JobFinalisedCost != null ? (bc.JobCreationCost + bc.JobFinalisedCost | number: '1.0-5') : '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
+                  <nb-icon icon="info-outline" nbPopoverTrigger="hover"
+                           [nbPopover]="averagePayoutFeeTemplate" nbButton status="primary"></nb-icon>
+          </span>
+              </div>
+              <div class="homeField">
+                Average payout fee:
+                <span class="homeData">
+                          {{bc.ShowCostInUSD ? "$" : ""}}{{bc.PayoutCost != null ? bc.PayoutCost: '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
+          </span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+      </nb-card-body>
+    </nb-card>
   </div>
-
-  <div class="col-xxl-7">
-    <ngx-ecommerce-charts></ngx-ecommerce-charts>
-  </div> -->
-
-  <div class="col-xxl-12">
-    <ngx-ecommerce-charts></ngx-ecommerce-charts>
+  <div class="col-md-4 col-xxxl-4">
+    <nb-card class="homeCard" status="basic">
+      <nb-card-body>
+<div class="row">
+  <div class="col-12 col-md-6">
+    <a href="https://coinmarketcap.com/currencies/origintrail/">CoinMarketCap</a>
+  </div>
+  <div class="col-12 col-md-6">
+    <a href="https://otnode.com/">OriginTrail Node Guide</a>
   </div>
 </div>
-
-
-
-
-<div class="row">
-  <!-- <div class="col-md-6 col-xxxl-4">
-    <nb-card size="medium">
-      <nb-card-header>
-        Used Fonts
-      </nb-card-header>
-      <nb-card-body>
-        <div class="font-row">
-          <div class="header">
-            <div class="name bold">Open Sans</div>
-          </div>
-          <p>
-            Far far away, behind the word mountains, far from the countries Vokalia and Consonantia,
-            there live the blind texts.
-            Separated they live in Bookmarksgrove right at the coast of the Semantics, a large language ocean.
-          </p>
-        </div>
-      </nb-card-body>
-    </nb-card>
-  </div> -->
-
-  <!-- <div class="col-md-6 col-xxxl-4">
-    <nb-card size="medium" class="headings-card">
-      <nb-card-header>
-        Headings
-      </nb-card-header>
-      <nb-card-body>
-        <div class="header">
-          <div>
-            <h1>H1. Heading</h1>
-          </div>
-
-          <div class="detail">
-            800 2.25rem (36px)
-          </div>
-        </div>
-        <div class="header">
-          <div>
-            <h2>H2. Heading</h2>
-          </div>
-
-          <div class="detail">
-            800 2rem (32px)
-          </div>
-        </div>
-        <div class="header">
-          <div>
-            <h3>H3. Heading</h3>
-          </div>
-
-          <div class="detail">
-            800 1.875rem (30px)
-          </div>
-        </div>
-        <div class="header">
-          <div>
-            <h4>H4. Heading</h4>
-          </div>
-
-          <div class="detail">
-            800 1.625rem (26px)
-          </div>
-        </div>
-        <div class="header">
-          <div>
-            <h5>H5. Heading</h5>
-          </div>
-
-          <div class="detail">
-            800 1.375rem (22px)
-          </div>
-        </div>
-        <div class="header">
-          <div>
-            <h6>H6. Heading</h6>
-          </div>
-
-          <div class="detail">
-            800 1.125rem (18px)
-          </div>
-        </div>
-      </nb-card-body>
-    </nb-card>
-  </div> -->
-
-  <div class="col-md-6 col-xxxl-4">
-    <nb-card [size]="breakpoint.width >= breakpoints.xxxl ? 'small' : 'small'">
-      <nb-card-header>
-        What is OriginTrail?
-      </nb-card-header>
-      <nb-card-body>
-        <h5>OriginTrail Explained</h5>
-        <p>
-          OriginTrail is a neutral, open-source protocol enabling trusted data sharing between companies, organizations,
-          and blockchains.
-        </p>
-        <p>
-          End-to-end information is shared and secured in a fully decentralized knowledge graph network, monitored with
-          AI and oracles, providing valuable insights for businesses and consumers alike.
-        </p>
-        To learn more please visit <a href="https://origintrailexplained.info/" target="_blank">https://origintrailexplained.info/</a>
-      </nb-card-body>
-    </nb-card>
-  </div>
-
-  <div class="col-md-6 col-xxxl-4">
-    <nb-card size="small">
-      <nb-card-header>
-        How do I get involved?
-      </nb-card-header>
-      <nb-card-body>
-        <p>
-          There are many active communities to discuss all things OriginTrail.
-        </p>
-        <p>
-          Official Announcements on <a href="https://medium.com/origintrail" target="_blank">Medium</a>
-        </p>
-        <p>
-          Chat about OriginTrail on Telegram: <a href="https://t.me/OriginTrail" target="_blank">Official</a>
-          or
-          <a href="https://t.me/OriginTrailCommunity" target="_blank">Community</a>
-        </p>
-        <p>
-          Chat about nodes on <a href="https://discord.gg/FCgYk2S" target="_blank">Discord</a>
-        </p>
-      </nb-card-body>
-    </nb-card>
-  </div>
-
-  <div class="col-md-6 col-xxxl-4">
-    <nb-card size="small">
-      <nb-card-header>
-        How do I run a node?
-      </nb-card-header>
-      <nb-card-body>
-        <h5>Node Installation Guide</h5>
-        <p>
-          <a href="https://otnode.com/" target="_blank">https://otnode.com/</a>
-        </p>
-        <h5>Node Maintenance</h5>
-        <p>
-          <a href="https://otnode.com/node-maintenance/" target="_blank">https://otnode.com/node-maintenance/</a>
-        </p>
       </nb-card-body>
     </nb-card>
   </div>
 </div>
 
-
-
-
-
-
-
-
-
-
-<!-- 
 <div class="row">
-  <div class="col-xxl-9">
-    <ngx-country-orders></ngx-country-orders>
-  </div>
-
-  <div class="col-xxl-3">
-    <ngx-progress-section></ngx-progress-section>
+  <div class="col-md-12 col-xxxl-12">
+    <nb-card class="homeCard" status="basic">
+      <nb-card-body>
+        <div id="chartdiv" style="width: 100%; height: 340px;"></div>
+      </nb-card-body>
+    </nb-card>
   </div>
 </div>
-
-<div class="row">
-  <div class="col-xxl-9">
-    <ngx-ecommerce-visitors-analytics></ngx-ecommerce-visitors-analytics>
-  </div>
-
-  <div class="col-xxl-3">
-    <ngx-user-activity></ngx-user-activity>
-  </div>
-</div> -->

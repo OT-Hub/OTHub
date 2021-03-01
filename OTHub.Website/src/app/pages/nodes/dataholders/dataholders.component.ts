@@ -247,7 +247,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         this.source.refresh();
       } else {
         this.config = new NbToastrConfig({duration: 8000});
-        this.config.status = "warning";        
+        this.config.status = "warning";
       this.config.icon = 'alert-triangle';
         this.toastrService.show(
           'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
@@ -318,35 +318,45 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         confirmDelete: true,
       },
       columns: {
-        LastSeenOnline: {
-          title: '',
+        // LastSeenOnline: {
+        //   title: '',
+        //   type: 'custom',
+        //   class: "onlineIndicator",
+        //   renderComponent: OnlineIndicatorRenderComponent,
+        //   filter: false,
+        //   sort: false,
+        //   editable: false,
+        //   addable: false,
+        //   width: '1%'
+        //   // valuePrepareFunction: (value, row) => {
+        //   //   return '<div style="font-size:30px;"><i class="nb-checkmark-circle"></i></div>';
+        //   // }
+        // },
+        // Identity: {
+        //   sort: false,
+        //   title: 'Identity',
+        //   type: 'custom',
+        //   filter: true,
+        //   renderComponent: DataHolderIdentityColumnComponent,
+        //   // valuePrepareFunction: (value) => {
+        //   //   if (!value) {
+        //   //     return 'Unknown';
+        //   //   }
+        //
+        //   //   return '<a target=_self href="/nodes/dataholders/' + value +
+        //   //    '""><img class="lazy" style="height:16px;width:16px;" title="' +
+        //   //     value + '" src="' + this.getIdentityIcon(value) + '">' + value + '</a>';
+        //   // }
+        // },
+        NodeId: {
+          title: 'Node Id',
           type: 'custom',
-          class: "onlineIndicator",
-          renderComponent: OnlineIndicatorRenderComponent,
-          filter: false,
-          sort: false,
-          editable: false,
-          addable: false,
-          width: '1%'
-          // valuePrepareFunction: (value, row) => {
-          //   return '<div style="font-size:30px;"><i class="nb-checkmark-circle"></i></div>';
-          // }
-        },
-        Identity: {
-          sort: false,
-          title: 'Identity',
-          type: 'custom',
-          filter: true,
           renderComponent: DataHolderIdentityColumnComponent,
-          // valuePrepareFunction: (value) => {
-          //   if (!value) {
-          //     return 'Unknown';
-          //   }
-  
-          //   return '<a target=_self href="/nodes/dataholders/' + value +
-          //    '""><img class="lazy" style="height:16px;width:16px;" title="' +
-          //     value + '" src="' + this.getIdentityIcon(value) + '">' + value + '</a>';
-          // }
+          show: true,
+          filter: true,
+          sort: true,
+          editable: false,
+          addable: true,
         },
         DisplayName: {
           title: 'Name',
@@ -357,6 +367,20 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           editable: true,
           addable: true,
         },
+        // BlockchainName: {
+        //   type: 'string',
+        //   sort: false,
+        //   filter: false,
+        //   title: 'Blockchain',
+        //   editable: false,
+        // },
+        // NetworkName: {
+        //   type: 'string',
+        //   sort: false,
+        //   filter: false,
+        //   title: 'Network',
+        //   editable: false,
+        // },
         TotalWonOffers: {
           sort: true,
           title: 'Jobs',

@@ -9,7 +9,7 @@ namespace OTHub.APIServer.Sql
     public static class JobSql
     {
         public const String GetJobDetailed =
-            @"SELECT O.OfferId, O.EstimatedLambda, O.CreatedTimestamp as CreatedTimestamp, O.FinalizedTimestamp, O.LitigationIntervalInMinutes, O.DataSetId, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
+			@"SELECT O.OfferId, O.EstimatedLambda, O.CreatedTimestamp as CreatedTimestamp, O.FinalizedTimestamp, O.LitigationIntervalInMinutes, O.DataSetId, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
 (CASE WHEN IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
 	ELSE (CASE WHEN O.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)
@@ -18,7 +18,7 @@ namespace OTHub.APIServer.Sql
 	END)
 END) as Status,
 (CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp
-, O.CreatedBlockNumber, O.CreatedTransactionHash, O.DcNodeId, DCI.Identity DCIdentity,
+, O.CreatedBlockNumber, O.CreatedTransactionHash, O.DcNodeId,
 (SELECT COUNT(*) FROM OTOffer IO WHERE IO.DCNodeID = O.DCNodeID AND IO.IsFinalized = 1) as OffersTotal,
 (SELECT COUNT(*) FROM OTOffer IO WHERE IO.DCNodeID = O.DCNodeID AND IO.IsFinalized = 1 AND IO.CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -7 DAY)) as OffersLast7Days,
 (SELECT COALESCE(SUM(Amount), 0) FROM OTContract_Holding_Paidout IP
@@ -29,15 +29,19 @@ O.FinalizedTransactionHash,
 OC.GasUsed CreatedGasUsed,
 OF.GasUsed FinalizedGasUsed,
 OC.GasPrice CreatedGasPrice,
-OF.GasPrice FinalizedGasPrice
+OF.GasPrice FinalizedGasPrice,
+bc.BlockchainName,
+bc.NetworkName
  FROM OTOffer O
+JOIN blockchains bc ON bc.ID = O.BlockchainID
  JOIN OTContract_Holding_OfferCreated OC ON OC.OfferID = O.OfferID
  LEFT JOIN OTContract_Holding_OfferFinalized OF ON OF.OfferID = O.OfferID
  LEFT JOIN OTIdentity DCI ON DCI.NodeId = O.DCNodeId
-WHERE O.OfferId = @offerID";
+WHERE O.OfferId = @offerID
+GROUP BY DCI.NodeId";
 
         public const String GetJobHolders =
-            @"SELECT H.Holder as Identity, CASE WHEN H.LitigationStatus = 0 AND (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN NULL ELSE H.LitigationStatus END LitigationStatus,
+			@"SELECT I.NodeId, CASE WHEN H.LitigationStatus = 0 AND (lc.TransactionHash is null OR lc.DHWasPenalized = 0) THEN NULL ELSE H.LitigationStatus END LitigationStatus,
 (CASE WHEN IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN
 	(CASE 
@@ -61,15 +65,17 @@ WHERE O.OfferId = @offerID";
 	ELSE ''
 END) as LitigationStatusText
  FROM OTOffer_Holders H
+ JOIN otidentity I ON I.Identity = H.Holder
  JOIN OTOffer O ON O.OfferID = H.OfferID
-left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
+left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockchainID = h.BlockchainID and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
 Where H.OfferId = @offerID
 ORDER BY H.LitigationStatus";
 
         public static String GetJobTimeline()
         {
             return
-                $@"select Timestamp, 'Offer Created' as Name, null as 'RelatedTo', TransactionHash  from otcontract_holding_offercreated
+                $@"
+select Timestamp, 'Offer Created' as Name, null as 'RelatedTo', TransactionHash  from otcontract_holding_offercreated
 where OfferId = @offerID
 union all
 select Timestamp, 'Offer Finalized', null, TransactionHash from otcontract_holding_offerfinalized
@@ -97,7 +103,9 @@ union all
 select Timestamp, 'Data Holder Chosen', ChosenHolder, TransactionHash from otcontract_replacement_replacementcompleted
 where OfferId = @offerID
 union all
-select Timestamp, CONCAT('Offer Paidout for ', (CAST(TRUNCATE(`Amount`, 3) AS CHAR)+0), ' {(OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet ? "ATRAC" : "TRAC")}'), Holder, TransactionHash from otcontract_holding_paidout
+select po.Timestamp, CONCAT('Offer Paidout for ', (CAST(TRUNCATE(po.Amount, 3) AS CHAR)+0),' ', b.TokenTicker), po.Holder, po.TransactionHash 
+from otcontract_holding_paidout po
+JOIN blockchains b ON b.id = po.BlockchainID
 where OfferId = @offerID
 union all
 select DATE_Add(of.Timestamp, INTERVAL + oc.HoldingTimeInMinutes MINUTE), 'Offer Completed', null, null from otcontract_holding_offerfinalized of

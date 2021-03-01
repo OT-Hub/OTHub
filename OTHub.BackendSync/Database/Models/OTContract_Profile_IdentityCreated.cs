@@ -13,10 +13,11 @@ namespace OTHub.BackendSync.Database.Models
         public UInt64 BlockNumber { get; set; }
         public ulong GasUsed { get; set; }
         public ulong GasPrice { get; set; }
+        public int BlockchainID { get; set; }
 
         public static void Insert(MySqlConnection connection, OTContract_Profile_IdentityCreated model)
         {
-            connection.Execute("INSERT INTO OTContract_Profile_IdentityCreated VALUES(@hash, @profile, @newIdentity, @contractAddress, @blockNumber, @GasPrice, @GasUsed)", new
+            connection.Execute("INSERT INTO OTContract_Profile_IdentityCreated VALUES(@hash, @profile, @newIdentity, @contractAddress, @blockNumber, @GasPrice, @GasUsed, @BlockchainID)", new
             {
                 hash = model.TransactionHash,
                 profile = model.Profile,
@@ -24,7 +25,8 @@ namespace OTHub.BackendSync.Database.Models
                 contractAddress = model.ContractAddress,
                 blockNumber = model.BlockNumber,
                 model.GasUsed,
-                model.GasPrice
+                model.GasPrice,
+                model.BlockchainID
             });
         }
 
@@ -32,7 +34,7 @@ namespace OTHub.BackendSync.Database.Models
         {
             connection.Execute(@"UPDATE OTContract_Profile_IdentityCreated SET TransactionHash = @hash, BlockNumber = @blockNumber,
 Profile = @profile, NewIdentity = @newIdentity, GasUsed = @GasUsed, GasPrice = @GasPrice,
-ContractAddress = @contractAddress WHERE TransactionHash = @hash", new
+ContractAddress = @contractAddress, BlockchainID = @BlockchainID WHERE TransactionHash = @hash AND BlockchainID = @BlockchainID", new
             {
                 hash = model.TransactionHash,
                 profile = model.Profile,
@@ -40,15 +42,17 @@ ContractAddress = @contractAddress WHERE TransactionHash = @hash", new
                 contractAddress = model.ContractAddress,
                 blockNumber = model.BlockNumber,
                 model.GasUsed,
-                model.GasPrice
+                model.GasPrice,
+                model.BlockchainID
             });
         }
 
         public static void InsertOrUpdate(MySqlConnection connection, OTContract_Profile_IdentityCreated model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Profile_IdentityCreated WHERE TransactionHash = @hash", new
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Profile_IdentityCreated WHERE TransactionHash = @hash AND BlockchainID = @BlockchainID", new
             {
-                hash = model.TransactionHash
+                hash = model.TransactionHash,
+                model.BlockchainID
             });
 
             if (count == 0)

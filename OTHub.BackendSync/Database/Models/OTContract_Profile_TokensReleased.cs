@@ -13,13 +13,15 @@ namespace OTHub.BackendSync.Database.Models
         public decimal Amount { get; set; }
         public ulong GasUsed { get; set; }
         public ulong GasPrice { get; set; }
+        public int BlockchainID { get; set; }
 
-        public static bool TransactionExists(MySqlConnection connection, string transactionHash)
+        public static bool TransactionExists(MySqlConnection connection, string transactionHash, int blockchainID)
         {
             var count = connection.QueryFirstOrDefault<Int32>(
-                "SELECT COUNT(*) FROM OTContract_Profile_TokensReleased WHERE TransactionHash = @transactionHash", new
+                "SELECT COUNT(*) FROM OTContract_Profile_TokensReleased WHERE TransactionHash = @transactionHash AND BlockchainID = @blockchainID", new
                 {
-                    transactionHash
+                    transactionHash,
+                    blockchainID = blockchainID
                 });
 
             if (count == 0)
@@ -31,8 +33,8 @@ namespace OTHub.BackendSync.Database.Models
         public static void Insert(MySqlConnection connection, OTContract_Profile_TokensReleased model)
         {
             connection.Execute(
-                @"INSERT INTO OTContract_Profile_TokensReleased(TransactionHash, ContractAddress, Profile, Amount, BlockNumber, GasPrice, GasUsed)
-VALUES(@TransactionHash, @ContractAddress, @Profile, @Amount, @BlockNumber, @GasPrice, @GasUsed)",
+                @"INSERT INTO OTContract_Profile_TokensReleased(TransactionHash, ContractAddress, Profile, Amount, BlockNumber, GasPrice, GasUsed, BlockchainID)
+VALUES(@TransactionHash, @ContractAddress, @Profile, @Amount, @BlockNumber, @GasPrice, @GasUsed, @BlockchainID)",
                 new
                 {
                     model.TransactionHash,
@@ -41,7 +43,8 @@ VALUES(@TransactionHash, @ContractAddress, @Profile, @Amount, @BlockNumber, @Gas
                     model.Amount,
                     model.BlockNumber,
                     model.GasPrice,
-                    model.GasUsed
+                    model.GasUsed,
+                    model.BlockchainID
                 });
         }
     }

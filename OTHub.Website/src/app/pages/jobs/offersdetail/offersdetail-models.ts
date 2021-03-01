@@ -17,7 +17,7 @@ export class OTOfferDetailModel {
     FinalizedBlockNumber: number;
     FinalizedTransactionHash: string;
     DCNodeId: string;
-    DCIdentity: string;
+    // DCIdentity: string;
     Holders: OTOfferDetailIdentityModel[];
     Timeline: OTOfferDetailTimelineModel[];
 
@@ -29,10 +29,13 @@ export class OTOfferDetailModel {
     FinalizedGasUsed: number;
     CreatedGasPrice: number;
     FinalizedGasPrice: number;
+
+    BlockchainName: string;
+    NetworkName: string;
 }
 
 export class OTOfferDetailIdentityModel {
-    Identity: string;
+    NodeId: string;
     LitigationStatus: number;
     LitigationStatusText: string;
 }

@@ -13,19 +13,21 @@ namespace OTHub.BackendSync.Database.Models
         public UInt64 BlockNumber { get; set; }
         public ulong GasPrice { get; set; }
         public ulong GasUsed { get; set; }
+        public int BlockchainID { get; set; }
 
         public static void InsertIfNotExist(MySqlConnection connection, OTContract_Holding_OwnershipTransferred model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Holding_OwnershipTransferred WHERE TransactionHash = @hash", new
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Holding_OwnershipTransferred WHERE TransactionHash = @hash AND BlockchainID = @blockchainID", new
             {
-                hash = model.TransactionHash
+                hash = model.TransactionHash,
+                blockchainID = model.BlockchainID
             });
 
             if (count == 0)
             {
                 connection.Execute(
                     @"INSERT INTO OTContract_Holding_OwnershipTransferred(TransactionHash, PreviousOwner, NewOwner, ContractAddress, BlockNumber,
-GasPrice, GasUsed) VALUES(@TransactionHash, @PreviousOwner, @NewOwner, @ContractAddress, @BlockNumber, @GasPrice, @GasUsed)",
+GasPrice, GasUsed, BlockchainID) VALUES(@TransactionHash, @PreviousOwner, @NewOwner, @ContractAddress, @BlockNumber, @GasPrice, @GasUsed, @BlockchainID)",
                     new
                     {
                         model.TransactionHash,
@@ -34,7 +36,8 @@ GasPrice, GasUsed) VALUES(@TransactionHash, @PreviousOwner, @NewOwner, @Contract
                         model.ContractAddress,
                         model.BlockNumber,
                         model.GasPrice,
-                        model.GasUsed
+                        model.GasUsed,
+                        model.BlockchainID
                     });
             }
         }

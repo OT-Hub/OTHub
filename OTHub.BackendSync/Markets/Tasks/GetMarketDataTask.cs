@@ -15,7 +15,7 @@ using OTHub.Settings.Helpers;
 
 namespace OTHub.BackendSync.Markets.Tasks
 {
-    public class GetMarketDataTask : TaskRun
+    public class GetMarketDataTask : TaskRunGeneric
     {
         public override async Task Execute(Source source)
         {
@@ -24,7 +24,7 @@ namespace OTHub.BackendSync.Markets.Tasks
             DateTime now = DateTime.UtcNow;
             DateTime latestTimestamp;
 
-            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 latestTimestamp =
                     connection.ExecuteScalar<DateTime?>(@"select max(ticker_trac.Timestamp) from ticker_trac") ??
@@ -37,16 +37,16 @@ namespace OTHub.BackendSync.Markets.Tasks
 
                 CoinpaprikaAPI.Client client = new CoinpaprikaAPI.Client();
 
-                using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     for (DateTime date = latestTimestamp.Date; date.Date <= now; date = date.AddDays(1))
                     {
                         if (date > now)
                             break;
 
-                        Thread.Sleep(400);
+                        Thread.Sleep(800);
 
                         var tickers = client.GetHistoricalTickerForIdAsync("trac-origintrail",
                                 date,
@@ -79,10 +79,10 @@ namespace OTHub.BackendSync.Markets.Tasks
                             continue;
 
 
-                        using (MySqlTransaction tran =
-                            connection.BeginTransaction(global::System.Data.IsolationLevel.Serializable))
+                        await using (MySqlTransaction tran =
+                            await connection.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable))
                         {
-                            using (MySqlCommand cmd = new MySqlCommand())
+                            await using (MySqlCommand cmd = new MySqlCommand())
                             {
                                 cmd.Connection = connection;
                                 cmd.Transaction = tran;
@@ -93,7 +93,7 @@ namespace OTHub.BackendSync.Markets.Tasks
                                     using (MySqlCommandBuilder cb = new MySqlCommandBuilder(da))
                                     {
                                         da.Update(rawData);
-                                        tran.Commit();
+                                        await tran.CommitAsync();
 
                                         var max = tickers.Value.Max(v => v.Timestamp.UtcDateTime);
                                         if (max > latestTimestamp)
@@ -153,9 +153,9 @@ namespace OTHub.BackendSync.Markets.Tasks
 
 
 
-                using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
-                    connection.Open();
+                    await connection.OpenAsync();
 
                     for (DateTime date = latestTimestamp.Date; date.Date <= now; date = date.AddDays(1))
                     {
@@ -171,7 +171,7 @@ namespace OTHub.BackendSync.Markets.Tasks
 
                         for (int i = 0; i < 24; i++)
                         {
-                            Thread.Sleep(250);
+                            Thread.Sleep(450);
 
                             Int32 unixStartTimestamp =
                                 (Int32) (date.AddHours(i).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
@@ -210,10 +210,10 @@ namespace OTHub.BackendSync.Markets.Tasks
                             continue;
 
 
-                        using (MySqlTransaction tran =
-                            connection.BeginTransaction(global::System.Data.IsolationLevel.Serializable))
+                        await using (MySqlTransaction tran =
+                            await connection.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable))
                         {
-                            using (MySqlCommand cmd = new MySqlCommand())
+                            await using (MySqlCommand cmd = new MySqlCommand())
                             {
                                 cmd.Connection = connection;
                                 cmd.Transaction = tran;
@@ -224,7 +224,7 @@ namespace OTHub.BackendSync.Markets.Tasks
                                     using (MySqlCommandBuilder cb = new MySqlCommandBuilder(da))
                                     {
                                         da.Update(rawData);
-                                        tran.Commit();
+                                        await tran.CommitAsync();
 
                                         if (obj != null && obj.prices != null && obj.prices.Any())
                                         {

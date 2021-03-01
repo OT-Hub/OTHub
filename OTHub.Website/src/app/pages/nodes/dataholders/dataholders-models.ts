@@ -1,7 +1,7 @@
 import { identity } from 'rxjs';
 
 export class OTNodeSummaryModel   {
-    Identity: string;
+    // Identity: string;
     NodeId: string;
     Version: number;
     StakeTokens: number;

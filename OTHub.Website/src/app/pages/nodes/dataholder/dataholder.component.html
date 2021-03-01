@@ -8,141 +8,82 @@
             <strong>Warning!</strong> This old Identity is only available for viewing historical data.
         </div>
         <div class="row clearfix" [hidden]="failedLoading === true">
-            <div class="col-lg-12 col-md-12 col-sm-12"
-                [ngClass]="{'col-lg-7' : MyNode || IsTestNet === true, 'col-lg-12' : !MyNode && IsTestNet !== true}">
+            <div class="col-lg-12 col-md-12 col-sm-12">
 
                 <nb-card>
-                    <nb-card-header> <img [src]="identityIconUrl" style="
-                       width:24px;height:24px;margin-right:5px" />
+                    <nb-card-header>
+<!--                      <img [src]="identityIconUrl" style="-->
+<!--                       width:24px;height:24px;margin-right:5px" />-->
                         Data Holder</nb-card-header>
                     <nb-list>
+<!--                        <nb-list-item>-->
+<!--                            Blockchain: {{NodeModel?.BlockchainName}}-->
+<!--                        </nb-list-item>-->
+<!--                        <nb-list-item>-->
+<!--                            Network: {{NodeModel?.NetworkName}}-->
+<!--                        </nb-list-item>-->
                         <nb-list-item *ngIf="DisplayName" class="dont-break-out">
                             Display Name: {{DisplayName}}
                         </nb-list-item>
-                        <nb-list-item class="dont-break-out">
-                            Identity: {{NodeModel?.Identity}}&nbsp;<app-copyclipboardicon
-                                [textToCopy]="NodeModel?.Identity" style="vertical-align:middle">
-                            </app-copyclipboardicon>
-                        </nb-list-item>
-                        <nb-list-item *ngIf="NodeModel?.OldIdentity != null" class="dont-break-out">
-                            Old Identity: <a title="You may find more historical data for this node on this identity."
-                                routerLink="/nodes/dataholders/{{NodeModel?.OldIdentity}}">{{NodeModel?.OldIdentity}}</a>
-                        </nb-list-item>
-                        <nb-list-item *ngIf="NodeModel?.NewIdentity != null" class="dont-break-out">
-                            New Identity: <a title="You may find more historical data for this node on this identity."
-                                routerLink="/nodes/dataholders/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>
-                        </nb-list-item>
+<!--                        <nb-list-item class="dont-break-out">-->
+<!--                            Identity: {{NodeModel?.Identity}}&nbsp;<app-copyclipboardicon-->
+<!--                                [textToCopy]="NodeModel?.Identity" style="vertical-align:middle">-->
+<!--                            </app-copyclipboardicon>-->
+<!--                        </nb-list-item>-->
+<!--                        <nb-list-item *ngIf="NodeModel?.OldIdentity != null" class="dont-break-out">-->
+<!--                            Old Identity: <a title="You may find more historical data for this node on this identity."-->
+<!--                                routerLink="/nodes/dataholders/{{NodeModel?.OldIdentity}}">{{NodeModel?.OldIdentity}}</a>-->
+<!--                        </nb-list-item>-->
+<!--                        <nb-list-item *ngIf="NodeModel?.NewIdentity != null" class="dont-break-out">-->
+<!--                            New Identity: <a title="You may find more historical data for this node on this identity."-->
+<!--                                routerLink="/nodes/dataholders/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>-->
+<!--                        </nb-list-item>-->
                         <nb-list-item *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'" class="dont-break-out">
                             Node Id: {{NodeModel?.NodeId}}&nbsp;<app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
                                 style="vertical-align:middle">
                             </app-copyclipboardicon>
                         </nb-list-item>
-                        <nb-list-item *ngIf="NodeModel?.ManagementWallet != null" class="dont-break-out">
-                            Management Wallet: {{NodeModel?.ManagementWallet}}&nbsp;<app-copyclipboardicon
-                                [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">
-                            </app-copyclipboardicon>
-                            <a *ngIf="NodeModel != null" class="themeLink"
-                                routerLink="/nodes/dataholders/managementwallet/{{NodeModel?.ManagementWallet}}"
-                                style="vertical-align: middle;margin-left:5px;"
-                                title="Find Nodes with this Management Wallet">
-                                <i class="fas fa-search"></i>
-                            </a>
-                        </nb-list-item>
+<!--                        <nb-list-item *ngIf="NodeModel?.ManagementWallet != null" class="dont-break-out">-->
+<!--                            Management Wallet: {{NodeModel?.ManagementWallet}}&nbsp;<app-copyclipboardicon-->
+<!--                                [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">-->
+<!--                            </app-copyclipboardicon>-->
+<!--                            <a *ngIf="NodeModel != null" class="themeLink"-->
+<!--                                routerLink="/nodes/dataholders/managementwallet/{{NodeModel?.ManagementWallet}}"-->
+<!--                                style="vertical-align: middle;margin-left:5px;"-->
+<!--                                title="Find Nodes with this Management Wallet">-->
+<!--                                <i class="fas fa-search"></i>-->
+<!--                            </a>-->
+<!--                        </nb-list-item>-->
                         <nb-list-item>
                             Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
                         </nb-list-item>
                         <nb-list-item>
                             Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
                         </nb-list-item>
+<!--                        <nb-list-item *ngIf="MyNode == null">-->
+<!--                            <button nbButton status="primary" outline (click)="AddToMyNodes()">Add to My Nodes</button>-->
+<!--                        </nb-list-item>-->
                     </nb-list>
                 </nb-card>
 
             </div>
-            <div class="col-lg-5 col-md-12 col-sm-12" *ngIf="MyNode || IsTestNet === true">
-                <nb-card>
-                    <nb-card-header style="position: relative;">
-                        <i class="fas fa-heartbeat"
-                        title="Uptime for active nodes is checked every 40 minutes."></i> Node Uptime 
-                        <nb-badge style="font-size: 12px;padding:6px;margin-right:10px;"
-                        text="7 Days Uptime: {{(NodeModel?.NodeUptime?.TotalSuccess7Days / (NodeModel?.NodeUptime?.TotalSuccess7Days + NodeModel?.NodeUptime?.TotalFailed7Days)) * 100 | number:'1.0-2' }}%"
-                        status="success" position="middle right" *ngIf="NodeModel?.NodeUptime?.LastSuccess"></nb-badge>
-                    </nb-card-header>
-      
-                        <div class="alert alert-warning" *ngIf="!NodeModel?.NodeUptime?.LastCheck && NodeModel">
-                            <strong>Warning!</strong>
-                            <br>OT Hub has not found this node yet. Please check back later!
-                        </div>
-                        <div class="alert alert-warning"
-                            *ngIf="NodeModel?.NodeUptime?.LastCheck && !NodeModel?.NodeUptime?.LastSuccess && NodeModel">
-                            <strong>Warning!</strong>
-                            <br>OT Hub has found this node but has never seen it online.
-                        </div>
-                        <nb-list>
-                         
-                            <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastSuccess">
-                                Last Seen Online:&nbsp;<span
-                                [title]="NodeModel?.NodeUptime?.LastSuccess | amFromUtc | amLocal | amDateFormat:'LL h:mm A'"
-                                *ngIf="NodeModel?.NodeUptime?.LastSuccess">{{NodeModel?.NodeUptime?.LastSuccess  | amFromUtc | amLocal | amTimeAgo }}</span>
-                            </nb-list-item>
-                            <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastCheck">
-                                Last Uptime Check:&nbsp;<span
-                                    [title]="NodeModel?.NodeUptime?.LastCheck | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">{{NodeModel?.NodeUptime?.LastCheck  | amFromUtc | amLocal | amTimeAgo }}</span>
-                            </nb-list-item>
-                            <!-- <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastSuccess">
-                                24 Hours Uptime: <span
-                                    *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess24Hours / (NodeModel?.NodeUptime?.TotalSuccess24Hours + NodeModel?.NodeUptime?.TotalFailed24Hours)) * 100 | number:'1.0-2' }}%</span>
-                            </nb-list-item>
-                            <nb-list-item *ngIf="NodeModel?.NodeUptime?.LastSuccess">
-                                7 Days Uptime: <span
-                                    *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess7Days / (NodeModel?.NodeUptime?.TotalSuccess7Days + NodeModel?.NodeUptime?.TotalFailed7Days)) * 100 | number:'1.0-2' }}%</span>
-                            </nb-list-item> -->
-                            </nb-list>
-                        <!-- <ul class="list-group list-group-flush"> -->
-                            <!-- <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
-                                Last Seen Online: <span
-                                    [title]="NodeModel?.NodeUptime?.LastSuccess | amFromUtc | amLocal | amDateFormat:'LL h:mm A'"
-                                    *ngIf="NodeModel?.NodeUptime?.LastSuccess">{{NodeModel?.NodeUptime?.LastSuccess  | amFromUtc | amLocal | amTimeAgo }}</span>
-                            </li>
-                            <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastCheck">
-                                Last Uptime Check: <span
-                                    [title]="NodeModel?.NodeUptime?.LastCheck | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">{{NodeModel?.NodeUptime?.LastCheck  | amFromUtc | amLocal | amTimeAgo }}</span>
-                            </li> -->
-                            <!-- <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
-                                24 Hours Uptime: <span
-                                    *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess24Hours / (NodeModel?.NodeUptime?.TotalSuccess24Hours + NodeModel?.NodeUptime?.TotalFailed24Hours)) * 100 | number:'1.0-2' }}%</span>
-                            </li>
-                            <li class="list-group-item" *ngIf="NodeModel?.NodeUptime?.LastSuccess">
-                                7 Days Uptime: <span
-                                    *ngIf="NodeModel?.NodeUptime">{{(NodeModel?.NodeUptime?.TotalSuccess7Days / (NodeModel?.NodeUptime?.TotalSuccess7Days + NodeModel?.NodeUptime?.TotalFailed7Days)) * 100 | number:'1.0-2' }}%</span>
-                            </li> -->
-                        <!-- </ul> -->
-                        <div style="margin: 0px 10px; width: 100%;" id="visavail_container">
-                            <p id="todayUptimeChart"></p>
-                        </div>
-                        <br *ngIf="NodeModel?.NodeUptime?.ChartData === null">
-                        <button nbButton status="success" outline style="margin:10px;"
-                            *ngIf="NodeModel?.NodeUptime?.LastCheck && !isCheckingNodeUptime && NodeModel?.Version > 0 && MyNode"
-                            (click)="CheckNodeOnline()">Check Online</button>
-                        <div class="progress" *ngIf="isCheckingNodeUptime">
-                            <div class="indeterminate btn-primary"></div>
-                        </div>
-                        <p style="text-align: center;" *ngIf="isCheckingNodeUptime">Please wait...</p>
-                        <div *ngIf="OnlineCheckResult != null">
-                            <div class="alert alert-dismissible" style="margin:10px;"
-                                [ngClass]="{'alert-warning' : OnlineCheckResult?.Warning, 'alert-success' : OnlineCheckResult?.Success, 'alert-danger' : OnlineCheckResult?.Error}">
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
-                                    <span aria-hidden="true">&times;</span>
-                                </button>
-                                <strong>{{OnlineCheckResult?.Header}}</strong>
-                                <br> {{OnlineCheckResult?.Message}}
-                            </div>
-
-                        </div>
-        
-                </nb-card>
-            </div>
         </div>
         <div class="row clearfix" [hidden]="failedLoading === true">
+          <div class="col-lg-12 col-md-12 col-sm-12">
+            <nb-card>
+              <nb-card-header>Identities
+              </nb-card-header>
+              <nb-list>
+                  <nb-list-item *ngFor="let data of NodeModel?.Identities; let i = index">
+                    <span>{{data.Identity}}</span>
+                    <span class="tokenSmall">{{data.BlockchainName}} {{data.NetworkName}}</span>
+
+
+                  </nb-list-item>
+
+              </nb-list>
+            </nb-card>
+          </div>
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <ngx-jobs [identity]="identity"></ngx-jobs>
             </div>
@@ -156,24 +97,24 @@
                 <ngx-transfers [identity]="identity"></ngx-transfers>
             </div>
 
-            <div class="col-lg-12 col-md-12 col-sm-12">
-                <nb-card>
-                    <nb-card-header>Blockchain</nb-card-header>
-                    <span style="margin: 10px 20px;">Profile Creation</span>
-                    <nb-list>
-                        <nb-list-item class="dont-break-out">
-                            Transaction Hash: {{NodeModel?.CreateTransactionHash}}&nbsp;<app-copyclipboardicon
-                            [textToCopy]="NodeModel?.CreateTransactionHash" style="vertical-align:middle">
-                        </app-copyclipboardicon>
-                        </nb-list-item>
-                        <nb-list-item>
-                            Transaction Fee:
-                            {{NodeModel?.CreateGasUsed * (NodeModel?.CreateGasPrice / 1000000000000000000)| number:'1.0-8'}}
-                            ETH ({{NodeModel?.CreateGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
-                        </nb-list-item>
-                        </nb-list>
-                </nb-card>
-            </div>
+<!--            <div class="col-lg-12 col-md-12 col-sm-12">-->
+<!--                <nb-card>-->
+<!--                    <nb-card-header>Blockchain</nb-card-header>-->
+<!--                    <span style="margin: 10px 20px;">Profile Creation</span>-->
+<!--                    <nb-list>-->
+<!--                        <nb-list-item class="dont-break-out">-->
+<!--                            Transaction Hash: {{NodeModel?.CreateTransactionHash}}&nbsp;<app-copyclipboardicon-->
+<!--                            [textToCopy]="NodeModel?.CreateTransactionHash" style="vertical-align:middle">-->
+<!--                        </app-copyclipboardicon>-->
+<!--                        </nb-list-item>-->
+<!--                        <nb-list-item>-->
+<!--                            Transaction Fee:-->
+<!--                            {{NodeModel?.CreateGasUsed * (NodeModel?.CreateGasPrice / 1000000000000000000)| number:'1.0-8'}}-->
+<!--                            ETH ({{NodeModel?.CreateGasPrice / 1000000000 | number:'1.0-1'}} Gwei)-->
+<!--                        </nb-list-item>-->
+<!--                        </nb-list>-->
+<!--                </nb-card>-->
+<!--            </div>-->
         </div>
     </div>
 </section>

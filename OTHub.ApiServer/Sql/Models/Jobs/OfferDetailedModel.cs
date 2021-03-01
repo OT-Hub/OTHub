@@ -8,7 +8,7 @@ namespace OTHub.APIServer.Sql.Models.Jobs
         public UInt64 CreatedBlockNumber { get; set; }
         public string CreatedTransactionHash { get; set; }
         public string DCNodeId { get; set; }
-        public string DCIdentity { get; set; }
+        //public string DCIdentity { get; set; }
         public OfferDetailedHolderModel[] Holders { get; set; }
         public Int32 OffersTotal { get; set; }
         public Int32 OffersLast7Days { get; set; }

@@ -27,9 +27,9 @@ namespace OTHub.APIServer.Controllers
     public class DataHolderController : Controller
     {
 
-        [Route("{identity}/jobs")]
+        [Route("{nodeId}/jobs")]
         [HttpGet]
-        public IActionResult GetJobs(string identity,
+        public IActionResult GetJobs(string nodeId,
             [FromQuery, SwaggerParameter("How many offers you want to return per page", Required = true)] int _limit, 
             [FromQuery, SwaggerParameter("The page number to start from. The first page is 0.", Required = true)] int _page,
             [FromQuery] string _sort,
@@ -95,9 +95,9 @@ namespace OTHub.APIServer.Controllers
                 var offers = connection.Query<NodeProfileDetailedModel_OfferSummary>(
                     DataHolderSql.GetJobs + $@"
 {orderBy}
-{limit}", new { identity = identity, OfferId_like }).ToArray();
+{limit}", new { nodeId = nodeId, OfferId_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataHolderSql.GetJobsCount, new { identity = identity, OfferId_like });
+                var total = connection.ExecuteScalar<int>(DataHolderSql.GetJobsCount, new { nodeId = nodeId, OfferId_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -120,7 +120,7 @@ namespace OTHub.APIServer.Controllers
 
         [Route("{identity}/payouts")]
         [HttpGet]
-        public IActionResult GetPayouts(string identity,
+        public IActionResult GetPayouts(string nodeId,
             [FromQuery] int _limit,
             [FromQuery] int _page,
             [FromQuery] string _sort,
@@ -186,9 +186,9 @@ namespace OTHub.APIServer.Controllers
                 NodeProfileDetailedModel_OfferPayout[] payouts = connection.Query<NodeProfileDetailedModel_OfferPayout>(
                     DataHolderSql.GetPayouts + $@"
 {orderBy}
-{limit}", new { identity = identity, OfferId_like, TransactionHash_like }).ToArray();
+{limit}", new { nodeId = nodeId, OfferId_like, TransactionHash_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataHolderSql.GetPayoutsCount, new { identity = identity, OfferId_like, TransactionHash_like });
+                var total = connection.ExecuteScalar<int>(DataHolderSql.GetPayoutsCount, new { nodeId = nodeId, OfferId_like, TransactionHash_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -209,9 +209,9 @@ namespace OTHub.APIServer.Controllers
             }
         }
 
-        [Route("{identity}/profiletransfers")]
+        [Route("{nodeId}/profiletransfers")]
         [HttpGet]
-        public IActionResult GetProfileTransfers(string identity,
+        public IActionResult GetProfileTransfers(string nodeId,
     [FromQuery] int _limit,
     [FromQuery] int _page,
     [FromQuery] string _sort,
@@ -271,9 +271,9 @@ namespace OTHub.APIServer.Controllers
                 NodeProfileDetailedModel_ProfileTransfer[] transfers = connection.Query<NodeProfileDetailedModel_ProfileTransfer>(
                     DataHolderSql.GetProfileTransfers + $@"
 {orderBy}
-{limit}", new { identity = identity, TransactionHash_like }).ToArray();
+{limit}", new { nodeId = nodeId, TransactionHash_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataHolderSql.GetProfileTransfersCount, new { identity = identity, TransactionHash_like });
+                var total = connection.ExecuteScalar<int>(DataHolderSql.GetProfileTransfersCount, new { nodeId = nodeId, TransactionHash_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -294,9 +294,9 @@ namespace OTHub.APIServer.Controllers
             }
         }
 
-        [Route("{identity}/litigations")]
+        [Route("{nodeId}/litigations")]
         [HttpGet]
-        public IActionResult GetLitigations(string identity,
+        public IActionResult GetLitigations(string nodeId,
     [FromQuery] int _limit,
     [FromQuery] int _page,
     [FromQuery] string _sort,
@@ -356,9 +356,9 @@ namespace OTHub.APIServer.Controllers
                 DataHolderLitigationSummary[] litigations = connection.Query<DataHolderLitigationSummary>(
                     DataHolderSql.GetLitigations + $@"
 {orderBy}
-{limit}", new { identity = identity, OfferId_like }).ToArray();
+{limit}", new { nodeId = nodeId, OfferId_like }).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataHolderSql.GetLitigationsCount, new { identity = identity, OfferId_like });
+                var total = connection.ExecuteScalar<int>(DataHolderSql.GetLitigationsCount, new { nodeId = nodeId, OfferId_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -379,7 +379,7 @@ namespace OTHub.APIServer.Controllers
             }
         }
 
-        [Route("{identity}")]
+        [Route("{nodeId}")]
         [HttpGet]
         [SwaggerOperation(
            Summary = "Get detailed information about a data holder (this can optionally include node uptime information too)",
@@ -396,46 +396,54 @@ Data Included:
        )]
         [SwaggerResponse(200, type: typeof(NodeDataCreatorDetailedModel))]
         [SwaggerResponse(500, "Internal server error")]
-        public NodeDataHolderDetailedModel Get([SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity,
+        public NodeDataHolderDetailedModel Get([SwaggerParameter("The ERC 725 identity for the node", Required = true)] string nodeId,
             [FromQuery, SwaggerParameter("A boolean flag to indicate if you want to include uptime/health information about this node in the response.", Required = false)]
         bool includeNodeUptime)
         {
             using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var profile = connection.QueryFirstOrDefault<NodeDataHolderDetailedModel>(DataHolderSql.GetDetailed, new { identity = identity });
+                var profile = connection.QueryFirstOrDefault<NodeDataHolderDetailedModel>(DataHolderSql.GetDetailed, new { nodeId = nodeId });
 
                 if (profile != null)
                 {
+                    profile.Identities = connection.Query<NodeDetailedIdentity>(
+                        @"SELECT i.Identity, bc.BlockchainName, bc.NetworkName FROM otidentity i
+JOIN blockchains bc ON bc.id = i.blockchainid
+WHERE i.NodeId = @NodeId", new
+                        {
+                            nodeId = nodeId
+                        }).ToArray();
+
                     if (includeNodeUptime)
                     {
-                        profile.NodeUptime = connection.QueryFirstOrDefault<NodeUptimeHistory>(@"SELECT
-MAX(CASE WHEN Success THEN Timestamp ELSE NULL END) LastSuccess,
-MAX(Timestamp) LastCheck,
-SUM(CASE WHEN Success AND Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) as TotalSuccess24Hours,
-SUM(CASE WHEN Success = 0 AND Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) as TotalFailed24Hours,
-SUM(CASE WHEN Success AND Timestamp >= DATE_Add(NOW(), INTERVAL -7 DAY) THEN 1 ELSE 0 END) as TotalSuccess7Days,
-SUM(CASE WHEN Success = 0 AND Timestamp >= DATE_Add(NOW(), INTERVAL -7 DAY) THEN 1 ELSE 0 END) as TotalFailed7Days
-from OTNode_History NH
-JOIN OTIdentity I ON I.NodeID = NH.NodeID
-WHERE I.Identity = @identity
-GROUP BY I.Identity", new { identity = identity });
+//                        profile.NodeUptime = connection.QueryFirstOrDefault<NodeUptimeHistory>(@"SELECT
+//MAX(CASE WHEN Success THEN Timestamp ELSE NULL END) LastSuccess,
+//MAX(Timestamp) LastCheck,
+//SUM(CASE WHEN Success AND Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) as TotalSuccess24Hours,
+//SUM(CASE WHEN Success = 0 AND Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) as TotalFailed24Hours,
+//SUM(CASE WHEN Success AND Timestamp >= DATE_Add(NOW(), INTERVAL -7 DAY) THEN 1 ELSE 0 END) as TotalSuccess7Days,
+//SUM(CASE WHEN Success = 0 AND Timestamp >= DATE_Add(NOW(), INTERVAL -7 DAY) THEN 1 ELSE 0 END) as TotalFailed7Days
+//from OTNode_History NH
+//JOIN OTIdentity I ON I.NodeID = NH.NodeID
+//WHERE I.Identity = @identity
+//GROUP BY I.Identity", new { identity = identity });
 
-                        var chartData = connection.Query<NodeUptimeChartData>(
-                            @"SELECT H.Timestamp, H.Success
-FROM OTNode_History H
-JOIN OTIdentity I ON I.NodeId = H.NodeId
-Where I.Identity = @identity
-AND H.Timestamp >= DATE_Add(NOW(), INTERVAL -3 DAY)
-ORDER BY H.Timestamp", new
-                            {
-                                identity = identity
-                            }).ToArray();
+//                        var chartData = connection.Query<NodeUptimeChartData>(
+//                            @"SELECT H.Timestamp, H.Success
+//FROM OTNode_History H
+//JOIN OTIdentity I ON I.NodeId = H.NodeId
+//Where I.Identity = @identity
+//AND H.Timestamp >= DATE_Add(NOW(), INTERVAL -3 DAY)
+//ORDER BY H.Timestamp", new
+//                            {
+//                                identity = identity
+//                            }).ToArray();
 
-                        if (chartData.Any())
-                        {
-                            profile.NodeUptime.ChartData = JsonConvert.SerializeObject(chartData.Select(c => new List<string> { c.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"), c.Success == true ? "Online" : "Offline", c.EndTimestamp.ToString("yyyy-MM-dd HH:mm:ss") }).ToList());
-                        }
+//                        if (chartData.Any())
+//                        {
+//                            profile.NodeUptime.ChartData = JsonConvert.SerializeObject(chartData.Select(c => new List<string> { c.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"), c.Success == true ? "Online" : "Offline", c.EndTimestamp.ToString("yyyy-MM-dd HH:mm:ss") }).ToList());
+//                        }
                     }
                 }
 
@@ -537,185 +545,187 @@ OT Hub enforces this API call is successful before letting users use Metamask to
             return await BlockchainHelper.CanTryPayout(identity, offerId, holdingAddress, holdingStorageAddress, litigationStorageAddress);
         }
 
-        [Route("CheckOnline")]
-        [HttpGet]
-        [SwaggerOperation(
-            Summary = "Check if an identity is online (this works for both data holders and data creators)",
-            Description = @"Please note that this API call is rate limited in multiple ways to prevent abuse. Details about the client requesting this data is also collected for preventing abuse of the service.
-This API call should only be used by individuals checking their own nodes or other services/bots looking at uptime.
+//        [Route("CheckOnline")]
+//        [HttpGet]
+//        [SwaggerOperation(
+//            Summary = "Check if an identity is online (this works for both data holders and data creators)",
+//            Description = @"Please note that this API call is rate limited in multiple ways to prevent abuse. Details about the client requesting this data is also collected for preventing abuse of the service.
+//This API call should only be used by individuals checking their own nodes or other services/bots looking at uptime.
 
-OT Hub already performs online checks so you may not need to use this. Have a look at /api/nodes/DataHolders/{identity} which can return uptime information."
-        )]
-        [SwaggerResponse(200, type: typeof(NodeOnlineResult))]
-        [SwaggerResponse(500, "Internal server error")]
-        public NodeOnlineResult CheckOnline([FromQuery, SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity)
-        {
-            var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
+//OT Hub already performs online checks so you may not need to use this. Have a look at /api/nodes/DataHolders/{identity} which can return uptime information."
+//        )]
+//        [SwaggerResponse(200, type: typeof(NodeOnlineResult))]
+//        [SwaggerResponse(500, "Internal server error")]
+//        public NodeOnlineResult CheckOnline([FromQuery, SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity)
+//        {
+//            return new NodeOnlineResult() {Error = true, Header = "Error", Message = "This API call has been removed."};
 
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || String.IsNullOrWhiteSpace(ip))
-            {
-                ip = HttpContext.Connection.RemoteIpAddress.ToString();
-            }
+////            var ip = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault();
 
-            if (identity == null || identity.Length != 42 || !identity.ToLower().StartsWith("0x"))
-            {
-                return new NodeOnlineResult
-                {
-                    Warning = true,
-                    Header = "Warning!",
-                    Message = "Invalid Identity provided."
-                };
-            }
+////            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) || String.IsNullOrWhiteSpace(ip))
+////            {
+////                ip = HttpContext.Connection.RemoteIpAddress.ToString();
+////            }
 
-            if (String.IsNullOrWhiteSpace(ip))
-            {
-                return new NodeOnlineResult
-                {
-                    Error = true,
-                    Header = "Error!",
-                    Message = "You are blocked from using the check online feature."
-                };
-            }
+////            if (identity == null || identity.Length != 42 || !identity.ToLower().StartsWith("0x"))
+////            {
+////                return new NodeOnlineResult
+////                {
+////                    Warning = true,
+////                    Header = "Warning!",
+////                    Message = "Invalid Identity provided."
+////                };
+////            }
 
-            using (var connection =
-                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-            {
-                int[] recentIPRequets = connection.Query<Int32>(@"SELECT 1 FROM OTNode_OnlineCheck
-WHERE IPAddress = @ip AND Timestamp >= DATE_Add(NOW(), INTERVAL -4 MINUTE)
-GROUP BY Identity", new { ip = ip }).ToArray();
+////            if (String.IsNullOrWhiteSpace(ip))
+////            {
+////                return new NodeOnlineResult
+////                {
+////                    Error = true,
+////                    Header = "Error!",
+////                    Message = "You are blocked from using the check online feature."
+////                };
+////            }
 
-                if (recentIPRequets.Length > 5)
-                {
-                    return new NodeOnlineResult
-                    {
-                        Warning = true,
-                        Header = "Warning!",
-                        Message = "You must wait a few minutes before you can check nodes are online again."
-                    };
-                }
-                if (recentIPRequets.Sum() > 15)
-                {
-                    return new NodeOnlineResult
-                    {
-                        Warning = true,
-                        Header = "Warning!",
-                        Message = "You must wait a few minutes before you can check nodes are online again."
-                    };
-                }
+////            using (var connection =
+////                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+////            {
+////                int[] recentIPRequets = connection.Query<Int32>(@"SELECT 1 FROM OTNode_OnlineCheck
+////WHERE IPAddress = @ip AND Timestamp >= DATE_Add(NOW(), INTERVAL -4 MINUTE)
+////GROUP BY Identity", new { ip = ip }).ToArray();
 
-                DateTime? lastRequestDateForIdentity = connection.ExecuteScalar<DateTime?>(@"SELECT Timestamp FROM OTNode_OnlineCheck
-WHERE Identity = @identity
-ORDER BY Timestamp DESC LIMIT 1", new { identity = identity });
+////                if (recentIPRequets.Length > 5)
+////                {
+////                    return new NodeOnlineResult
+////                    {
+////                        Warning = true,
+////                        Header = "Warning!",
+////                        Message = "You must wait a few minutes before you can check nodes are online again."
+////                    };
+////                }
+////                if (recentIPRequets.Sum() > 15)
+////                {
+////                    return new NodeOnlineResult
+////                    {
+////                        Warning = true,
+////                        Header = "Warning!",
+////                        Message = "You must wait a few minutes before you can check nodes are online again."
+////                    };
+////                }
 
-                if (lastRequestDateForIdentity.HasValue)
-                {
-                    var diff = DateTime.UtcNow - lastRequestDateForIdentity.Value;
-                    if (diff.TotalSeconds < 30)
-                    {
-                        return new NodeOnlineResult
-                        {
-                            Warning = true,
-                            Header = "Warning!",
-                            Message = "You must wait another " + (30 - (int)diff.TotalSeconds) + " seconds before you can check this node is online."
-                        };
-                    }
-                }
+////                DateTime? lastRequestDateForIdentity = connection.ExecuteScalar<DateTime?>(@"SELECT Timestamp FROM OTNode_OnlineCheck
+////WHERE Identity = @identity
+////ORDER BY Timestamp DESC LIMIT 1", new { identity = identity });
 
-                var row = connection.QueryFirstOrDefault(@"SELECT IP.Hostname, IP.Port FROM OTIdentity I
-JOIN OTNode_IPInfoV2 IP on IP.NodeID = I.NodeID
-WHERE I.Identity = @identity", new { identity = identity });
+////                if (lastRequestDateForIdentity.HasValue)
+////                {
+////                    var diff = DateTime.UtcNow - lastRequestDateForIdentity.Value;
+////                    if (diff.TotalSeconds < 30)
+////                    {
+////                        return new NodeOnlineResult
+////                        {
+////                            Warning = true,
+////                            Header = "Warning!",
+////                            Message = "You must wait another " + (30 - (int)diff.TotalSeconds) + " seconds before you can check this node is online."
+////                        };
+////                    }
+////                }
 
-                if (row == null)
-                {
-                    return new NodeOnlineResult
-                    {
-                        Warning = true,
-                        Header = "Warning!",
-                        Message = "OT Hub has not found this node yet. Please check back later!"
-                    };
-                }
+////                var row = connection.QueryFirstOrDefault(@"SELECT IP.Hostname, IP.Port FROM OTIdentity I
+////JOIN OTNode_IPInfoV2 IP on IP.NodeID = I.NodeID
+////WHERE I.Identity = @identity", new { identity = identity });
 
-                connection.Execute(
-                    @"INSERT INTO otnode_onlinecheck (IPAddress, Identity, Timestamp) VALUES (@ip, @identity, @timestamp)",
-                    new
-                    {
-                        ip = ip,
-                        identity = identity,
-                        timestamp = DateTime.UtcNow
-                    });
+////                if (row == null)
+////                {
+////                    return new NodeOnlineResult
+////                    {
+////                        Warning = true,
+////                        Header = "Warning!",
+////                        Message = "OT Hub has not found this node yet. Please check back later!"
+////                    };
+////                }
 
-                string hostname = row.Hostname;
-                int port = row.Port;
-                bool success = false;
+////                connection.Execute(
+////                    @"INSERT INTO otnode_onlinecheck (IPAddress, Identity, Timestamp) VALUES (@ip, @identity, @timestamp)",
+////                    new
+////                    {
+////                        ip = ip,
+////                        identity = identity,
+////                        timestamp = DateTime.UtcNow
+////                    });
 
-                Stopwatch sw = new Stopwatch();
-                sw.Start();
+////                string hostname = row.Hostname;
+////                int port = row.Port;
+////                bool success = false;
 
-                DateTime now = DateTime.Now;
+////                Stopwatch sw = new Stopwatch();
+////                sw.Start();
 
-                try
-                {
-                    string url = $"https://{hostname}:{port}/";
+////                DateTime now = DateTime.Now;
 
-                    var request = (HttpWebRequest)WebRequest.Create(url);
-                    request.Timeout = 20000;
-                    request.AllowAutoRedirect = false;
-                    request.ServerCertificateValidationCallback = delegate (object sender, X509Certificate certificate,
-                        X509Chain chain, SslPolicyErrors errors)
-                    {
+////                try
+////                {
+////                    string url = $"https://{hostname}:{port}/";
 
-                        success = true;
+////                    var request = (HttpWebRequest)WebRequest.Create(url);
+////                    request.Timeout = 20000;
+////                    request.AllowAutoRedirect = false;
+////                    request.ServerCertificateValidationCallback = delegate (object sender, X509Certificate certificate,
+////                        X509Chain chain, SslPolicyErrors errors)
+////                    {
 
-                        return true;
-                    };
+////                        success = true;
 
-                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
-                }
-                catch (Exception ex)
-                {
+////                        return true;
+////                    };
 
-                }
-                finally
-                {
-                    sw.Stop();
-                }
+////                    HttpWebResponse response = (HttpWebResponse)request.GetResponse();
+////                }
+////                catch (Exception ex)
+////                {
 
-                var nodeId = connection.ExecuteScalar<String>("Select NodeID FROM OTIdentity WHERE Identity = @identity", new
-                {
-                    identity
-                });
+////                }
+////                finally
+////                {
+////                    sw.Stop();
+////                }
 
-                connection.Execute(
-    @"INSERT INTO OTNode_History(NodeId, Timestamp, Success, Duration)
-VALUES(@NodeId, @Timestamp, @Success, @Duration)",
-    new
-    {
-        NodeId = nodeId,
-        Timestamp = now,
-        Duration = sw.ElapsedMilliseconds,
-        Success = success
-    });
+////                var nodeId = connection.ExecuteScalar<String>("Select NodeID FROM OTIdentity WHERE Identity = @identity", new
+////                {
+////                    identity
+////                });
 
-
-                if (success)
-                {
-                    return new NodeOnlineResult
-                    {
-                        Success = true,
-                        Header = "Success!",
-                        Message = "Your node responded successfully to the online check."
-                    };
-                }
+////                connection.Execute(
+////    @"INSERT INTO OTNode_History(NodeId, Timestamp, Success, Duration)
+////VALUES(@NodeId, @Timestamp, @Success, @Duration)",
+////    new
+////    {
+////        NodeId = nodeId,
+////        Timestamp = now,
+////        Duration = sw.ElapsedMilliseconds,
+////        Success = success
+////    });
 
 
+////                if (success)
+////                {
+////                    return new NodeOnlineResult
+////                    {
+////                        Success = true,
+////                        Header = "Success!",
+////                        Message = "Your node responded successfully to the online check."
+////                    };
+////                }
 
-                return new NodeOnlineResult
-                {
-                    Error = true,
-                    Message = "Your node did not respond to the online check. If you have recently changed your node IP address this may take time to propagate to OT Hub.",
-                    Header = "Error!"
-                };
-            }
-        }
+
+
+////                return new NodeOnlineResult
+////                {
+////                    Error = true,
+////                    Message = "Your node did not respond to the online check. If you have recently changed your node IP address this may take time to propagate to OT Hub.",
+////                    Header = "Error!"
+////                };
+////            }
+//        }
     }
 }

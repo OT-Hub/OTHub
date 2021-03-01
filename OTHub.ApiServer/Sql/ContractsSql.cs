@@ -7,10 +7,10 @@ namespace OTHub.APIServer.Sql
 {
     public class ContractsSql
     {
-        public const String GetHoldingStorageAddressByAddress = @"select Address from otcontract
+        public const String GetHoldingStorageAddressByAddress = @"select Address, BlockchainID from otcontract
 where Type = 5 AND Address = @holdingStorageAddress";
 
-        public const String GetHoldingAddressByAddress = @"select Address from otcontract
+        public const String GetHoldingAddressByAddress = @"select Address, BlockchainID from otcontract
 where Type = 6 AND Address = @holdingAddress";
     }
 }

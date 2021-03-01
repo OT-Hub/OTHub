@@ -5,8 +5,9 @@ import { SharedModule } from '../shared.module';
 import { SystemRoutingModule } from './system-routing.module';
 import { SystemStatusComponent } from './status/systemstatus.component';
 import { NbCardModule, NbListModule, NbBadgeModule, NbIconModule, NbSpinnerModule } from '@nebular/theme';
+import { SmartcontractsComponent } from './smartcontracts/smartcontracts.component';
 @NgModule({
-  declarations: [SystemStatusComponent ],
+  declarations: [SystemStatusComponent, SmartcontractsComponent ],
   imports: [
     CommonModule,
     SystemRoutingModule,

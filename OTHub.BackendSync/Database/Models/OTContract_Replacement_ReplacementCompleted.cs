@@ -14,20 +14,22 @@ namespace OTHub.BackendSync.Database.Models
         public String ChosenHolder { get; set; }
         public ulong GasPrice { get; set; }
         public ulong GasUsed { get; set; }
+        public int BlockchainID { get; set; }
 
         public static void InsertIfNotExist(MySqlConnection connection, OTContract_Replacement_ReplacementCompleted model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Replacement_ReplacementCompleted WHERE TransactionHash = @hash", new
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Replacement_ReplacementCompleted WHERE TransactionHash = @hash AND BlockchainID = @blockchainID", new
             {
-                hash = model.TransactionHash
+                hash = model.TransactionHash,
+                blockchainID = model.BlockchainID
             });
 
             if (count == 0)
             {
                 connection.Execute(
                     @"INSERT INTO OTContract_Replacement_ReplacementCompleted
-(TransactionHash, BlockNumber, Timestamp, ChallengerIdentity, OfferId, ChosenHolder, GasPrice, GasUsed)
-VALUES(@TransactionHash, @BlockNumber, @Timestamp, @ChallengerIdentity, @OfferId, @ChosenHolder, @GasPrice, @GasUsed)",
+(TransactionHash, BlockNumber, Timestamp, ChallengerIdentity, OfferId, ChosenHolder, GasPrice, GasUsed, BlockchainID)
+VALUES(@TransactionHash, @BlockNumber, @Timestamp, @ChallengerIdentity, @OfferId, @ChosenHolder, @GasPrice, @GasUsed, @BlockchainID)",
                     new
                     {
                         model.TransactionHash,
@@ -37,7 +39,8 @@ VALUES(@TransactionHash, @BlockNumber, @Timestamp, @ChallengerIdentity, @OfferId
                         model.OfferId,
                         model.ChosenHolder,
                         model.GasPrice,
-                        model.GasUsed
+                        model.GasUsed,
+                        model.BlockchainID
                     });
             }
         }

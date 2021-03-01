@@ -9,6 +9,6 @@ namespace OTHub.APIServer.Sql.Models.Nodes.DataCreator
         public String OfferId { get; set; }
         public UInt64 RequestedObjectIndex { get; set; }
         public UInt64 RequestedBlockIndex { get; set; }
-        public String HolderIdentity { get; set; }
+        public String NodeId { get; set; }
     }
 }

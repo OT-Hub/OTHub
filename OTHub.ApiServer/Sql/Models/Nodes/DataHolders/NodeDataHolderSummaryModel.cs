@@ -4,7 +4,7 @@ namespace OTHub.APIServer.Sql.Models.Nodes.DataHolders
 {
     public class NodeDataHolderSummaryModel
     {
-        public String Identity { get; set; }
+        //public String Identity { get; set; }
         public String NodeId { get; set; }
         public Int32 Version { get; set; }
         public String StakeTokens { get; set; }
@@ -17,5 +17,9 @@ namespace OTHub.APIServer.Sql.Models.Nodes.DataHolders
 
         public DateTime? LastSeenOnline { get; set; }
         public DateTime? LastSeenOffline { get; set; }
+
+
+        //public string BlockchainName { get; set; }
+        //public string NetworkName { get; set; }
     }
 }
