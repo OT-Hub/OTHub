@@ -111,10 +111,10 @@ export class ECommerceComponent implements OnDestroy, OnInit {
 
         chart.cursor = new am4charts.XYCursor();
 
-        let scrollbarX = new am4charts.XYChartScrollbar();
-        scrollbarX.series.push(series);
-        scrollbarX.series.push(series2);
-        chart.scrollbarX = scrollbarX;
+        // let scrollbarX = new am4charts.XYChartScrollbar();
+        // scrollbarX.series.push(series);
+        // scrollbarX.series.push(series2);
+        // chart.scrollbarX = scrollbarX;
 
         this.chart = chart;
       }, err => {
