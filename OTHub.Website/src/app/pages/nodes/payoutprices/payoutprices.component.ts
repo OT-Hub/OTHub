@@ -3,7 +3,7 @@ import { HubHttpService } from '../../hub-http-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { PayoutInUsdModel } from './payoutprices-model';
-import Web3 from 'web3';
+//import Web3 from 'web3';
 import { MyNodeService } from '../mynodeservice';
 import * as moment from 'moment';
 import { ServerDataSource } from 'ng2-smart-table';
@@ -21,7 +21,7 @@ export class PayoutPricesComponent implements OnInit, OnDestroy {
                 private http: HttpClient, public myNodeService: MyNodeService) {
         this.isLoading = true;
         this.failedLoading = false;
-        this.web3 = new Web3();
+        //this.web3 = new Web3();
         this.totalTracPaid = 0;
         this.totalEquivUSDPaid = 0;
         this.averageTracTickerPrice = 0;
@@ -47,23 +47,23 @@ export class PayoutPricesComponent implements OnInit, OnDestroy {
       const url = this.httpService.ApiUrl +'/api/nodes/dataholder/PayoutsInUSDForDataHolder?identity=' + this.identity + '&export=true&exporttype=0';
       window.location.href = url;
     }
-  
+
     ExportToCsv() {
       const url = this.httpService.ApiUrl + '/api/nodes/dataholder/PayoutsInUSDForDataHolder?identity=' + this.identity + '&export=true&exporttype=1';
       window.location.href = url;
     }
-  
+
     pageSizeChanged(event) {
       this.source.setPaging(1, event, true);
     }
-  
+
     getIdentityIcon(identity: string) {
       return this.httpService.ApiUrl + '/api/icon/node/' + identity + '/' + (false ? 'dark' : 'light') + '/16';
     }
 
     ngOnInit() {
 
-      
+
 
         this.RouteObservable = this.route.params.subscribe(params => {
             this.identity = params.identity;

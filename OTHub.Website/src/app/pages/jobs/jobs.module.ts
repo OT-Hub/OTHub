@@ -6,11 +6,10 @@ import { JobsRoutingModule } from './jobs-routing.module';
 import { MomentModule } from 'ngx-moment';
 import { OffersDetailComponent } from './offersdetail/offersdetail.component';
 import { SharedModule } from '../shared.module';
-import { NbAlertModule, NbCardModule, NbIconModule, NbPopoverModule, NbSearchModule, NbSelectModule, NbOptionModule, NbButtonModule, NbStepperModule, NbListModule, NbBadgeModule } from '@nebular/theme';
+import { NbCardModule, NbIconModule, NbPopoverModule, NbSelectModule, NbButtonModule, NbStepperModule, NbListModule, NbBadgeModule } from '@nebular/theme';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { RouterModule } from '@angular/router';
 import {DataCreatorColumnComponent} from './offers/datacreatorcolumn.component';
-import { MglTimelineModule } from 'angular-mgl-timeline';
 
 @NgModule({
   declarations: [ OffersComponent, OffersDetailComponent, DataCreatorColumnComponent],
@@ -29,8 +28,7 @@ import { MglTimelineModule } from 'angular-mgl-timeline';
     NbPopoverModule,
     NbListModule,
     NbBadgeModule,
-    RouterModule,
-    MglTimelineModule
-  ]
+    RouterModule
+  ],
 })
 export class JobsModule { }

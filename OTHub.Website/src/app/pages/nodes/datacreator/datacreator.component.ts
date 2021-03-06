@@ -7,20 +7,18 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DataCreatedDetailedModel } from './datacreator-model';
 import { HubHttpService } from '../../hub-http-service';
 declare const $: any;
-import Web3 from 'web3';
 @Component({
   selector: 'app-datacreator',
   templateUrl: './datacreator.component.html',
   styleUrls: ['./datacreator.component.scss']
 })
 export class DatacreatorComponent implements OnInit, OnDestroy {
-  web3: any;
+
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router,
               private chRef: ChangeDetectorRef, public myNodeService: MyNodeService, private httpService: HubHttpService) {
     this.isLoading = true;
     this.failedLoading = false;
     this.IsTestNet = httpService.IsTestNet;
-    this.web3 = new Web3();
   }
 
   IsTestNet: boolean;
