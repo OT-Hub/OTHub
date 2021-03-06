@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { ComponentFixture, TestBed, waitForAsync } from '@angular/core/testing';
 
 import { FindbymanagementwalletComponent } from './findbymanagementwallet.component';
 
@@ -6,7 +6,7 @@ describe('FindbymanagementwalletComponent', () => {
   let component: FindbymanagementwalletComponent;
   let fixture: ComponentFixture<FindbymanagementwalletComponent>;
 
-  beforeEach(async(() => {
+  beforeEach(waitForAsync(() => {
     TestBed.configureTestingModule({
       declarations: [ FindbymanagementwalletComponent ]
     })

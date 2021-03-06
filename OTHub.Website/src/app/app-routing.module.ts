@@ -50,7 +50,11 @@ export const routes: Routes = [
 ];
 
 const config: ExtraOptions = {
-  useHash: false,
+    useHash: false,
+    relativeLinkResolution: 'legacy'
+}{
+    useHash: false,
+    relativeLinkResolution: 'legacy'
 };
 
 @NgModule({
