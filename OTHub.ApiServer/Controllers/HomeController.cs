@@ -69,6 +69,8 @@ FROM OTOffer) AS ActiveJobs,
 (SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
 (SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H");
 
+
+
                 summary.FeesByBlockchain = connection.Query<HomeFeesModel>(@"SELECT 
 bc.BlockchainName, bc.NetworkName,
 bc.ShowCostInUSD,
@@ -90,7 +92,7 @@ GROUP BY bc.id").ToArray();
                 var payoutsCosts = connection.Query<HomeFeesModel>(@"SELECT 
 bc.BlockchainName, bc.NetworkName,
 bc.ShowCostInUSD,
-CAST(AVG(po.Amount * (CASE WHEN bc.ShowCostInUSD THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20, 8)) PayoutCost
+CAST(AVG((CAST(po.GasUsed AS DECIMAL(20,4)) * (po.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20, 8)) PayoutCost
 FROM blockchains bc
 LEFT JOIN otcontract_holding_paidout po ON po.BlockchainID = bc.ID AND po.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
 LEFT JOIN ticker_trac ocTicker ON ocTicker.Timestamp = (
@@ -126,6 +128,27 @@ GROUP BY bc.ID").ToArray();
 
 
                 return summary;
+            }
+        }
+
+        [HttpGet]
+        [Route("24HJobBlockchainDistribution")]
+        public HomeJobBlockchainDistributionModel[] GetHome24HJobBlockchainDistributionModel()
+        {
+            using (var connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                return connection.Query<HomeJobBlockchainDistributionModel>(
+                    @"SET @totalToday = (SELECT COUNT(*) AS total FROM otoffer oo WHERE oo.IsFinalized = 1 AND oo.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY));
+
+SELECT bc.DisplayName, 
+bc.Color, 
+COUNT(o.OfferID) Jobs,
+ROUND(COUNT(*) / (@totalToday) * 100) AS Percentage
+FROM blockchains bc
+LEFT JOIN otoffer o ON bc.ID = o.BlockchainID AND o.IsFinalized = 1 AND o.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
+GROUP BY bc.Id
+ORDER BY Percentage").ToArray();
             }
         }
       

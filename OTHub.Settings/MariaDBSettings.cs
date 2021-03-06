@@ -11,7 +11,7 @@ namespace OTHub.Settings
 
         public String ConnectionString
         {
-            get { return $"Server={Server};User ID={UserID};Password={Password};Database={Database};"; }
+            get { return $"Server={Server};User ID={UserID};Password={Password};Database={Database};Allow User Variables=True;"; }
         }
 
         public void Validate()

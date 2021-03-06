@@ -36,10 +36,10 @@ const routes: Routes = [{
       path: 'system',
       loadChildren: './system/system.module#SystemModule'
     },
-    {
-      path: 'misc',
-      loadChildren: './misc/misc.module#MiscModule'
-    },
+    // {
+    //   path: 'misc',
+    //   loadChildren: './misc/misc.module#MiscModule'
+    // },
     {
       path: 'offer/:offerId',
       redirectTo: 'jobs/:offerId',
