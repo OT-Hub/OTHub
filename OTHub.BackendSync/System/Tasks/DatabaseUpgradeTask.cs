@@ -361,6 +361,8 @@ ENGINE=InnoDB
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `BlockchainName` varchar(100) NOT NULL,
   `NetworkName` varchar(100) NOT NULL,
+  `DisplayName` varchar(100) NOT NULL,
+  `Color` char(6) NOT NULL,
   `HubAddress` varchar(100) NOT NULL,
   `FromBlockNumber` BIGINT(20) UNSIGNED ZEROFILL NOT NULL DEFAULT '00000000000000000000',
   `BlockchainNodeUrl` varchar(500) NOT NULL,

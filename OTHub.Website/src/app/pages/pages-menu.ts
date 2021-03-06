@@ -30,16 +30,16 @@ export const MENU_ITEMS: NbMenuItem[] = [
       }
     ],
   },
-  {
-    title: 'Misc',
-    icon: 'umbrella-outline',
-    children: [
-      {
-        title: 'Price Factor Calculator',
-        link: '/misc/pricefactor/calculator',
-      },
-    ],
-  },
+  // {
+  //   title: 'Misc',
+  //   icon: 'umbrella-outline',
+  //   children: [
+  //     {
+  //       title: 'Price Factor Calculator',
+  //       link: '/misc/pricefactor/calculator',
+  //     },
+  //   ],
+  // },
   {
     title: 'Global Activity',
     icon: 'monitor-outline',
