@@ -149,39 +149,39 @@
 
 
 
-                                <mgl-timeline alternate="false" toggle="false">
-                                    <mgl-timeline-entry *ngFor="let timeline of OfferModel?.Timeline">
-                                        <mgl-timeline-entry-header>{{timeline.Name}}
+<!--                                <mgl-timeline alternate="false" toggle="false">-->
+<!--                                    <mgl-timeline-entry *ngFor="let timeline of OfferModel?.Timeline">-->
+<!--                                        <mgl-timeline-entry-header>{{timeline.Name}}-->
 
-                                        </mgl-timeline-entry-header>
-                                        <mgl-timeline-entry-content>
+<!--                                        </mgl-timeline-entry-header>-->
+<!--                                        <mgl-timeline-entry-content>-->
 
-                                            <nb-list>
-                                                <nb-list-item *ngIf="timeline.TransactionHash != null">
-                                                    <a target="_blank"
-                                                    href="https://www.etherscan.io/tx/{{timeline.TransactionHash}}">View
-                                                    on Etherscan</a>
-                                                </nb-list-item>
-                                                <nb-list-item *ngIf="timeline.RelatedTo != null">
-                                                    <a routerLink="/nodes/dataholders/{{timeline.RelatedTo}}"
-                                                    style="float:right;" [title]="timeline.RelatedTo"
-                                                    onClick="return false;">
-                                                    <img style="width:16px;height:16px;"
-                                                        [src]="getIdentityIcon(timeline.RelatedTo)">
-                                                    {{myNodeService.GetName(timeline.RelatedTo)}}</a>
-                                                </nb-list-item>
-                                            </nb-list>
-                                        </mgl-timeline-entry-content>
-                                        <mgl-timeline-entry-dot class="btn-primary">
-                                            <i [ngClass]="getTimelineItemIcon(timeline)"
-                                             [style.color]="getTimelineItemColour(timeline)"></i>
-                                        </mgl-timeline-entry-dot>
-                                        <mgl-timeline-entry-side>
-                                            {{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'LL'}}
-                                            {{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'h:mm A'}}
-                                        </mgl-timeline-entry-side>
-                                    </mgl-timeline-entry>
-                                </mgl-timeline>
+<!--                                            <nb-list>-->
+<!--                                                <nb-list-item *ngIf="timeline.TransactionHash != null">-->
+<!--                                                    <a target="_blank"-->
+<!--                                                    href="https://www.etherscan.io/tx/{{timeline.TransactionHash}}">View-->
+<!--                                                    on Etherscan</a>-->
+<!--                                                </nb-list-item>-->
+<!--                                                <nb-list-item *ngIf="timeline.RelatedTo != null">-->
+<!--                                                    <a routerLink="/nodes/dataholders/{{timeline.RelatedTo}}"-->
+<!--                                                    style="float:right;" [title]="timeline.RelatedTo"-->
+<!--                                                    onClick="return false;">-->
+<!--                                                    <img style="width:16px;height:16px;"-->
+<!--                                                        [src]="getIdentityIcon(timeline.RelatedTo)">-->
+<!--                                                    {{myNodeService.GetName(timeline.RelatedTo)}}</a>-->
+<!--                                                </nb-list-item>-->
+<!--                                            </nb-list>-->
+<!--                                        </mgl-timeline-entry-content>-->
+<!--                                        <mgl-timeline-entry-dot class="btn-primary">-->
+<!--                                            <i [ngClass]="getTimelineItemIcon(timeline)"-->
+<!--                                             [style.color]="getTimelineItemColour(timeline)"></i>-->
+<!--                                        </mgl-timeline-entry-dot>-->
+<!--                                        <mgl-timeline-entry-side>-->
+<!--                                            {{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'LL'}}-->
+<!--                                            {{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'h:mm A'}}-->
+<!--                                        </mgl-timeline-entry-side>-->
+<!--                                    </mgl-timeline-entry>-->
+<!--                                </mgl-timeline>-->
 
                                 <!-- <ul class="left-timeline">
                                             <li *ngFor="let timeline of OfferModel?.Timeline">

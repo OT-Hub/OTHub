@@ -10,7 +10,6 @@ import {
   NbListModule, NbPopoverModule, NbTooltipModule,
 } from '@nebular/theme';
 import { NgxEchartsModule } from 'ngx-echarts';
-import { NgxChartsModule } from '@swimlane/ngx-charts';
 
 import { ThemeModule } from '../../@theme/theme.module';
 import { ECommerceComponent } from './e-commerce.component';
@@ -69,7 +68,6 @@ import { EarningLiveUpdateChartComponent } from './earning-card/front-side/earni
     ChartModule,
     NbProgressBarModule,
     NgxEchartsModule,
-    NgxChartsModule,
     LeafletModule,
     NbPopoverModule,
     NbTooltipModule,
