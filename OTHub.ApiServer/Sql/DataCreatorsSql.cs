@@ -10,8 +10,8 @@ namespace OTHub.APIServer.Sql
         public static String GetDataCreatorsSql(string[] identity)
         {
             return $@"select substring(I.NodeId, 1, 40) as NodeId, Version, 
-SUM(COALESCE(I.Stake, 0)) as StakeTokens, 
-SUM(COALESCE(I.StakeReserved, 0)) as StakeReservedTokens,
+SUM(COALESCE(I.Stake, 0)) OVER(PARTITION BY I.NodeId) as StakeTokens, 
+SUM(COALESCE(I.StakeReserved, 0)) OVER(PARTITION BY I.NodeId) as StakeReservedTokens,
 Count(O.OfferId) OffersTotal,
 SUM(CASE WHEN O.CreatedTimestamp >= Date_Add(NOW(), INTERVAL -7 DAY) THEN 1 ELSE 0 END) OffersLast7Days,
 ROUND(AVG(O.DataSetSizeInBytes) / 1000) AvgDataSetSizeKB,

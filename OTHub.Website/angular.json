@@ -32,6 +32,7 @@
             "assets": [
               "src/assets",
               "src/favicon.ico",
+              "src/assets/images/2467.png",
               "src/favicon.png",
               {
                 "glob": "**/*",

@@ -91,11 +91,11 @@ ORDER BY GasPrice";
 	ELSE null
 END) as ActiveOffers,
 substring(I.NodeId, 1, 40) as NodeId, I.Version, 
-SUM(COALESCE(I.Stake, 0)) as StakeTokens,
-SUM(COALESCE(I.StakeReserved, 0)) as StakeReservedTokens, 
-SUM(COALESCE(I.Paidout, 0)) as PaidTokens,
-SUM(COALESCE(I.TotalOffers, 0)) as TotalWonOffers, 
-SUM(COALESCE(I.OffersLast7Days, 0)) WonOffersLast7Days
+SUM(COALESCE(I.Stake, 0)) OVER(PARTITION BY I.NodeId)  as StakeTokens,
+SUM(COALESCE(I.StakeReserved, 0)) OVER(PARTITION BY I.NodeId) as StakeReservedTokens, 
+SUM(COALESCE(I.Paidout, 0)) OVER(PARTITION BY I.NodeId) as PaidTokens,
+SUM(COALESCE(I.TotalOffers, 0)) OVER(PARTITION BY I.NodeId) as TotalWonOffers, 
+SUM(COALESCE(I.OffersLast7Days, 0)) OVER(PARTITION BY I.NodeId)  WonOffersLast7Days
 from OTIdentity I
 JOIN blockchains bc ON bc.ID = I.BlockchainID
 LEFT JOIN OTOffer_Holders OH ON OH.Holder = I.Identity
