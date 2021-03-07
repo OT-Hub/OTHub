@@ -37,10 +37,10 @@ const routes: Routes = [
     path: 'datacreators/:identity',
     component: DatacreatorComponent
   },
-  {
-    path: 'mynodes',
-    component: MynodesComponent
-  },
+  // {
+  //   path: 'mynodes',
+  //   component: MynodesComponent
+  // },
   { path: 'dataholders/:identity/report/usd',
   component: PayoutPricesComponent
   },

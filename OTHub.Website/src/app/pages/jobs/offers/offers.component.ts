@@ -79,17 +79,11 @@ delete: false
       //   //     value + '" src="' + this.getIdentityIcon(value) + '"></a>';
       //   // }
       // },
-      BlockchainName: {
+      BlockchainDisplayName: {
         type: 'string',
         sort: false,
         filter: false,
         title: 'Blockchain'
-      },
-      NetworkName: {
-        type: 'string',
-        sort: false,
-        filter: false,
-        title: 'Network'
       },
       OfferId: {
         sort: false,

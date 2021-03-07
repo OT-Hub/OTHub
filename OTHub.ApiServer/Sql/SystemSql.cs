@@ -9,7 +9,7 @@ namespace OTHub.APIServer.Sql
     {
         public const string GetSql =
             @"SELECT s.ID, 
-s.Name, s.LastSuccessDateTime, s.LastTriedDateTime, s.Success, s.IsRunning, s.NextRunDateTime, b.BlockchainName, b.NetworkName, s.ParentName
+s.Name, s.LastSuccessDateTime, s.LastTriedDateTime, s.Success, s.IsRunning, s.NextRunDateTime, b.DisplayName BlockchainDisplayName, s.ParentName
 from systemstatus s 
 LEFT JOIN blockchains b ON b.id = s.BlockchainID 
 ORDER BY b.id, s.Name";

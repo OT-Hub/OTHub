@@ -140,12 +140,13 @@
                     </nb-card-body> -->
                 </nb-card>
             </div>
-            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" *ngIf="OfferModel?.Timeline != null">
+            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
                 <nb-card>
                     <nb-card-header>Timeline</nb-card-header>
                     <nb-card-body>
-                        <div class="row">
-                            <div class="col-md-12">
+                      <div id="TimelineChart" style="width: 100%;height:600px;"></div>
+<!--                        <div class="row">-->
+<!--                            <div class="col-md-12">-->
 
 
 
@@ -200,8 +201,8 @@
                                                 </div>
                                             </li>
                                         </ul> -->
-                            </div>
-                        </div>
+<!--                            </div>-->
+<!--                        </div>-->
                     </nb-card-body>
                 </nb-card>
             </div>
@@ -210,10 +211,7 @@
                     <nb-card-header>Blockchain</nb-card-header>
                     <nb-list>
                         <nb-list-item>
-                            Blockchain: {{OfferModel?.BlockchainName}}
-                        </nb-list-item>
-                        <nb-list-item>
-                            Network: {{OfferModel?.NetworkName}}
+                            Blockchain: {{OfferModel?.BlockchainDisplayName}}
                         </nb-list-item>
                     </nb-list>
                     <span style="margin: 10px 20px;color:gray;">Job Creation</span>

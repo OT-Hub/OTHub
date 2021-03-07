@@ -20,7 +20,7 @@ namespace OTHub.APIServer.Sql.Models.Jobs
         public UInt64? FinalizedGasUsed { get; set; }
         public UInt64? FinalizedGasPrice { get; set; }
         public UInt64 LitigationIntervalInMinutes { get; set; }
-        public OfferDetailedTimelineModel[] Timeline { get; set; }
+        public OfferDetailedTimelineEventModel[] TimelineEvents { get; set; }
         public Decimal? EstimatedLambda { get; set; }
     }
 }

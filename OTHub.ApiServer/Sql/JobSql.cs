@@ -30,8 +30,7 @@ OC.GasUsed CreatedGasUsed,
 OF.GasUsed FinalizedGasUsed,
 OC.GasPrice CreatedGasPrice,
 OF.GasPrice FinalizedGasPrice,
-bc.BlockchainName,
-bc.NetworkName
+bc.DisplayName BlockchainDisplayName
  FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
  JOIN OTContract_Holding_OfferCreated OC ON OC.OfferID = O.OfferID
@@ -63,7 +62,9 @@ GROUP BY DCI.NodeId";
 		ELSE 'Completed' END)
 	  END)
 	ELSE ''
-END) as LitigationStatusText
+END) as LitigationStatusText,
+CASE WHEN h.IsOriginalHolder THEN O.FinalizedTimestamp ELSE O.FinalizedTimestamp END JobStarted,
+CASE WHEN lc.DHWasPenalized = 1 THEN lc.Timestamp ELSE DATE_ADD(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) END JobCompleted
  FROM OTOffer_Holders H
  JOIN otidentity I ON I.Identity = H.Holder
  JOIN OTOffer O ON O.OfferID = H.OfferID
@@ -71,47 +72,44 @@ left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId
 Where H.OfferId = @offerID
 ORDER BY H.LitigationStatus";
 
-        public static String GetJobTimeline()
+        public static String GetJobTimelineEvents()
         {
             return
                 $@"
-select Timestamp, 'Offer Created' as Name, null as 'RelatedTo', TransactionHash  from otcontract_holding_offercreated
-where OfferId = @offerID
-union all
-select Timestamp, 'Offer Finalized', null, TransactionHash from otcontract_holding_offerfinalized
-where OfferId = @offerID
-union all
-select Timestamp, 'Data Holder Chosen' as Name, Holder as 'RelatedTo', TransactionHash  from otoffer_holders h
+select Timestamp, 'Data Holder Chosen' as NAME, i.NodeId as 'RelatedTo', of.TransactionHash  from otoffer_holders h
+JOIN otidentity i ON i.Identity = h.Holder
 join otcontract_holding_offerfinalized of on of.OfferID = h.OfferId
 where h.OfferId = @offerID AND h.IsOriginalHolder = 1
 union all
-select Timestamp, 'Litigation Initiated', HolderIdentity, TransactionHash from otcontract_litigation_litigationinitiated
-where OfferId = @offerID
+select l.Timestamp, 'Litigation Initiated', i.NodeId, l.TransactionHash from otcontract_litigation_litigationinitiated l
+JOIN otidentity i ON i.Identity = l.HolderIdentity
+where l.OfferId = @offerID
 union all
-select Timestamp, 'Litigation Timed out', HolderIdentity, TransactionHash from otcontract_litigation_litigationtimedout
-where OfferId = @offerID
+select l.Timestamp, 'Litigation Timed out', i.NodeId, l.TransactionHash from otcontract_litigation_litigationtimedout l
+JOIN otidentity i ON i.Identity = l.HolderIdentity
+where l.OfferId = @offerID
 union all
-select Timestamp, 'Litigation Answered', HolderIdentity, TransactionHash from otcontract_litigation_litigationanswered
-where OfferId = @offerID
+select l.Timestamp, 'Litigation Answered', i.NodeId, l.TransactionHash from otcontract_litigation_litigationanswered l
+JOIN otidentity i ON i.Identity = l.HolderIdentity
+where l.OfferId = @offerID
 union all
-select Timestamp, CASE WHEN DHWasPenalized = 1 THEN 'Litigation Failed' ELSE 'Litigation Passed' END, HolderIdentity, TransactionHash from otcontract_litigation_litigationcompleted
-where OfferId = @offerID
+select l.Timestamp, CASE WHEN l.DHWasPenalized = 1 THEN 'Litigation Failed' ELSE 'Litigation Passed' END, i.NodeId, l.TransactionHash from otcontract_litigation_litigationcompleted l
+JOIN otidentity i ON i.Identity = l.HolderIdentity
+where l.OfferId = @offerID
 union all
-select Timestamp, 'Data Holder Replaced', HolderIdentity, TransactionHash from otcontract_litigation_replacementstarted
-where OfferId = @offerID
+select l.Timestamp, 'Data Holder Replaced', i.NodeId, l.TransactionHash from otcontract_litigation_replacementstarted l
+JOIN otidentity i ON i.Identity = l.HolderIdentity
+where l.OfferId = @offerID
 union all
-select Timestamp, 'Data Holder Chosen', ChosenHolder, TransactionHash from otcontract_replacement_replacementcompleted
-where OfferId = @offerID
+select l.Timestamp, 'Data Holder Chosen', i.NodeId, l.TransactionHash from otcontract_replacement_replacementcompleted l
+JOIN otidentity i ON i.Identity = l.ChosenHolder
+WHERE l.OfferId = @offerID
 union all
-select po.Timestamp, CONCAT('Offer Paidout for ', (CAST(TRUNCATE(po.Amount, 3) AS CHAR)+0),' ', b.TokenTicker), po.Holder, po.TransactionHash 
+select po.Timestamp, CONCAT('Offer Paidout for ', (CAST(TRUNCATE(po.Amount, 3) AS CHAR)+0),' ', b.TokenTicker), i.NodeId, po.TransactionHash 
 from otcontract_holding_paidout po
+JOIN otidentity i ON i.Identity = po.Holder
 JOIN blockchains b ON b.id = po.BlockchainID
-where OfferId = @offerID
-union all
-select DATE_Add(of.Timestamp, INTERVAL + oc.HoldingTimeInMinutes MINUTE), 'Offer Completed', null, null from otcontract_holding_offerfinalized of
-join otcontract_holding_offercreated oc on oc.OfferId = of.OfferId
-where of.OfferId = @offerID 
-and NOW() >= DATE_Add(of.Timestamp, INTERVAL + oc.HoldingTimeInMinutes MINUTE)";
+where OfferId = @offerID";
         }
     }
 }

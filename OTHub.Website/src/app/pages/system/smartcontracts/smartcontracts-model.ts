@@ -1,6 +1,5 @@
 export class SmartContractItemModel   {
-    BlockchainName: string;
-    NetworkName: string;
+  BlockchainDisplayName: string;
     Address: string;
     Type: number;
     IsLatest: boolean;

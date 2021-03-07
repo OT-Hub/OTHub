@@ -2,7 +2,7 @@
 
 namespace OTHub.APIServer.Sql.Models.Jobs
 {
-    public class OfferDetailedTimelineModel
+    public class OfferDetailedTimelineEventModel
     {
         public DateTime Timestamp { get; set; }
         public string Name { get; set; }

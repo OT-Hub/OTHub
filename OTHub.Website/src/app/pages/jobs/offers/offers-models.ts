@@ -8,6 +8,7 @@ export class OTOfferSummaryModel   {
     Status: string;
     EndTimestamp: Date;
     DCIdentity: string;
+    BlockchainDisplayName: string;
 }
 
 export class OTOfferSummaryWithPaging   {

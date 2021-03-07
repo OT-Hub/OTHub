@@ -86,17 +86,11 @@ export class GlobalActivityComponent {
                     return local;
                 }
             },
-            BlockchainName: {
+          BlockchainDisplayName: {
                 type: 'string',
                 sort: false,
                 filter: false,
                 title: 'Blockchain'
-              },
-              NetworkName: {
-                type: 'string',
-                sort: false,
-                filter: false,
-                title: 'Network'
               },
             EventName: {
                 sort: true,

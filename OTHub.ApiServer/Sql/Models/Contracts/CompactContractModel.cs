@@ -16,8 +16,7 @@ namespace OTHub.APIServer.Sql.Models.Contracts
     public class CompactContractModel
     {
         public string HubAddress { get; set; }
-        public string BlockchainName { get; set; }
-        public string NetworkName { get; set; }
+        public string BlockchainDisplayName { get; set; }
         public string Address { get; set; }
         public int Type { get; set; }
         public bool IsLatest { get; set; }

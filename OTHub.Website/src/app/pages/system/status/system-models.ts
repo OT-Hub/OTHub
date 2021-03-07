@@ -3,8 +3,7 @@ export class SystemStatusItemModel   {
     LastTriedDateTime: Date;
     Success: boolean;
     Name: string;
-    BlockchainName: string;
-    NetworkName: string;
+  BlockchainDisplayName: string;
 
     Children: SystemStatusItemModel[];
 }

@@ -19,11 +19,11 @@ namespace OTHub.APIServer.Controllers
         {
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                CompactContractModel[] items = (await connection.QueryAsync<CompactContractModel>(@"SELECT b.HubAddress, b.BlockchainName, b.NetworkName, c.Address, c.`Type`, c.IsLatest, c.FromBlockNumber, c.IsArchived, c.SyncBlockNumber, c.LastSyncedTimestamp FROM otcontract c
+                CompactContractModel[] items = (await connection.QueryAsync<CompactContractModel>(@"SELECT b.HubAddress, b.DisplayName BlockchainDisplayName, c.Address, c.`Type`, c.IsLatest, c.FromBlockNumber, c.IsArchived, c.SyncBlockNumber, c.LastSyncedTimestamp FROM otcontract c
 JOIN blockchains b ON b.id = c.BlockchainID
 ORDER BY b.ID, c.IsLatest desc, c.`Type`")).ToArray();
 
-                CompactContractModelGroup[] groups = items.GroupBy(i => i.BlockchainName + " " + i.NetworkName)
+                CompactContractModelGroup[] groups = items.GroupBy(i => i.BlockchainDisplayName)
                     .Select(g => new CompactContractModelGroup
                         {Name = g.Key, Items = g.ToList(), HubAddress = g.First().HubAddress}).ToArray();
 

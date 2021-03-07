@@ -26,7 +26,7 @@ namespace OTHub.APIServer.Controllers
             {
                 SystemStatusItem[] items = (await connection.QueryAsync<SystemStatusItem>(SystemSql.GetSql)).ToArray();
 
-                SystemStatusGroup[] groups = items.GroupBy(i => i.BlockchainName != null ? i.BlockchainName + " " + i.NetworkName : i.ParentName ?? i.Name)
+                SystemStatusGroup[] groups = items.GroupBy(i => i.BlockchainDisplayName != null ? i.BlockchainDisplayName : i.ParentName ?? i.Name)
                     .Select(g => new SystemStatusGroup() {Name = g.Key, Items = g.OrderBy(g => g.ID).ToList()})
                     .ToArray();
 

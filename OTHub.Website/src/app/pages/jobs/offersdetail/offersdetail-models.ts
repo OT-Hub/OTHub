@@ -19,7 +19,7 @@ export class OTOfferDetailModel {
     DCNodeId: string;
     // DCIdentity: string;
     Holders: OTOfferDetailIdentityModel[];
-    Timeline: OTOfferDetailTimelineModel[];
+    TimelineEvents: OTOfferDetailTimelineEventModel[];
 
     OffersTotal: number;
     OffersLast7Days: number;
@@ -30,17 +30,18 @@ export class OTOfferDetailModel {
     CreatedGasPrice: number;
     FinalizedGasPrice: number;
 
-    BlockchainName: string;
-    NetworkName: string;
+  BlockchainDisplayName: string;
 }
 
 export class OTOfferDetailIdentityModel {
     NodeId: string;
     LitigationStatus: number;
     LitigationStatusText: string;
+  JobStarted: Date;
+  JobCompleted: Date;
 }
 
-export class OTOfferDetailTimelineModel {
+export class OTOfferDetailTimelineEventModel {
     Name: string;
     Timestamp: Date;
     RelatedTo: string;
