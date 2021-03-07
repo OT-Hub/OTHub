@@ -5,6 +5,7 @@ import { PagesComponent } from './pages.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { ECommerceComponent } from './e-commerce/e-commerce.component';
 import { NotFoundComponent } from './miscellaneous/not-found/not-found.component';
+import {StarfleetboardingComponent} from "./starfleetboarding/starfleetboarding.component";
 
 const routes: Routes = [{
   path: '',
@@ -15,9 +16,13 @@ const routes: Routes = [{
       component: ECommerceComponent,
     },
     {
-      path: 'iot-dashboard',
-      component: DashboardComponent,
+      path: 'starfleetboarding',
+      component: StarfleetboardingComponent,
     },
+    // {
+    //   path: 'iot-dashboard',
+    //   component: DashboardComponent,
+    // },
     {
       path: 'jobs',
       loadChildren: () => import('./jobs/jobs.module')
