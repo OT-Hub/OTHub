@@ -3,8 +3,8 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 declare const $: any;
 declare const ethereum: any;
-declare const web3: any;
-import Web3 from 'web3';
+//declare const web3: any;
+//import Web3 from 'web3';
 import { HubHttpService } from '../../hub-http-service';
 import { ContractAddress, RecentPayoutGasPrice, BeforePayoutResult } from './manual-payout-models';
 @Component({
@@ -301,22 +301,22 @@ export class ManualPayoutPageComponent implements OnInit {
       return;
     }
 
-    const provider = web3.currentProvider;
-    if (provider == null) {
-      this.sendError = 'The transaction was not sent. There appears to be a problem interacting with MetaMask.';
-      return;
-    }
+    // const provider = web3.currentProvider;
+    // if (provider == null) {
+    //   this.sendError = 'The transaction was not sent. There appears to be a problem interacting with MetaMask.';
+    //   return;
+    // }
 
-    const providerAddress = provider.selectedAddress;
-    if (providerAddress == null) {
-      this.sendError = 'The transaction was not sent. There appears to be a problem interacting with MetaMask (address related).';
-      return;
-    }
+    // const providerAddress = provider.selectedAddress;
+    // if (providerAddress == null) {
+    //   this.sendError = 'The transaction was not sent. There appears to be a problem interacting with MetaMask (address related).';
+    //   return;
+    // }
 
-    if (providerAddress !== this.managementWallet) {
-      this.sendError = 'The transaction was not sent. The address loaded in MetaMask is not the correct management wallet.';
-      return;
-    }
+    // if (providerAddress !== this.managementWallet) {
+    //   this.sendError = 'The transaction was not sent. The address loaded in MetaMask is not the correct management wallet.';
+    //   return;
+    // }
 
     if (this.holdingAddress == null || this.holdingAddress.Address == null) {
       this.sendError = 'The transaction was not sent. The smart contract address for the payout was not loaded properly.';
@@ -337,71 +337,71 @@ export class ManualPayoutPageComponent implements OnInit {
 
     this.dect.detectChanges();
 
-    this.canTryPayout().subscribe(data => {
-      this.canPayoutResult = data;
-
-      if (this.canPayoutResult.CanTryPayout) {
-
-        try {
-          // tslint:disable-next-line:no-string-literal
-          const web3 = new Web3(provider);
-          const abi = `[
-            {
-                "constant": false,
-                "inputs": [
-                    {
-                        "name": "identity",
-                        "type": "address"
-                    },
-                    {
-                        "name": "offerId",
-                        "type": "uint256"
-                    }
-                ],
-                "name": "payOut",
-                "outputs": [],
-                "payable": false,
-                "stateMutability": "nonpayable",
-                "type": "function"
-            }
-            ]`;
-
-          const contractInfo = JSON.parse(abi);
-
-        
-          
-
-          const contractInstance = new web3.eth.Contract(contractInfo, this.holdingAddress.Address);
-
-          const self = this;
-
-          // Call a function of the contract:
-          let builder = contractInstance.methods.payOut(this.identity, this.offerId);
-          let response = builder.send({
-            from: providerAddress, value: 0, gas: 300000,
-            to: this.holdingAddress.Address,
-            gasPrice: web3.utils.toWei(this.gasPrice.toString(), 'gwei')
-          },
-            (err, res) => {
-              this.isBusySending = false;
-              if (err) {
-                self.sendError = err.message;
-              } else if (res) {
-                self.sentTransactionHash = res;
-                self.hasSentTransaction = true;
-              }
-              self.dect.detectChanges();
-            });
-        } catch (error) {
-          this.isBusySending = false;
-          this.sendError = error.message;
-        }
-      } else {
-        this.isBusySending = false;
-      }
-    }, err => {
-      this.isBusySending = false;
-      this.sendError = err.message;
-    });
+    // this.canTryPayout().subscribe(data => {
+    //   this.canPayoutResult = data;
+    //
+    //   if (this.canPayoutResult.CanTryPayout) {
+    //
+    //     try {
+    //       // tslint:disable-next-line:no-string-literal
+    //       const web3 = new Web3(provider);
+    //       const abi = `[
+    //         {
+    //             "constant": false,
+    //             "inputs": [
+    //                 {
+    //                     "name": "identity",
+    //                     "type": "address"
+    //                 },
+    //                 {
+    //                     "name": "offerId",
+    //                     "type": "uint256"
+    //                 }
+    //             ],
+    //             "name": "payOut",
+    //             "outputs": [],
+    //             "payable": false,
+    //             "stateMutability": "nonpayable",
+    //             "type": "function"
+    //         }
+    //         ]`;
+    //
+    //       const contractInfo = JSON.parse(abi);
+    //
+    //
+    //
+    //
+    //       const contractInstance = new web3.eth.Contract(contractInfo, this.holdingAddress.Address);
+    //
+    //       const self = this;
+    //
+    //       // Call a function of the contract:
+    //       let builder = contractInstance.methods.payOut(this.identity, this.offerId);
+    //       let response = builder.send({
+    //         from: providerAddress, value: 0, gas: 300000,
+    //         to: this.holdingAddress.Address,
+    //         gasPrice: web3.utils.toWei(this.gasPrice.toString(), 'gwei')
+    //       },
+    //         (err, res) => {
+    //           this.isBusySending = false;
+    //           if (err) {
+    //             self.sendError = err.message;
+    //           } else if (res) {
+    //             self.sentTransactionHash = res;
+    //             self.hasSentTransaction = true;
+    //           }
+    //           self.dect.detectChanges();
+    //         });
+    //     } catch (error) {
+    //       this.isBusySending = false;
+    //       this.sendError = error.message;
+    //     }
+    //   } else {
+    //     this.isBusySending = false;
+    //   }
+    // }, err => {
+    //   this.isBusySending = false;
+    //   this.sendError = err.message;
+    // });
   }
 }

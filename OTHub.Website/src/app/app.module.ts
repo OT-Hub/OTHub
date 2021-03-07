@@ -19,6 +19,7 @@ import {
   NbWindowModule,
   NbThemeService
 } from '@nebular/theme';
+import {Ng2SmartTableModule} from "ng2-smart-table";
 
 @NgModule({
   declarations: [AppComponent],
@@ -33,7 +34,8 @@ import {
     NbWindowModule.forRoot(),
     NbToastrModule.forRoot(),
     CoreModule.forRoot(),
-    ThemeModule.forRoot()
+    ThemeModule.forRoot(),
+    Ng2SmartTableModule,
   ],
   bootstrap: [AppComponent],
 })

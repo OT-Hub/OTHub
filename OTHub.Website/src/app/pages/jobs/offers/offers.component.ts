@@ -8,7 +8,6 @@ import { OTOfferSummaryModel, OTOfferSummaryWithPaging } from './offers-models';
 import { MomentModule } from 'ngx-moment';
 import { HubHttpService } from '../../hub-http-service';
 declare const $: any;
-import Web3 from 'web3';
 import * as moment from 'moment';
 import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { MyNodeService } from '../../nodes/mynodeservice';
@@ -21,13 +20,11 @@ import { OfferIdColumnComponent } from '../../miscellaneous/offeridcolumn.compon
   styleUrls: ['./offers.component.scss']
 })
 export class OffersComponent implements OnInit, OnDestroy {
-  web3: any;
 
   constructor(private http: HttpClient, private chRef: ChangeDetectorRef, private httpService: HubHttpService, private router: Router,
               private ngZone: NgZone, public myNodeService: MyNodeService) {
     this.isLoading = true;
     this.failedLoading = false;
-    this.web3 = new Web3();
     // const data = this.service.getData();
     // this.source.load(data);
 

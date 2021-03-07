@@ -5,7 +5,6 @@ import {ActivatedRoute} from '@angular/router';
 import {MyNodeService} from '../mynodeservice';
 import {HubHttpService} from '../../hub-http-service';
 import {MyNodeModel} from '../mynodemodel';
-import Web3 from 'web3';
 
 declare const $: any;
 
@@ -15,7 +14,6 @@ declare const $: any;
   styleUrls: ['./dataholder.component.scss']
 })
 export class DataHolderComponent implements OnInit, OnDestroy {
-  web3: any;
 
 
   constructor(private http: HttpClient, private route: ActivatedRoute,
@@ -23,7 +21,6 @@ export class DataHolderComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.failedLoading = false;
     this.IsTestNet = httpService.IsTestNet;
-    this.web3 = new Web3();
   }
 
   IsTestNet: boolean;

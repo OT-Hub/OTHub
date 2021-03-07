@@ -5,7 +5,6 @@ import { OTNodeSummaryModel } from './dataholders-models';
 import { MomentModule } from 'ngx-moment';
 import { HubHttpService } from '../../hub-http-service';
 declare const $: any;
-import Web3 from 'web3';
 import { ServerDataSource } from 'ng2-smart-table';
 import { DecimalPipe } from '@angular/common';
 import { DataHolderDetailedModel } from '../dataholder/dataholder-models';
@@ -21,7 +20,6 @@ import { DataHolderIdentityColumnComponent } from '../../miscellaneous/identityc
 })
 export class DataHoldersComponent implements OnInit, OnDestroy {
   getNodesObserver: any;
-  web3: any;
   settings: any;
 
   constructor(private http: HttpClient, private chRef: ChangeDetectorRef, private myNodeService: MyNodeService,
@@ -29,7 +27,6 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     this.isTableInit = false;
     this.isLoading = true;
     this.failedLoading = false;
-    this.web3 = new Web3();
   }
 
   NodeModel: OTNodeSummaryModel[];
@@ -536,7 +533,7 @@ class OTHubServerDataSource extends ServerDataSource {
             ///super.update(found, values).then(resolve).catch(reject);
             this.emitOnUpdated(element);
             this.emitOnChanged('update');
-            resolve();
+            resolve(true);
         }).catch(reject);
     });
 }

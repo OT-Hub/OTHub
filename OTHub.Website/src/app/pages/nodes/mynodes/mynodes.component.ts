@@ -11,7 +11,6 @@ import * as moment from 'moment';
 import { RecentActivityJobModel } from './mynodes-model';
 declare const $: any;
 declare const swal: any;
-import Web3 from 'web3';
 @Component({
   selector: 'app-mynodes',
   templateUrl: './mynodes.component.html',
@@ -19,11 +18,11 @@ import Web3 from 'web3';
 })
 export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   EditNode: MyNodeModel;
-  web3: any;
+
 
   constructor(private http: HttpClient, private myNodeService: MyNodeService, private httpService: HubHttpService,
               private cdr: ChangeDetectorRef) {
-    this.web3 = new Web3();
+
     this.recentActivityHeight = '0px';
   }
   recentActivity: RecentActivityJobModel[];

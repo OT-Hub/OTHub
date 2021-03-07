@@ -6,7 +6,6 @@ import { MyNodeService } from '../mynodeservice';
 import { HubHttpService } from '../../hub-http-service';
 declare const $: any;
 import * as moment from 'moment';
-import Web3 from 'web3';
 import { ServerDataSource } from 'ng2-smart-table';
 import { MyNodeModel } from '../mynodemodel';
 import { NbToastrConfig, NbToastrService, NbComponentStatus } from '@nebular/theme';
@@ -20,12 +19,10 @@ import {DataCreatorIdentityColumnComponent} from '../../miscellaneous/identityco
 })
 export class DatacreatorsComponent implements OnInit  {
   getNodesObserver: any;
-  web3: any;
   constructor(private http: HttpClient, private myNodeService: MyNodeService,
               private httpService: HubHttpService, private toastrService: NbToastrService) {
     this.isLoading = true;
     this.failedLoading = false;
-    this.web3 = new Web3();
   }
 
   settings: any;
@@ -416,7 +413,7 @@ class OTHubServerDataSource extends ServerDataSource {
             ///super.update(found, values).then(resolve).catch(reject);
             this.emitOnUpdated(element);
             this.emitOnChanged('update');
-            resolve();
+            resolve(true);
         }).catch(reject);
     });
 }

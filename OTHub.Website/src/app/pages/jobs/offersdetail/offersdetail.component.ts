@@ -8,7 +8,6 @@ import { OTOfferDetailModel, OTOfferDetailTimelineModel } from './offersdetail-m
 import { ActivatedRoute, Router } from '@angular/router';
 import { MyNodeService } from '../../nodes/mynodeservice';
 import { HubHttpService } from '../../hub-http-service';
-import Web3 from 'web3';
 declare const $: any;
 @Component({
   selector: 'app-offersdetail',
@@ -16,12 +15,10 @@ declare const $: any;
   styleUrls: ['./offersdetail.component.scss']
 })
 export class OffersDetailComponent implements OnInit {
-  web3: any;
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private myNodeService: MyNodeService,
               private httpService: HubHttpService) {
     this.isLoading = true;
     this.failedLoading = false;
-    this.web3 = new Web3();
   }
 
   OfferModel: OTOfferDetailModel;
