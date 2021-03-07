@@ -2,8 +2,9 @@ import { Component, OnInit } from '@angular/core';
 import {OfferIdColumnComponent} from "../miscellaneous/offeridcolumn.component";
 import * as moment from "moment";
 import {ServerDataSource} from "ng2-smart-table";
-import {HttpClient} from "@angular/common/http";
+import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {HubHttpService} from "../hub-http-service";
+import {DataHolderDetailedModel} from "../nodes/dataholder/dataholder-models";
 
 @Component({
   selector: 'ngx-starfleetboarding',
@@ -19,10 +20,22 @@ export class StarfleetboardingComponent implements OnInit {
       { endPoint: url });
   }
 
+  stakedTotal: number;
   source: ServerDataSource;
 
 
+  getStaked() {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+    let url = this.httpService.ApiUrl + '/api/starfleetboarding/total';
+    return this.http.get<number>(url, {headers});
+  }
+
   ngOnInit(): void {
+    this.getStaked().subscribe(data => {
+      this.stakedTotal = data;
+    });
   }
 
   pageSizeChanged(event) {

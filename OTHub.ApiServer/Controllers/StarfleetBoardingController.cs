@@ -13,6 +13,16 @@ namespace OTHub.APIServer.Controllers
     [Route("api/[controller]")]
     public class StarfleetBoardingController : Controller
     {
+        [Route("total")]
+        [HttpGet]
+        public async Task<decimal> GetAmountStaked()
+        {
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                return connection.ExecuteScalar<decimal>(@"SELECT SUM(Amount) Amount FROM starfleetboarding_deposit");
+            }
+        }
+
         [Route("")]
         [HttpGet]
         public async Task<StarfleetBoardingAddressBalanceModel[]> GetAll([FromQuery] int _limit,
