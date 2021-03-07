@@ -133,12 +133,17 @@ GROUP BY bc.ID").ToArray();
 
         [HttpGet]
         [Route("24HJobBlockchainDistribution")]
-        public HomeJobBlockchainDistributionModel[] GetHome24HJobBlockchainDistributionModel()
+        public async Task<HomeJobBlockchainDistributionModel[]> GetHome24HJobBlockchainDistributionModel()
         {
-            using (var connection =
+            if (_cache.TryGetValue("24HJobBlockchainDistribution", out object model))
+            {
+                return (HomeJobBlockchainDistributionModel[])model;
+            }
+
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                return connection.Query<HomeJobBlockchainDistributionModel>(
+                var data = (await connection.QueryAsync<HomeJobBlockchainDistributionModel>(
                     @"SET @totalToday = (SELECT COUNT(*) AS total FROM otoffer oo WHERE oo.IsFinalized = 1 AND oo.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY));
 
 SELECT bc.DisplayName, 
@@ -148,7 +153,11 @@ ROUND(COUNT(*) / (@totalToday) * 100) AS Percentage
 FROM blockchains bc
 LEFT JOIN otoffer o ON bc.ID = o.BlockchainID AND o.IsFinalized = 1 AND o.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
 GROUP BY bc.Id
-ORDER BY Percentage").ToArray();
+ORDER BY Percentage")).ToArray();
+
+                _cache.Set("24HJobBlockchainDistribution", data, TimeSpan.FromHours(6));
+
+                return data;
             }
         }
       

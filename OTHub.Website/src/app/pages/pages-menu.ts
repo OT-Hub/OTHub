@@ -16,10 +16,10 @@ export const MENU_ITEMS: NbMenuItem[] = [
     title: 'Nodes',
     icon: 'hard-drive-outline',
     children: [
-      {
-        title: 'My Nodes',
-        link: '/nodes/mynodes',
-      },
+      // {
+      //   title: 'My Nodes',
+      //   link: '/nodes/mynodes',
+      // },
       {
         title: 'Data Holders',
         link: '/nodes/dataholders',
