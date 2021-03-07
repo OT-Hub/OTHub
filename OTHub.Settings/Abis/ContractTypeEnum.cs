@@ -18,6 +18,7 @@ namespace OTHub.Settings.Abis
         LitigationStorage,
         Replacement,
         ERC725,
-        Hub
+        Hub,
+        StarfleetStake
     }
 }

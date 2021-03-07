@@ -29,6 +29,7 @@
     <None Remove="Abis\Ethereum\Mainnet\profile.json" />
     <None Remove="Abis\Ethereum\Mainnet\reading.json" />
     <None Remove="Abis\Ethereum\Mainnet\replacement.json" />
+    <None Remove="Abis\Ethereum\Mainnet\starfleetstake.json" />
     <None Remove="Abis\Ethereum\Mainnet\token.json" />
     <None Remove="Abis\Ethereum\Rinkeby\approval.json" />
     <None Remove="Abis\Ethereum\Rinkeby\erc725.json" />
@@ -76,6 +77,7 @@
     <EmbeddedResource Include="Abis\Ethereum\Mainnet\profile.json" />
     <EmbeddedResource Include="Abis\Ethereum\Mainnet\reading.json" />
     <EmbeddedResource Include="Abis\Ethereum\Mainnet\replacement.json" />
+    <EmbeddedResource Include="Abis\Ethereum\Mainnet\starfleetstake.json" />
     <EmbeddedResource Include="Abis\Ethereum\Mainnet\token.json" />
     <EmbeddedResource Include="Abis\Ethereum\Rinkeby\approval.json" />
     <EmbeddedResource Include="Abis\Ethereum\Rinkeby\erc725.json" />

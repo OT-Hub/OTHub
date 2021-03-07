@@ -8,6 +8,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc
     {
         public MiscTask() : base("Misc")
         {
+            Add(new BoardingContractSyncTask());
             Add(new CalculateOfferLambdaTask());
             Add(new UpdateHomeJobHistoryChartDataTask());
             //Add(new GetMarketDataTask());
