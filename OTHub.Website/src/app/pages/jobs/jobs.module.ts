@@ -1,6 +1,6 @@
 import { OffersComponent } from './offers/offers.component';
 import { NgModule } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import {CommonModule, DatePipe} from '@angular/common';
 import { ThemeModule } from '../../@theme/theme.module';
 import { JobsRoutingModule } from './jobs-routing.module';
 import { MomentModule } from 'ngx-moment';
@@ -28,7 +28,10 @@ import {DataCreatorColumnComponent} from './offers/datacreatorcolumn.component';
     NbPopoverModule,
     NbListModule,
     NbBadgeModule,
-    RouterModule
+    RouterModule,
   ],
+  providers: [
+    DatePipe
+  ]
 })
 export class JobsModule { }

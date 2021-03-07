@@ -40,7 +40,7 @@ Data Included:
                             offerID = offerID
                         }).ToArray();
 
-                    model.Timeline = connection.Query<OfferDetailedTimelineModel>(JobSql.GetJobTimeline(), new { offerID = offerID }).OrderBy(t => t.Timestamp).ToArray();
+                    model.TimelineEvents = connection.Query<OfferDetailedTimelineEventModel>(JobSql.GetJobTimelineEvents(), new { offerID = offerID }).OrderBy(t => t.Timestamp).ToArray();
                 }
 
                 return model;
