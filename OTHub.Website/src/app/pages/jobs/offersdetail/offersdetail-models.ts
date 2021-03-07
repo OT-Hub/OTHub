@@ -30,8 +30,7 @@ export class OTOfferDetailModel {
     CreatedGasPrice: number;
     FinalizedGasPrice: number;
 
-    BlockchainName: string;
-    NetworkName: string;
+  BlockchainDisplayName: string;
 }
 
 export class OTOfferDetailIdentityModel {

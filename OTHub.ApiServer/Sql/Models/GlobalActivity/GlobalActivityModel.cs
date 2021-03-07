@@ -10,8 +10,7 @@ namespace OTHub.APIServer.Sql.Models.GlobalActivity
         public String RelatedEntity2 { get; set; }
         public String TransactionHash { get; set; }
         public String Message { get; set; }
-        public string BlockchainName { get; set; }
-        public string NetworkName { get; set; }
+        public string BlockchainDisplayName { get; set; }
     }
 
     public class GlobalActivityModelWithPaging

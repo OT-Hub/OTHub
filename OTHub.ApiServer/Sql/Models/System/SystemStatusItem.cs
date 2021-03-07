@@ -12,8 +12,7 @@ namespace OTHub.APIServer.Sql.Models.System
         public bool Success { get; set; }
         public bool IsRunning { get; set; }
         public DateTime? NextRunDateTime { get; set; }
-        public string BlockchainName { get; set; }
-        public string NetworkName { get; set; }
+        public string BlockchainDisplayName { get; set; }
         public string ParentName { get; set; }
 
         public List<SystemStatusItem> Children { get; set; } = new List<SystemStatusItem>();
