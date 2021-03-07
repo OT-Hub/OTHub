@@ -375,7 +375,7 @@ ENGINE=InnoDB
 
                 if (connection.ExecuteScalar<int>(@"SELECT COUNT(*) FROM blockchains") <= 0)
                 {
-                    Thread.Sleep(10000);
+                    Thread.Sleep(2000);
                     throw new Exception("Blockchains table needs to be populated. Make sure blockchain ID 1 is used for the original blockchain to make historical data correct.");
                 }
 
@@ -391,13 +391,14 @@ REFERENCED_TABLE_SCHEMA = '{OTHubSettings.Instance.MariaDB.Database}' AND
 
                 if (!isUpgradedForMultiChain)
                 {
-                    connection.Execute(@"ALTER TABLE ethblock
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+                    connection.Execute(@"ALTER TABLE ethblock ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
                     connection.Execute(@"ALTER TABLE `ethblock`
 ADD CONSTRAINT `FK_ethblock_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
                     connection.Execute(
                         @"UPDATE ethblock SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+
+                    connection.Execute(@"ALTER TABLE ethblock MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE marketvaluebyday
 ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
@@ -406,6 +407,7 @@ ADD CONSTRAINT `FK_marketvaluebyday_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
                     connection.Execute(
                         @"UPDATE marketvaluebyday SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    connection.Execute(@"ALTER TABLE marketvaluebyday MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract
 ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
@@ -414,6 +416,8 @@ ADD CONSTRAINT `FK_otcontract_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
                     connection.Execute(
                         @"UPDATE otcontract SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+
+                    connection.Execute(@"ALTER TABLE otcontract MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_approval_nodeapproved
 ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
@@ -664,36 +668,47 @@ REFERENCED_TABLE_SCHEMA = '{OTHubSettings.Instance.MariaDB.Database}' AND
 
                     connection.Open();
 
-                    //If we hit an error we want to rollback as it won't be fun to try recover this if we are halfway through deleting or adding FKs
-                    using (var tran = connection.BeginTransaction(IsolationLevel.Serializable))
+                    string sql = null;
+
+                    try
                     {
-                        foreach (var row in fkRows)
+                        //If we hit an error we want to rollback as it won't be fun to try recover this if we are halfway through deleting or adding FKs
+                        using (var tran = connection.BeginTransaction(IsolationLevel.Serializable))
                         {
-                            string tableName = row.TABLE_NAME;
-                            string columnName = row.COLUMN_NAME;
-                            string fkName = row.CONSTRAINT_NAME;
+                            foreach (var row in fkRows)
+                            {
+                                string tableName = row.TABLE_NAME;
+                                string columnName = row.COLUMN_NAME;
+                                string fkName = row.CONSTRAINT_NAME;
 
-                            connection.Execute($"ALTER TABLE {tableName} DROP FOREIGN KEY {fkName}", transaction: tran);
-                            connection.Execute($"ALTER TABLE {tableName} DROP INDEX IF EXISTS {fkName}",
-                                transaction: tran);
-                        }
+                                connection.Execute(sql = $"ALTER TABLE {tableName} DROP FOREIGN KEY {fkName}",
+                                    transaction: tran);
+                                connection.Execute(sql = $"ALTER TABLE {tableName} DROP INDEX IF EXISTS {fkName}",
+                                    transaction: tran);
+                            }
 
-                        connection.Execute(@"ALTER TABLE ethblock
+                            connection.Execute(sql = @"ALTER TABLE ethblock
   DROP PRIMARY KEY,
   ADD PRIMARY KEY (BlockchainID, BlockNumber);", transaction: tran);
 
-                        foreach (var row in fkRows)
-                        {
-                            string tableName = row.TABLE_NAME;
-                            string columnName = row.COLUMN_NAME;
-                            string fkName = row.CONSTRAINT_NAME;
+                            foreach (var row in fkRows)
+                            {
+                                string tableName = row.TABLE_NAME;
+                                string columnName = row.COLUMN_NAME;
+                                string fkName = row.CONSTRAINT_NAME;
 
-                            connection.Execute(@$"ALTER TABLE `{tableName}`
+                                connection.Execute(sql = @$"ALTER TABLE `{tableName}`
 ADD CONSTRAINT `{fkName}` FOREIGN KEY
 (`blockchainid`, `{columnName}`) REFERENCES `ethblock` (`BlockchainID`, `BlockNumber`);", transaction: tran);
-                        }
+                            }
 
-                        tran.Commit();
+                            tran.Commit();
+                        }
+                    }
+                    catch
+                    {
+                        Console.WriteLine("SQL: " + (sql ?? ""));
+                        throw;
                     }
 
                     connection.Execute("DELETE FROM systemstatus");
