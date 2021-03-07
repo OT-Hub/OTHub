@@ -725,6 +725,16 @@ ADD COLUMN IF NOT EXISTS `ParentName` VARCHAR(100) NULL");
                 connection.Execute(
                     @"CREATE INDEX IF NOT EXISTS `ix_otoffer_finalised` ON otoffer  (`IsFinalized`, `FinalizedTimestamp`) USING BTREE;");
 
+                connection.Execute(@"CREATE TABLE if not exists `jobhistorybyday` (
+	`Date` DATE NOT NULL,
+	`NewJobs` INT(11) NOT NULL DEFAULT '0',
+	`CompletedJobs` INT(11) NOT NULL DEFAULT '0',
+	PRIMARY KEY (`Date`) USING BTREE
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
             }
         }
     }

@@ -19,7 +19,7 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.NodeUptimeAndMisc);
 
-                controller.Schedule(new MiscTask(), TimeSpan.FromHours(2), true);
+                controller.Schedule(new MiscTask(), TimeSpan.FromHours(6), true);
 
                 controller.Start();
             }));
