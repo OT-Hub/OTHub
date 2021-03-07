@@ -106,21 +106,21 @@ export class ECommerceComponent implements OnDestroy, OnInit {
       series2.name = 'Completed';
       series2.strokeWidth = 3;
 
-      let bullet = series.bullets.push(new am4charts.CircleBullet());
-      bullet.circle.strokeWidth = 2;
-      bullet.circle.radius = 4;
-      bullet.circle.fill = am4core.color("#fff");
+      // let bullet = series.bullets.push(new am4charts.CircleBullet());
+      // bullet.circle.strokeWidth = 2;
+      // bullet.circle.radius = 4;
+      // bullet.circle.fill = am4core.color("#fff");
+      //
+      // let bullethover = bullet.states.create("hover");
+      // bullethover.properties.scale = 1.3;
 
-      let bullethover = bullet.states.create("hover");
-      bullethover.properties.scale = 1.3;
-
-      bullet = series2.bullets.push(new am4charts.CircleBullet());
-      bullet.circle.strokeWidth = 2;
-      bullet.circle.radius = 4;
-      bullet.circle.fill = am4core.color("#fff");
-
-      bullethover = bullet.states.create("hover");
-      bullethover.properties.scale = 1.3;
+      // bullet = series2.bullets.push(new am4charts.CircleBullet());
+      // bullet.circle.strokeWidth = 2;
+      // bullet.circle.radius = 4;
+      // bullet.circle.fill = am4core.color("#fff");
+      //
+      // bullethover = bullet.states.create("hover");
+      // bullethover.properties.scale = 1.3;
 
       chart.cursor = new am4charts.XYCursor();
       chart.cursor.behavior = "panXY";

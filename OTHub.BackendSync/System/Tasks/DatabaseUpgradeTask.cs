@@ -721,6 +721,10 @@ ADD CONSTRAINT `FK_systemstatus_blockchains` FOREIGN KEY IF NOT EXISTS
 ADD COLUMN IF NOT EXISTS `ParentName` VARCHAR(100) NULL");
 
                 }
+
+                connection.Execute(
+                    @"CREATE INDEX IF NOT EXISTS `ix_otoffer_finalised` ON otoffer  (`IsFinalized`, `FinalizedTimestamp`) USING BTREE;");
+
             }
         }
     }
