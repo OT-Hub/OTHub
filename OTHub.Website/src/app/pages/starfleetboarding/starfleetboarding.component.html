@@ -6,6 +6,12 @@
         OriginTrail <h4>Starfleet Boarding</h4>
       </nb-card-header>
       <nb-card-body>
+
+        <p>This page allows you to view tokens staked for Starfleet Boarding.</p>
+        <p>Please note this is a community page which works by reading the boarding smart contract data.</p>
+
+        <p><b>{{stakedTotal | number:'1.0-0'}} tokens</b> have been staked so far.</p>
+
         <nb-select selected="25" (selectedChange)="pageSizeChanged($event)">
           <nb-option value="10">10 per Page</nb-option>
           <nb-option value="25">25 per Page</nb-option>
