@@ -49,6 +49,9 @@ namespace OTHub.Settings.Abis
                 case ContractTypeEnum.Hub:
                     path += "hub.json";
                     break;
+                case ContractTypeEnum.StarfleetStake:
+                    path += "starfleetstake.json";
+                    break;
                 default:
                     throw new Exception("Not supported: " + ContractTypeEnum);
             }

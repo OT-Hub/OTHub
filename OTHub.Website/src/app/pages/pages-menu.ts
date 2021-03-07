@@ -2,6 +2,12 @@ import { NbMenuItem } from '@nebular/theme';
 
 export const MENU_ITEMS: NbMenuItem[] = [
   {
+    title: 'Starfleet Boarding',
+    icon: 'flash-outline',
+    link: '/starfleetboarding',
+    home: true,
+  },
+  {
     title: 'Dashboard',
     icon: 'home-outline',
     link: '/dashboard',

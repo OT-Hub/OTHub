@@ -17,12 +17,13 @@ import {
   NbSidebarModule,
   NbToastrModule,
   NbWindowModule,
-  NbThemeService
+  NbThemeService, NbCardModule, NbSelectModule
 } from '@nebular/theme';
 import {Ng2SmartTableModule} from "ng2-smart-table";
+import { StarfleetboardingComponent } from './pages/starfleetboarding/starfleetboarding.component';
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, StarfleetboardingComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -36,6 +37,8 @@ import {Ng2SmartTableModule} from "ng2-smart-table";
     CoreModule.forRoot(),
     ThemeModule.forRoot(),
     Ng2SmartTableModule,
+    NbCardModule,
+    NbSelectModule,
   ],
   bootstrap: [AppComponent],
 })
