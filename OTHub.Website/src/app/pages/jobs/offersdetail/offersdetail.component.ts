@@ -18,6 +18,7 @@ import * as am4plugins_bullets from "@amcharts/amcharts4/plugins/bullets";
 import {Axis, CategoryAxis} from "@amcharts/amcharts4/charts";
 import {AxisRendererCurveY} from "@amcharts/amcharts4/plugins/timeline";
 import {AxisRenderer} from "@amcharts/amcharts4/.internal/charts/axes/AxisRenderer";
+import {Color} from "@amcharts/amcharts4/core";
 
 @Component({
   selector: 'app-offersdetail',
@@ -150,13 +151,13 @@ export class OffersDetailComponent implements OnInit {
 
 
     chart.curveContainer.padding(50, 20, 50, 20);
-    chart.levelCount = 4;
+    chart.levelCount = 3;
     chart.yAxisRadius = am4core.percent(25);
     chart.yAxisInnerRadius = am4core.percent(-25);
     chart.maskBullets = false;
 
     let colorSet = new am4core.ColorSet();
-    colorSet.saturation = 0.6;
+    colorSet.saturation = 0.5;
 
     let color = 0;
 
@@ -166,7 +167,7 @@ export class OffersDetailComponent implements OnInit {
 
     this.OfferModel.Holders.forEach((v) => {
         data.push({
-          "category": v.NodeId,
+          "category": v.NodeId.substring(0, 20) + '...',
           "start": this.datePipe.transform(v.JobStarted,"yyyy-MM-dd"),
           "end": this.datePipe.transform(v.JobCompleted,"yyyy-MM-dd"),
           "color": colorSet.getIndex(color++),
@@ -179,7 +180,7 @@ export class OffersDetailComponent implements OnInit {
       "start": this.datePipe.transform(this.OfferModel.FinalizedTimestamp,"yyyy-MM-dd"),
       "end": this.datePipe.transform(this.OfferModel.EndTimestamp,"yyyy-MM-dd"),
       "color": colorSet.getIndex(color++),
-      "task": 'Job Duration'
+      "task": 'Job'
     });
 
     // this.OfferModel.Timeline.forEach((v) => {
@@ -290,18 +291,24 @@ export class OffersDetailComponent implements OnInit {
     categoryAxis.dataFields.category = "category";
     categoryAxis.renderer.grid.template.disabled = true;
     categoryAxis.renderer.labels.template.paddingRight = 5;
+    categoryAxis.renderer.labels.template.truncate = true;
+    categoryAxis.renderer.labels.template.fullWords = false;
+    categoryAxis.renderer.labels.template.ellipsis = '.';
+    //categoryAxis.renderer.labels.template.fontSize = 8;
     categoryAxis.renderer.minGridDistance = 10;
     categoryAxis.renderer.innerRadius = -60;
-    categoryAxis.renderer.radius = 60;
+    categoryAxis.renderer.radius = -60;
 
-    categoryAxis.events.on("sizechanged", function(ev) {
-      let axis = ev.target;
-      let cellWidth = axis.pixelWidth / (axis.endIndex - axis.startIndex);
-      axis.renderer.labels.template.maxWidth = cellWidth;
-    });
+
+
+    // categoryAxis.events.on("sizechanged", function(ev) {
+    //   let axis = ev.target;
+    //   let cellWidth = axis.pixelWidth / (axis.endIndex - axis.startIndex);
+    //   axis.renderer.labels.template.maxWidth = cellWidth;
+    // });
 
     let dateAxis = chart.xAxes.push(new am4charts.DateAxis()) as am4charts.DateAxis;
-    dateAxis.renderer.minGridDistance = 70;
+    dateAxis.renderer.minGridDistance = 150;
     dateAxis.baseInterval = { count: 1, timeUnit: "day" };
     dateAxis.renderer.tooltipLocation = 0;
     dateAxis.startLocation = -0.5;
@@ -320,7 +327,7 @@ export class OffersDetailComponent implements OnInit {
     labelTemplate.padding(7, 7, 7, 7);
 
     let series = chart.series.push(new am4plugins_timeline.CurveColumnSeries());
-    series.columns.template.height = am4core.percent(20);
+    series.columns.template.height = am4core.percent(10);
     series.columns.template.tooltipText = "{task}: [bold]{openDateX}[/] - [bold]{dateX}[/]";
 
     series.dataFields.openDateX = "start";
@@ -344,25 +351,25 @@ export class OffersDetailComponent implements OnInit {
     bullet2.locationX = 1;
 
 
-    let imageBullet1 = series.bullets.push(new am4plugins_bullets.PinBullet());
-    imageBullet1.disabled = true;
-    imageBullet1.propertyFields.disabled = "disabled1";
-    imageBullet1.locationX = 1;
-    imageBullet1.circle.radius = 20;
-    imageBullet1.propertyFields.stroke = "color";
-    imageBullet1.background.propertyFields.fill = "color";
-    imageBullet1.image = new am4core.Image();
-    imageBullet1.image.propertyFields.href = "image1";
-
-    let imageBullet2 = series.bullets.push(new am4plugins_bullets.PinBullet());
-    imageBullet2.disabled = true;
-    imageBullet2.propertyFields.disabled = "disabled2";
-    imageBullet2.locationX = 0;
-    imageBullet2.circle.radius = 20;
-    imageBullet2.propertyFields.stroke = "color";
-    imageBullet2.background.propertyFields.fill = "color";
-    imageBullet2.image = new am4core.Image();
-    imageBullet2.image.propertyFields.href = "image2";
+    // let imageBullet1 = series.bullets.push(new am4plugins_bullets.PinBullet());
+    // imageBullet1.disabled = true;
+    // imageBullet1.propertyFields.disabled = "disabled1";
+    // imageBullet1.locationX = 1;
+    // imageBullet1.circle.radius = 20;
+    // imageBullet1.propertyFields.stroke = "color";
+    // imageBullet1.background.propertyFields.fill = "color";
+    // imageBullet1.image = new am4core.Image();
+    // imageBullet1.image.propertyFields.href = "image1";
+    //
+    // let imageBullet2 = series.bullets.push(new am4plugins_bullets.PinBullet());
+    // imageBullet2.disabled = true;
+    // imageBullet2.propertyFields.disabled = "disabled2";
+    // imageBullet2.locationX = 0;
+    // imageBullet2.circle.radius = 20;
+    // imageBullet2.propertyFields.stroke = "color";
+    // imageBullet2.background.propertyFields.fill = "color";
+    // imageBullet2.image = new am4core.Image();
+    // imageBullet2.image.propertyFields.href = "image2";
 
 
     let eventSeries = chart.series.push(new am4plugins_timeline.CurveLineSeries());
@@ -370,21 +377,12 @@ export class OffersDetailComponent implements OnInit {
     eventSeries.dataFields.categoryY = "category";
 
     var eventSeriesData = [];
-    // eventSeries.data = [
-    //   { category: "", eventDate: "2019-01-15", letter: "A", description: "Something happened here" },
-    //   { category: "", eventDate: "2019-01-23", letter: "B", description: "Something happened here" },
-    //   { category: "", eventDate: "2019-02-10", letter: "C", description: "Something happened here" },
-    //   { category: "", eventDate: "2019-02-29", letter: "D", description: "Something happened here" },
-    //   { category: "", eventDate: "2019-03-06", letter: "E", description: "Something happened here" },
-    //   { category: "", eventDate: "2019-03-12", letter: "F", description: "Something happened here" },
-    //   { category: "", eventDate: "2019-03-22", letter: "G", description: "Something happened here" }];
-
 
     this.OfferModel.TimelineEvents.forEach((v) => {
       eventSeriesData.push({
-        "category": v.RelatedTo,
+        "category": v.RelatedTo.substring(0, 20) + '...',
         "eventDate": this.datePipe.transform(v.Timestamp,"yyyy-MM-dd"),
-        // "color": colorSet.getIndex(0),
+         "color": v.Name.startsWith('Litigation Failed') ? am4core.color("red") : colorSet.getIndex(0),
         "description": v.Name,
         "letter": v.Name.substr(0, 1).toUpperCase()
       });
