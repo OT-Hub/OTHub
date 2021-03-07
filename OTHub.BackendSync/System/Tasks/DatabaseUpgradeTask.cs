@@ -392,13 +392,14 @@ REFERENCED_TABLE_SCHEMA = '{OTHubSettings.Instance.MariaDB.Database}' AND
                 if (!isUpgradedForMultiChain)
                 {
                     connection.Execute(@"ALTER TABLE ethblock ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
-                    connection.Execute(@"ALTER TABLE `ethblock`
-ADD CONSTRAINT `FK_ethblock_blockchains` FOREIGN KEY IF NOT EXISTS
-(`blockchainid`) REFERENCES `blockchains` (`id`);");
                     connection.Execute(
                         @"UPDATE ethblock SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
 
                     connection.Execute(@"ALTER TABLE ethblock MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    connection.Execute(@"ALTER TABLE `ethblock`
+ADD CONSTRAINT `FK_ethblock_blockchains` FOREIGN KEY IF NOT EXISTS
+(`blockchainid`) REFERENCES `blockchains` (`id`);");
+            
 
                     connection.Execute(@"ALTER TABLE marketvaluebyday
 ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
