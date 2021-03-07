@@ -391,268 +391,264 @@ REFERENCED_TABLE_SCHEMA = '{OTHubSettings.Instance.MariaDB.Database}' AND
 
                 if (!isUpgradedForMultiChain)
                 {
-                    connection.Execute(@"ALTER TABLE ethblock ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
-                    connection.Execute(
-                        @"UPDATE ethblock SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    connection.Execute(@"ALTER TABLE ethblock ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
+                    //connection.Execute(@"UPDATE ethblock SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
 
-                    connection.Execute(@"ALTER TABLE ethblock MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(@"ALTER TABLE ethblock MODIFY COLUMN `BlockchainID` INT NOT NULL");
                     connection.Execute(@"ALTER TABLE `ethblock`
 ADD CONSTRAINT `FK_ethblock_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
             
 
                     connection.Execute(@"ALTER TABLE marketvaluebyday
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
                     connection.Execute(@"ALTER TABLE `marketvaluebyday`
 ADD CONSTRAINT `FK_marketvaluebyday_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE marketvaluebyday SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(@"ALTER TABLE marketvaluebyday MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE marketvaluebyday SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(@"ALTER TABLE marketvaluebyday MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
                     connection.Execute(@"ALTER TABLE `otcontract`
 ADD CONSTRAINT `FK_otcontract_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"UPDATE otcontract SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
 
-                    connection.Execute(@"ALTER TABLE otcontract MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(@"ALTER TABLE otcontract MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_approval_nodeapproved
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_approval_nodeapproved`
 //ADD CONSTRAINT `FK_otcontract_approval_nodeapproved_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_approval_nodeapproved SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_approval_nodeapproved MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_approval_nodeapproved SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_approval_nodeapproved MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_approval_noderemoved
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_approval_noderemoved`
 //ADD CONSTRAINT `FK_otcontract_approval_noderemoved_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_approval_noderemoved SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_approval_noderemoved MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_approval_noderemoved SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_approval_noderemoved MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_holding_offercreated
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_holding_offercreated`
 //ADD CONSTRAINT `FK_otcontract_holding_offercreated_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_holding_offercreated SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_holding_offercreated MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_holding_offercreated SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_holding_offercreated MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_holding_offerfinalized
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_holding_offerfinalized`
 //ADD CONSTRAINT `FK_otcontract_holding_offerfinalized_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_holding_offerfinalized SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_holding_offerfinalized MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_holding_offerfinalized SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_holding_offerfinalized MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_holding_offertask
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_holding_offertask`
 //ADD CONSTRAINT `FK_otcontract_holding_offertask_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_holding_offertask SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_holding_offertask MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_holding_offertask SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_holding_offertask MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_holding_ownershiptransferred
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_holding_ownershiptransferred`
 //ADD CONSTRAINT `FK_otcontract_holding_ownershiptransferred_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_holding_ownershiptransferred SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_holding_ownershiptransferred MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_holding_ownershiptransferred SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_holding_ownershiptransferred MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_holding_paidout
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_holding_paidout`
 //ADD CONSTRAINT `FK_otcontract_holding_paidout_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_holding_paidout SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_holding_paidout MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_holding_paidout SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_holding_paidout MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_litigation_litigationanswered
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_litigation_litigationanswered`
 //ADD CONSTRAINT `FK_otcontract_litigation_litigationanswered_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_litigation_litigationanswered SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_litigation_litigationanswered MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_litigation_litigationanswered SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_litigation_litigationanswered MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_litigation_litigationcompleted
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_litigation_litigationcompleted`
 //ADD CONSTRAINT `FK_otcontract_litigation_litigationcompleted_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_litigation_litigationcompleted SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_litigation_litigationcompleted MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_litigation_litigationcompleted SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_litigation_litigationcompleted MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_litigation_litigationinitiated
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_litigation_litigationinitiated`
 //ADD CONSTRAINT `FK_otcontract_litigation_litigationinitiated_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_litigation_litigationinitiated SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_litigation_litigationinitiated MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_litigation_litigationinitiated SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_litigation_litigationinitiated MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_litigation_litigationtimedout
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_litigation_litigationtimedout`
 //ADD CONSTRAINT `FK_otcontract_litigation_litigationtimedout_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_litigation_litigationtimedout SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_litigation_litigationtimedout MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_litigation_litigationtimedout SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_litigation_litigationtimedout MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_litigation_replacementstarted
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_litigation_replacementstarted`
 //ADD CONSTRAINT `FK_otcontract_litigation_replacementstarted_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_litigation_replacementstarted SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_litigation_replacementstarted MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_litigation_replacementstarted SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_litigation_replacementstarted MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_profile_identitycreated
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_profile_identitycreated`
 //ADD CONSTRAINT `FK_otcontract_profile_identitycreated_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_profile_identitycreated SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_profile_identitycreated MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_profile_identitycreated SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_profile_identitycreated MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_profile_identitytransferred
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_profile_identitytransferred`
 //ADD CONSTRAINT `FK_otcontract_profile_identitytransferred_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_profile_identitytransferred SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_profile_identitytransferred MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_profile_identitytransferred SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_profile_identitytransferred MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_profile_profilecreated
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_profile_profilecreated`
 //ADD CONSTRAINT `FK_otcontract_profile_profilecreated_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_profile_profilecreated SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_profile_profilecreated MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_profile_profilecreated SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_profile_profilecreated MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_profile_tokensdeposited
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_profile_tokensdeposited`
 //ADD CONSTRAINT `FK_otcontract_profile_tokensdeposited_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_profile_tokensdeposited SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_profile_tokensdeposited MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_profile_tokensdeposited SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_profile_tokensdeposited MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_profile_tokensreleased
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_profile_tokensreleased`
 //ADD CONSTRAINT `FK_otcontract_profile_tokensreleased_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_profile_tokensreleased SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_profile_tokensreleased MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_profile_tokensreleased SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_profile_tokensreleased MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_profile_tokensreserved
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_profile_tokensreserved`
 //ADD CONSTRAINT `FK_otcontract_profile_tokensreserved_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_profile_tokensreserved SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_profile_tokensreserved MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_profile_tokensreserved SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_profile_tokensreserved MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_profile_tokenstransferred
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_profile_tokenstransferred`
 //ADD CONSTRAINT `FK_otcontract_profile_tokenstransferred_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_profile_tokenstransferred SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_profile_tokenstransferred MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_profile_tokenstransferred SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_profile_tokenstransferred MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_profile_tokenswithdrawn
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_profile_tokenswithdrawn`
 //ADD CONSTRAINT `FK_otcontract_profile_tokenswithdrawn_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_profile_tokenswithdrawn SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_profile_tokenswithdrawn MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_profile_tokenswithdrawn SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_profile_tokenswithdrawn MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otcontract_replacement_replacementcompleted
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
 //                connection.Execute(@"ALTER TABLE `otcontract_replacement_replacementcompleted`
 //ADD CONSTRAINT `FK_otcontract_replacement_replacementcompleted_blockchains` FOREIGN KEY IF NOT EXISTS
 //(`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otcontract_replacement_replacementcompleted SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
-                    connection.Execute(
-                        @"ALTER TABLE otcontract_replacement_replacementcompleted MODIFY COLUMN `BlockchainID` INT NOT NULL");
+                    //connection.Execute(
+                    //    @"UPDATE otcontract_replacement_replacementcompleted SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(
+                    //    @"ALTER TABLE otcontract_replacement_replacementcompleted MODIFY COLUMN `BlockchainID` INT NOT NULL");
 
                     connection.Execute(@"ALTER TABLE otidentity
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
                     connection.Execute(@"ALTER TABLE `otidentity`
 ADD CONSTRAINT `FK_otidentity_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otidentity SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(@"UPDATE otidentity SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
 
                     connection.Execute(@"ALTER TABLE otoffer
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
                     connection.Execute(@"ALTER TABLE `otoffer`
 ADD CONSTRAINT `FK_otoffer_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otoffer SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(@"UPDATE otoffer SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
 
                     connection.Execute(@"ALTER TABLE otoffer_holders
-ADD COLUMN IF NOT EXISTS `BlockchainID` INT NULL DEFAULT NULL");
+ADD COLUMN IF NOT EXISTS `BlockchainID` INT NOT NULL DEFAULT 1");
                     connection.Execute(@"ALTER TABLE `otoffer_holders`
 ADD CONSTRAINT `FK_otoffer_holders_blockchains` FOREIGN KEY IF NOT EXISTS
 (`blockchainid`) REFERENCES `blockchains` (`id`);");
-                    connection.Execute(
-                        @"UPDATE otoffer_holders SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
+                    //connection.Execute(@"UPDATE otoffer_holders SET blockchainid = 1 WHERE blockchainid IS null"); //TODO long term needs something better
 
                     //After adding all these new columns we have some issues where a few tables use blockchain specific information as their PK
                     //an example of this is ethblock which uses BlockNumber for it's PK. We need to change these Composite keys (BlockchainID, BlockNumber)
