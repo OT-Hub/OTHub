@@ -1,0 +1,75 @@
+.contentContainer {
+    padding: 20px 40px;
+    background:white;
+}
+
+$table-font-color: #222222;
+$table-border-color: #edf1f7;
+
+
+
+    table{
+      color: $table-font-color;
+      line-height: 1.5em;
+      border-collapse: collapse;
+      border-spacing: 0;
+      display: table;
+      width: 100%;
+      max-width: 100%;
+      overflow: auto;
+      word-break: normal;
+      word-break: keep-all;
+      font-size:1em;
+      tr {
+        td,th{
+          border: 1px solid $table-border-color;
+          font-size:1em;
+        }
+        th {
+            padding-right: 1.75rem;
+            padding: 0.875rem 1.25rem;
+        }
+        tbody { 
+            tr:nth-child(2n) {
+            background-color: #f7f9fc;
+            }
+        }
+      }
+      thead tr {
+        background: #ffffff;
+      }
+    }
+
+    .page-item.disabled .page-link {
+        color: darkgray !important;
+    }
+    .page-item.active .page-link {
+        background: black !important;
+        color: white !important;
+        border: 1px solid black !important;
+    }
+    .page-item {
+        margin: 3px;
+    }
+    .page-link {
+        color: black !important;
+        padding: 8px;
+        padding-left: 14px;
+        padding-right: 14px;
+        border-radius: 4px !important;
+    }
+    .page-link:hover {
+        background-color: black !important;
+        color: white !important;
+        border: 1px solid black;
+    }
+    .ng2-smart-pagination .page-link-next,
+    .ng2-smart-pagination .page-link-prev {
+        font-size: 14px !important;
+    }
+    .ng2-smart-page-item a:hover {
+        text-decoration: none !important;
+    }
+  
+
+

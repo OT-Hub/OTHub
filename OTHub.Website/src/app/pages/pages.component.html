@@ -59,7 +59,7 @@
         [fixedInViewport]="mobileQuery.matches" fixedTopGap="56" class="sidenav">
   
         <mat-nav-list>
-          <h3 mat-subheader>Home</h3>
+          <h3 mat-subheader>ODN</h3>
   
           <a mat-list-item [routerLink]="['/dashboard']" routerLinkActive="active">
             <mat-icon mat-list-icon>
@@ -92,18 +92,23 @@
             <p mat-line> Global Activity </p>
           </a>
 
+          <a mat-list-item [routerLink]="['/system/smartcontracts']">
+            <mat-icon mat-list-icon>person</mat-icon>
+            <p mat-line> Smart Contracts </p>
+          </a>
+
   
-          <mat-divider></mat-divider>
+      <mat-divider></mat-divider>
   
-          <h3 mat-subheader>Resources</h3>
+          <h3 mat-subheader>OT Hub</h3>
   
-          <a mat-list-item [routerLink]="['/icons']" routerLinkActive="active">
+          <a mat-list-item [routerLink]="['/system/status']" routerLinkActive="active">
             <mat-icon mat-list-icon>
               toll
             </mat-icon>
-            <p mat-line> Icons </p>
+            <p mat-line> System Status </p>
           </a>
-          <a mat-list-item [routerLink]="['/typography']" routerLinkActive="active">
+          <!-- <a mat-list-item [routerLink]="['/typography']" routerLinkActive="active">
             <mat-icon mat-list-icon>
               font_download
             </mat-icon>
@@ -122,7 +127,7 @@
               info_outline
             </mat-icon>
             <p mat-line> About </p>
-          </a>
+          </a>  -->
         </mat-nav-list>
   
       </mat-sidenav>

@@ -108,106 +108,6 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     // this.getNodesObserver.unsubscribe();
   }
 
-  // Reload() {
-  //   const self = this;
-
-  //   const startTime = new Date();
-  //   self.getNodesObserver = this.getNodes().subscribe(data => {
-  //     const endTime = new Date();
-  //     this.NodeModel = data;
-
-  //     this.chRef.detectChanges();
-
-  //     this.afterLoadWithCount.emit(this.NodeModel.length);
-
-  //     if (!this.isTableInit) {
-  //       this.isTableInit = true;
-  //       const exportColumns = [0, 2, 3, 4, 5, 6, 7, 8];
-  //       this.exportOptionsObj = {
-  //         columns: exportColumns,
-  //         format: {
-  //           body(text, row, column, node) {
-  //             return text;
-  //           },
-  //           header(text, column) {
-  //             return text;
-  //           }
-  //         }
-  //       };
-
-  //       const table: any = $('.js-dataholders-table');
-  //       this.dataTable = table.DataTable({
-  //         responsive: true,
-  //         pageLength: 25,
-  //         columnDefs: [
-  //           { targets: 0, visible: false },
-  //           { targets: 1, visible: true },
-  //           { targets: 2, visible: false },
-  //           { targets: 3, visible: true },
-  //           { targets: 4, visible: true },
-  //           { targets: 5, visible: true },
-  //           { targets: 6, visible: true },
-  //           { targets: 7, visible: true }
-  //         ],
-  //         drawCallback() {
-  //           $('img.lazy').lazyload();
-  //         }
-  //       });
-  //     }
-
-  //     const diff = endTime.getTime() - startTime.getTime();
-  //     let minWait = 0;
-  //     if (diff < 100) {
-  //       minWait = 100 - diff;
-  //     }
-  //     setTimeout(() => {
-  //       this.isLoading = false;
-  //       if (this.NodeModel == null) {
-  //         this.failedLoading = true;
-  //       }
-  //     }, minWait);
-  //   }, err => {
-  //     this.failedLoading = true;
-  //     this.isLoading = false;
-  //   });
-  // }
-
-  // copyToClipboard() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.copyHtml5;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.copyHtml5.action.call(that, e, this.dataTable, config, button);
-  // }
-
-  // exportToCSV() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.csvHtml5;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.csvHtml5.action.call(that, e, this.dataTable, config, button);
-  // }
-
-
-  // exportToExcel() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.excelHtml5;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.excelHtml5.action.call(that, e, this.dataTable, config, button);
-  // }
-
-  // print() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.print;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.print.action.call(that, e, this.dataTable, config, button);
-  // }
 
   getNode(identity: string) {
     const headers = new HttpHeaders()
@@ -383,7 +283,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%'
+          //width: '1%'
           // valuePrepareFunction: (value) => {
           //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
           // }
@@ -396,7 +296,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '7%'
+          //width: '7%'
           // valuePrepareFunction: (value) => {
           //   const stillUtc = moment.utc(value).toDate();
           //   const local = moment(stillUtc).local().format('DD/MM/YYYY HH:mm');
@@ -410,7 +310,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%'
+          //width: '1%'
           // valuePrepareFunction: (value) => { return (value / 1000).toFixed(2).replace(/[.,]00$/, '') + ' KB';}
         },
         PaidTokens: {
@@ -420,7 +320,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%',
+         // width: '1%',
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }
@@ -432,7 +332,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%',
+          //width: '1%',
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }
@@ -444,7 +344,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%',
+          //width: '1%',
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }

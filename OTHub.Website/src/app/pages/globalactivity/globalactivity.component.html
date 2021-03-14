@@ -1,5 +1,5 @@
-<section class="content">
-    <div class="container-fluid">
+<section class="contentContainer">
+    <!-- <div class="container-fluid">
         <div *ngIf="isLoading === false && failedLoading === true">
             <app-failed-loading-page></app-failed-loading-page>
         </div>
@@ -9,7 +9,7 @@
                 <mat-card>
                     <mat-card-title>Global Activity</mat-card-title>
                     <mat-card-content>
-            
+             -->
 
 
                         <!-- <nb-select selected="25" (selectedChange)="pageSizeChanged($event)">
@@ -20,7 +20,7 @@
                         </nb-select> -->
                         <!-- <button nbButton status="primary" outline [nbPopover]="exportTemplate" style="margin-left:10px;">Export</button>
                  -->
-                        <ng-template #exportTemplate>
+                        <!-- <ng-template #exportTemplate>
                             <mat-card class="popover-card">
                                 <mat-card-title status="warning">
                                    Export
@@ -34,15 +34,18 @@
                         </ng-template>
                 
                         <br>
-                        <br>
+                        <br> -->
+
+                        <h2>Global Activity</h2>
+
                         <ng2-smart-table [settings]="settings" [source]="source">
                         </ng2-smart-table>
 
-                     </mat-card-content>
+                     <!-- </mat-card-content>
                 </mat-card>
- 
-            </div>
+  -->
+            <!-- </div>
 
         </div>
-    </div>
+    </div> -->
 </section>

@@ -6,17 +6,31 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CoinpaprikaAPI.Entity;
+using ComposableAsync;
 using Dapper;
 using MySqlConnector;
 using Newtonsoft.Json;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Helpers;
+using RateLimiter;
 
 namespace OTHub.BackendSync.Markets.Tasks
 {
     public class GetMarketDataTask : TaskRunGeneric
     {
+        static GetMarketDataTask()
+        {
+            CountByIntervalAwaitableConstraint constraint = new CountByIntervalAwaitableConstraint(3, TimeSpan.FromSeconds(1));
+
+
+            CountByIntervalAwaitableConstraint constraint2 = new CountByIntervalAwaitableConstraint(1, TimeSpan.FromMilliseconds(600));
+
+            TimeConstraint = TimeLimiter.Compose(constraint, constraint2);
+        }
+
+        public static TimeLimiter TimeConstraint { get; set; }
+
         public override async Task Execute(Source source)
         {
             Logger.WriteLine(source, "Syncing TRAC Market (USD)");
@@ -46,7 +60,7 @@ namespace OTHub.BackendSync.Markets.Tasks
                         if (date > now)
                             break;
 
-                        Thread.Sleep(800);
+                        await TimeConstraint;
 
                         var tickers = client.GetHistoricalTickerForIdAsync("trac-origintrail",
                                 date,
@@ -171,12 +185,13 @@ namespace OTHub.BackendSync.Markets.Tasks
 
                         for (int i = 0; i < 24; i++)
                         {
-                            Thread.Sleep(450);
 
                             Int32 unixStartTimestamp =
                                 (Int32) (date.AddHours(i).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                             Int32 unixEndTimestamp =
                                 (Int32) (date.AddHours(i).AddHours(1).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+
+                            await TimeConstraint;
 
                             var data = wc.DownloadString(
                                 $"https://api.coingecko.com/api/v3/coins/origintrail/market_chart/range?vs_currency=eth&from={unixStartTimestamp}&to={unixEndTimestamp}");

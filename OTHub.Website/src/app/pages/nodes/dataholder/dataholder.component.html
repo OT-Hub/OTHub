@@ -1,59 +1,50 @@
-<section class="content">
-    <div class="container-fluid">
+<div class="contentContainer">
 
-        <div *ngIf="isLoading === false && failedLoading === true">
-            <app-failed-loading-page></app-failed-loading-page>
-        </div>
-        <div class="alert alert-warning" *ngIf="NodeModel?.Version === 0">
-            <strong>Warning!</strong> This old Identity is only available for viewing historical data.
-        </div>
+    <h2>Data Holder</h2>
+
+    <div *ngIf="isLoading === false && failedLoading === true">
+        <app-failed-loading-page></app-failed-loading-page>
+    </div>
+    <div class="alert alert-warning" *ngIf="NodeModel?.Version === 0">
+        <strong>Warning!</strong> This old Identity is only available for viewing historical data.
+    </div>
+
+
+    <mat-list>
+
+        <mat-list-item *ngIf="DisplayName" class="dont-break-out">
+            Display Name: {{DisplayName}}
+        </mat-list-item>
+
+        <mat-list-item *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'" class="dont-break-out">
+            Node Id: {{NodeModel?.NodeId}}&nbsp;<app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
+                style="vertical-align:middle">
+            </app-copyclipboardicon>
+        </mat-list-item>
+
+        <mat-list-item>
+            Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
+        </mat-list-item>
+        <mat-list-item>
+            Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
+        </mat-list-item>
+
+    </mat-list>
+
+ <h2>Identities</h2>
+
+ <mat-list>
+    <mat-list-item *ngFor="let data of NodeModel?.Identities; let i = index">
+      <span>{{data.Identity}}</span>
+      <span class="tokenSmall">{{data.BlockchainName}} {{data.NetworkName}}</span>
+
+
+    </mat-list-item>
+
+</mat-list>
+
         <div class="row clearfix" [hidden]="failedLoading === true">
-            <div class="col-lg-12 col-md-12 col-sm-12">
 
-                <mat-card>
-                    <mat-card-title>
-
-                        Data Holder</mat-card-title>
-                    <mat-list>
-
-                        <mat-list-item *ngIf="DisplayName" class="dont-break-out">
-                            Display Name: {{DisplayName}}
-                        </mat-list-item>
-
-                        <mat-list-item *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'" class="dont-break-out">
-                            Node Id: {{NodeModel?.NodeId}}&nbsp;<app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
-                                style="vertical-align:middle">
-                            </app-copyclipboardicon>
-                        </mat-list-item>
-
-                        <mat-list-item>
-                            Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
-                        </mat-list-item>
-                        <mat-list-item>
-                            Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
-                        </mat-list-item>
-
-                    </mat-list>
-                </mat-card>
-
-            </div>
-        </div>
-        <div class="row clearfix" [hidden]="failedLoading === true">
-          <div class="col-lg-12 col-md-12 col-sm-12">
-            <mat-card>
-              <mat-card-title>Identities
-              </mat-card-title>
-              <mat-list>
-                  <mat-list-item *ngFor="let data of NodeModel?.Identities; let i = index">
-                    <span>{{data.Identity}}</span>
-                    <span class="tokenSmall">{{data.BlockchainName}} {{data.NetworkName}}</span>
-
-
-                  </mat-list-item>
-
-              </mat-list>
-            </mat-card>
-          </div>
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <ngx-jobs [identity]="identity"></ngx-jobs>
             </div>
@@ -69,4 +60,3 @@
 
         </div>
     </div>
-</section>
