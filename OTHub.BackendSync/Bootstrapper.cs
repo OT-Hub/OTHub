@@ -22,7 +22,7 @@ namespace OTHub.BackendSync
 
                 controller.Schedule(new MiscTask(), TimeSpan.FromHours(6), true);
 
-                controller.Schedule(new BoardingContractSyncTask(), TimeSpan.FromMinutes(5), true);
+                //controller.Schedule(new BoardingContractSyncTask(), TimeSpan.FromMinutes(5), true);
 
                 controller.Start();
             }));

@@ -58,8 +58,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                     var diff = (ulong)LatestBlockNumber.Value - contract.SyncBlockNumber;
 
-                    ulong size = 100000;
-                    ulong smallSize = 10000;
+                    ulong size = 500000;
 
                     beforeSync:
 
@@ -75,8 +74,6 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                         foreach (var batch in batches)
                         {
-                            await Task.Delay(500);
-
                             try
                             {
                                 await Sync(connection, litigationInitiatedEvent, litigationAnsweredEvent,
@@ -88,14 +85,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                             }
                             catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
                             {
-                                if (size != smallSize)
-                                {
-                                    Logger.WriteLine(source, "Swapping to block sync size of " + smallSize);
+                                size = size / 2;
 
-                                    size = smallSize;
+                                Logger.WriteLine(source, "Swapping to block sync size of " + size);
 
-                                    goto beforeSync;
-                                }
+                                goto beforeSync;
                             }
 
                             currentStart = currentEnd;
@@ -132,31 +126,24 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
             var toBlock = new BlockParameter(end);
 
-            await Task.Delay(250);
-
             var litigationInitiatedEventsEventLogs = await litigationInitiatedEvent.GetAllChangesDefault(
                 litigationInitiatedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
-            await Task.Delay(250);
 
             var litigationAnsweredEvents = await litigationAnsweredEvent.GetAllChangesDefault(
                 litigationAnsweredEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
-            await Task.Delay(250);
-
             var litigationTimedOutEvents = await litigationTimedOutEvent.GetAllChangesDefault(
                 litigationTimedOutEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
-            await Task.Delay(250);
 
             var litigationCompletedEvents = await litigationCompletedEvent.GetAllChangesDefault(
                 litigationCompletedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
-            await Task.Delay(250);
 
             var replacementStartedEvents = await replacementStartedEvent.GetAllChangesDefault(
                 replacementStartedEvent.CreateFilterInput(new BlockParameter(start),
@@ -224,7 +211,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     .First(e => e.Parameter.Name == "requestedBlockIndex").Result;
 
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+            
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 var row = new OTContract_Litigation_LitigationInitiated
@@ -257,7 +244,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     .First(e => e.Parameter.Name == "holderIdentity").Result;
 
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+          
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 var row = new OTContract_Litigation_LitigationAnswered()
@@ -288,7 +275,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     .First(e => e.Parameter.Name == "holderIdentity").Result;
 
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+           
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 var row = new OTContract_Litigation_LitigationTimedOut()
@@ -322,7 +309,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     .First(e => e.Parameter.Name == "DH_was_penalized").Result;
 
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+           
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 var row = new OTContract_Litigation_LitigationCompleted()
@@ -360,7 +347,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                         .First(e => e.Parameter.Name == "litigationRootHash").Result);
 
                 var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+                
                 var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 var row = new OTContract_Litigation_ReplacementStarted()

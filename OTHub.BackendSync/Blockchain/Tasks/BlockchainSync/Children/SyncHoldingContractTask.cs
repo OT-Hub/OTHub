@@ -54,8 +54,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                     var diff = (ulong)LatestBlockNumber.Value - contract.SyncBlockNumber;
 
-                    ulong size = 100000;
-                    ulong smallSize = 10000;
+                    ulong size = 500000;
 
                     beforeSync:
 
@@ -70,8 +69,6 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                         foreach (var batch in batches)
                         {
-                            await Task.Delay(500);
-
                             try
                             {
                                 await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent,
@@ -79,14 +76,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                             }
                             catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
                             {
-                                if (size != smallSize)
-                                {
-                                    Logger.WriteLine(source, "Swapping to block sync size of " + smallSize);
+                                size = size / 2;
 
-                                    size = smallSize;
+                                Logger.WriteLine(source, "Swapping to block sync size of " + size);
 
-                                    goto beforeSync;
-                                }
+                                goto beforeSync;
                             }
 
                             currentStart = currentEnd;
@@ -119,31 +113,28 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
             var toBlock = new BlockParameter(end);
 
-            await Task.Delay(250);
 
             var createEvents = await offerCreatedEvent.GetAllChanges<Models.Program.OfferCreated>(
                 offerCreatedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
-            await Task.Delay(250);
 
             var finalizedEvents = await offerFinalizedEvent.GetAllChangesDefault(
                 offerFinalizedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
-            await Task.Delay(250);
+       
 
             var payoutEvents = await paidOutEvent.GetAllChangesDefault(
                 paidOutEvent.CreateFilterInput(new BlockParameter(start), toBlock));
 
-            await Task.Delay(250);
+        
 
             var ownershipTransferredEvents = await ownershipTransferredEvent.GetAllChangesDefault(
                 ownershipTransferredEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
-            await Task.Delay(250);
-
+  
             var offerTaskEvents = await offerTaskEvent.GetAllChangesDefault(
                 offerTaskEvent.CreateFilterInput(new BlockParameter(start), toBlock));
 
@@ -187,7 +178,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl, blockchainID);
 
                 var receipt = cl.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+             
                 var transaction = cl.Eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                 
                 await transaction;
@@ -242,7 +233,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     .Result;
 
                 var receipt = cl.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+              
                 var transaction = cl.Eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -288,7 +279,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
 
                 var receipt = cl.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+          
                 var transaction = cl.Eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -322,7 +313,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     .Result;
 
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                await Task.Delay(100);
+               
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
