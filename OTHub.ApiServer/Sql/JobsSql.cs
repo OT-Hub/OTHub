@@ -72,7 +72,7 @@ bc.DisplayName BlockchainDisplayName
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
-WHERE COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like
+WHERE O.IsFinalized = 1 AND COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like
 GROUP BY O.OfferID
 {orderBy}
 {limitSql}", new
@@ -84,7 +84,7 @@ GROUP BY O.OfferID
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
-WHERE COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like", new
+WHERE O.IsFinalized = 1 AND COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like", new
                 {
                     OfferId_like
                 });
