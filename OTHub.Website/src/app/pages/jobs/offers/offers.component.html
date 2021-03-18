@@ -1,4 +1,4 @@
-<!-- 
+
 
 
 <mat-card>
@@ -7,7 +7,7 @@
 
     </mat-card-title>
 
-    <mat-card-content> -->
+    <mat-card-content>
 
 
 <!-- 
@@ -19,7 +19,7 @@
         </nb-select> 
         <button nbButton status="primary" outline [nbPopover]="exportTemplate" style="margin-left:10px;">Export</button> -->
 
-        <!-- <ng-template #exportTemplate>
+        <ng-template #exportTemplate>
             <mat-card class="popover-card">
                 <mat-card-title status="warning">
                    Export
@@ -33,14 +33,8 @@
         </ng-template>
 
         <br>
-        <br> -->
-<div class="contentContainer">
-
-
-        <h2>Jobs</h2>
-
+        <br>
         <ng2-smart-table [settings]="settings" [source]="source">
         </ng2-smart-table>
-    </div>
-    <!-- </mat-card-content> -->
-<!-- </mat-card> -->
+    </mat-card-content>
+</mat-card>

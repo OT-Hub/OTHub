@@ -1,4 +1,4 @@
-<section class="contentContainer">
+<!-- <section class="content">
     <div class="container-fluid">
 
         <div *ngIf="isLoading === false && failedLoading === true">
@@ -7,23 +7,23 @@
         <div class="row clearfix" [hidden]="failedLoading === true">
 
             <div class="col-lg-12 col-md-12 col-sm-12">
-                <mat-card>
-                    <mat-card-title>System Status</mat-card-title>
-                    <mat-card-content>
+                <nb-card>
+                    <nb-card-header>System Status</nb-card-header>
+                    <nb-card-body>
                         <span style="padding:5 10px;">OT Hub updates from multiple blockchains every few minutes.<br>
                             <br>
                         Occasionally, there can be issues with the website resulting in out of date information. Below you can see if any known outages.</span>
                         <br><br>
                         <strong>This page does not indicate if your OriginTrail node is running correctly.</strong>
-                    </mat-card-content>
-                    </mat-card>
+                    </nb-card-body>
+                    </nb-card>
             </div>
 
             <div class="col-lg-12 col-md-12 col-sm-12" *ngFor="let group of Data?.Groups">
-                <mat-card>
-                    <mat-card-title>{{group.Name}}</mat-card-title>
-                    <mat-list>
-                        <mat-list-item *ngFor="let data of group.Items" style="position: relative;">
+                <nb-card>
+                    <nb-card-header>{{group.Name}}</nb-card-header>
+                    <nb-list>
+                        <nb-list-item *ngFor="let data of group.Items" style="position: relative;">
 
                             <div style="margin-left:10px;">
                                 {{data.Name}}
@@ -34,31 +34,31 @@
                                 </span>
                             </div>
 
-                            <mat-list>
-                                <mat-list-item *ngFor="let child of data.Children">
-                                    <mat-icon icon="sync" title="Running now" status="warning" *ngIf="child.IsRunning == true"></mat-icon>
-                                    <mat-icon icon="checkmark-circle" title="No known issues" status="success" *ngIf="child.Success == true"></mat-icon>
-                                    <mat-icon icon="close-circle" title="An error occurred" status="danger"
-                                        *ngIf="child.Success == false && child.LastTriedDateTime != null"></mat-icon>
-                                    <mat-icon icon="clock" status="info"
-                                        *ngIf="child.Success == false && child.LastTriedDateTime == null"></mat-icon>
+                            <nb-list>
+                                <nb-list-item *ngFor="let child of data.Children">
+                                    <nb-icon icon="sync" title="Running now" status="warning" *ngIf="child.IsRunning == true"></nb-icon>
+                                    <nb-icon icon="checkmark-circle" title="No known issues" status="success" *ngIf="child.Success == true"></nb-icon>
+                                    <nb-icon icon="close-circle" title="An error occurred" status="danger"
+                                        *ngIf="child.Success == false && child.LastTriedDateTime != null"></nb-icon>
+                                    <nb-icon icon="clock" status="info"
+                                        *ngIf="child.Success == false && child.LastTriedDateTime == null"></nb-icon>
                                         <div style="margin-left:10px;">
                                             {{child.Name}}
                                         </div>
-                                        <mat-badge style="font-size: 12px; padding:6px; margin-right:10px;"
+                                        <nb-badge style="font-size: 12px; padding:6px; margin-right:10px;"
                                         text="Last successfully run at {{child.LastSuccessDateTime| amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}"
                                         status="success" position="middle right"
-                                        *ngIf="child.Success == true && child.LastSuccessDateTime != null"></mat-badge>
+                                        *ngIf="child.Success == true && child.LastSuccessDateTime != null"></nb-badge>
 
-                                    <mat-badge style="font-size: 12px; padding:6px; margin-right:10px;"
+                                    <nb-badge style="font-size: 12px; padding:6px; margin-right:10px;"
                                         text="There was an error during processing." status="danger" position="middle right"
-                                        *ngIf="child.Success != true && child.LastTriedDateTime != null"></mat-badge>
-                                </mat-list-item>
-                            </mat-list>
-                        </mat-list-item>
-                    </mat-list>
-                </mat-card>
+                                        *ngIf="child.Success != true && child.LastTriedDateTime != null"></nb-badge>
+                                </nb-list-item>
+                            </nb-list>
+                        </nb-list-item>
+                    </nb-list>
+                </nb-card>
             </div>
         </div>
     </div>
-</section>
+</section> -->

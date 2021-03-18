@@ -94,24 +94,23 @@ delete: false
         //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
         // }
       },
-      // CreatedTimestamp: {
-      //   sort: true,
-      //   sortDirection: 'desc',
-  
-      //   title: 'Created',
-      //   type: 'string',
-      //   filter: false,
-      //   valuePrepareFunction: (value) => {
-      //     const stillUtc = moment.utc(value).toDate();
-      //     const local = moment(stillUtc).local().format('DD/MM/YYYY HH:mm');
-      //     return local;
-      //   }
-      // },
-      FinalizedTimestamp: {
+      CreatedTimestamp: {
         sort: true,
         sortDirection: 'desc',
+        width: '10%',
+        title: 'Created',
+        type: 'string',
+        filter: false,
+        valuePrepareFunction: (value) => {
+          const stillUtc = moment.utc(value).toDate();
+          const local = moment(stillUtc).local().format('DD/MM/YYYY HH:mm');
+          return local;
+        }
+      },
+      FinalizedTimestamp: {
+        sort: true,
         title: 'Started',
-    
+        width: '10%',
         type: 'string',
         filter: false,
         valuePrepareFunction: (value) => {
@@ -124,7 +123,7 @@ delete: false
       },
       DataSetSizeInBytes: {
         sort: true,
-        //width: '5%',
+        width: '5%',
         title: 'Data Set Size',
         type: 'string',
         filter: false,
@@ -132,7 +131,7 @@ delete: false
       },
       HoldingTimeInMinutes: {
         sort: true,
-        //width: '5%',
+        width: '5%',
         title: 'Holding Time',
         type: 'string',
         filter: false,
@@ -147,7 +146,7 @@ delete: false
       TokenAmountPerHolder: {
         sort: true,
         title: 'Token Amount',
-        //width: '5%',
+        width: '5%',
         type: 'number',
         filter: false,
         valuePrepareFunction: (value) => {
@@ -159,7 +158,7 @@ delete: false
         sort: false,
         title: 'Status',
         type: 'string',
-        //width: '5%',
+        width: '5%',
         filter: false
       }
     },
