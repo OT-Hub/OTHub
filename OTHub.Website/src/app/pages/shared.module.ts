@@ -2,6 +2,7 @@ import { FailedLoadingPageComponent } from './ui/failed-loading-page/failed-load
 import { NgModule } from '@angular/core';
 import { CommonModule, SlicePipe } from '@angular/common';
 import { CopyclipboardiconComponent } from './ui/copyclipboardicon/copyclipboardicon.component';
+import { NbIconModule, NbPopoverModule } from '@nebular/theme';
 import { OfferIdColumnComponent } from './miscellaneous/offeridcolumn.component';
 import { RouterModule } from '@angular/router';
 import { DataHolderIdentityColumnComponent, DataCreatorIdentityColumnComponent } from './miscellaneous/identitycolumn.component';
@@ -10,16 +11,17 @@ import { DataHolderIdentityColumnComponent, DataCreatorIdentityColumnComponent }
 
 @NgModule({
   imports: [
+    NbIconModule,
+    NbPopoverModule,
     RouterModule,
-    CommonModule,
-
+    CommonModule
   ],
   declarations: [
     CopyclipboardiconComponent,
     FailedLoadingPageComponent,
     OfferIdColumnComponent,
     DataHolderIdentityColumnComponent,
-    DataCreatorIdentityColumnComponent,
+    DataCreatorIdentityColumnComponent
   ],
   exports: [
     CopyclipboardiconComponent, FailedLoadingPageComponent

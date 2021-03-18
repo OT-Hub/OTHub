@@ -64,7 +64,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                     var diff = (ulong)LatestBlockNumber.Value - contract.SyncBlockNumber;
 
-                    ulong size = 500000;
+                    ulong size = 100000;
+                    ulong smallSize = 10000;
 
                     beforeSync:
 
@@ -79,6 +80,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                         foreach (var batch in batches)
                         {
+                            await Task.Delay(250);
+
                             try
                             {
                                 await Sync(connection, profileCreatedEvent, identityCreatedEvent,
@@ -91,11 +94,14 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                             }
                             catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
                             {
-                                size = size / 2;
+                                if (size != smallSize)
+                                {
+                                    Logger.WriteLine(source, "Swapping to block sync size of " + smallSize);
 
-                                Logger.WriteLine(source, "Swapping to block sync size of " + size);
+                                    size = smallSize;
 
-                                goto beforeSync;
+                                    goto beforeSync;
+                                }
                             }
 
                             currentStart = currentEnd;
@@ -135,38 +141,49 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                 identityCreatedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
+
             var identityTransferredEvents = await identityTransferredEvent.GetAllChangesDefault(
                 identityTransferredEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
+
+            await Task.Delay(250);
 
             var profileCreatedEvents = await profileCreatedEvent.GetAllChangesDefault(
                 profileCreatedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
+
             var tokensDepositedEvents = await tokensDepositedEvent.GetAllChangesDefault(
                 tokensDepositedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
 
             var tokensReleasedEvents = await tokensReleasedEvent.GetAllChangesDefault(
                 tokensReleasedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
 
             var tokensWithdrawnEvents = await tokensWithdrawnEvent.GetAllChangesDefault(
                 tokensWithdrawnEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
 
             var tokensTransferredEvents = await tokensTransferredEvent.GetAllChangesDefault(
                 tokensTransferredEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
 
             var tokensReservedEvents = await tokensReservedEvent.GetAllChangesDefault(
                 tokensReservedEvent.CreateFilterInput(new BlockParameter(start),
                     toBlock));
 
+            await Task.Delay(250);
 
             if (identityCreatedEvents.Any())
             {
@@ -222,7 +239,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     .FirstOrDefault(p => p.Parameter.Name == "newIdentity").Result;
 
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-               
+                await Task.Delay(100);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -255,7 +272,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
            
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-               
+                await Task.Delay(100);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -303,7 +320,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
        
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                
+                await Task.Delay(100);
                 var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                 await transaction;
@@ -353,7 +370,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                         .FirstOrDefault(p => p.Parameter.Name == "newBalance").Result);
 
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                    
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;
@@ -393,7 +410,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                         .FirstOrDefault(p => p.Parameter.Name == "amount").Result);
 
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                  
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;
@@ -435,7 +452,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                         .FirstOrDefault(p => p.Parameter.Name == "newBalance").Result);
 
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                    
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;
@@ -466,8 +483,9 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                 foreach (var eventLog in group)
                 {
-
-
+                    var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
+                        eventLog.Log.BlockNumber,
+                        cl, blockchainID);
 
                     var sender = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "sender")
                         .Result;
@@ -479,15 +497,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                         .FirstOrDefault(p => p.Parameter.Name == "amount").Result);
 
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                    
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;
                     await receipt;
-
-                    var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash,
-                        eventLog.Log.BlockNumber,
-                        cl, blockchainID);
 
                     OTContract_Profile_TokensTransferred.Insert(connection,
                         new OTContract_Profile_TokensTransferred
@@ -524,7 +538,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                         .FirstOrDefault(p => p.Parameter.Name == "amountReserved").Result);
 
                     var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
-                    
+                    await Task.Delay(100);
                     var receipt = eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 
                     await transaction;

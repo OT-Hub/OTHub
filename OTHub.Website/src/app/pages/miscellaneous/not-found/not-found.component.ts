@@ -1,3 +1,4 @@
+import { NbMenuService } from '@nebular/theme';
 import { Component } from '@angular/core';
 
 @Component({
@@ -7,6 +8,10 @@ import { Component } from '@angular/core';
 })
 export class NotFoundComponent {
 
-  constructor() {
+  constructor(private menuService: NbMenuService) {
+  }
+
+  goToHome() {
+    this.menuService.navigateHome();
   }
 }

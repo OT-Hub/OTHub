@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 
@@ -54,9 +53,9 @@ namespace OTHub.BackendSync.Database.Models
             }
         }
 
-        public static async Task<EthBlock> GetByNumber(MySqlConnection connection, UInt64 blockNo, int blockchainID)
+        public static EthBlock GetByNumber(MySqlConnection connection, UInt64 blockNo, int blockchainID)
         {
-            return await connection.QueryFirstOrDefaultAsync<EthBlock>("SELECT * FROM EthBlock where BlockNumber = @blockNo AND BlockchainID = @blockchainID", new
+            return connection.QueryFirstOrDefault<EthBlock>("SELECT * FROM EthBlock where BlockNumber = @blockNo AND BlockchainID = @blockchainID", new
             {
                 blockNo = blockNo,
                 blockchainID = blockchainID

@@ -1,0 +1,28 @@
+<div class="row">
+  <div class="col-md-12 col-xxxl-12">
+    <nb-card class="homeCard" status="basic" accent="success">
+      <nb-card-header>
+        <img src="assets/images/2467.png" alt="OriginTrail" height="32" width="32" class="otLogo" />
+        OriginTrail <h4>Starfleet Boarding</h4>
+      </nb-card-header>
+      <nb-card-body>
+
+        <p>This page allows you to view tokens staked for Starfleet Boarding.</p>
+        <p>Please note this is a community page which works by reading the boarding smart contract data. There is a delay of up to 5 minutes.</p>
+
+        <p><b>{{stakedTotal | number:'1.0-0'}} tokens</b> have been staked so far.</p>
+
+        <nb-select selected="25" (selectedChange)="pageSizeChanged($event)">
+          <nb-option value="10">10 per Page</nb-option>
+          <nb-option value="25">25 per Page</nb-option>
+          <nb-option value="50">50 per Page</nb-option>
+          <nb-option value="100">100 per Page</nb-option>
+        </nb-select>
+        <br>
+        <br>
+        <ng2-smart-table [settings]="settings" [source]="source">
+        </ng2-smart-table>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>

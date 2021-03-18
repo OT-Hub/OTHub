@@ -1,33 +1,109 @@
-<mat-card>
-    <mat-card-title>Jobs
+<nb-card>
+    <nb-card-header>Jobs
+        <!-- <ul class="header-dropdown m-r--5">
+            <li class="dropdown">
+                <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown"
+                    role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="material-icons">more_vert</i>
+                </a>
+                <ul class="dropdown-menu pull-right">
+                    <li>
+                        <a href="#" (click)="copyToClipboard(jobsExportOptionsObj, jobsDataTable)"
+                            onClick="return false;">Copy to Clipboard</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="exportToCSV(jobsExportOptionsObj, jobsDataTable)"
+                            onClick="return false;">Export to CSV</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="exportToExcel(jobsExportOptionsObj, jobsDataTable)"
+                            onClick="return false;">Export to Excel</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="print(jobsExportOptionsObj, jobsDataTable)"
+                            onClick="return false;">Print</a>
+                    </li>
+                </ul>
+            </li>
+        </ul> -->
+    </nb-card-header>
+    <nb-card-body>
+        <!-- <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover js-jobs-table dataTable"
+                data-order='[[ 3, "desc" ]]'>
+                <thead>
+                    <tr>
+                        <th style="display:none;">Offer Id</th>
+                        <th>Offer Id</th>
+                        <th style="display:none;">Start</th>
+                        <th>Start</th>
+                        <th style="display:none;">End</th>
+                        <th>End</th>
+                        <th>Holding Time</th>
+                        <th>Token Amount</th>
+                        <th>Status</th>
+                        <th style="display:none;">Paidout</th>
+                        <th>Paidout</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let offer of NodeModel?.Offers">
+                        <td style="display:none;">{{offer.OfferId}}</td>
+                        <td><a routerLink="/offers/{{offer.OfferId}}"
+                                title="{{offer.OfferId}}">{{offer.OfferId}}</a></td>
+                        <td style="display:none;">{{offer.FinalizedTimestamp}}</td>
+                        <td>{{offer.FinalizedTimestamp | amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}
+                        </td>
+                        <td style="display:none;">{{offer.EndTimestamp}}</td>
+                        <td>{{offer.EndTimestamp | amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}
+                        </td>
+                        <td>{{(offer.HoldingTimeInMinutes > 1440 ? offer.HoldingTimeInMinutes / 1440 : offer.HoldingTimeInMinutes) | number:'1.0-1'}}
+                            {{offer.HoldingTimeInMinutes > 1440 ? 'days' : 'minutes'}}
+                        </td>
+                        <td>{{formatAmount(offer.TokenAmountPerHolder)}}</td>
+                        <td>{{offer.Status}}</td>
+                        <td style="display:none;">{{offer.Status === 'Active' ? '' : (offer.Paidout === true ? 'Yes' : 'No')}}
+                        </td>
+                        <td>
+                            <span>
+                                <span *ngIf="offer.CanPayout === true && MyNode">
+                                    No (<a routerLink="/nodes/dataholders/{{identity}}/payout/{{offer.OfferId}}">Payout</a>)
+                                </span>
+                                <span *ngIf="!MyNode || offer.CanPayout === false">
+                                    {{offer.Paidout === true ? 'Yes' : 'No'}}
+                                </span>
+                        
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div> -->
 
-    </mat-card-title>
-    <mat-card-content>
-
-        <!-- <mat-select selected="10" (selectedChange)="pageSizeChanged($event)">
-            <mat-option value="10">10 per Page</mat-option>
-            <mat-option value="25">25 per Page</mat-option>
-            <mat-option value="50">50 per Page</mat-option>
-            <mat-option value="100">100 per Page</mat-option>
-        </mat-select>
+        <nb-select selected="10" (selectedChange)="pageSizeChanged($event)">
+            <nb-option value="10">10 per Page</nb-option>
+            <nb-option value="25">25 per Page</nb-option>
+            <nb-option value="50">50 per Page</nb-option>
+            <nb-option value="100">100 per Page</nb-option>
+        </nb-select>
         <button nbButton status="primary" outline [nbPopover]="exportTemplate" style="margin-left:10px;">Export</button>
 
         <ng-template #exportTemplate>
-            <mat-card class="popover-card">
-                <mat-card-title status="warning">
+            <nb-card class="popover-card">
+                <nb-card-header status="warning">
                    Export
-                </mat-card-title>
-                <mat-card-body>
+                </nb-card-header>
+                <nb-card-body>
                     <p>Export the grid below in the specified format</p>
                     <button nbButton status="primary" (click)="ExportToCsv()">CSV</button>
                     <button nbButton status="primary" (click)="ExportToJson()" style="margin-left:10px;">JSON</button>
-                </mat-card-body>
-            </mat-card>
-        </ng-template> -->
+                </nb-card-body>
+            </nb-card>
+        </ng-template>
 
         <br>
         <br>
         <ng2-smart-table [settings]="settings" [source]="source">
         </ng2-smart-table>
-     </mat-card-content>
-</mat-card>
+     </nb-card-body>
+</nb-card>

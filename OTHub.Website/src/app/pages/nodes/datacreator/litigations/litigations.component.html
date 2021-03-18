@@ -1,32 +1,97 @@
-<mat-card>
-    <mat-card-title>Litigations Started Against Data Holders
-    </mat-card-title>
-    <mat-card-content>
-        <!-- <mat-select selected="10" (selectedChange)="pageSizeChanged($event)">
-            <mat-option value="10">10 per Page</mat-option>
-            <mat-option value="25">25 per Page</mat-option>
-            <mat-option value="50">50 per Page</mat-option>
-            <mat-option value="100">100 per Page</mat-option>
-        </mat-select>
+<nb-card>
+    <nb-card-header>Litigations Started Against Data Holders
+        <!-- <ul class="header-dropdown m-r--5">
+            <li class="dropdown">
+                <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown"
+                    role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="material-icons">more_vert</i>
+                </a>
+                <ul class="dropdown-menu pull-right">
+                    <li>
+                        <a href="#" (click)="copyToClipboard(litigationsExportOptionsObj, litigationsDataTable)"
+                            onClick="return false;">Copy to Clipboard</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="exportToCSV(litigationsExportOptionsObj, litigationsDataTable)"
+                            onClick="return false;">Export to CSV</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="exportToExcel(litigationsExportOptionsObj, litigationsDataTable)"
+                            onClick="return false;">Export to Excel</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="print(litigationsExportOptionsObj, litigationsDataTable)"
+                            onClick="return false;">Print</a>
+                    </li>
+                </ul>
+            </li>
+        </ul> -->
+    </nb-card-header>
+    <nb-card-body>
+        <nb-select selected="10" (selectedChange)="pageSizeChanged($event)">
+            <nb-option value="10">10 per Page</nb-option>
+            <nb-option value="25">25 per Page</nb-option>
+            <nb-option value="50">50 per Page</nb-option>
+            <nb-option value="100">100 per Page</nb-option>
+        </nb-select>
         <button nbButton status="primary" outline [nbPopover]="exportTemplate" style="margin-left:10px;">Export</button>
 
         <ng-template #exportTemplate>
-            <mat-card class="popover-card">
-                <mat-card-header status="warning">
+            <nb-card class="popover-card">
+                <nb-card-header status="warning">
                    Export
-                </mat-card-header>
-                <mat-card-body>
+                </nb-card-header>
+                <nb-card-body>
                     <p>Export the grid below in the specified format</p>
                     <button nbButton status="primary" (click)="ExportToCsv()">CSV</button>
                     <button nbButton status="primary" (click)="ExportToJson()" style="margin-left:10px;">JSON</button>
-                </mat-card-body>
-            </mat-card>
-        </ng-template> -->
+                </nb-card-body>
+            </nb-card>
+        </ng-template>
 
         <br>
         <br>
         <ng2-smart-table [settings]="settings" [source]="source">
         </ng2-smart-table>
-    
-     </mat-card-content>
-</mat-card>
+        <!-- <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover js-litigations-table dataTable"
+                data-order='[[ 3, "desc" ]]'>
+                <thead>
+                    <tr>
+                        <th style="display:none;">Offer Id</th>
+                        <th>Offer Id</th>
+                        <th style="display:none;">Timestamp</th>
+                        <th>Timestamp</th>
+                        <th style="display:none;">Data Holder</th>
+                        <th>Data Holder</th>
+                        <th>Requested Block Index</th>
+                        <th>Requested Object Index</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let litigation of NodeModel?.Litigations">
+                        <td style="display:none;">{{litigation.OfferId}}</td>
+                        <td>
+                            <a routerLink="/offers/{{litigation.OfferId}}"
+                                title="{{litigation.OfferId}}">{{litigation.OfferId}}</a>
+                        </td>
+                        <td style="display:none;">{{litigation.Timestamp}}</td>
+                        <td>
+                            {{litigation.Timestamp | amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}
+                        </td>
+                        <td style="display:none;">{{litigation.HolderIdentity}}</td>
+                        <td>
+                            <a routerLink="/nodes/dataholders/{{litigation.HolderIdentity}}">{{litigation.HolderIdentity}}</a>
+                        </td>
+                        <td>
+                            {{litigation.RequestedBlockIndex}}
+                        </td>
+                        <td>
+                            {{litigation.RequestedObjectIndex}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div> -->
+     </nb-card-body>
+</nb-card>

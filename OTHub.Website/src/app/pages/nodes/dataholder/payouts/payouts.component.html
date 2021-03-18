@@ -1,34 +1,101 @@
-<mat-card>
-    <mat-card-title>Payouts for Jobs
-
-    </mat-card-title>
-    <mat-card-content>
-        <!-- <mat-select selected="10" (selectedChange)="pageSizeChanged($event)">
-            <mat-option value="10">10 per Page</mat-option>
-            <mat-option value="25">25 per Page</mat-option>
-            <mat-option value="50">50 per Page</mat-option>
-            <mat-option value="100">100 per Page</mat-option>
-        </mat-select>
+<nb-card>
+    <nb-card-header>Payouts for Jobs
+        <!-- <ul class="header-dropdown m-r--5">
+            <li class="dropdown">
+                <a href="#" onClick="return false;" class="dropdown-toggle" data-toggle="dropdown"
+                    role="button" aria-haspopup="true" aria-expanded="false">
+                    <i class="material-icons">more_vert</i>
+                </a>
+                <ul class="dropdown-menu pull-right">
+                    <li>
+                        <a href="#" (click)="copyToClipboard(payoutsExportOptionsObj, payoutsDataTable)"
+                            onClick="return false;">Copy to Clipboard</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="exportToCSV(payoutsExportOptionsObj, payoutsDataTable)"
+                            onClick="return false;">Export to CSV</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="exportToExcel(payoutsExportOptionsObj, payoutsDataTable)"
+                            onClick="return false;">Export to Excel</a>
+                    </li>
+                    <li>
+                        <a href="#" (click)="print(payoutsExportOptionsObj, payoutsDataTable)"
+                            onClick="return false;">Print</a>
+                    </li>
+                </ul>
+            </li>
+        </ul> -->
+    </nb-card-header>
+    <nb-card-body>
+        <nb-select selected="10" (selectedChange)="pageSizeChanged($event)">
+            <nb-option value="10">10 per Page</nb-option>
+            <nb-option value="25">25 per Page</nb-option>
+            <nb-option value="50">50 per Page</nb-option>
+            <nb-option value="100">100 per Page</nb-option>
+        </nb-select>
         <button nbButton status="primary" outline [nbPopover]="exportTemplate" style="margin-left:10px;">Export</button>
         <button nbButton status="info" outline (click)="ViewPayoutsInUSD()" style="margin-left:10px;">View Payouts in USD</button>
         <ng-template #exportTemplate>
-            <mat-card class="popover-card">
-                <mat-card-header status="warning">
+            <nb-card class="popover-card">
+                <nb-card-header status="warning">
                    Export
-                </mat-card-header>
-                <mat-card-body>
+                </nb-card-header>
+                <nb-card-body>
                     <p>Export the grid below in the specified format</p>
                     <button nbButton status="primary" (click)="ExportToCsv()">CSV</button>
                     <button nbButton status="primary" (click)="ExportToJson()" style="margin-left:10px;">JSON</button>
-                </mat-card-body>
-            </mat-card>
-        </ng-template> -->
+                </nb-card-body>
+            </nb-card>
+        </ng-template>
 
         <br>
         <br>
         <ng2-smart-table [settings]="settings" [source]="source">
         </ng2-smart-table>
-    
+        <!-- <div class="table-responsive">
+            <table class="table table-bordered table-striped table-hover js-payouts-table dataTable"
+                data-order='[[ 5, "desc" ]]'>
+                <thead>
+                    <tr>
+                        <th style="display:none;">Offer Id</th>
+                        <th>Offer Id</th>
+                        <th style="display:none;">Transaction Hash</th>
+                        <th>Transaction Hash</th>
+                        <th style="display:none;">Timestamp</th>
+                        <th>Timestamp</th>
+                        <th>Token Amount</th>
+                        <th>Transaction Fee</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let payout of NodeModel?.Payouts">
+                        <td style="display:none;">{{payout.OfferId}}</td>
+                        <td>
+                            <a routerLink="/offers/{{payout.OfferId}}"
+                                title="{{payout.OfferId}}">{{payout.OfferId}}</a>
+                        </td>
+                        <td style="display:none;">{{payout.TransactionHash}}</td>
+                        <td [title]="payout.TransactionHash">
+                            {{payout.TransactionHash | slice:0:20 }}... <app-copyclipboardicon
+                                [textToCopy]="payout.TransactionHash" style="vertical-align:middle">
+                            </app-copyclipboardicon>
+                        </td>
+                        <td style="display:none;">{{payout.Timestamp}}</td>
+                        <td>
+                            {{payout.Timestamp | amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}
+                        </td>
+                        <td>
+                            {{formatAmount(payout.Amount)}}
+                        </td>
+                        <td>
+                            {{payout.GasUsed * (payout.GasPrice / 1000000000000000000) | number:'1.0-8'}}
+                            ETH
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div> -->
 
-     </mat-card-content>
-</mat-card>
+     </nb-card-body>
+</nb-card>

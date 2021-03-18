@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, EventEmitter, Output } from '@angular/core';
 import * as moment from 'moment';
 import { ViewCell } from 'ng2-smart-table';
+import { NbIconLibraries, NbIconComponent, NbComponentStatus } from '@nebular/theme';
 import { RouterModule } from '@angular/router';
 import { HubHttpService } from '../../../hub-http-service';
 import { MyNodeService } from '../../mynodeservice';

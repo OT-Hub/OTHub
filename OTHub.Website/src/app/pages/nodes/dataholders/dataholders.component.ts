@@ -8,8 +8,10 @@ declare const $: any;
 import { ServerDataSource } from 'ng2-smart-table';
 import { DecimalPipe } from '@angular/common';
 import { DataHolderDetailedModel } from '../dataholder/dataholder-models';
+import { NbToastrService, NbGlobalLogicalPosition, NbToastrConfig, NbComponentStatus  } from '@nebular/theme';
 import { MyNodeModel } from '../mynodemodel';
 import { ServerSourceConf } from 'ng2-smart-table/lib/lib/data-source/server/server-source.conf';
+import { OnlineIndicatorRenderComponent } from './onlineindicator.component';
 import { DataHolderIdentityColumnComponent } from '../../miscellaneous/identitycolumn.component';
 @Component({
   selector: 'app-dataholders',
@@ -21,7 +23,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
   settings: any;
 
   constructor(private http: HttpClient, private chRef: ChangeDetectorRef, private myNodeService: MyNodeService,
-    private httpService: HubHttpService) {
+    private httpService: HubHttpService, private toastrService: NbToastrService) {
     this.isTableInit = false;
     this.isLoading = true;
     this.failedLoading = false;
@@ -218,8 +220,8 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
   }
 
 
-  // config: NbToastrConfig;
-  // toastStatus: NbComponentStatus;
+  config: NbToastrConfig;
+  toastStatus: NbComponentStatus;
 
   onEdit(event) {
     const oldData = event.data;
@@ -241,11 +243,11 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         event.confirm.resolve();
         this.source.refresh();
       } else {
-      //   this.config = new NbToastrConfig({duration: 8000});
-      //   this.config.status = "warning";
-      // this.config.icon = 'alert-triangle';
-      //   this.toastrService.show(
-      //     'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
+        this.config = new NbToastrConfig({duration: 8000});
+        this.config.status = "warning";
+      this.config.icon = 'alert-triangle';
+        this.toastrService.show(
+          'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
       }
     });
   }
@@ -276,11 +278,11 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
       this.resetSource();
       event.confirm.resolve();
     } else {
-      // this.config = new NbToastrConfig({duration: 8000});
-      // this.config.status = "warning";
-      // this.config.icon = 'alert-triangle';
-      // this.toastrService.show(
-      //   'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
+      this.config = new NbToastrConfig({duration: 8000});
+      this.config.status = "warning";
+      this.config.icon = 'alert-triangle';
+      this.toastrService.show(
+        'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
     }
   });
   }

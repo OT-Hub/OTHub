@@ -1,7 +1,6 @@
 ﻿using System.Threading.Tasks;
 using OTHub.BackendSync.Blockchain.Tasks.Misc.Children;
 using OTHub.BackendSync.Logging;
-using OTHub.BackendSync.Markets.Tasks;
 
 namespace OTHub.BackendSync.Blockchain.Tasks.Misc
 {
@@ -9,9 +8,9 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc
     {
         public MiscTask() : base("Misc")
         {
-            Add(new GetMarketDataTask());
             Add(new CalculateOfferLambdaTask());
             Add(new UpdateHomeJobHistoryChartDataTask());
+            //Add(new GetMarketDataTask());
         }
 
         public override async Task Execute(Source source)

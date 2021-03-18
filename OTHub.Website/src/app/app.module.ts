@@ -7,29 +7,47 @@ import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { NgModule } from '@angular/core';
 import { HttpClientModule } from '@angular/common/http';
+import { CoreModule } from './@core/core.module';
+import { ThemeModule } from './@theme/theme.module';
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-
+import {
+  NbDialogModule,
+  NbMenuModule,
+  NbSidebarModule,
+  NbToastrModule,
+  NbWindowModule,
+  NbThemeService, NbCardModule, NbSelectModule
+} from '@nebular/theme';
 import {Ng2SmartTableModule} from "ng2-smart-table";
-import { AuthModule } from '@auth0/auth0-angular';
+import { StarfleetboardingComponent } from './pages/starfleetboarding/starfleetboarding.component';
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [AppComponent, StarfleetboardingComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
     HttpClientModule,
     AppRoutingModule,
+    NbSidebarModule.forRoot(),
+    NbMenuModule.forRoot(),
+    NbDialogModule.forRoot(),
+    NbWindowModule.forRoot(),
+    NbToastrModule.forRoot(),
+    CoreModule.forRoot(),
+    ThemeModule.forRoot(),
     Ng2SmartTableModule,
-    AuthModule.forRoot({
-      domain: 'othub.eu.auth0.com',
-      clientId: 'Yx384WexDQj9xz8DBK62mdUw74G54f2B'
-    }),
+    NbCardModule,
+    NbSelectModule,
   ],
   bootstrap: [AppComponent],
 })
 export class AppModule {
-  constructor() {
+  constructor(private themeService: NbThemeService) {
 
+    this.themeService.onThemeChange()
+          .subscribe((theme: any) => {
+            localStorage.setItem('theme', theme.name);
+          });
   }
 }

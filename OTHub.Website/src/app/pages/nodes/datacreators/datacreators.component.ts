@@ -8,6 +8,7 @@ declare const $: any;
 import * as moment from 'moment';
 import { ServerDataSource } from 'ng2-smart-table';
 import { MyNodeModel } from '../mynodemodel';
+import { NbToastrConfig, NbToastrService, NbComponentStatus } from '@nebular/theme';
 import { DataHolderDetailedModel } from '../dataholder/dataholder-models';
 import { ServerSourceConf } from 'ng2-smart-table/lib/lib/data-source/server/server-source.conf';
 import {DataCreatorIdentityColumnComponent} from '../../miscellaneous/identitycolumn.component'
@@ -19,7 +20,7 @@ import {DataCreatorIdentityColumnComponent} from '../../miscellaneous/identityco
 export class DatacreatorsComponent implements OnInit  {
   getNodesObserver: any;
   constructor(private http: HttpClient, private myNodeService: MyNodeService,
-              private httpService: HubHttpService) {
+              private httpService: HubHttpService, private toastrService: NbToastrService) {
     this.isLoading = true;
     this.failedLoading = false;
   }
@@ -101,8 +102,8 @@ export class DatacreatorsComponent implements OnInit  {
   }
 
 
-  // config: NbToastrConfig;
-  // toastStatus: NbComponentStatus;
+  config: NbToastrConfig;
+  toastStatus: NbComponentStatus;
 
   onEdit(event) {
     const oldData = event.data;
@@ -124,10 +125,10 @@ export class DatacreatorsComponent implements OnInit  {
         event.confirm.resolve();
         this.source.refresh();
       } else {
-        // this.config = new NbToastrConfig({duration: 8000});
-        // this.config.status = "warning";
-        // this.toastrService.show(
-        //   'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
+        this.config = new NbToastrConfig({duration: 8000});
+        this.config.status = "warning";
+        this.toastrService.show(
+          'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
       }
     });
   }
@@ -155,11 +156,11 @@ export class DatacreatorsComponent implements OnInit  {
       this.resetSource();
       event.confirm.resolve();
     } else {
-      // this.config = new NbToastrConfig({duration: 8000});
-      // this.config.status = "warning";
-      // this.config.icon = 'alert-triangle';
-      // this.toastrService.show(
-      //   'A data creator node was not found by searching for the identity ' + newData.Identity + '. Identities must have created at least one job to qualify as a data creator.',  'Add Node', this.config);
+      this.config = new NbToastrConfig({duration: 8000});
+      this.config.status = "warning";
+      this.config.icon = 'alert-triangle';
+      this.toastrService.show(
+        'A data creator node was not found by searching for the identity ' + newData.Identity + '. Identities must have created at least one job to qualify as a data creator.',  'Add Node', this.config);
     }
   });
   }

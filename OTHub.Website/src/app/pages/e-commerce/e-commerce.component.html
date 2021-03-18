@@ -1,29 +1,16 @@
-<!-- <div class="container" fxLayout="row" fxLayoutAlign="center none">
-
-  <div fxFlex="95%">
-    <div class="container" fxLayout="row" fxLayoutAlign="center none">
-
-      <h2>Welcome back!</h2>
-
-    </div>
-
-    <div class="container" fxLayout="row" fxLayoutAlign="center none">
-      <div fxFlex="50%" class="text-center no-records animate">
-    <mat-card>
-      Hello
-    </mat-card>
-      </div>
-
-    </div>
-  </div>
+<!-- <div class="alert alert-info">Welcome to OT Hub - Testnet. This website is being updated daily with improvements and
+  fixes.
+  <br>
+  Changes being worked on for this version of OT Hub can be tracked on <a
+    href="https://github.com/lukeskinner/OTHub/milestone/1">GitHub</a>.
 </div> -->
+<!--
 
-<div class="container" fxLayout="row" fxLayoutAlign="start start" fxLayout.xs="column" fxLayout.sm="column" >
-  <div fxFlex>
-    
-
-    <mat-card class="homeCard">
-      <mat-card-title>
+-->
+<div class="row">
+  <div class="col-md-8 col-xxxl-8">
+    <nb-card class="homeCard" status="basic" accent="success">
+      <nb-card-header>
         <img src="assets/images/2467.png" alt="OriginTrail" height="32" width="32" class="otLogo" />
         OriginTrail
         <small class="tokenSmall">TRAC</small>
@@ -31,9 +18,9 @@
           ${{Data?.PriceUsd | number: '1.2-4'}}
           <small class="btn-sm" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0" [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
         </div>
-      </mat-card-title>
-      <mat-card-content>
-        <div class="container" fxLayout="row" fxLayoutAlign="center none">
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
           <div class="col-md-4 col-sm-6  col-xs-6">
             <div class="homeHeader">
               Stats
@@ -73,7 +60,8 @@
                             </div>
                 </div>
               </ng-template>
-            {{formatAmount(Data?.StakedTokens)}} / {{Data?.CirculatingSupply}} {{(Data?.StakedTokens / Data?.CirculatingSupply) * 100 | number: '1.0-2'}}% 
+            {{formatAmount(Data?.StakedTokens)}} / {{Data?.CirculatingSupply}} {{(Data?.StakedTokens / Data?.CirculatingSupply) * 100 | number: '1.0-2'}}% <nb-icon icon="info-outline" nbPopoverTrigger="hover"
+                                                          [nbPopover]="stakedTokensPopupTemplate" nbButton status="primary"></nb-icon>
           </span>
 
             </div>
@@ -154,25 +142,35 @@
           </div>
 
         </div>
-      </mat-card-content>
-    </mat-card>
+      </nb-card-body>
+    </nb-card>
   </div>
-  <div class="fxFlex">
-    <mat-card class="homeCard" status="basic">
-      <mat-card-content>
+  <div class="col-md-4 col-xxxl-4">
+    <nb-card class="homeCard" status="basic">
+      <nb-card-body>
         <div id="JobBlockchainDistributionChart" style="width: 100%; height: 160px;" [hidden]="noJobsIn24H === true"></div>
         <div class="alert alert-warning" *ngIf="noJobsIn24H === true">
           Unable to show this chart as there have been no jobs started in 24 hours.
         </div>
-
-      </mat-card-content>
-    </mat-card>
+<!--<div class="row">-->
+<!--  <div class="col-12 col-md-6">-->
+<!--    <a href="https://coinmarketcap.com/currencies/origintrail/">CoinMarketCap</a>-->
+<!--  </div>-->
+<!--  <div class="col-12 col-md-6">-->
+<!--    <a href="https://otnode.com/">OriginTrail Node Guide</a>-->
+<!--  </div>-->
+<!--</div>-->
+      </nb-card-body>
+    </nb-card>
   </div>
 </div>
 
-
-    <mat-card class="homeCard">
-      <mat-card-content>
+<div class="row">
+  <div class="col-md-12 col-xxxl-12">
+    <nb-card class="homeCard" status="basic">
+      <nb-card-body>
         <div id="JobsHistoryChart" style="width: 100%; height: 340px;"></div>
-      </mat-card-content>
-    </mat-card>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>
