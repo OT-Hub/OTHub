@@ -1,4 +1,4 @@
-<section class="content">
+<section class="contentContainer">
     <div class="container-fluid">
         <div *ngIf="isLoading === false && failedLoading === true">
             <app-failed-loading-page></app-failed-loading-page>
@@ -16,77 +16,43 @@
             <div class="col-lg-12 col-md-12 col-sm-12">
 
 
-                <nb-card>
-                    <nb-card-header>
-<!--                      <img [src]="identityIconUrl" style="-->
-<!--                        width:24px;height:24px;margin-right:5px" />-->
-                         Data Creator</nb-card-header>
-                    <nb-list>
-<!--                        <nb-list-item>-->
-<!--                            Blockchain: {{NodeModel?.BlockchainName}}-->
-<!--                        </nb-list-item>-->
-<!--                        <nb-list-item>-->
-<!--                            Network: {{NodeModel?.NetworkName}}-->
-<!--                        </nb-list-item>-->
-<!--                        <nb-list-item *ngIf="myNodeService.GetName(NodeModel?.Identity, true)">-->
-<!--                            Display Name: {{myNodeService.GetName(NodeModel?.Identity, true)}}-->
-<!--                        </nb-list-item>-->
-<!--                        <nb-list-item>-->
-<!--                            Identity: {{NodeModel?.Identity}}&nbsp;<app-copyclipboardicon-->
-<!--                            [textToCopy]="NodeModel?.Identity" style="vertical-align:middle">-->
-<!--                        </app-copyclipboardicon>-->
-<!--                        </nb-list-item>-->
-<!--                        <nb-list-item *ngIf="NodeModel?.OldIdentity != null">-->
-<!--                            Old Identity: <a-->
-<!--                            title="You may find more historical data for this node on this identity."-->
-<!--                            routerLink="/nodes/datacreators/{{NodeModel?.OldIdentity}}">{{NodeModel?.OldIdentity}}</a>-->
-<!--                        </nb-list-item>-->
-<!--                        <nb-list-item *ngIf="NodeModel?.NewIdentity != null">-->
-<!--                            New Identity: <a-->
-<!--                            title="You may find more historical data for this node on this identity."-->
-<!--                            routerLink="/nodes/datacreators/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>-->
-<!--                        </nb-list-item>-->
-                        <nb-list-item>
+                <mat-card>
+                    <mat-card-title>
+
+                         Data Creator</mat-card-title>
+                    <mat-list>
+
+                        <mat-list-item>
                             Node Id: {{NodeModel?.NodeId}}&nbsp;<app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
                             style="vertical-align:middle">
                         </app-copyclipboardicon>
-                        </nb-list-item>
-<!--                        <nb-list-item *ngIf="NodeModel?.ManagementWallet != null">-->
-<!--                            Management Wallet: {{NodeModel?.ManagementWallet}}&nbsp;<app-copyclipboardicon-->
-<!--                            [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">-->
-<!--                        </app-copyclipboardicon>-->
-<!--                        <a *ngIf="NodeModel != null" class="themeLink"-->
-<!--                            routerLink="/nodes/dataholders/managementwallet/{{NodeModel?.ManagementWallet}}"-->
-<!--                            style="vertical-align: middle;margin-left:5px;"-->
-<!--                            title="Find Nodes with this Management Wallet">-->
-<!--                            <i class="fas fa-search"></i>-->
-<!--                        </a>-->
-<!--                        </nb-list-item>-->
-                        <nb-list-item>
+                        </mat-list-item>
+
+                        <mat-list-item>
                             Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
-                        </nb-list-item>
-                        <nb-list-item>
+                        </mat-list-item>
+                        <mat-list-item>
                             Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
-                        </nb-list-item>
-                        </nb-list>
-                </nb-card>
+                        </mat-list-item>
+                        </mat-list>
+                </mat-card>
 
             </div>
 
             <div class="col-lg-12 col-md-12 col-sm-12">
-              <nb-card>
-                <nb-card-header>Identities
-                </nb-card-header>
-                <nb-list>
-                  <nb-list-item *ngFor="let data of NodeModel?.Identities; let i = index">
+              <mat-card>
+                <mat-card-title>Identities
+                </mat-card-title>
+                <mat-list>
+                  <mat-list-item *ngFor="let data of NodeModel?.Identities; let i = index">
                     <span>{{data.Identity}}</span>
                     <span class="tokenSmall">{{data.BlockchainName}} {{data.NetworkName}}</span>
 
 
-                  </nb-list-item>
+                  </mat-list-item>
 
-                </nb-list>
-              </nb-card>
+                </mat-list>
+              </mat-card>
             </div>
 
             <div class="col-lg-12 col-md-12 col-sm-12">
@@ -102,36 +68,7 @@
 
 
             </div>
-<!--            <div class="col-lg-12 col-md-12 col-sm-12">-->
 
-<!--                <nb-card>-->
-<!--                    <nb-card-header>Blockchain</nb-card-header>-->
-<!--                    <span style="margin: 10px 20px;">Profile Creation</span>-->
-<!--                    <nb-list>-->
-<!--                        <nb-list-item class="dont-break-out">-->
-<!--                            Transaction Hash: {{NodeModel?.CreateTransactionHash}}&nbsp;<app-copyclipboardicon-->
-<!--                            [textToCopy]="NodeModel?.CreateTransactionHash" style="vertical-align:middle">-->
-<!--                        </app-copyclipboardicon>-->
-<!--                            </nb-list-item>-->
-<!--                            <nb-list-item>-->
-<!--                                Transaction Fee:-->
-<!--                                {{NodeModel?.CreateGasUsed * (NodeModel?.CreateGasPrice / 1000000000000000000)| number:'1.0-8'}}-->
-<!--                                ETH ({{NodeModel?.CreateGasPrice / 1000000000 | number:'1.0-1'}} Gwei)-->
-<!--                            </nb-list-item>-->
-<!--                            </nb-list>-->
-<!--                    &lt;!&ndash; <nb-card-body>-->
-<!--                        Profile Creation-->
-<!--                        <ul class="list-group list-group-flush">-->
-<!--                            <li class="list-group-item">-->
-
-<!--                            </li>-->
-<!--                            <li class="list-group-item">-->
-
-<!--                            </li>-->
-<!--                        </ul>-->
-<!--                     </nb-card-body> &ndash;&gt;-->
-<!--                </nb-card>-->
-<!--            </div>-->
         </div>
     </div>
 </section>

@@ -1,4 +1,4 @@
-<section class="content">
+<section class="contentContainer">
     <div class="container-fluid">
 
         <div *ngIf="isLoading === false && failedLoading === true">
@@ -7,35 +7,35 @@
         <div class="row clearfix" [hidden]="failedLoading === true">
 
             <div class="col-lg-12 col-md-12 col-sm-12">
-                <nb-card>
-                    <nb-card-header>Smart Contracts</nb-card-header>
-                    <nb-card-body>
+                <mat-card>
+                    <mat-card-title>Smart Contracts</mat-card-title>
+                    <mat-card-content>
                         <span style="padding:5 10px;">OT Hub is powered by reading all the data available in ODN smart contracts on each blockchain.</span>
                         <br><br>
                         This page is useless for 99% of users. This will only help software developers in the ODN ecosystem. The addresses shown here are only available for diagnostic purposes and not guaranteed to be correct.
                         <br><br>
                         <strong>Do not send tokens or any blockchain transaction to any of these smart contract addresses. You will lose anything you send.</strong>
-                    </nb-card-body>
-                    </nb-card>
+                    </mat-card-content>
+                    </mat-card>
             </div>
 
             <div class="col-lg-12 col-md-12 col-sm-12" *ngFor="let group of Data">
-                <nb-card>
-                    <nb-card-header>{{group.Name}}</nb-card-header>                 
-                    <nb-card-body>
+                <mat-card>
+                    <mat-card-header>{{group.Name}}</mat-card-header>                 
+                    <mat-card-body>
                         <span style="padding:5 10px;">Hub Address: {{group.HubAddress}}</span>
-                    </nb-card-body>
-                    <nb-list>
-                        <nb-list-item *ngFor="let data of group.Items" style="position: relative;">
+                    </mat-card-body>
+                    <mat-list>
+                        <mat-list-item *ngFor="let data of group.Items" style="position: relative;">
 
                             <div style="margin-left:10px;">
                                 {{getTypeName(data.Type)}}:&nbsp;{{data.Address}}
-                                <nb-badge style="font-size: 12px;padding:6px;margin-right:10px;"
-                                text="{{data.IsLatest == true ? 'Latest' : 'Archived'}}" status="{{data.IsLatest == true ? 'success' : 'danger'}}" position="middle right"></nb-badge>
+                                <mat-badge style="font-size: 12px;padding:6px;margin-right:10px;"
+                                text="{{data.IsLatest == true ? 'Latest' : 'Archived'}}" status="{{data.IsLatest == true ? 'success' : 'danger'}}" position="middle right"></mat-badge>
                             </div>
-                        </nb-list-item>
-                    </nb-list>
-                </nb-card>
+                        </mat-list-item>
+                    </mat-list>
+                </mat-card>
             </div>
 
         </div>

@@ -1,5 +1,5 @@
 import { Component, OnInit, Input, HostListener, Output, EventEmitter, Directive } from '@angular/core';
-import { NbIconLibraries, NbToastrService } from '@nebular/theme';
+
 declare const $: any;
 @Component({
   selector: 'app-copyclipboardicon',
@@ -8,8 +8,8 @@ declare const $: any;
 })
 export class CopyclipboardiconComponent implements OnInit {
 
-  constructor(iconsLibrary: NbIconLibraries, private toastrService: NbToastrService) {
-    iconsLibrary.registerFontPack('fa', { packClass: 'fa', iconClassPrefix: 'fa' });
+  constructor() {
+
    }
 
   @Input() textToCopy: string;
@@ -38,8 +38,8 @@ export class CopyclipboardiconComponent implements OnInit {
 
   public notify() {
 
-    this.toastrService.show(
-      status || 'Success',
-      `Text copied to clipboard`);
+    // this.toastrService.show(
+    //   status || 'Success',
+    //   `Text copied to clipboard`);
  }
 }

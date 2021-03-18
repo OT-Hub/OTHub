@@ -1,7 +1,6 @@
-import {Component, OnDestroy, OnInit, ViewChild} from '@angular/core';
+import {Component, OnDestroy, OnInit} from '@angular/core';
 import { Inject, NgZone, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
-import {NbThemeService, NbMediaBreakpoint, NbMediaBreakpointsService, NbPopoverDirective} from '@nebular/theme';
 import {SystemStatusModel} from "../system/status/system-models";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
 import {MyNodeService} from "../nodes/mynodeservice";
@@ -18,9 +17,8 @@ import {AxisDataItem, DateAxisDataItem} from "@amcharts/amcharts4/charts";
   styleUrls: ['./e-commerce.component.scss'],
 })
 export class ECommerceComponent implements OnDestroy, OnInit {
-  breakpoint: NbMediaBreakpoint;
-  breakpoints: any;
-  themeSubscription: any;
+
+  //themeSubscription: any;
   getDataObservable: any;
   Data: HomeV3Model;
   failedLoading: boolean;
@@ -31,17 +29,10 @@ export class ECommerceComponent implements OnDestroy, OnInit {
   private chart: am4charts.XYChart;
   JobsChartData: HomeJobsChartDataModel[];
 
-  constructor(private themeService: NbThemeService,
-              private breakpointService: NbMediaBreakpointsService,
-              private httpService: HubHttpService,
+  constructor(private httpService: HubHttpService,
               private http: HttpClient,
               @Inject(PLATFORM_ID) private platformId, private zone: NgZone) {
 
-    this.breakpoints = this.breakpointService.getBreakpointsMap();
-    this.themeSubscription = this.themeService.onMediaQueryChange()
-      .subscribe(([oldValue, newValue]) => {
-        this.breakpoint = newValue;
-      });
   }
 
   browserOnly(f: () => void) {
@@ -275,8 +266,8 @@ export class ECommerceComponent implements OnDestroy, OnInit {
       }
     });
 
-    this.themeSubscription.unsubscribe();
-    this.getDataObservable.unsubscribe();
+    //this.themeSubscription.unsubscribe();
+    this.getDataObservable?.unsubscribe();
   }
 
 

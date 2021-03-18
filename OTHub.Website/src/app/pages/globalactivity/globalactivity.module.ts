@@ -4,8 +4,9 @@ import { MomentModule } from 'ngx-moment';
 import { SharedModule } from '../shared.module';
 import { GlobalActivityRoutingModule } from './globalactivity-routing.module';
 import { GlobalActivityComponent } from './globalactivity.component';
-import { NbCardModule, NbSelectModule, NbButtonModule, NbStepperModule, NbPopoverModule } from '@nebular/theme';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
+import {MatCardModule} from '@angular/material/card';
+import {MatIconModule} from '@angular/material/icon';
 @NgModule({
   declarations: [GlobalActivityComponent ],
   imports: [
@@ -13,12 +14,9 @@ import { Ng2SmartTableModule } from 'ng2-smart-table';
     GlobalActivityRoutingModule,
     MomentModule,
     SharedModule,
-    NbCardModule,
     Ng2SmartTableModule,
-    NbSelectModule,
-    NbButtonModule,
-    NbStepperModule,
-    NbPopoverModule
+    MatCardModule,
+    MatIconModule
   ]
 })
 export class GlobalActivityModule {
