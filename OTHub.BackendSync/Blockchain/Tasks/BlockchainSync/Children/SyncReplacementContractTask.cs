@@ -31,12 +31,12 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                 //OTContract litigationStorageContract = OTContract.GetByType(connection, (int) ContractType.LitigationStorage).FirstOrDefault(c => c.IsLatest);
 
                 //Contract storageContract = new Contract((EthApiService)cl.Eth, Constants.GetContractAbi(ContractType.LitigationStorage), litigationStorageContract.Address);
-               // Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
+                // Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
 
-               int blockchainID = GetBlockchainID(connection, blockchain, network);
+                int blockchainID = GetBlockchainID(connection, blockchain, network);
 
-               var cl = GetWeb3(connection, blockchainID);
-               var eth = new EthApiService(cl.Client);
+                var cl = GetWeb3(connection, blockchainID);
+                var eth = new EthApiService(cl.Client);
 
                 foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Replacement, blockchainID))
                 {
@@ -57,7 +57,6 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                     var toBlock = new BlockParameter(LatestBlockNumber);
 
-                    await Task.Delay(50);
                     var replacementCompletedEvents = await replacementCompletedEvent.GetAllChangesDefault(
                         replacementCompletedEvent.CreateFilterInput(new BlockParameter(contract.SyncBlockNumber),
                             toBlock));
@@ -70,7 +69,6 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                     foreach (EventLog<List<ParameterOutput>> eventLog in replacementCompletedEvents)
                     {
-                        await Task.Delay(50);
 
                         var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                             cl, blockchainID);
@@ -84,7 +82,6 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                         var chosenHolder = (string)eventLog.Event
                                 .First(e => e.Parameter.Name == "chosenHolder").Result;
 
-                        await Task.Delay(50);
                         var transaction = await eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
                         var receipt = await eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
 

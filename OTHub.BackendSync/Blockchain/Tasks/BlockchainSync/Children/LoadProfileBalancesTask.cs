@@ -53,7 +53,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
             var randomMinutes = random.Next(0, 60);
 
-     
+
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -214,8 +214,6 @@ where i.Identity = @identity", new
 
                     if (updateProfile || (currentIdentity.NodeId ?? "").Length > 40)
                     {
-                        await Task.Delay(50);
-
                         var output =
                             await profileFunction.CallDeserializingToObjectAsync<ProfileFunctionOutput>(
                                 currentIdentity.Identity);
@@ -224,8 +222,8 @@ where i.Identity = @identity", new
                         var stakeReserved = Web3.Convert.FromWei(output.stakeReserved);
                         var nodeId = HexHelper.ByteArrayToString(output.nodeId, false).Substring(0, 40);
                         var withdrawalAmount = Web3.Convert.FromWei(output.withdrawalAmount);
-                        var withdrawalTimestamp = (UInt64) output.withdrawalTimestamp;
-                        var reputation = (UInt64) output.reputation;
+                        var withdrawalTimestamp = (UInt64)output.withdrawalTimestamp;
+                        var reputation = (UInt64)output.reputation;
 
                         if (currentIdentity.Stake != stake
                             || currentIdentity.StakeReserved != stakeReserved
@@ -297,15 +295,13 @@ where i.Identity = @identity", new
 
                 var otVersionFunction = ercContract.GetFunction("otVersion");
 
-                await Task.Delay(100);
-
                 var value = await otVersionFunction.CallAsync<BigInteger>();
 
                 OTIdentity.Insert(connection, new OTIdentity
                 {
                     TransactionHash = identity.TransactionHash,
                     Identity = identity.NewIdentity,
-                    Version = (int) value,
+                    Version = (int)value,
                     BlockchainID = blockchainId
                 });
             }
@@ -327,15 +323,13 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
 
                 var otVersionFunction = ercContract.GetFunction("otVersion");
 
-                await Task.Delay(100);
-
                 var value = await otVersionFunction.CallAsync<BigInteger>();
 
                 OTIdentity.Insert(connection, new OTIdentity
                 {
                     TransactionHash = hash,
                     Identity = identity,
-                    Version = (int) value,
+                    Version = (int)value,
                     BlockchainID = blockchainId
                 });
             }
