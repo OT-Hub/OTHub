@@ -53,27 +53,27 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
             var hubContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.Hub, blockchain, network), hubAddress);
 
             var tokenAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Token.ToString());
-            await Task.Delay(250);
+
             var approvalAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Approval.ToString());
-            await Task.Delay(250);
+           
             var holdingStorageAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.HoldingStorage.ToString());
-            await Task.Delay(250);
+       
             var holdingAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Holding.ToString());
-            await Task.Delay(250);
+         
             var profileStorageAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.ProfileStorage.ToString());
-            await Task.Delay(250);
+
             var profileAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Profile.ToString());
-            await Task.Delay(250);
+
             var readingAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Reading.ToString());
-            await Task.Delay(250);
+         
             var readingStorageAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.ReadingStorage.ToString());
-            await Task.Delay(250);
+       
             var litigationAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Litigation.ToString());
-            await Task.Delay(250);
+      
             var litigationStorageAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.LitigationStorage.ToString());
-            await Task.Delay(250);
+         
             var replacementAddress = await hubContract.GetFunction("getContractAddress").CallAsync<string>(ContractTypeEnum.Replacement.ToString());
-            await Task.Delay(250);
+       
 
             ulong fromBlockNumber = await connection.ExecuteScalarAsync<UInt64>("SELECT FromBlockNumber FROM blockchains where id = @id", new
             {
@@ -233,8 +233,6 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 
             foreach (var eventLog in eventsOfChange)
             {
-                await Task.Delay(250);
-
                 Function setContractAddressFunction = hubContract.GetFunction("setContractAddress");
 
                 var transaction = await web3.Eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);

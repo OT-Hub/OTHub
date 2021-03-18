@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MySqlConnector;
 using Nethereum.Hex.HexTypes;
@@ -10,24 +11,21 @@ namespace OTHub.BackendSync.Blockchain
 {
     public static class BlockHelper
     {
-        private static readonly object _getEthBlockLock = new object();
+        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
         public static async Task<EthBlock> GetBlock(MySqlConnection connection, string blockHash, HexBigInteger blockNumber, Web3 cl, int blockchainID)
         {
-            var block = EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value, blockchainID);
+            var block = await EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value, blockchainID);
 
             if (block == null)
             {
-                bool madeApiCall = false;
-
-                lock (_getEthBlockLock)
+                await _semaphore.WaitAsync();
+                try
                 {
-                    block = EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value, blockchainID);
+                    block = await EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value, blockchainID);
 
                     if (block == null)
                     {
-                        var apiBlock = cl.Eth.Blocks.GetBlockWithTransactionsHashesByNumber.SendRequestAsync(blockNumber).GetAwaiter().GetResult();
-                        madeApiCall = true;
-
+                        var apiBlock = await cl.Eth.Blocks.GetBlockWithTransactionsHashesByNumber.SendRequestAsync(blockNumber);
                         block = new EthBlock
                         {
                             BlockHash = blockHash,
@@ -39,10 +37,9 @@ namespace OTHub.BackendSync.Blockchain
                         EthBlock.Insert(connection, block);
                     }
                 }
-
-                if (madeApiCall)
+                finally
                 {
-                    await Task.Delay(200);
+                    _semaphore.Release();
                 }
             }
 
