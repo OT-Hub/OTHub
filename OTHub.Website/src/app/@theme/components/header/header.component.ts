@@ -38,7 +38,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   networks = [
     {
-      name: 'Mainnet',
+      name: 'Mainnet (V5)',
+      url: 'https://v5.othub.info'
+    },
+    {
+      name: 'Mainnet (Legacy)',
       url: 'https://othub.origin-trail.network'
     },
     {
