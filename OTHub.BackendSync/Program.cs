@@ -75,7 +75,7 @@ namespace OTHub.BackendSync
 
                     if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Mainnet)
                     {
-                        controller.Schedule(new GetMarketDataTask(), TimeSpan.FromMinutes(60), true);
+                        controller.Schedule(new GetMarketDataTask(), TimeSpan.FromMinutes(120), true);
 
                         controller.Schedule(new CalculateOfferLambdaTask(), TimeSpan.FromMinutes(60), true);
                     }
@@ -99,8 +99,8 @@ namespace OTHub.BackendSync
                 
                 controller.Schedule(new RefreshAllHolderLitigationStatusesTask(), TimeSpan.FromHours(2), true);
 
-                controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(4), true);
-                controller.Schedule(new LoadProfileBalancesTask(), TimeSpan.FromMinutes(5), true);
+                controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(8), true);
+                controller.Schedule(new LoadProfileBalancesTask(), TimeSpan.FromMinutes(10), true);
 
                 controller.Start();
             }));
