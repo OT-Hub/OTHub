@@ -99,7 +99,7 @@ If you want to get more information about a specific data creator you should use
                 limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 NodeDataCreatorSummaryModel[] summary = (await connection.QueryAsync<NodeDataCreatorSummaryModel>(

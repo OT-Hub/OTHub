@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 using OTHub.APIServer.Sql.Models;
@@ -10,7 +11,7 @@ namespace OTHub.APIServer.Sql
 {
     public static class JobsSql
     {
-        public static OfferSummaryModel[] GetWithPaging(int limit, int page, string OfferId_like,
+        public static async Task<OfferSummaryModel[]> GetWithPaging(int limit, int page, string OfferId_like,
             string sort,
            string order, out int total)
         {
@@ -55,10 +56,10 @@ namespace OTHub.APIServer.Sql
                 limitSql = $"LIMIT {page * limit},{limit}";
             }
 
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                OfferSummaryModel[] rows = connection.Query<OfferSummaryModel>(
+                OfferSummaryModel[] rows = (await connection.QueryAsync<OfferSummaryModel>(
                     $@"SELECT I.Identity DCIdentity, O.OfferId, O.CreatedTimestamp as CreatedTimestamp, o.FinalizedTimestamp as FinalizedTimestamp, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
 (CASE WHEN O.IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
@@ -78,9 +79,9 @@ GROUP BY O.OfferID
 {limitSql}", new
                     {
                         OfferId_like
-                    }).ToArray();
+                    })).ToArray();
 
-                total = connection.ExecuteScalar<int>(@"SELECT COUNT(DISTINCT O.OfferID)
+                total = await connection.ExecuteScalarAsync<int>(@"SELECT COUNT(DISTINCT O.OfferID)
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID

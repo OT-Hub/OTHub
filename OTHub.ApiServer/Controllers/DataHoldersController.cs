@@ -103,12 +103,12 @@ If you want to get more information about a specific data holder you should use 
         )]
         [SwaggerResponse(200, type: typeof(String))]
         [SwaggerResponse(500, "Internal server error")]
-        public String GetManagementWalletForIdentity([FromQuery, SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity)
+        public async Task<String> GetManagementWalletForIdentity([FromQuery, SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity)
         {
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                return connection.ExecuteScalar<string>(DataHoldersSql.GetManagementWalletForIdentitySql, new {identity = identity});
+                return await connection.ExecuteScalarAsync<string>(DataHoldersSql.GetManagementWalletForIdentitySql, new {identity = identity});
             }
         }
 
@@ -119,12 +119,12 @@ If you want to get more information about a specific data holder you should use 
         )]
         [SwaggerResponse(200, type: typeof(RecentPayoutGasPrice[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public RecentPayoutGasPrice[] GetRecentPayoutGasPrices()
+        public async Task<RecentPayoutGasPrice[]> GetRecentPayoutGasPrices()
         {
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                return connection.Query<RecentPayoutGasPrice>(DataHoldersSql.GetRecentPayoutGasPricesSql).ToArray();
+                return (await connection.QueryAsync<RecentPayoutGasPrice>(DataHoldersSql.GetRecentPayoutGasPricesSql)).ToArray();
             }
         }
     }

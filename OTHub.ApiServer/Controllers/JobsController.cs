@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OTHub.APIServer.Sql;
@@ -23,7 +24,7 @@ If you want to get more information about a specific offer you should use /api/j
         )]
         [SwaggerResponse(200, type: typeof(OfferSummaryModel[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public IActionResult GetWithPaging(
+        public async Task<IActionResult>GetWithPaging(
             [FromQuery, SwaggerParameter("How many offers you want to return per page", Required = true)]
             int _limit,
             [FromQuery, SwaggerParameter("The page number to start from. The first page is 0.", Required = true)]
