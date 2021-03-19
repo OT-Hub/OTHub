@@ -15,10 +15,10 @@ const routes: Routes = [{
       path: 'dashboard',
       component: ECommerceComponent,
     },
-    {
-      path: 'starfleetboarding',
-      component: StarfleetboardingComponent,
-    },
+    // {
+    //   path: 'starfleetboarding',
+    //   component: StarfleetboardingComponent,
+    // },
     // {
     //   path: 'iot-dashboard',
     //   component: DashboardComponent,
