@@ -11,9 +11,9 @@ namespace OTHub.APIServer.Sql
 {
     public static class JobsSql
     {
-        public static async Task<OfferSummaryModel[]> GetWithPaging(int limit, int page, string OfferId_like,
+        public static async Task<(OfferSummaryModel[] results, int total)> GetWithPaging(int limit, int page, string OfferId_like,
             string sort,
-           string order, out int total)
+           string order)
         {
             string orderBy = String.Empty;
 
@@ -81,7 +81,7 @@ GROUP BY O.OfferID
                         OfferId_like
                     })).ToArray();
 
-                total = await connection.ExecuteScalarAsync<int>(@"SELECT COUNT(DISTINCT O.OfferID)
+                var total = await connection.ExecuteScalarAsync<int>(@"SELECT COUNT(DISTINCT O.OfferID)
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
@@ -91,7 +91,7 @@ WHERE O.IsFinalized = 1 AND COALESCE(@OfferId_like, '') = '' OR O.OfferId = @Off
                 });
 
 
-                return rows;
+                return (rows, total);
             }
         }
     }
