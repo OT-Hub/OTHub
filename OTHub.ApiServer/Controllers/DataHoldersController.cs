@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
@@ -27,16 +28,16 @@ If you want to get more information about a specific data holder you should use 
         )]
         [SwaggerResponse(200, type: typeof(NodeDataHolderSummaryModel[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public IActionResult Get([FromQuery,
-                                  SwaggerParameter(
-                                      "The filter to use for the ERC version of the identity. The ODN launched with version 0 for. In Decemember 2018 all nodes upgraded their identities (which also generated them new identities) which are version 1. The OT Hub website only shows users version 1 identities.",
-                                      Required = true)]
+        public async Task<IActionResult> Get([FromQuery,
+                                             SwaggerParameter(
+                                                 "The filter to use for the ERC version of the identity. The ODN launched with version 0 for. In Decemember 2018 all nodes upgraded their identities (which also generated them new identities) which are version 1. The OT Hub website only shows users version 1 identities.",
+                                                 Required = true)]
             int ercVersion,
             [FromQuery,
              SwaggerParameter(
-                 "Filter the results to only include identities listed. Multiple identities can be provided by seperating them with &. Up to 50 can be provided maximum.",
+                 "Filter the results to only include node ids listed. Multiple node ids can be provided by seperating them with &. Up to 50 can be provided maximum.",
                  Required = false)]
-            string[] identity,
+            string[] nodes,
             [FromQuery,
              SwaggerParameter(
                  "Filter the results to only include identities with the specified management wallet address. Multiple management wallet addresses can be provided by seperating them with &. Up to 50 can be provided maximum.",
@@ -46,7 +47,7 @@ If you want to get more information about a specific data holder you should use 
             int _limit,
             [FromQuery, SwaggerParameter("The page number to start from. The first page is 0.", Required = true)]
             int _page,
-            [FromQuery] string Identity_like,
+            [FromQuery] string NodeId_like,
             [FromQuery] string _sort,
             [FromQuery] string _order,
             [FromQuery] bool export,
@@ -54,7 +55,7 @@ If you want to get more information about a specific data holder you should use 
         {
             _page--;
 
-            if (identity.Length >= 50 || identity.Any(i => i.Length >= 50 || !i.StartsWith("0x") || i.Contains(" ")))
+            if (nodes.Length >= 50 || nodes.Any(i => i.Length >= 50 || i.Contains(" ")))
             {
                 return new OkObjectResult(new NodeDataHolderSummaryModel[0]);
             }
@@ -65,34 +66,33 @@ If you want to get more information about a specific data holder you should use 
                 return new OkObjectResult(new NodeDataHolderSummaryModel[0]);
             }
 
-            if (Identity_like != null && Identity_like.Length > 200)
+            if (NodeId_like != null && NodeId_like.Length > 200)
             {
-                Identity_like = null;
+                NodeId_like = null;
             }
 
-            NodeDataHolderSummaryModel[] rows = DataHoldersSql.Get(ercVersion, identity, managementWallet, _limit,
-                _page, Identity_like, _sort, _order,
-                out int total);
+            var result = await DataHoldersSql.Get(ercVersion, nodes, managementWallet, _limit,
+                _page, NodeId_like, _sort, _order);
 
             HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
-            HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
+            HttpContext.Response.Headers["X-Total-Count"] = result.total.ToString();
 
             if (export)
             {
                 if (exportType == 0)
                 {
-                    return File(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(rows)), "application/json",
+                    return File(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(result.results)), "application/json",
                         "dataholders.json", false);
                 }
 
                 if (exportType == 1)
                 {
-                    return File(Encoding.UTF8.GetBytes(CsvSerializer.SerializeToCsv(rows)), "text/csv",
+                    return File(Encoding.UTF8.GetBytes(CsvSerializer.SerializeToCsv(result.results)), "text/csv",
                         "dataholders.csv", false);
                 }
             }
 
-            return new OkObjectResult(rows);
+            return new OkObjectResult(result.results);
         }
 
 

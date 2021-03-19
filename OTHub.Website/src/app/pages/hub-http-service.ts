@@ -10,7 +10,7 @@ export class HubHttpService {
     constructor() {
         if (window.location.hostname) {
             if (window.location.hostname === 'localhost') {
-                 this.ApiUrl = 'http://localhost:6851';
+                 this.ApiUrl = 'http://localhost:5000';
                 // this.ApiUrl = 'https://testnetapi.othub.info';
                  this.IsTestNet = false;
             } else if (window.location.hostname === 'othub-testnet.origin-trail.network') {
