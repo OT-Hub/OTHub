@@ -20,7 +20,7 @@ namespace OTHub.APIServer
                 .UseKestrel(o => o.AddServerHeader = false)
                 .ConfigureAppConfiguration((context, builder) =>
                 {
-                    builder.AddUserSecrets<OTHubSettings>();
+                    //builder.AddUserSecrets<OTHubSettings>();
                     builder.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
                     builder.AddEnvironmentVariables();
                 })
