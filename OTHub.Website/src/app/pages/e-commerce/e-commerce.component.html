@@ -28,7 +28,22 @@
             <div class="homeField">
               Total jobs:
               <span class="homeData">
-            {{Data?.TotalJobs}}
+                <ng-template #totalJobsPopupTemplate>
+                  <div style="padding:10px; border-radius: 2px; border: 1px solid gray;">
+                                <div *ngFor="let bc of Data?.TotalJobsByBlockchain">
+                                <small class="blockchainSmall">{{bc.BlockchainName}}</small>
+  
+                                <div class="homeField">
+                                  Total jobs:
+                                  <span class="homeData">
+                              {{bc.Jobs}} 
+                            </span>
+                                </div>
+                              </div>
+                  </div>
+                </ng-template>
+            {{Data?.TotalJobs}} <nb-icon icon="info-outline" nbPopoverTrigger="hover"
+            [nbPopover]="totalJobsPopupTemplate" nbButton status="primary"></nb-icon>
           </span>
             </div>
             <div class="homeField">
@@ -76,7 +91,22 @@
             <div class="homeField">
               Jobs:
               <span class="homeData">
-            {{Data?.Jobs24H}}
+                  <ng-template #jobs24HPopupTemplate>
+                    <div style="padding:10px; border-radius: 2px; border: 1px solid gray;">
+                                  <div *ngFor="let bc of Data?.Jobs24HByBlockchain">
+                                  <small class="blockchainSmall">{{bc.BlockchainName}}</small>
+    
+                                  <div class="homeField">
+                                    24h Jobs:
+                                    <span class="homeData">
+                                {{bc.Jobs}} 
+                              </span>
+                                  </div>
+                                </div>
+                    </div>
+                  </ng-template>
+            {{Data?.Jobs24H}}  <nb-icon icon="info-outline" nbPopoverTrigger="hover"
+            [nbPopover]="jobs24HPopupTemplate" nbButton status="primary"></nb-icon>
           </span>
             </div>
             <div class="homeField">

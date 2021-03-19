@@ -355,10 +355,11 @@ StakedTokens: string;
 FeesByBlockchain: HomeFeesByBlockchainModel[];
 StakedByBlockchain: HomeStakedTokensByBlockchainModel[];
 JobBlockchainDistribution: HomeJobBlockchainDistributionModel[];
+TotalJobsByBlockchain: HomeJobsModel[];
+Jobs24HByBlockchain: HomeJobsModel[];
 }
 export class HomeFeesByBlockchainModel {
   BlockchainName: string;
-  NetworkName: string;
   ShowCostInUSD: boolean;
   JobCreationCost: number;
   JobFinalisedCost: number;
@@ -367,7 +368,6 @@ export class HomeFeesByBlockchainModel {
 
 export class HomeStakedTokensByBlockchainModel {
   BlockchainName: string;
-  NetworkName: string;
   StakedTokens: string;
 }
 
@@ -383,4 +383,9 @@ export class HomeJobBlockchainDistributionModel {
   Color: string;
   Jobs: number;
   Percentage: number;
+}
+
+export class HomeJobsModel {
+  BlockchainName: string;
+  Jobs: number;
 }

@@ -18,6 +18,8 @@ namespace OTHub.APIServer.Sql.Models.Home
         
         public HomeFeesModel[] FeesByBlockchain { get; set; }
         public HomeStakedModel[] StakedByBlockchain { get; set; }
+        public HomeJobsModel[] TotalJobsByBlockchain { get; set; }
+        public HomeJobsModel[] Jobs24HByBlockchain { get; set; }
         //public HomeJobBlockchainDistributionModel[] JobBlockchainDistribution { get; set; }
         public decimal PercentChange24H { get; set; }
         public decimal PriceUsd { get; set; }
@@ -27,7 +29,6 @@ namespace OTHub.APIServer.Sql.Models.Home
     public class HomeFeesModel
     {
         public String BlockchainName { get; set; }
-        public string NetworkName { get; set; }
         public bool ShowCostInUSD { get; set; }
         public decimal? JobCreationCost { get; set; }
         public decimal? JobFinalisedCost { get; set; }
@@ -37,8 +38,13 @@ namespace OTHub.APIServer.Sql.Models.Home
     public class HomeStakedModel
     {
         public String BlockchainName { get; set; }
-        public string NetworkName { get; set; }
         public string StakedTokens { get; set; }
+    }
+
+    public class HomeJobsModel
+    {
+        public String BlockchainName { get; set; }
+        public int Jobs { get; set; }
     }
 
     public class HomeJobBlockchainDistributionModel

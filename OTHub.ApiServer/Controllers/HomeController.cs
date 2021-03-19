@@ -51,9 +51,10 @@ namespace OTHub.APIServer.Controllers
             {
                 var summary = await connection.QuerySingleAsync<HomeV3Model>(@"SELECT
  (
-SELECT COUNT(DISTINCT H.Holder)
+SELECT COUNT(DISTINCT I.NodeId)
 FROM OTOffer O
 JOIN OTOffer_Holders H ON H.OfferID = O.OfferId
+JOIN otidentity I ON I.Identity = H.Holder
 WHERE O.IsFinalized = 1 AND NOW() <= DATE_ADD(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)) ActiveNodes,
 (
 SELECT COUNT(*)
@@ -90,7 +91,7 @@ WHERE TIMESTAMP <= of.Timestamp)
 GROUP BY bc.id")).ToArray();
 
                 var payoutsCosts = (await connection.QueryAsync<HomeFeesModel>(@"SELECT 
-bc.BlockchainName, bc.NetworkName,
+bc.DisplayName BlockchainName,
 bc.ShowCostInUSD,
 CAST(AVG((CAST(po.GasUsed AS DECIMAL(20,4)) * (po.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20, 8)) PayoutCost
 FROM blockchains bc
@@ -105,20 +106,32 @@ GROUP BY bc.id")).ToArray();
                 foreach (var homeFeesModel in payoutsCosts)
                 {
                     var model = summary.FeesByBlockchain.FirstOrDefault(b =>
-                        b.NetworkName == homeFeesModel.NetworkName && b.BlockchainName == homeFeesModel.BlockchainName);
+                        b.BlockchainName == homeFeesModel.BlockchainName);
                     if (model != null)
                     {
                         model.PayoutCost = homeFeesModel.PayoutCost;
                     }
                 }
 
-                summary.StakedByBlockchain = (await connection.QueryAsync<HomeStakedModel>(@"SELECT bc.BlockchainName, bc.NetworkName, SUM(i.Stake) StakedTokens
+                summary.StakedByBlockchain = (await connection.QueryAsync<HomeStakedModel>(@"SELECT bc.DisplayName BlockchainName, SUM(i.Stake) StakedTokens
 FROM otidentity i
 JOIN blockchains bc ON bc.ID = i.BlockchainID
 WHERE i.version = (
 SELECT MAX(ii.version)
 FROM otidentity ii)
 GROUP BY bc.ID")).ToArray();
+
+                summary.TotalJobsByBlockchain = (await connection.QueryAsync<HomeJobsModel>(@"SELECT b.DisplayName BlockchainName, COUNT(O.OfferID) Jobs
+FROM otoffer o
+JOIN blockchains b ON b.id = o.BlockchainID
+WHERE o.IsFinalized = 1
+GROUP BY b.ID")).ToArray();
+
+                summary.Jobs24HByBlockchain = (await connection.QueryAsync<HomeJobsModel>(@"SELECT b.DisplayName BlockchainName, COUNT(O.OfferID) Jobs
+FROM blockchains b
+LEFT JOIN otoffer o ON b.id = o.BlockchainID AND o.IsFinalized = 1 AND o.CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
+GROUP BY b.ID
+ORDER BY b.ID")).ToArray();
 
                 summary.PriceUsd = tickerInfo.PriceUsd;
                 summary.PercentChange24H = tickerInfo.PercentChange24H;
