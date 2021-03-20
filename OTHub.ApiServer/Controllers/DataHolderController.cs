@@ -406,7 +406,7 @@ Data Included:
                 if (profile != null)
                 {
                     profile.Identities = (await connection.QueryAsync<NodeDetailedIdentity>(
-                        @"SELECT i.Identity, bc.BlockchainName, bc.NetworkName FROM otidentity i
+                        @"SELECT i.Identity, bc.DisplayName BlockchainName, i.Stake, i.StakeReserved FROM otidentity i
 JOIN blockchains bc ON bc.id = i.blockchainid
 WHERE i.NodeId = @NodeId", new
                         {

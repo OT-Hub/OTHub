@@ -54,16 +54,22 @@
 <!--                                <i class="fas fa-search"></i>-->
 <!--                            </a>-->
 <!--                        </nb-list-item>-->
-                        <nb-list-item>
+                        <!-- <nb-list-item>
                             Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
                         </nb-list-item>
                         <nb-list-item>
                             Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
-                        </nb-list-item>
+                        </nb-list-item> -->
 <!--                        <nb-list-item *ngIf="MyNode == null">-->
 <!--                            <button nbButton status="primary" outline (click)="AddToMyNodes()">Add to My Nodes</button>-->
 <!--                        </nb-list-item>-->
                     </nb-list>
+                    <div class="dataRow">
+                        Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
+                    </div>
+                    <div class="dataRow">
+                        Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
+                    </div>
                 </nb-card>
 
             </div>
@@ -73,15 +79,36 @@
             <nb-card>
               <nb-card-header>Identities
               </nb-card-header>
-              <nb-list>
-                  <nb-list-item *ngFor="let data of NodeModel?.Identities; let i = index">
+              <nb-accordion>
+                <nb-accordion-item *ngFor="let data of NodeModel?.Identities; let i = index">
+                 <nb-accordion-item-header>
+                    <span>{{data.Identity}}</span>
+                    <span class="tokenSmall">{{data.BlockchainName}} {{data.NetworkName}}</span>
+                 </nb-accordion-item-header>
+                 <nb-accordion-item-body>
+                     <div class="accordionBody">
+                        <div class="dataRow">
+                            Staked Tokens: {{formatAmount(data?.Stake)}}
+                        </div>
+                        <div class="dataRow">
+                            Locked Tokens: {{formatAmount(data?.StakeReserved)}}
+                        </div>
+                     </div>
+                 </nb-accordion-item-body>
+                </nb-accordion-item>
+               </nb-accordion>
+              <!-- <nb-list> -->
+
+    
+
+                  <!-- <nb-list-item *ngFor="let data of NodeModel?.Identities; let i = index">
                     <span>{{data.Identity}}</span>
                     <span class="tokenSmall">{{data.BlockchainName}} {{data.NetworkName}}</span>
 
 
-                  </nb-list-item>
+                  </nb-list-item> -->
 
-              </nb-list>
+              <!-- </nb-list> -->
             </nb-card>
           </div>
             <div class="col-lg-12 col-md-12 col-sm-12">
