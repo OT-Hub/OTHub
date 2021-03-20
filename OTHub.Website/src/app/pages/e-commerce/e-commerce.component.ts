@@ -341,23 +341,35 @@ export class ECommerceComponent implements OnDestroy, OnInit {
 }
 
 export class HomeV3Model {
-TotalJobs: number;
-ActiveNodes: number;
-ActiveJobs: number;
-Jobs24H: number;
-JobsReward24H: number;
-JobsDuration24H: number;
-JobsSize24H: number;
-StakedTokens: string;
+
   PercentChange24H: number;
   PriceUsd: number;
   CirculatingSupply: number;
-FeesByBlockchain: HomeFeesByBlockchainModel[];
-StakedByBlockchain: HomeStakedTokensByBlockchainModel[];
-JobBlockchainDistribution: HomeJobBlockchainDistributionModel[];
-TotalJobsByBlockchain: HomeJobsModel[];
-Jobs24HByBlockchain: HomeJobsModel[];
+  MarketCapUsd: number;
+  Volume24HUsd: number;
+  PriceBtc: number;
+// FeesByBlockchain: HomeFeesByBlockchainModel[];
+// StakedByBlockchain: HomeStakedTokensByBlockchainModel[];
+// JobBlockchainDistribution: HomeJobBlockchainDistributionModel[];
+// TotalJobsByBlockchain: HomeJobsModel[];
+// Jobs24HByBlockchain: HomeJobsModel[];
+All: HomeV3BlockchainModel;
+Blockchains: HomeV3BlockchainModel[];
 }
+
+export class HomeV3BlockchainModel {
+  LogoLocation: string;
+  TotalJobs: number;
+  ActiveNodes: number;
+  ActiveJobs: number;
+  Jobs24H: number;
+  JobsReward24H: number;
+  JobsDuration24H: number;
+  JobsSize24H: number;
+  StakedTokens: string;
+  Fees: HomeFeesByBlockchainModel;
+}
+
 export class HomeFeesByBlockchainModel {
   BlockchainName: string;
   ShowCostInUSD: boolean;
@@ -366,10 +378,10 @@ export class HomeFeesByBlockchainModel {
   PayoutCost: number;
 }
 
-export class HomeStakedTokensByBlockchainModel {
-  BlockchainName: string;
-  StakedTokens: string;
-}
+// export class HomeStakedTokensByBlockchainModel {
+//   BlockchainName: string;
+//   StakedTokens: string;
+// }
 
 export class HomeJobsChartDataModel {
   Label: string;
@@ -385,7 +397,7 @@ export class HomeJobBlockchainDistributionModel {
   Percentage: number;
 }
 
-export class HomeJobsModel {
-  BlockchainName: string;
-  Jobs: number;
-}
+// export class HomeJobsModel {
+//   BlockchainName: string;
+//   Jobs: number;
+// }

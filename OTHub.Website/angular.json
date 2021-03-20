@@ -33,6 +33,8 @@
               "src/assets",
               "src/favicon.ico",
               "src/assets/images/2467.png",
+              "src/assets/images/eth.png",
+              "src/assets/images/xdai.png",
               "src/favicon.png",
               {
                 "glob": "**/*",

@@ -1,7 +1,11 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using CoinMarketCap;
+using CoinMarketCap.Models.Cryptocurrency;
 using CoinpaprikaAPI.Entity;
 using CoinpaprikaAPI.Models;
 using Dapper;
@@ -35,6 +39,7 @@ namespace OTHub.APIServer.Controllers
 
             CoinpaprikaAPI.Client client = new CoinpaprikaAPI.Client();
 
+
             TickerInfo tickerInfo = null;
 
             if (!_cache.TryGetValue("HomeV3Ticker", out object tickerModel))
@@ -49,31 +54,38 @@ namespace OTHub.APIServer.Controllers
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var summary = await connection.QuerySingleAsync<HomeV3Model>(@"SELECT
+                HomeV3Model model = new HomeV3Model();
+
+                model.Blockchains = (await connection.QueryAsync<HomeV3BlockchainModel>(@"SELECT
+b.Id BlockchainID,
+b.DisplayName BlockchainName,
+b.LogoLocation,
  (
 SELECT COUNT(DISTINCT I.NodeId)
 FROM OTOffer O
-JOIN OTOffer_Holders H ON H.OfferID = O.OfferId
+JOIN OTOffer_Holders H ON H.OfferID = O.OfferId 
 JOIN otidentity I ON I.Identity = H.Holder
-WHERE O.IsFinalized = 1 AND NOW() <= DATE_ADD(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)) ActiveNodes,
+WHERE O.BlockchainID = b.Id and O.IsFinalized = 1 AND NOW() <= DATE_ADD(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)) ActiveNodes,
 (
 SELECT COUNT(*)
 FROM otoffer
-WHERE otoffer.IsFinalized = 1
+WHERE otoffer.IsFinalized = 1 AND otoffer.BlockchainID = b.Id
 ) TotalJobs,
 (
-SELECT SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_ADD(FinalizedTimeStamp, INTERVAL +HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END)
-FROM OTOffer) AS ActiveJobs,
-(select sum(Stake) from otidentity where version = (select max(ii.version) from otidentity ii)) StakedTokens,
-(SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
-(SELECT AVG(otoffer.TokenAmountPerHolder) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
-(SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
-(SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H");
+SELECT COALESCE(SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_ADD(FinalizedTimeStamp, INTERVAL +HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END), 0)
+FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
+(select COALESCE(sum(Stake), 0) from otidentity WHERE blockchainid = b.id AND version = (select max(ii.version) from otidentity ii)) StakedTokens,
+(SELECT COUNT(*) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
+(SELECT COALESCE(AVG(otoffer.TokenAmountPerHolder), 0) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
+(SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
+(SELECT COALESCE(AVG(otoffer.DataSetSizeInBytes), 0) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
+FROM blockchains b
+order by b.id")).ToArray();
 
 
-
-                summary.FeesByBlockchain = (await connection.QueryAsync<HomeFeesModel>(@"SELECT 
-bc.BlockchainName, bc.NetworkName,
+                foreach (HomeV3BlockchainModel blockchain in model.Blockchains)
+                {
+                    blockchain.Fees = (await connection.QueryFirstOrDefaultAsync<HomeFeesModel>(@"SELECT 
 bc.ShowCostInUSD,
 CAST(AVG((CAST(oc.GasUsed AS DECIMAL(20,4)) * (oc.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20,6)) JobCreationCost, 
 CAST(AVG((CAST(of.GasUsed AS DECIMAL(20,4)) * (of.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ofTicker.Price ELSE 1 END)) AS DECIMAL(20,6)) JobFinalisedCost
@@ -88,11 +100,12 @@ LEFT JOIN ticker_trac ofTicker ON ofTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= of.Timestamp)
-GROUP BY bc.id")).ToArray();
+WHERE bc.ID = @blockchainID", new
+                    {
+                        blockchainID = blockchain.BlockchainID
+                    }));
 
-                var payoutsCosts = (await connection.QueryAsync<HomeFeesModel>(@"SELECT 
-bc.DisplayName BlockchainName,
-bc.ShowCostInUSD,
+                    decimal? payoutFee = (await connection.ExecuteScalarAsync<decimal?>(@"SELECT 
 CAST(AVG((CAST(po.GasUsed AS DECIMAL(20,4)) * (po.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20, 8)) PayoutCost
 FROM blockchains bc
 LEFT JOIN otcontract_holding_paidout po ON po.BlockchainID = bc.ID AND po.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
@@ -100,47 +113,39 @@ LEFT JOIN ticker_trac ocTicker ON ocTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= po.Timestamp)
-GROUP BY bc.id")).ToArray();
-
-                //TODO move these 2 SQL queries back into one at some point
-                foreach (var homeFeesModel in payoutsCosts)
-                {
-                    var model = summary.FeesByBlockchain.FirstOrDefault(b =>
-                        b.BlockchainName == homeFeesModel.BlockchainName);
-                    if (model != null)
+WHERE bc.ID = @blockchainID", new
                     {
-                        model.PayoutCost = homeFeesModel.PayoutCost;
-                    }
+                        blockchainID = blockchain.BlockchainID
+                    }));
+
+                    blockchain.Fees.PayoutCost = payoutFee;
                 }
 
-                summary.StakedByBlockchain = (await connection.QueryAsync<HomeStakedModel>(@"SELECT bc.DisplayName BlockchainName, SUM(i.Stake) StakedTokens
-FROM otidentity i
-JOIN blockchains bc ON bc.ID = i.BlockchainID
-WHERE i.version = (
-SELECT MAX(ii.version)
-FROM otidentity ii)
-GROUP BY bc.ID")).ToArray();
+                model.PriceUsd = tickerInfo.PriceUsd;
+                model.PercentChange24H = tickerInfo.PercentChange24H;
+                model.CirculatingSupply = tickerInfo.CirculatingSupply;
+                model.MarketCapUsd = tickerInfo.MarketCapUsd;
+                model.Volume24HUsd = tickerInfo.Volume24HUsd;
+                model.PriceBtc = tickerInfo.PriceBtc;
 
-                summary.TotalJobsByBlockchain = (await connection.QueryAsync<HomeJobsModel>(@"SELECT b.DisplayName BlockchainName, COUNT(O.OfferID) Jobs
-FROM otoffer o
-JOIN blockchains b ON b.id = o.BlockchainID
-WHERE o.IsFinalized = 1
-GROUP BY b.ID")).ToArray();
+                model.All = new HomeV3BlockchainModel
+                {
+                    BlockchainID = 0,
+                    BlockchainName = "All Blockchains",
+                    ActiveJobs = model.Blockchains.Sum(b => b.ActiveJobs),
+                    ActiveNodes = model.Blockchains.Sum(b => b.ActiveNodes),
+                    Jobs24H = model.Blockchains.Sum(b => b.Jobs24H),
+                    JobsDuration24H = (long?)model.Blockchains.Select(b => b.JobsDuration24H).DefaultIfEmpty(null).Average(),
+                    JobsReward24H = (long?) model.Blockchains.Average(b => b.JobsReward24H),
+                    JobsSize24H = (long?) model.Blockchains.Average(b => b.JobsSize24H),
+                    StakedTokens = model.Blockchains.Sum(b => b.StakedTokens),
+                    TotalJobs = model.Blockchains.Sum(b => b.TotalJobs)
+                };
 
-                summary.Jobs24HByBlockchain = (await connection.QueryAsync<HomeJobsModel>(@"SELECT b.DisplayName BlockchainName, COUNT(O.OfferID) Jobs
-FROM blockchains b
-LEFT JOIN otoffer o ON b.id = o.BlockchainID AND o.IsFinalized = 1 AND o.CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
-GROUP BY b.ID
-ORDER BY b.ID")).ToArray();
-
-                summary.PriceUsd = tickerInfo.PriceUsd;
-                summary.PercentChange24H = tickerInfo.PercentChange24H;
-                summary.CirculatingSupply = tickerInfo.CirculatingSupply;
-
-                _cache.Set("HomeV3", summary, TimeSpan.FromMinutes(5));
+                _cache.Set("HomeV3", model, TimeSpan.FromMinutes(3));
 
 
-                return summary;
+                return model;
             }
         }
 
