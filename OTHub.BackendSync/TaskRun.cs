@@ -99,8 +99,15 @@ namespace OTHub.BackendSync
             {
                 var cl = GetWeb3(connection, GetBlockchainID(connection, blockchain, network));
 
+                int defaultBlocksToIgnore = 2;
+
+                if (blockchain == BlockchainType.xDai)
+                {
+                    defaultBlocksToIgnore = 40;
+                }
+
                 var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-                LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - 1);
+                LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - defaultBlocksToIgnore);
 
                 foreach (TaskRunBlockchain childTask in _childTasks)
                 {

@@ -11,6 +11,17 @@ namespace OTHub.APIServer.Sql.Models.GlobalActivity
         public String TransactionHash { get; set; }
         public String Message { get; set; }
         public string BlockchainDisplayName { get; set; }
+
+        private string TransactionUrl { get; set; }
+
+        public string RealTransactionUrl
+        {
+            get
+            {
+                return string.Format(TransactionUrl, TransactionHash);
+            }
+        }
+
     }
 
     public class GlobalActivityModelWithPaging

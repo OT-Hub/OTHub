@@ -43,12 +43,28 @@
     <None Remove="Abis\Ethereum\Rinkeby\reading.json" />
     <None Remove="Abis\Ethereum\Rinkeby\replacement.json" />
     <None Remove="Abis\Ethereum\Rinkeby\token.json" />
+    <None Remove="Abis\xDai\Mainnet\approval.json" />
+    <None Remove="Abis\xDai\Mainnet\creditor-handler.json" />
+    <None Remove="Abis\xDai\Mainnet\erc725.json" />
+    <None Remove="Abis\xDai\Mainnet\holding-storage.json" />
+    <None Remove="Abis\xDai\Mainnet\holding.json" />
+    <None Remove="Abis\xDai\Mainnet\hub.json" />
+    <None Remove="Abis\xDai\Mainnet\litigation-storage.json" />
+    <None Remove="Abis\xDai\Mainnet\litigation.json" />
+    <None Remove="Abis\xDai\Mainnet\marketplace-storage.json" />
+    <None Remove="Abis\xDai\Mainnet\marketplace.json" />
+    <None Remove="Abis\xDai\Mainnet\old-holding.json" />
+    <None Remove="Abis\xDai\Mainnet\profile-storage.json" />
+    <None Remove="Abis\xDai\Mainnet\profile.json" />
+    <None Remove="Abis\xDai\Mainnet\reading.json" />
+    <None Remove="Abis\xDai\Mainnet\replacement.json" />
+    <None Remove="Abis\xDai\Mainnet\token.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="3.1.8" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="3.1.8" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
   </ItemGroup>
   <ItemGroup>
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" />
@@ -91,6 +107,22 @@
     <EmbeddedResource Include="Abis\Ethereum\Rinkeby\reading.json" />
     <EmbeddedResource Include="Abis\Ethereum\Rinkeby\replacement.json" />
     <EmbeddedResource Include="Abis\Ethereum\Rinkeby\token.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\approval.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\creditor-handler.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\erc725.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\holding-storage.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\holding.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\hub.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\litigation-storage.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\litigation.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\marketplace-storage.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\marketplace.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\old-holding.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\profile-storage.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\profile.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\reading.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\replacement.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\token.json" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Abis\Starfleet\" />
