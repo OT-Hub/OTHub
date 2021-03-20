@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, NgZone, ViewChild } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, NgZone, ViewChild, Inject, PLATFORM_ID } from '@angular/core';
 import {Router} from '@angular/router';
 import {
   HttpClient,
@@ -13,6 +13,12 @@ import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
 import { MyNodeService } from '../../nodes/mynodeservice';
 import { DataCreatorColumnComponent } from './datacreatorcolumn.component';
 import { OfferIdColumnComponent } from '../../miscellaneous/offeridcolumn.component';
+import * as am4core from '@amcharts/amcharts4/core';
+import * as am4charts from '@amcharts/amcharts4/charts';
+import am4themes_animated from '@amcharts/amcharts4/themes/animated';
+import {AxisDataItem, DateAxisDataItem} from "@amcharts/amcharts4/charts";
+import { isPlatformBrowser } from '@angular/common';
+import { HomeJobsChartDataModel } from 'app/pages/e-commerce/e-commerce.component';
 
 @Component({
   selector: 'ngx-offers',
@@ -22,7 +28,8 @@ import { OfferIdColumnComponent } from '../../miscellaneous/offeridcolumn.compon
 export class OffersComponent implements OnInit, OnDestroy {
 
   constructor(private http: HttpClient, private chRef: ChangeDetectorRef, private httpService: HubHttpService, private router: Router,
-              private ngZone: NgZone, public myNodeService: MyNodeService) {
+              private zone: NgZone, public myNodeService: MyNodeService,
+              @Inject(PLATFORM_ID) private platformId) {
     this.isLoading = true;
     this.failedLoading = false;
     // const data = this.service.getData();
@@ -52,6 +59,15 @@ export class OffersComponent implements OnInit, OnDestroy {
   pageSizeChanged(event) {
     this.source.setPaging(1, event, true);
   }
+
+  browserOnly(f: () => void) {
+    if (isPlatformBrowser(this.platformId)) {
+      this.zone.runOutsideAngular(() => {
+        f();
+      });
+    }
+  }
+
 
   settings = {
     actions:  {
@@ -178,6 +194,127 @@ delete: false
   failedLoading: boolean;
   isLoading: boolean;
   isDarkTheme: boolean;
+
+  ngAfterViewInit() {
+    var that = this;
+    // Chart code goes in here
+    this.browserOnly(() => {
+      am4core.useTheme(am4themes_animated);
+      that.loadJobsChart();
+    });
+  }
+
+  getJobsChartData() {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/home/JobsChartDataV3';
+    return this.http.get<HomeJobsChartDataModel[]>(url, { headers });
+  }
+
+  loadJobsChart() {
+    this.getJobsChartData().subscribe(chartData => {
+      const endTime = new Date();
+      this.failedLoading = false;
+      this.isLoading = false;
+
+      let chart = am4core.create("JobsHistoryChart", am4charts.XYChart);
+
+      chart.paddingRight = 20;
+
+      let data = [];
+
+      chartData.forEach((v) => {
+        data.push({ date: v.Date, name: "name", newJobs: v.NewJobs, completedJobs: v.CompletedJobs });
+      });
+
+      // let visits = 10;
+      // for (let i = 1; i < 366; i++) {
+      //   visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
+      //   data.push({ date: new Date(2018, 0, i), name: "name" + i, value: visits });
+      // }
+
+      chart.data = data;
+      chart.legend = new am4charts.Legend();
+      chart.legend.maxHeight = 150;
+      chart.legend.scrollable = true;
+      chart.legend.useDefaultMarker = true;
+
+      let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
+      dateAxis.renderer.grid.template.location = 0;
+
+
+      let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
+      valueAxis.tooltip.disabled = true;
+      valueAxis.renderer.minWidth = 35;
+      valueAxis.title.text = 'Jobs';
+
+      let series = chart.series.push(new am4charts.LineSeries());
+      series.dataFields.dateX = "date";
+      series.dataFields.valueY = "newJobs";
+      series.tooltipText = "{valueY.value}";
+      series.name = 'Started';
+      series.stroke = am4core.color('#00d68f');
+      series.fill = am4core.color('#00d68f');
+      series.strokeWidth = 3;
+
+      let series2 = chart.series.push(new am4charts.LineSeries());
+      series2.dataFields.dateX = "date";
+      series2.dataFields.valueY = "completedJobs";
+      series2.tooltipText = "{valueY.value}";
+      series2.name = 'Completed';
+      series2.strokeWidth = 3;
+
+      // let bullet = series.bullets.push(new am4charts.CircleBullet());
+      // bullet.circle.strokeWidth = 2;
+      // bullet.circle.radius = 4;
+      // bullet.circle.fill = am4core.color("#fff");
+      //
+      // let bullethover = bullet.states.create("hover");
+      // bullethover.properties.scale = 1.3;
+
+      // bullet = series2.bullets.push(new am4charts.CircleBullet());
+      // bullet.circle.strokeWidth = 2;
+      // bullet.circle.radius = 4;
+      // bullet.circle.fill = am4core.color("#fff");
+      //
+      // bullethover = bullet.states.create("hover");
+      // bullethover.properties.scale = 1.3;
+
+      chart.cursor = new am4charts.XYCursor();
+      chart.cursor.behavior = "panXY";
+      chart.cursor.xAxis = dateAxis;
+      //chart.cursor.snapToSeries = series;
+
+      let scrollbarX = new am4charts.XYChartScrollbar();
+      scrollbarX.series.push(series);
+      scrollbarX.series.push(series2);
+      chart.scrollbarX = scrollbarX;
+      scrollbarX.parent = chart.chartAndLegendContainer;
+
+      // let scrollAxisX = chart.xAxes.getIndex(0);
+      // let range: DateAxisDataItem;
+      // range = scrollAxisX.axisRanges.create() as DateAxisDataItem;
+      //
+      // range.date = new Date(2020, 2, 4);
+      // range.endDate = new Date(2020, 2, 7);
+      // range.axisFill.fill = am4core.color("#396478");
+      // range.axisFill.fillOpacity = 0.2;
+      // range.grid.strokeOpacity = 0;
+
+      // scrollbarX.series.push(series);
+      // scrollbarX.series.push(series2);
+      // chart.scrollbarX = scrollbarX;
+
+      let title = chart.titles.create();
+      title.text = "Jobs";
+      title.fontSize = 18;
+      title.marginBottom = 15;
+    }, err => {
+      this.failedLoading = true;
+      this.isLoading = false;
+    });
+  }
 
 
 
