@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using OTHub.APIServer.Sql;
@@ -23,7 +24,7 @@ If you want to get more information about a specific offer you should use /api/j
         )]
         [SwaggerResponse(200, type: typeof(OfferSummaryModel[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public IActionResult GetWithPaging(
+        public async Task<IActionResult>GetWithPaging(
             [FromQuery, SwaggerParameter("How many offers you want to return per page", Required = true)]
             int _limit,
             [FromQuery, SwaggerParameter("The page number to start from. The first page is 0.", Required = true)]
@@ -40,26 +41,26 @@ If you want to get more information about a specific offer you should use /api/j
                 OfferId_like = null;
             }
 
-            OfferSummaryModel[] rows = JobsSql.GetWithPaging(_limit, _page, OfferId_like, _sort, _order, out int total);
+            var result = await JobsSql.GetWithPaging(_limit, _page, OfferId_like, _sort, _order);
 
             HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
-            HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
+            HttpContext.Response.Headers["X-Total-Count"] = result.total.ToString();
 
             if (export)
             {
                 if (exportType == 0)
                 {
-                    return File(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(rows)), "application/json",
+                    return File(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(result.results)), "application/json",
                         "jobs.json", false);
                 }
                 else if (exportType == 1)
                 {
-                    return File(Encoding.UTF8.GetBytes(CsvSerializer.SerializeToCsv(rows)), "text/csv", "jobs.csv",
+                    return File(Encoding.UTF8.GetBytes(CsvSerializer.SerializeToCsv(result.results)), "text/csv", "jobs.csv",
                         false);
                 }
             }
 
-            return new OkObjectResult(rows);
+            return new OkObjectResult(result.results);
         }
     }
 }

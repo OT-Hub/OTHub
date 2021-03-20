@@ -134,7 +134,7 @@ namespace OTHub.BackendSync
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var blockchains = connection.Query(@"SELECT * FROM blockchains").ToArray();
+                var blockchains = connection.Query(@"SELECT * FROM blockchains WHERE enabled = 1").ToArray();
 
                 foreach (var blockchain in blockchains)
                 {
@@ -160,7 +160,7 @@ namespace OTHub.BackendSync
             _source = source;
         }
 
-        public void Start()
+        public async Task Start()
         {
             while (true)
             {
@@ -173,7 +173,7 @@ namespace OTHub.BackendSync
 
                 foreach (var taskControllerItem in items)
                 {
-                    taskControllerItem.Execute().GetAwaiter().GetResult();
+                    await taskControllerItem.Execute();
                 }
 
                 if (!items.Any())
@@ -184,7 +184,7 @@ namespace OTHub.BackendSync
                         Logger.WriteLine(_source, "Sleeping...");
                     }
 
-                    Thread.Sleep(2000);
+                    await Task.Delay(2000);
                 }
                 else
                 {

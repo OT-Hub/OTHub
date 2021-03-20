@@ -735,6 +735,13 @@ COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
 ;
 ");
+
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `LogoLocation` varchar(30) NULL");
+
+
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `Enabled` BIT(1) NOT NULL DEFAULT 1");
             }
         }
     }

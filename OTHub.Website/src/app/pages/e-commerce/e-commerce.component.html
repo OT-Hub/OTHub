@@ -1,23 +1,33 @@
-<!-- <div class="alert alert-info">Welcome to OT Hub - Testnet. This website is being updated daily with improvements and
-  fixes.
-  <br>
-  Changes being worked on for this version of OT Hub can be tracked on <a
-    href="https://github.com/lukeskinner/OTHub/milestone/1">GitHub</a>.
-</div> -->
-<!--
-
--->
 <div class="row">
+  <div class="col-md-12 col-xxxl-12">
+    <h2 class="homeHeader">OriginTrail Decentralized Network</h2>
+  </div>
+</div>
+
+<!-- <div class="row">
   <div class="col-md-8 col-xxxl-8">
-    <nb-card class="homeCard" status="basic" accent="success">
+    <nb-card class="homeCard">
       <nb-card-header>
         <img src="assets/images/2467.png" alt="OriginTrail" height="32" width="32" class="otLogo" />
         OriginTrail
         <small class="tokenSmall">TRAC</small>
         <div style="display:inline-block;">
           ${{Data?.PriceUsd | number: '1.2-4'}}
-          <small class="btn-sm" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0" [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
+          <small class="btn-sm" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0"
+            [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
         </div>
+      </nb-card-header>
+      </nb-card>
+      </div>
+</div> -->
+
+<div class="row">
+  <div class="col-md-8 col-xxxl-8">
+    <nb-card class="homeCard">
+      <nb-card-header class="blockchainHeader">
+        <!-- <nb-icon icon="globe-outline" class="blockchainLogo" pack="eva"></nb-icon> -->
+        <img src="assets/images/2467.png" class="blockchainLogo" />
+        <span>All Blockchains</span>
       </nb-card-header>
       <nb-card-body>
         <div class="row">
@@ -28,45 +38,182 @@
             <div class="homeField">
               Total jobs:
               <span class="homeData">
-            {{Data?.TotalJobs}}
-          </span>
+                {{Data?.All.TotalJobs}}
+              </span>
             </div>
             <div class="homeField">
               Active jobs:
               <span class="homeData">
-            {{Data?.ActiveJobs}}
-          </span>
+                {{Data?.All.ActiveJobs}}
+              </span>
             </div>
             <div class="homeField">
               Active nodes:
               <span class="homeData">
-            {{Data?.ActiveNodes}}
-          </span>
+                {{Data?.All.ActiveNodes}}
+              </span>
             </div>
             <div class="homeField">
               Staked tokens:
               <span class="homeData">
-              <ng-template #stakedTokensPopupTemplate>
-                <div style="padding:10px; border-radius: 2px; border: 1px solid gray;">
-                              <div *ngFor="let bc of Data?.StakedByBlockchain">
-                              <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
+                {{formatAmount(Data?.All.StakedTokens)}} / {{Data?.CirculatingSupply}} {{(Data?.All.StakedTokens /
+                Data?.CirculatingSupply) * 100 | number: '1.0-2'}}%
+              </span>
+            </div>
+          </div>
 
-                              <div class="homeField">
-                                Staked tokens:
-                                <span class="homeData">
-                            {{formatAmount(bc.StakedTokens)}}
-                          </span>
-                              </div>
-                            </div>
-                </div>
-              </ng-template>
-            {{formatAmount(Data?.StakedTokens)}} / {{Data?.CirculatingSupply}} {{(Data?.StakedTokens / Data?.CirculatingSupply) * 100 | number: '1.0-2'}}% <nb-icon icon="info-outline" nbPopoverTrigger="hover"
-                                                          [nbPopover]="stakedTokensPopupTemplate" nbButton status="primary"></nb-icon>
-          </span>
 
+
+          <div class="col-md-4 col-sm-6 col-xs-6">
+            <div class="homeHeader">
+              24h Job Stats
+            </div>
+            <div class="homeField">
+              Jobs:
+              <span class="homeData">
+                {{Data?.All.Jobs24H}}
+              </span>
+            </div>
+            <div class="homeField">
+              Average job reward:
+              <span class="homeData">
+                {{Data?.All.JobsReward24H != null ? (Data?.All.JobsReward24H | number:'1.0-2') : '?'}}
+              </span>
+            </div>
+            <div class="homeField">
+              Average job duration:
+              <span class="homeData">
+                {{formatTime(Data?.All.JobsDuration24H)}}
+              </span>
+            </div>
+            <div class="homeField">
+              Average job data size:
+              <span class="homeData">
+                {{Data?.All.JobsSize24H != null ? ((Data?.All.JobsSize24H / 1000 | number:'1.2-2') + ' KB') : '?'}}
+              </span>
             </div>
 
+          </div>
 
+          <div class="col-md-4 col-sm-12  col-xs-12">
+            <div class="homeHeader">
+              Market     <small class="tokenSmall">TRAC</small>
+            </div>
+            <div class="homeField">
+        
+            <div style="display:inline-block;">
+              ${{Data?.PriceUsd | number: '1.2-4'}}
+              <small class="btn-sm btnPricePercent" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0"
+                [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
+                <span class="btcPrice">{{Data?.PriceBtc}} BTC</span>
+            </div>
+            </div>
+            <div class="homeField">
+              Circulating Supply: 
+              <span class="homeData">
+                {{Data?.CirculatingSupply | number:'1.0-0'}}
+              </span>
+            </div>
+            <div class="homeField">
+              Market Cap: 
+              <span class="homeData">
+                ${{Data?.MarketCapUsd | number:'1.0-0'}}
+              </span>
+            </div>
+            <div class="homeField">
+              24h Volume: 
+              <span class="homeData">
+                ${{Data?.Volume24HUsd | number:'1.0-0'}}
+              </span>
+            </div>
+          </div>
+
+          <!-- <div class="col-md-4 col-sm-12  col-xs-12">
+            <div class="homeHeader">
+              24h Fee Stats
+            </div>
+            <div>
+              <div class="homeField">
+                Average job fee:
+                <span class="homeData">
+                  {{Data?.All.Fees.ShowCostInUSD ? "$" : ""}}{{Data?.All.Fees.JobCreationCost != null && Data?.All.Fees.JobFinalisedCost != null ?
+                  (Data?.All.Fees.JobCreationCost + Data?.All.Fees.JobFinalisedCost | number: '1.0-5') : '?'}}{{Data?.All.Fees.ShowCostInUSD ? "" : " ETH"}}
+                </span>
+              </div>
+              <div class="homeField">
+                Average payout fee:
+                <span class="homeData">
+                  {{Data?.All.Fees.ShowCostInUSD ? "$" : ""}}{{Data?.All.Fees.PayoutCost != null ? Data?.All.Fees.PayoutCost: '?'}}{{Data?.All.Fees.ShowCostInUSD ? "" :
+                  " ETH"}}
+                </span>
+              </div>
+            </div>
+
+          </div> -->
+
+        </div>
+      </nb-card-body>
+    </nb-card>
+  </div>
+  <div class="col-md-4 col-xxxl-4">
+
+    <nb-card class="homeCard" status="basic">
+      <nb-card-body>
+        <div id="JobBlockchainDistributionChart" style="width: 100%; height: 160px;" [hidden]="noJobsIn24H === true">
+        </div>
+        <div class="alert alert-warning" *ngIf="noJobsIn24H === true">
+          Unable to show this chart as there have been no jobs started in 24 hours.
+        </div>
+        <!--<div class="row">-->
+        <!--  <div class="col-12 col-md-6">-->
+        <!--    <a href="https://coinmarketcap.com/currencies/origintrail/">CoinMarketCap</a>-->
+        <!--  </div>-->
+        <!--  <div class="col-12 col-md-6">-->
+        <!--    <a href="https://otnode.com/">OriginTrail Node Guide</a>-->
+        <!--  </div>-->
+        <!--</div>-->
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>
+
+<div class="row" *ngFor="let bc of Data?.Blockchains">
+  <div class="col-md-8 col-xxxl-8">
+    <nb-card class="homeCard">
+      <nb-card-header class="blockchainHeader">
+        <img class="blockchainLogo" src="assets/images/{{bc.LogoLocation}}"> <span>{{bc.BlockchainName}}</span>
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-md-4 col-sm-6  col-xs-6">
+            <div class="homeHeader">
+              Stats
+            </div>
+            <div class="homeField">
+              Total jobs:
+              <span class="homeData">
+                {{bc.TotalJobs}}
+              </span>
+            </div>
+            <div class="homeField">
+              Active jobs:
+              <span class="homeData">
+                {{bc.ActiveJobs}}
+              </span>
+            </div>
+            <div class="homeField">
+              Active nodes:
+              <span class="homeData">
+                {{bc.ActiveNodes}}
+              </span>
+            </div>
+            <div class="homeField">
+              Staked tokens:
+              <span class="homeData">
+                {{formatAmount(bc.StakedTokens)}} / {{Data?.CirculatingSupply}} {{(bc.StakedTokens /
+                  Data?.CirculatingSupply) * 100 | number: '1.0-2'}}%
+              </span>
+            </div>
           </div>
 
           <div class="col-md-4 col-sm-6 col-xs-6">
@@ -76,26 +223,26 @@
             <div class="homeField">
               Jobs:
               <span class="homeData">
-            {{Data?.Jobs24H}}
-          </span>
+                {{bc.Jobs24H}}
+              </span>
             </div>
             <div class="homeField">
               Average job reward:
               <span class="homeData">
-            {{Data?.JobsReward24H != null ? (Data?.JobsReward24H | number:'1.0-2') : '?'}}
-          </span>
+                {{bc.JobsReward24H != null ? (bc.JobsReward24H | number:'1.0-2') : '?'}}
+              </span>
             </div>
             <div class="homeField">
               Average job duration:
               <span class="homeData">
-            {{formatTime(Data?.JobsDuration24H)}}
-          </span>
+                {{formatTime(bc.JobsDuration24H)}}
+              </span>
             </div>
             <div class="homeField">
               Average job data size:
               <span class="homeData">
-                {{Data?.JobsSize24H != null ? ((Data?.JobsSize24H / 1000 | number:'1.2-2') + ' KB') : '?'}}
-          </span>
+                {{bc.JobsSize24H != null ? ((bc.JobsSize24H / 1000 | number:'1.2-2') + ' KB') : '?'}}
+              </span>
             </div>
 
           </div>
@@ -103,39 +250,20 @@
             <div class="homeHeader">
               24h Fee Stats
             </div>
-            <div *ngFor="let bc of Data?.FeesByBlockchain">
-              <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
-
+            <div>
               <div class="homeField">
                 Average job fee:
                 <span class="homeData">
-                                <ng-template #averagePayoutFeeTemplate>
-                <div style="padding:10px; border-radius: 2px; border: 1px solid gray;">
-                     <small class="blockchainSmall">{{bc.BlockchainName}} {{bc.NetworkName}}</small>
-                         <div class="homeField">
-              Average job creation:
-              <span class="homeData">
-            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobCreationCost != null ? bc.JobCreationCost : '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
-          </span>
-            </div>
-                           <div class="homeField">
-              Average job finalized:
-              <span class="homeData">
-            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobFinalisedCost != null ? bc.JobFinalisedCost : '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
-          </span>
-            </div>
-                </div>
-              </ng-template>
-            {{bc.ShowCostInUSD ? "$" : ""}}{{bc.JobCreationCost != null && bc.JobFinalisedCost != null ? (bc.JobCreationCost + bc.JobFinalisedCost | number: '1.0-5') : '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
-                  <nb-icon icon="info-outline" nbPopoverTrigger="hover"
-                           [nbPopover]="averagePayoutFeeTemplate" nbButton status="primary"></nb-icon>
-          </span>
+                  {{bc.Fees.ShowCostInUSD ? "$" : ""}}{{bc.Fees.JobCreationCost != null && bc.Fees.JobFinalisedCost != null ?
+                  (bc.Fees.JobCreationCost + bc.Fees.JobFinalisedCost | number: '1.0-5') : '?'}}{{bc.Fees.ShowCostInUSD ? "" : (" " + bc.GasTicker )}}
+                </span>
               </div>
               <div class="homeField">
                 Average payout fee:
                 <span class="homeData">
-                          {{bc.ShowCostInUSD ? "$" : ""}}{{bc.PayoutCost != null ? bc.PayoutCost: '?'}}{{bc.ShowCostInUSD ? "" : " ETH"}}
-          </span>
+                  {{bc.Fees.ShowCostInUSD ? "$" : ""}}{{bc.Fees.PayoutCost != null ? bc.Fees.PayoutCost: '?'}}{{bc.Fees.ShowCostInUSD ? "" :
+                  (" " + bc.GasTicker )}}
+                </span>
               </div>
             </div>
 
@@ -145,27 +273,22 @@
       </nb-card-body>
     </nb-card>
   </div>
-  <div class="col-md-4 col-xxxl-4">
-    <nb-card class="homeCard" status="basic">
+</div>
+
+<!-- <div class="row">
+  <div class="col-md-8 col-xxxl-8">
+    <nb-card class="homeCard">
+      <nb-card-header class="blockchainHeader">
+        <img class="blockchainLogo" src="assets/images/xdai.png"> <span>xDai</span>
+      </nb-card-header>
       <nb-card-body>
-        <div id="JobBlockchainDistributionChart" style="width: 100%; height: 160px;" [hidden]="noJobsIn24H === true"></div>
-        <div class="alert alert-warning" *ngIf="noJobsIn24H === true">
-          Unable to show this chart as there have been no jobs started in 24 hours.
-        </div>
-<!--<div class="row">-->
-<!--  <div class="col-12 col-md-6">-->
-<!--    <a href="https://coinmarketcap.com/currencies/origintrail/">CoinMarketCap</a>-->
-<!--  </div>-->
-<!--  <div class="col-12 col-md-6">-->
-<!--    <a href="https://otnode.com/">OriginTrail Node Guide</a>-->
-<!--  </div>-->
-<!--</div>-->
+        abc
       </nb-card-body>
     </nb-card>
   </div>
-</div>
+</div> -->
 
-<div class="row">
+<!-- <div class="row">
   <div class="col-md-12 col-xxxl-12">
     <nb-card class="homeCard" status="basic">
       <nb-card-body>
@@ -173,4 +296,4 @@
       </nb-card-body>
     </nb-card>
   </div>
-</div>
+</div> -->

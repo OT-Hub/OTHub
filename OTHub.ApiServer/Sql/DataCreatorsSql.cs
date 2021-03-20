@@ -7,7 +7,7 @@ namespace OTHub.APIServer.Sql
 {
     public class DataCreatorsSql
     {
-        public static String GetDataCreatorsSql(string[] identity)
+        public static String GetDataCreatorsSql(string[] nodes)
         {
             return $@"select substring(I.NodeId, 1, 40) as NodeId, Version, 
 SUM(COALESCE(I.Stake, 0)) OVER(PARTITION BY I.NodeId) as StakeTokens, 
@@ -28,12 +28,12 @@ LEFT JOIN EthBlock PCB ON PCB.BlockNumber = PC.BlockNumber AND PCB.BlockchainID 
 LEFT JOIN OTContract_Profile_IdentityCreated IC ON IC.NewIdentity = I.Identity AND IC.BlockchainID = I.BlockchainID
 LEFT JOIN EthBlock ICB ON ICB.BlockNumber = IC.BlockNumber AND ICB.BlockchainID = I.BlockchainID
 WHERE IC.NewIdentity is not null OR PC.Profile is not null) x on x.Identity = I.Identity
-WHERE {(identity.Any() ? "I.Identity in @identity AND" : "")} Version = @version
-AND (@Identity_like is null OR I.Identity = @Identity_like)
+WHERE {(nodes.Any() ? "I.NodeId in @nodes AND" : "")} Version = @version
+AND (@NodeId_like is null OR I.NodeId = @NodeId_like)
 GROUP BY I.NodeId";
         }
 
-        public static String GetDataCreatorsCountSql(string[] identity)
+        public static String GetDataCreatorsCountSql(string[] nodes)
         {
             return $@"select COUNT(DISTINCT I.NodeId)
 from OTIdentity I
@@ -44,8 +44,8 @@ LEFT JOIN EthBlock PCB ON PCB.BlockNumber = PC.BlockNumber AND PCB.BlockchainID 
 LEFT JOIN OTContract_Profile_IdentityCreated IC ON IC.NewIdentity = I.Identity AND IC.BlockchainID = I.BlockchainID
 LEFT JOIN EthBlock ICB ON ICB.BlockNumber = IC.BlockNumber AND ICB.BlockchainID = I.BlockchainID
 WHERE IC.NewIdentity is not null OR PC.Profile is not null) x on x.Identity = I.Identity
-WHERE {(identity.Any() ? "I.Identity in @identity AND" : "")} Version = @version
-AND (@Identity_like is null OR I.Identity = @Identity_like)";
+WHERE {(nodes.Any() ? "I.NodeId in @nodes AND" : "")} Version = @version
+AND (@NodeId_like is null OR I.NodeId = @NodeId_like)";
         }
     }
 }

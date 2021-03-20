@@ -258,14 +258,14 @@ export class PayoutPricesComponent implements OnInit, OnDestroy {
           TRACAmount: {
             sort: true,
             title: 'TRAC Amount Paid',
-            width: '1%',
+            //width: '1%',
             type: 'string',
             filter: false
           },
           USDAmount: {
             sort: true,
             title: 'USD Equivalent Paid',
-            width: '1%',
+            //width: '1%',
             type: 'string',
             filter: false,
             valuePrepareFunction: (value) => {

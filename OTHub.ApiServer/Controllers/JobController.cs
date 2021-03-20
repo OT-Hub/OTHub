@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
@@ -25,22 +26,22 @@ Data Included:
 - Data Holders")]
         [SwaggerResponse(200, type: typeof(NodeDataHolderDetailedModel))]
         [SwaggerResponse(500, "Internal server error")]
-        public OfferDetailedModel Detail([SwaggerParameter("The ID of the offer", Required = true)] string offerID)
+        public async Task<OfferDetailedModel> Detail([SwaggerParameter("The ID of the offer", Required = true)] string offerID)
         {
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                OfferDetailedModel model = connection.QueryFirstOrDefault<OfferDetailedModel>(
+                OfferDetailedModel model = await connection.QueryFirstOrDefaultAsync<OfferDetailedModel>(
                     JobSql.GetJobDetailed, new { offerID = offerID });
                 if (model != null)
                 {
-                    model.Holders = connection.Query<OfferDetailedHolderModel>(
+                    model.Holders = (await connection.QueryAsync<OfferDetailedHolderModel>(
                         JobSql.GetJobHolders, new
                         {
                             offerID = offerID
-                        }).ToArray();
+                        })).ToArray();
 
-                    model.TimelineEvents = connection.Query<OfferDetailedTimelineEventModel>(JobSql.GetJobTimelineEvents(), new { offerID = offerID }).OrderBy(t => t.Timestamp).ToArray();
+                    model.TimelineEvents = (await connection.QueryAsync<OfferDetailedTimelineEventModel>(JobSql.GetJobTimelineEvents(), new { offerID = offerID })).OrderBy(t => t.Timestamp).ToArray();
                 }
 
                 return model;

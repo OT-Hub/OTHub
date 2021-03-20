@@ -1,7 +1,11 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using CoinMarketCap;
+using CoinMarketCap.Models.Cryptocurrency;
 using CoinpaprikaAPI.Entity;
 using CoinpaprikaAPI.Models;
 using Dapper;
@@ -35,6 +39,7 @@ namespace OTHub.APIServer.Controllers
 
             CoinpaprikaAPI.Client client = new CoinpaprikaAPI.Client();
 
+
             TickerInfo tickerInfo = null;
 
             if (!_cache.TryGetValue("HomeV3Ticker", out object tickerModel))
@@ -49,30 +54,39 @@ namespace OTHub.APIServer.Controllers
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var summary = connection.QuerySingle<HomeV3Model>(@"SELECT
+                HomeV3Model model = new HomeV3Model();
+
+                model.Blockchains = (await connection.QueryAsync<HomeV3BlockchainModel>(@"SELECT
+b.Id BlockchainID,
+b.GasTicker,
+b.DisplayName BlockchainName,
+b.LogoLocation,
  (
-SELECT COUNT(DISTINCT H.Holder)
+SELECT COUNT(DISTINCT I.NodeId)
 FROM OTOffer O
-JOIN OTOffer_Holders H ON H.OfferID = O.OfferId
-WHERE O.IsFinalized = 1 AND NOW() <= DATE_ADD(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)) ActiveNodes,
+JOIN OTOffer_Holders H ON H.OfferID = O.OfferId 
+JOIN otidentity I ON I.Identity = H.Holder
+WHERE O.BlockchainID = b.Id and O.IsFinalized = 1 AND NOW() <= DATE_ADD(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)) ActiveNodes,
 (
 SELECT COUNT(*)
 FROM otoffer
-WHERE otoffer.IsFinalized = 1
+WHERE otoffer.IsFinalized = 1 AND otoffer.BlockchainID = b.Id
 ) TotalJobs,
 (
-SELECT SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_ADD(FinalizedTimeStamp, INTERVAL +HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END)
-FROM OTOffer) AS ActiveJobs,
-(select sum(Stake) from otidentity where version = (select max(ii.version) from otidentity ii)) StakedTokens,
-(SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
-(SELECT AVG(otoffer.TokenAmountPerHolder) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
-(SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
-(SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H");
+SELECT COALESCE(SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_ADD(FinalizedTimeStamp, INTERVAL +HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END), 0)
+FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
+(select COALESCE(sum(Stake), 0) from otidentity WHERE blockchainid = b.id AND version = (select max(ii.version) from otidentity ii)) StakedTokens,
+(SELECT COUNT(*) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
+(SELECT COALESCE(AVG(otoffer.TokenAmountPerHolder), 0) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
+(SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
+(SELECT COALESCE(AVG(otoffer.DataSetSizeInBytes), 0) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
+FROM blockchains b
+order by b.id")).ToArray();
 
 
-
-                summary.FeesByBlockchain = connection.Query<HomeFeesModel>(@"SELECT 
-bc.BlockchainName, bc.NetworkName,
+                foreach (HomeV3BlockchainModel blockchain in model.Blockchains)
+                {
+                    blockchain.Fees = (await connection.QueryFirstOrDefaultAsync<HomeFeesModel>(@"SELECT 
 bc.ShowCostInUSD,
 CAST(AVG((CAST(oc.GasUsed AS DECIMAL(20,4)) * (oc.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20,6)) JobCreationCost, 
 CAST(AVG((CAST(of.GasUsed AS DECIMAL(20,4)) * (of.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ofTicker.Price ELSE 1 END)) AS DECIMAL(20,6)) JobFinalisedCost
@@ -87,11 +101,12 @@ LEFT JOIN ticker_trac ofTicker ON ofTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= of.Timestamp)
-GROUP BY bc.id").ToArray();
+WHERE bc.ID = @blockchainID", new
+                    {
+                        blockchainID = blockchain.BlockchainID
+                    }));
 
-                var payoutsCosts = connection.Query<HomeFeesModel>(@"SELECT 
-bc.BlockchainName, bc.NetworkName,
-bc.ShowCostInUSD,
+                    decimal? payoutFee = (await connection.ExecuteScalarAsync<decimal?>(@"SELECT 
 CAST(AVG((CAST(po.GasUsed AS DECIMAL(20,4)) * (po.GasPrice / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20, 8)) PayoutCost
 FROM blockchains bc
 LEFT JOIN otcontract_holding_paidout po ON po.BlockchainID = bc.ID AND po.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
@@ -99,35 +114,39 @@ LEFT JOIN ticker_trac ocTicker ON ocTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= po.Timestamp)
-GROUP BY bc.id").ToArray();
-
-                //TODO move these 2 SQL queries back into one at some point
-                foreach (var homeFeesModel in payoutsCosts)
-                {
-                    var model = summary.FeesByBlockchain.FirstOrDefault(b =>
-                        b.NetworkName == homeFeesModel.NetworkName && b.BlockchainName == homeFeesModel.BlockchainName);
-                    if (model != null)
+WHERE bc.ID = @blockchainID", new
                     {
-                        model.PayoutCost = homeFeesModel.PayoutCost;
-                    }
+                        blockchainID = blockchain.BlockchainID
+                    }));
+
+                    blockchain.Fees.PayoutCost = payoutFee;
                 }
 
-                summary.StakedByBlockchain = connection.Query<HomeStakedModel>(@"SELECT bc.BlockchainName, bc.NetworkName, SUM(i.Stake) StakedTokens
-FROM otidentity i
-JOIN blockchains bc ON bc.ID = i.BlockchainID
-WHERE i.version = (
-SELECT MAX(ii.version)
-FROM otidentity ii)
-GROUP BY bc.ID").ToArray();
+                model.PriceUsd = tickerInfo.PriceUsd;
+                model.PercentChange24H = tickerInfo.PercentChange24H;
+                model.CirculatingSupply = tickerInfo.CirculatingSupply;
+                model.MarketCapUsd = tickerInfo.MarketCapUsd;
+                model.Volume24HUsd = tickerInfo.Volume24HUsd;
+                model.PriceBtc = tickerInfo.PriceBtc;
 
-                summary.PriceUsd = tickerInfo.PriceUsd;
-                summary.PercentChange24H = tickerInfo.PercentChange24H;
-                summary.CirculatingSupply = tickerInfo.CirculatingSupply;
+                model.All = new HomeV3BlockchainModel
+                {
+                    BlockchainID = 0,
+                    BlockchainName = "All Blockchains",
+                    ActiveJobs = model.Blockchains.Sum(b => b.ActiveJobs),
+                    ActiveNodes = model.Blockchains.Sum(b => b.ActiveNodes),
+                    Jobs24H = model.Blockchains.Sum(b => b.Jobs24H),
+                    JobsDuration24H = (long?)model.Blockchains.Select(b => b.JobsDuration24H).DefaultIfEmpty(null).Average(),
+                    JobsReward24H = (long?) model.Blockchains.Average(b => b.JobsReward24H),
+                    JobsSize24H = (long?) model.Blockchains.Average(b => b.JobsSize24H),
+                    StakedTokens = model.Blockchains.Sum(b => b.StakedTokens),
+                    TotalJobs = model.Blockchains.Sum(b => b.TotalJobs)
+                };
 
-                _cache.Set("HomeV3", summary, TimeSpan.FromMinutes(5));
+                _cache.Set("HomeV3", model, TimeSpan.FromMinutes(3));
 
 
-                return summary;
+                return model;
             }
         }
 
@@ -164,15 +183,15 @@ ORDER BY Percentage")).ToArray();
 
         [HttpGet]
         [Route("JobsChartDataSummaryV2")]
-        public JobChartDataV2SummaryModel JobsChartDataSummaryV2()
+        public async Task<JobChartDataV2SummaryModel> JobsChartDataSummaryV2()
         {
             if (_cache.TryGetValue("JobsChartDataSummaryV2", out var model) && model is JobChartDataV2SummaryModel chartModel)
                 return chartModel;
 
-            using (var connection =
+            await using (var connection =
             new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var summary = connection.QuerySingle<JobChartDataV2SummaryModel>(@"SELECT
+                var summary = await connection.QuerySingleAsync<JobChartDataV2SummaryModel>(@"SELECT
     (SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) as OffersLast24Hours,
     (SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL - 7 DAY)) as OffersLast7Days,
         (SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL - 1 MONTH)) as OffersLastMonth,
@@ -187,19 +206,19 @@ ORDER BY Percentage")).ToArray();
 
         [HttpGet]
         [Route("HomeNodesInfoV2")]
-        public HomeNodesInfo HomeNodesInfoV2()
+        public async Task<HomeNodesInfo> HomeNodesInfoV2()
         {
             if (_cache.TryGetValue("HomeNodesInfoV2", out var model) && model is HomeNodesInfo chartModel)
                 return chartModel;
 
-            using (var connection =
+            await using (var connection =
     new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 //	(SELECT count(distinct nodeId) as OnlineNodesCount FROM otnode_history WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY) AND Success = 1) as OnlineNodesCount,
                 //  ((SELECT count(distinct nodeId) FROM OTContract_Approval_NodeApproved) -(SELECT count(distinct nodeId) FROM OTContract_Approval_NodeRemoved)) as ApprovedNodesCount,
 
                 //    (SELECT count(distinct h.nodeId) as OnlineNodesCount FROM otnode_history h join otnode_ipinfov2 i on i.nodeid = h.nodeid WHERE h.TimeStamp >= DATE_Add(NOW(), INTERVAL -3 HOUR) AND h.Success = 1) OnlineNodesCount,
-                var homeInfo = connection.QuerySingle<HomeNodesInfo>($@"SELECT 
+                var homeInfo = await connection.QuerySingleAsync<HomeNodesInfo>($@"SELECT 
     0 as OnlineNodesCount,
     (SELECT count(distinct H.Holder) FROM OTOffer_Holders H JOIN OTOffer O on O.OfferID = H.OfferID WHERE O.IsFinalized = 1 AND O.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -7 DAY)) NodesWithJobsThisWeek,
     (SELECT count(distinct H.Holder) FROM OTOffer_Holders H JOIN OTOffer O on O.OfferID = H.OfferID WHERE O.IsFinalized = 1 AND O.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 MONTH)) NodesWithJobsThisMonth,
@@ -213,17 +232,17 @@ ORDER BY Percentage")).ToArray();
 
         [HttpGet]
         [Route("JobsChartDataV3")]
-        public JobsChartDataV2Model[] JobsChartDataV3()
+        public async Task<JobsChartDataV2Model[]> JobsChartDataV3()
         {
             //if (_cache.TryGetValue("JobsChartDataV3", out var model) && model is JobsChartDataV2 chartModel)
             //    return chartModel;
 
             //var response = new JobsChartDataV2();
 
-            using (var connection =
+            await using (var connection =
                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var data = connection.Query<JobsChartDataV2Model>(@"SELECT * FROM jobhistorybyday").ToArray();
+                var data = (await connection.QueryAsync<JobsChartDataV2Model>(@"SELECT * FROM jobhistorybyday")).ToArray();
 
                 return data;
 
@@ -289,209 +308,5 @@ GROUP BY x.Date").ToArray();
                 return response;
             }
         }
-
-//        [HttpGet]
-//        [Route("JobsChartData")]
-//        [SwaggerOperation(
-//            Summary = "Get total of jobs over the last 28 days including active jobs. ",
-//            Description = @"The response contains 3 collections:
-//- Labels: Each day has it's own label
-//- NewJobs: The amount of new jobs for that specific day
-//- ActiveJobs: The amount of active jobs for that specific day
-
-//The collections are indexed in the same order. So the first item in each collection can be paired together, then the second item can be paired together etc."
-//        )]
-//        [SwaggerResponse(200, type: typeof(HomeJobsChartData))]
-//        [SwaggerResponse(500, "Internal server error")]
-//        public HomeJobsChartData GetJobsChartData()
-//        {
-//            if (_cache.TryGetValue("OTHub_HomeJobsChartModel", out var model) && model is HomeJobsChartData chartModel)
-//                return chartModel;
-
-//            chartModel = new HomeJobsChartData();
-
-//            using (var connection =
-//                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-//            {
-//                HomeJobsChartDataModel[] chartData = connection.Query<HomeJobsChartDataModel>(@"SELECT 
-//x.Date,
-//COUNT(O.OfferId) NewJobs,
-//(
-//	SELECT COUNT(OI.OfferId) FROM OTOffer OI 
-//	WHERE 
-//	OI.IsFinalized = 1
-//	AND 
-//	DATE(OI.FinalizedTimeStamp) <= x.Date
-//	AND
-//	   (CASE WHEN x.Date= CURDATE() THEN NOW() ELSE  DATE_Add(x.Date, INTERVAL + 1 DAY) END)
-//		<=
-//		DATE_Add(OI.FinalizedTimeStamp, INTERVAL + OI.HoldingTimeInMinutes MINUTE)
-//	)
-//	as ActiveJobs
-//FROM (
-//SELECT CURDATE() Date
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 1 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 2 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 3 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 4 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 5 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 6 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 7 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 8 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 9 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 10 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 11 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 12 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 13 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 14 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 15 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 16 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 17 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 18 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 19 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 20 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 21 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 22 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 23 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 24 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 25 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 26 DAY)
-//UNION 
-//SELECT DATE_Add(CURDATE(), INTERVAL - 27 DAY)
-//) x 
-//LEFT JOIN OTOffer O on O.IsFinalized = 1 AND x.Date = DATE(O.FinalizedTimestamp)
-//GROUP BY x.Date").ToArray();
-
-//                List<string> labels = new List<string>();
-//                List<int> activeJobs = new List<int>();
-//                List<int> newJobs = new List<int>();
-
-//                foreach (var row in chartData.OrderBy(d => d.Date))
-//                {
-//                    labels.Add(row.Date.ToString("MMM dd yyyy"));
-//                    activeJobs.Add(row.ActiveJobs);
-//                    newJobs.Add(row.NewJobs);
-//                }
-
-//                chartModel.Labels = labels.ToArray();
-//                chartModel.ActiveJobs = activeJobs.ToArray();
-//                chartModel.NewJobs = newJobs.ToArray();
-//            }
-
-//            _cache.Set("OTHub_HomeJobsChartModel", chartModel, TimeSpan.FromMinutes(4));
-
-//            return chartModel;
-//        }
-
-//        [HttpGet()]
-//        [SwaggerOperation(
-//            Summary = "Retrieves statistics about the ODN which you can see on the OT Hub dashboard.",
-//            Description = @"You can use this API call to retrieve the following:
-//- Online Node count
-//- Approved Node count
-//- Nodes with Jobs count
-//- Offers in last x time period
-//- Payouts total
-//- Litigation stats
-
-//Please note market price information is not currently available within the response."
-//        )]
-//        [SwaggerResponse(200, type: typeof(HomeModel))]
-//        [SwaggerResponse(500, "Internal server error")]
-//        public HomeModel Get()
-//        {
-//            if (_cache.TryGetValue("OTHub_HomeModel", out var model) && model is HomeModel homeModel)
-//                return homeModel;
-
-//            using (var connection =
-//                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-//            {
-//                //	(SELECT count(distinct nodeId) as OnlineNodesCount FROM otnode_history WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY) AND Success = 1) as OnlineNodesCount,
-//                //  ((SELECT count(distinct nodeId) FROM OTContract_Approval_NodeApproved) -(SELECT count(distinct nodeId) FROM OTContract_Approval_NodeRemoved)) as ApprovedNodesCount,
-
-//               var homeInfo = connection.QuerySingle<HomeNodesInfo>($@"SELECT 
-//    (SELECT count(distinct h.nodeId) as OnlineNodesCount FROM otnode_history h join otnode_ipinfo i on i.nodeid = h.nodeid WHERE h.TimeStamp >= DATE_Add(NOW(), INTERVAL -1 HOUR) AND h.Success = 1 and i.NetworkId like '{OTHubSettings.Instance.Blockchain.Network}V4.0') OnlineNodesCount,
-//    (select count(distinct n.nodeId) FROM OTNode_IPInfo n JOIN OTIdentity I ON I.NodeId = n.NodeId WHERE I.Approved = 1) ApprovedNodesCount,
-//	(select sum(Stake) from otidentity where version = (select max(ii.version) from otidentity ii)) StakedTokensTotal,
-//    (SELECT count(distinct H.Holder) FROM OTOffer_Holders H JOIN OTOffer O on O.OfferID = H.OfferID WHERE O.IsFinalized = 1 AND O.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -7 DAY)) NodesWithJobsThisWeek,
-//    (SELECT count(distinct H.Holder) FROM OTOffer_Holders H JOIN OTOffer O on O.OfferID = H.OfferID WHERE O.IsFinalized = 1 AND O.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 MONTH)) NodesWithJobsThisMonth,
-//    (SELECT COUNT(distinct H.Holder) FROM OTOffer O JOIN OTOffer_Holders H ON H.OfferID = O.OfferId WHERE O.IsFinalized = 1 AND NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE)) NodesWithActiveJobs,
-//	(select sum(StakeReserved) from otidentity where version = (select max(ii.version) from otidentity ii)) LockedTokensTotal");
-
-////                var lastApprovals = connection.QueryFirstOrDefault(
-////                    @"SELECT Timestamp, COUNT(*) Amount FROM otcontract_approval_nodeapproved
-////GROUP BY Timestamp
-////ORDER BY Timestamp DESC
-////LIMIT 1");
-
-//                //homeInfo.LastApprovalTimestamp = (DateTime?)lastApprovals?.Timestamp;
-//                //homeInfo.LastApprovalAmount = (Int32?) lastApprovals?.Amount;
-          
-//                var offersInfo = connection.QuerySingle<HomeOffersInfo>(@"SELECT
-//	(SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1) as OffersTotal,
-//    (SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) as OffersLast24Hours,
-//    (SELECT COUNT(*) FROM OTOffer WHERE IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL - 7 DAY)) as OffersLast7Days,
-//	(SELECT SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_Add(FinalizedTimeStamp, INTERVAL +HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END)
-//	 FROM OTOffer) as OffersActive");
-
-//                //	(SELECT COALESCE(SUM(Amount), 0) FROM OTContract_Holding_Paidout WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) as PayoutsLast24Hours,
-//                //(SELECT COALESCE(SUM(Amount), 0) FROM OTContract_Holding_Paidout WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL - 7 DAY)) as PayoutsLast7Days
-//                var payoutsInfo = connection.QuerySingle<HomePayoutsInfo>(@"SELECT
-//	(SELECT COALESCE(SUM(Amount), 0) FROM OTContract_Holding_Paidout) as PayoutsTotal");
-
-//                var litigationsInfo = connection.QuerySingle<HomeLitigationsInfo>(@"SELECT (SELECT COUNT(*) FROM otcontract_litigation_litigationinitiated) LitigationsTotal, 
-//(SELECT COUNT(*) FROM otcontract_litigation_litigationinitiated WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL - 7 DAY)) Litigations7Days,
-// (SELECT COUNT(*) FROM otcontract_litigation_litigationcompleted WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL - 7 DAY) AND DHWasPenalized = 1) Litigations7DaysPenalized, 
-// (SELECT COUNT(*) FROM otcontract_litigation_litigationcompleted WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL - 7 DAY) AND DHWasPenalized = 0) Litigations7DaysNotPenalized,
-// (SELECT COUNT(*) FROM otcontract_litigation_litigationinitiated WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL - 1 MONTH)) Litigations1Month,
-// (SELECT COUNT(*) FROM otcontract_litigation_litigationcompleted WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL - 1 MONTH) AND DHWasPenalized = 1) Litigations1MonthPenalized, 
-// (SELECT COUNT(*) FROM otcontract_litigation_litigationcompleted WHERE TimeStamp >= DATE_Add(NOW(), INTERVAL - 1 MONTH) AND DHWasPenalized = 0) Litigations1MonthNotPenalized,
-//  (SELECT COUNT(*) FROM OTOffer_Holders H join ethblock b on b.BlockNumber = H.LitigationStatusBlockNumber WHERE H.LitigationStatus in (1,2) AND b.TimeStamp >= DATE_Add(NOW(), INTERVAL - 1 HOUR)) LitigationsActiveLastHour ");
-
-//                homeModel = new HomeModel
-//                {
-//                    MarketInfo = new HomeMarketInfo
-//                    {
-//                        Change24Hours = 0,
-//                        MarketCap = 0,
-//                        USDValue = 0
-//                    },
-//                    NodesInfo = homeInfo,
-//                    OffersInfo = offersInfo,
-//                    PayoutsInfo = payoutsInfo,
-//                    LitigationsInfo = litigationsInfo
-//                };
-
-//                _cache.Set("OTHub_HomeModel", homeModel, TimeSpan.FromMinutes(1));
-
-//                return homeModel;
-//            }
-//        }
     }
 }

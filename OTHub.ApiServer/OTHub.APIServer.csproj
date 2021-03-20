@@ -23,7 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CoinGeckoAsyncApi" Version="1.3.4" />
+    <PackageReference Include="CoinGeckoAsyncApi" Version="1.4.1" />
+    <PackageReference Include="CoinMarketCap-API" Version="2.0.0" />
     <PackageReference Include="CoinpaprikaAPI" Version="1.2.8" />
     <PackageReference Include="Dapper" Version="2.0.35" />
     <PackageReference Include="Jdenticon-net" Version="2.2.1" />
