@@ -227,7 +227,7 @@
                         <nb-list-item>
                             Transaction Fee:
                             {{OfferModel?.CreatedGasUsed * (OfferModel?.CreatedGasPrice / 1000000000000000000)| number:'1.0-8'}}
-                            ETH ({{OfferModel?.CreatedGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
+                            {{OfferModel?.GasTicker}} ({{OfferModel?.CreatedGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
                         </nb-list-item>
                     </nb-list>
                     <!-- <br *ngIf="OfferModel?.FinalizedTransactionHash !== null"> -->
@@ -245,7 +245,7 @@
                         <nb-list-item>
                             Transaction Fee:
                             {{OfferModel?.FinalizedGasUsed * (OfferModel?.FinalizedGasPrice / 1000000000000000000) | number:'1.0-8'}}
-                            ETH ({{OfferModel?.FinalizedGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
+                            {{OfferModel?.GasTicker}} ({{OfferModel?.FinalizedGasPrice / 1000000000 | number:'1.0-1'}} Gwei)
                         </nb-list-item>
                     </nb-list>
                 </nb-card>

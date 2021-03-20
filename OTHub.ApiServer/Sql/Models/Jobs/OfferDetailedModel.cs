@@ -22,5 +22,6 @@ namespace OTHub.APIServer.Sql.Models.Jobs
         public UInt64 LitigationIntervalInMinutes { get; set; }
         public OfferDetailedTimelineEventModel[] TimelineEvents { get; set; }
         public Decimal? EstimatedLambda { get; set; }
+        public string GasTicker { get; set; }
     }
 }
