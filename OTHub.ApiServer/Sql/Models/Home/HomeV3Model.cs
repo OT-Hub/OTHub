@@ -30,6 +30,7 @@ namespace OTHub.APIServer.Sql.Models.Home
         public long? JobsReward24H { get; set; }
         public long? JobsDuration24H { get; set; }
         public long? JobsSize24H { get; set; }
+        public string GasTicker { get; set; }
 
         public HomeFeesModel Fees { get; set; }
         public int BlockchainID { get; set; }

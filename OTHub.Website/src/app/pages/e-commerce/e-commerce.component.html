@@ -255,14 +255,14 @@
                 Average job fee:
                 <span class="homeData">
                   {{bc.Fees.ShowCostInUSD ? "$" : ""}}{{bc.Fees.JobCreationCost != null && bc.Fees.JobFinalisedCost != null ?
-                  (bc.Fees.JobCreationCost + bc.Fees.JobFinalisedCost | number: '1.0-5') : '?'}}{{bc.Fees.ShowCostInUSD ? "" : " ETH"}}
+                  (bc.Fees.JobCreationCost + bc.Fees.JobFinalisedCost | number: '1.0-5') : '?'}}{{bc.Fees.ShowCostInUSD ? "" : (" " + bc.GasTicker )}}
                 </span>
               </div>
               <div class="homeField">
                 Average payout fee:
                 <span class="homeData">
                   {{bc.Fees.ShowCostInUSD ? "$" : ""}}{{bc.Fees.PayoutCost != null ? bc.Fees.PayoutCost: '?'}}{{bc.Fees.ShowCostInUSD ? "" :
-                  " ETH"}}
+                  (" " + bc.GasTicker )}}
                 </span>
               </div>
             </div>

@@ -58,6 +58,7 @@ namespace OTHub.APIServer.Controllers
 
                 model.Blockchains = (await connection.QueryAsync<HomeV3BlockchainModel>(@"SELECT
 b.Id BlockchainID,
+b.GasTicker,
 b.DisplayName BlockchainName,
 b.LogoLocation,
  (

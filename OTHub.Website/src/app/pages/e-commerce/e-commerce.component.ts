@@ -52,112 +52,7 @@ export class ECommerceComponent implements OnDestroy, OnInit {
     }
   }
 
-  loadJobsChart() {
-    this.getJobsChartData().subscribe(chartData => {
-      const endTime = new Date();
-      this.JobsChartData = chartData;
-      this.failedLoading = false;
-      this.isLoading = false;
 
-      let chart = am4core.create("JobsHistoryChart", am4charts.XYChart);
-
-      chart.paddingRight = 20;
-
-      let data = [];
-
-      chartData.forEach((v) => {
-        data.push({ date: v.Date, name: "name", newJobs: v.NewJobs, completedJobs: v.CompletedJobs });
-      });
-
-      // let visits = 10;
-      // for (let i = 1; i < 366; i++) {
-      //   visits += Math.round((Math.random() < 0.5 ? 1 : -1) * Math.random() * 10);
-      //   data.push({ date: new Date(2018, 0, i), name: "name" + i, value: visits });
-      // }
-
-      chart.data = data;
-      chart.legend = new am4charts.Legend();
-      chart.legend.maxHeight = 150;
-      chart.legend.scrollable = true;
-      chart.legend.useDefaultMarker = true;
-
-      let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-      dateAxis.renderer.grid.template.location = 0;
-
-
-      let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-      valueAxis.tooltip.disabled = true;
-      valueAxis.renderer.minWidth = 35;
-      valueAxis.title.text = 'Jobs';
-
-      let series = chart.series.push(new am4charts.LineSeries());
-      series.dataFields.dateX = "date";
-      series.dataFields.valueY = "newJobs";
-      series.tooltipText = "{valueY.value}";
-      series.name = 'Started';
-      series.stroke = am4core.color('#00d68f');
-      series.fill = am4core.color('#00d68f');
-      series.strokeWidth = 3;
-
-      let series2 = chart.series.push(new am4charts.LineSeries());
-      series2.dataFields.dateX = "date";
-      series2.dataFields.valueY = "completedJobs";
-      series2.tooltipText = "{valueY.value}";
-      series2.name = 'Completed';
-      series2.strokeWidth = 3;
-
-      // let bullet = series.bullets.push(new am4charts.CircleBullet());
-      // bullet.circle.strokeWidth = 2;
-      // bullet.circle.radius = 4;
-      // bullet.circle.fill = am4core.color("#fff");
-      //
-      // let bullethover = bullet.states.create("hover");
-      // bullethover.properties.scale = 1.3;
-
-      // bullet = series2.bullets.push(new am4charts.CircleBullet());
-      // bullet.circle.strokeWidth = 2;
-      // bullet.circle.radius = 4;
-      // bullet.circle.fill = am4core.color("#fff");
-      //
-      // bullethover = bullet.states.create("hover");
-      // bullethover.properties.scale = 1.3;
-
-      chart.cursor = new am4charts.XYCursor();
-      chart.cursor.behavior = "panXY";
-      chart.cursor.xAxis = dateAxis;
-      //chart.cursor.snapToSeries = series;
-
-      let scrollbarX = new am4charts.XYChartScrollbar();
-      scrollbarX.series.push(series);
-      scrollbarX.series.push(series2);
-      chart.scrollbarX = scrollbarX;
-      scrollbarX.parent = chart.chartAndLegendContainer;
-
-      // let scrollAxisX = chart.xAxes.getIndex(0);
-      // let range: DateAxisDataItem;
-      // range = scrollAxisX.axisRanges.create() as DateAxisDataItem;
-      //
-      // range.date = new Date(2020, 2, 4);
-      // range.endDate = new Date(2020, 2, 7);
-      // range.axisFill.fill = am4core.color("#396478");
-      // range.axisFill.fillOpacity = 0.2;
-      // range.grid.strokeOpacity = 0;
-
-      // scrollbarX.series.push(series);
-      // scrollbarX.series.push(series2);
-      // chart.scrollbarX = scrollbarX;
-
-      let title = chart.titles.create();
-      title.text = "Jobs Overview";
-      title.fontSize = 18;
-      title.marginBottom = 15;
-
-      this.chart = chart;
-    }, err => {
-      this.failedLoading = true;
-      this.isLoading = false;
-    });
-  }
 
   loadJobBlockchainDistributionChart() {
     this.get24HJobBlockchainDistribution().subscribe(chartData => {
@@ -263,7 +158,6 @@ export class ECommerceComponent implements OnDestroy, OnInit {
     // Chart code goes in here
     this.browserOnly(() => {
       am4core.useTheme(am4themes_animated);
-      that.loadJobsChart();
       that.loadJobBlockchainDistributionChart();
     });
   }
@@ -367,6 +261,7 @@ export class HomeV3BlockchainModel {
   JobsDuration24H: number;
   JobsSize24H: number;
   StakedTokens: string;
+  GasTicker: string;
   Fees: HomeFeesByBlockchainModel;
 }
 
