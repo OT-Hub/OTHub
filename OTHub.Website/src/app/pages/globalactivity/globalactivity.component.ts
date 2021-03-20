@@ -111,7 +111,8 @@ export class GlobalActivityComponent {
                         row.EventName === 'Litigation Passed' || row.EventName === 'Litigation Answered' || row.EventName === 'Litigation Initiated' ||
                         row.EventName === 'Replacement Started' || row.EventName === 'Data Holder Chosen as Replacement' || row.EventName === 'Data Holder Chosen') {
                         const name = this.myNodeService.GetName(value, false);
-                        return '<a class="navigateJqueryToAngular" href="/nodes/dataholders/' + value + '" onclick="return false;">' + name + '</a>';
+                        return value;
+                        //return '<a class="navigateJqueryToAngular" href="/nodes/dataholders/' + value + '" onclick="return false;">' + name + '</a>';
                     }
                     if (row.EventName === 'New Offer' || row.EventName === 'Finalized Offer') {
                         return '<a title="' + value + '" class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;">' + value.substring(0, 40) + '...</a>';
@@ -141,10 +142,7 @@ export class GlobalActivityComponent {
                 type: 'html',
                 filter: true,
                 valuePrepareFunction: (data, row) => {
-                    if (this.IsTestNet) {
-                        return '<a title="' + data + '" href="https://rinkeby.etherscan.io/tx/' + data + '" target="_blank">' + data.substring(0, 25) + '...</a>';
-                    }
-                    return '<a title="' + data + '" href="https://etherscan.io/tx/' + data + '" target="_blank">' + data.substring(0, 25) + '...</a>';
+                    return '<a title="' + data + '" href="' + row.RealTransactionUrl +  '" target="_blank">' + data.substring(0, 25) + '...</a>';
                 }
             },
         },
