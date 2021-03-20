@@ -12,6 +12,7 @@ namespace OTHub.Settings
     public enum BlockchainType
     {
         Ethereum,
-        Starfleet
+        Starfleet,
+        xDai
     }
 }

@@ -16,7 +16,7 @@ namespace OTHub.BackendSync
         {
             List<Task> tasks = new List<Task>();
 
-            tasks.Add(Task.Run(() =>
+            tasks.Add(Task.Run(async () =>
             {
                 TaskController controller = new TaskController(Source.NodeUptimeAndMisc);
 
@@ -24,18 +24,18 @@ namespace OTHub.BackendSync
 
                 //controller.Schedule(new BoardingContractSyncTask(), TimeSpan.FromMinutes(5), true);
 
-                controller.Start();
+                await controller.Start();
             }));
 
 
-            tasks.Add(Task.Run(() =>
+            tasks.Add(Task.Run(async () =>
             {
                 TaskController controller = new TaskController(Source.BlockchainSync);
 
                 controller.Schedule(new BlockchainMaintenanceTask(), TimeSpan.FromHours(3), true);
                 controller.Schedule(new BlockchainSyncTask(), TimeSpan.FromMinutes(6), true);
 
-                controller.Start();
+                await controller.Start();
             }));
 
             //This will never return
