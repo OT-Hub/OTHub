@@ -16,7 +16,11 @@ export const MENU_ITEMS: NbMenuItem[] = [
   {
     title: 'Jobs',
     icon: 'briefcase-outline',
-    link: '/offers/recent'
+    link: '/offers/recent',
+    // badge: {
+    //   text: '30',
+    //   status: 'primary',
+    // },
   },
   {
     title: 'Nodes',
