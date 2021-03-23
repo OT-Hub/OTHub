@@ -130,7 +130,7 @@ namespace OTHub.BackendSync
             }
         }
 
-        public void Schedule(TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow)
+        public void Schedule(TaskRunBlockchain task, bool startNow)
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -148,8 +148,9 @@ namespace OTHub.BackendSync
                     BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
                     BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
 
-                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task,
-                        runEveryTimeSpan, startNow, id);
+                    TimeSpan interval = task.GetExecutingInterval(blockchainEnum);
+
+                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, interval, startNow, id);
                     _items.Add(item);
                 }
             }

@@ -51,7 +51,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
             Random random = new Random();
 
-            var randomMinutes = random.Next(0, 60);
+            var randomMinutes = random.Next(0, 2);
 
 
             await using (var connection =
@@ -107,7 +107,7 @@ WHERE I.Version > 0").ToArray();
                         {
                             var adjustedNowTime = DateTime.Now.AddMinutes(randomMinutes);
 
-                            if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalDays <= 7)
+                            if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalDays <= 14)
                                 updateProfile = false;
                         }
                     }
@@ -186,7 +186,7 @@ where i.Identity = @identity", new
                         }
                         else
                         {
-                            if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalHours <= 32)
+                            if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalHours <= 24)
                             {
                                 updateProfile = false;
                             }

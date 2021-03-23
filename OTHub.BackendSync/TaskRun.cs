@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -56,6 +57,12 @@ namespace OTHub.BackendSync
                     childTask.LatestBlockNumber = value;
                 }
             }
+        }
+
+        public virtual TimeSpan GetExecutingInterval(BlockchainType type)
+        {
+            return TimeSpan.FromMinutes(5);
+
         }
 
         public override string ParentName => _childTasks.Any() ? null : "System";

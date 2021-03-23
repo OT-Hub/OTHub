@@ -21,17 +21,13 @@ namespace OTHub.BackendSync.Logging
                     {
                         Console.ForegroundColor = ConsoleColor.Green;
                     }
-                    else if (line.Source == Source.NodeUptimeAndMisc)
+                    else if (line.Source == Source.Misc)
                     {
                         Console.ForegroundColor = ConsoleColor.Blue;
                     }
                     else if (line.Source == Source.Startup)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkGray;
-                    }
-                    else if (line.Source == Source.NodeApi)
-                    {
-                        Console.ForegroundColor = ConsoleColor.DarkYellow;
                     }
 
                     Console.WriteLine(line.Text);
