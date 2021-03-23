@@ -169,7 +169,7 @@ WHERE bc.ID = @blockchainID", new
 SELECT bc.DisplayName, 
 bc.Color, 
 COUNT(o.OfferID) Jobs,
-ROUND(COUNT(*) / (@totalToday) * 100) AS Percentage
+ROUND(COUNT(o.OfferID) / (@totalToday) * 100) AS Percentage
 FROM blockchains bc
 LEFT JOIN otoffer o ON bc.ID = o.BlockchainID AND o.IsFinalized = 1 AND o.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
 GROUP BY bc.Id
