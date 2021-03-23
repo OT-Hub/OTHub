@@ -94,13 +94,13 @@ CAST(AVG((CAST(of.GasUsed AS DECIMAL(20,4)) * (CAST(of.GasPrice AS DECIMAL(20,6)
 FROM blockchains bc
 LEFT JOIN otcontract_holding_offercreated oc ON bc.ID = oc.BlockchainID AND oc.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
 LEFT JOIN otcontract_holding_offerfinalized of ON of.OfferID = oc.OfferID AND of.BlockchainID = oc.BlockchainID AND of.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
-LEFT JOIN ticker_trac ocTicker ON bc.IsGasStableCoin = 0 AND ocTicker.Timestamp = (
+LEFT JOIN ticker_eth_to_usd ocTicker ON bc.IsGasStableCoin = 0 AND ocTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
-FROM ticker_trac
+FROM ticker_eth_to_usd
 WHERE TIMESTAMP <= oc.Timestamp)
-LEFT JOIN ticker_trac ofTicker ON bc.IsGasStableCoin = 0 AND ofTicker.Timestamp = (
+LEFT JOIN ticker_eth_to_usd ofTicker ON bc.IsGasStableCoin = 0 AND ofTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
-FROM ticker_trac
+FROM ticker_eth_to_usd
 WHERE TIMESTAMP <= of.Timestamp)
 WHERE bc.ID = @blockchainID", new
                     {
@@ -111,9 +111,9 @@ WHERE bc.ID = @blockchainID", new
 CAST(AVG((CAST(po.GasUsed AS DECIMAL(20,4)) * (CAST(po.GasPrice as decimal(20,6)) / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD AND bc.IsGasStableCoin = 0 THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20, 8)) PayoutCost
 FROM blockchains bc
 LEFT JOIN otcontract_holding_paidout po ON po.BlockchainID = bc.ID AND po.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
-LEFT JOIN ticker_trac ocTicker ON bc.IsGasStableCoin = 0 AND ocTicker.Timestamp = (
+LEFT JOIN ticker_eth_to_usd ocTicker ON bc.IsGasStableCoin = 0 AND ocTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
-FROM ticker_trac
+FROM ticker_eth_to_usd
 WHERE TIMESTAMP <= po.Timestamp)
 WHERE bc.ID = @blockchainID", new
                     {

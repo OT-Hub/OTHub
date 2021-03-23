@@ -123,6 +123,7 @@ namespace OTHub.BackendSync.Markets.Tasks
             }
 
 
+            await ExecuteEthToUSD(source);
 
             await ExecuteEth(source);
         }
@@ -258,6 +259,98 @@ namespace OTHub.BackendSync.Markets.Tasks
 
 
 
+                    }
+                }
+            }
+        }
+
+        public async Task ExecuteEthToUSD(Source source)
+        {
+            Logger.WriteLine(source, "Syncing Market (ETH to USD)");
+
+            DateTime now = DateTime.UtcNow;
+            DateTime latestTimestamp;
+
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                latestTimestamp =
+                    connection.ExecuteScalar<DateTime?>(@"select max(ticker_eth_to_usd.Timestamp) from ticker_eth_to_usd") ??
+                    connection.ExecuteScalar<DateTime>(@"SELECT Min(b.Timestamp) FROM ethblock b
+                    where b.Timestamp >= COALESCE((select max(ticker_eth_to_usd.Timestamp) from ticker_eth_to_usd), (SELECT Min(b.Timestamp) FROM ethblock b))");
+            }
+
+            if ((now - latestTimestamp).TotalHours > 6)
+            {
+
+                CoinpaprikaAPI.Client client = new CoinpaprikaAPI.Client();
+
+                await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                {
+                    await connection.OpenAsync();
+
+                    for (DateTime date = latestTimestamp.Date; date.Date <= now; date = date.AddDays(1))
+                    {
+                        if (date > now)
+                            break;
+
+                        await TimeConstraint;
+
+                        var tickers = client.GetHistoricalTickerForIdAsync("eth-ethereum",
+                                date,
+                                date.AddDays(1), 1000, "USD",
+                                TickerInterval.SixHours)
+                            .Result;
+
+                        DataTable rawData = new DataTable();
+                        rawData.Columns.Add("Timestamp", typeof(DateTime));
+                        rawData.Columns.Add("Price", typeof(decimal));
+
+                        if (tickers?.Value == null)
+                            continue;
+
+                        foreach (var ticker in tickers.Value)
+                        {
+                            if (ticker.Timestamp.UtcDateTime <= latestTimestamp)
+                                continue;
+
+                            var row = rawData.NewRow();
+
+
+                            row["Timestamp"] = ticker.Timestamp.UtcDateTime;
+                            row["Price"] = ticker.Price;
+                            rawData.Rows.Add(row);
+
+                        }
+
+                        if (rawData.Rows.Count == 0)
+                            continue;
+
+
+                        await using (MySqlTransaction tran =
+                            await connection.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable))
+                        {
+                            await using (MySqlCommand cmd = new MySqlCommand())
+                            {
+                                cmd.Connection = connection;
+                                cmd.Transaction = tran;
+                                cmd.CommandText = "SELECT * FROM ticker_eth_to_usd";
+                                using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
+                                {
+                                    //da.UpdateBatchSize = 1000;
+                                    using (MySqlCommandBuilder cb = new MySqlCommandBuilder(da))
+                                    {
+                                        da.Update(rawData);
+                                        await tran.CommitAsync();
+
+                                        var max = tickers.Value.Max(v => v.Timestamp.UtcDateTime);
+                                        if (max > latestTimestamp)
+                                        {
+                                            latestTimestamp = max;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
