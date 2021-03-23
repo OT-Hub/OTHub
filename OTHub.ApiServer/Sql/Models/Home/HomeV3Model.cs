@@ -27,10 +27,11 @@ namespace OTHub.APIServer.Sql.Models.Home
         public long ActiveJobs { get; set; }
         public decimal StakedTokens { get; set; }
         public long Jobs24H { get; set; }
-        public long? JobsReward24H { get; set; }
+        public decimal? JobsReward24H { get; set; }
         public long? JobsDuration24H { get; set; }
         public long? JobsSize24H { get; set; }
         public string GasTicker { get; set; }
+        public string TokenTicker { get; set; }
 
         public HomeFeesModel Fees { get; set; }
         public int BlockchainID { get; set; }

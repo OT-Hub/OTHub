@@ -221,30 +221,30 @@ ENGINE=InnoDB
 //                connection.Execute(@"ALTER TABLE otoffer
 //ADD COLUMN IF NOT EXISTS	`ContractAddress` varchar(100) NULL DEFAULT NULL");
 
-                var duplicates = connection.Query(@"select address, type from otcontract
-group by address, type
-having count(*) > 1");
+//                var duplicates = connection.Query(@"select address, type from otcontract
+//group by address, type
+//having count(*) > 1");
 
-                foreach (var duplicate in duplicates)
-                {
-                    var each = connection.Query(
-                        @"SELECT * FROM otcontract WHERE address = @address and type = @type order by id", new
-                        {
-                            address = duplicate.address, type = duplicate.type
-                        }).ToArray();
+//                foreach (var duplicate in duplicates)
+//                {
+//                    var each = connection.Query(
+//                        @"SELECT * FROM otcontract WHERE address = @address and type = @type order by id", new
+//                        {
+//                            address = duplicate.address, type = duplicate.type
+//                        }).ToArray();
 
-                    if (each.Length > 1)
-                    {
-                        for (int i = 2; i <= each.Length; i++)
-                        {
-                            var id = each[i - 1].ID;
+//                    if (each.Length > 1)
+//                    {
+//                        for (int i = 2; i <= each.Length; i++)
+//                        {
+//                            var id = each[i - 1].ID;
 
-                            Console.WriteLine("Deleting address " + duplicate.address + " type " + duplicate.type);
+//                            Console.WriteLine("Deleting address " + duplicate.address + " type " + duplicate.type);
 
-                            connection.Execute(@"DELETE FROM otcontract where id = @id", new {id});
-                        }
-                    }
-                }
+//                            connection.Execute(@"DELETE FROM otcontract where id = @id", new {id});
+//                        }
+//                    }
+//                }
 
                 //                Console.WriteLine("NEED TO REMOVE THIS LINE");
                 //                connection.Execute("truncate otnode_history");

@@ -262,6 +262,7 @@ export class HomeV3BlockchainModel {
   JobsSize24H: number;
   StakedTokens: string;
   GasTicker: string;
+  TokenTicker: string;
   Fees: HomeFeesByBlockchainModel;
 }
 

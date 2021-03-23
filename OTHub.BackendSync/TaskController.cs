@@ -142,6 +142,9 @@ namespace OTHub.BackendSync
                     string blockchainName = blockchain.BlockchainName;
                     string networkName = blockchain.NetworkName;
 
+                    Logger.WriteLine(Source.BlockchainSync,
+                        $"Setting up processes for {blockchainName} {networkName}. Task is " + task.Name);
+
                     BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
                     BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
 
