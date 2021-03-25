@@ -20,10 +20,10 @@ import {
   NbThemeService, NbCardModule, NbSelectModule
 } from '@nebular/theme';
 import {Ng2SmartTableModule} from "ng2-smart-table";
-import { StarfleetboardingComponent } from './pages/starfleetboarding/starfleetboarding.component';
+
 
 @NgModule({
-  declarations: [AppComponent, StarfleetboardingComponent],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
