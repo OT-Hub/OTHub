@@ -15,7 +15,6 @@ substring(I.NodeId, 1, 40) as NodeId,
 SUM(COALESCE(I.StakeReserved, 0)) as StakeReservedTokens
 from OTIdentity I
 JOIN blockchains bc ON bc.ID = I.BlockchainID
-JOIN otoffer O ON O.DCNodeId = I.NodeId
 WHERE I.NodeId = @nodeId
 GROUP BY I.NodeId";
 
