@@ -78,9 +78,9 @@ SELECT COALESCE(SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_ADD(FinalizedTim
 FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
 (select COALESCE(sum(Stake), 0) from otidentity WHERE blockchainid = b.id AND version = (select max(ii.version) from otidentity ii)) StakedTokens,
 (SELECT COUNT(*) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
-(SELECT COALESCE(AVG(otoffer.TokenAmountPerHolder), 0) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
+(SELECT AVG(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
 (SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
-(SELECT COALESCE(AVG(otoffer.DataSetSizeInBytes), 0) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
+(SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
 FROM blockchains b
 order by b.id")).ToArray();
 
@@ -138,10 +138,11 @@ WHERE bc.ID = @blockchainID", new
                     ActiveNodes = model.Blockchains.Sum(b => b.ActiveNodes),
                     Jobs24H = model.Blockchains.Sum(b => b.Jobs24H),
                     JobsDuration24H = (long?)model.Blockchains.Select(b => b.JobsDuration24H).DefaultIfEmpty(null).Average(),
-                    JobsReward24H = (long?) model.Blockchains.Where(b => b.JobsReward24H.HasValue).Average(b => b.JobsReward24H),
+                    JobsReward24H = (decimal?) model.Blockchains.Where(b => b.JobsReward24H.HasValue).Average(b => b.JobsReward24H),
                     JobsSize24H = (long?) model.Blockchains.Where(b => b.JobsSize24H.HasValue).Average(b => b.JobsSize24H),
                     StakedTokens = model.Blockchains.Sum(b => b.StakedTokens),
-                    TotalJobs = model.Blockchains.Sum(b => b.TotalJobs)
+                    TotalJobs = model.Blockchains.Sum(b => b.TotalJobs),
+                    TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b)
                 };
 
                 _cache.Set("HomeV3", model, TimeSpan.FromMinutes(3));

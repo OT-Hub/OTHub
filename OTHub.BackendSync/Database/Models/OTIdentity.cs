@@ -79,7 +79,7 @@ VALUES(@Identity, @TransactionHash, @Version, @BlockchainID)",
         {
             connection.Execute(@"UPDATE OTIdentity
 SET Stake = @Stake, StakeReserved = @StakeReserved, Reputation = @Reputation, WithdrawalPending = @WithdrawalPending, WithdrawalTimestamp = @WithdrawalTimestamp, WithdrawalAmount = @WithdrawalAmount, NodeId = @NodeId, LastSyncedTimestamp = @LastSyncedTimestamp
-WHERE Identity = @Identity", new
+WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
             {
                 model.Identity,
                 Stake = model.Stake ?? 0,
@@ -89,7 +89,8 @@ WHERE Identity = @Identity", new
                 model.WithdrawalPending,
                 model.WithdrawalTimestamp,
                 model.NodeId,
-                model.LastSyncedTimestamp
+                model.LastSyncedTimestamp,
+                model.BlockchainID
             });
         }
 
@@ -97,7 +98,7 @@ WHERE Identity = @Identity", new
         {
             connection.Execute(@"UPDATE OTIdentity
 SET Paidout = @Paidout, Approved = @Approved, ActiveOffers = @ActiveOffers, OffersLast7Days = @OffersLast7Days, TotalOffers = @TotalOffers, ManagementWallet = @ManagementWallet
-WHERE Identity = @Identity", new
+WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
             {
                 model.Identity,
                 Paidout = model.Paidout ?? 0,
@@ -105,7 +106,8 @@ WHERE Identity = @Identity", new
                 ActiveOffers = model.ActiveOffers ?? 0,
                 OffersLast7Days = model.OffersLast7Days ?? 0,
                 TotalOffers = model.TotalOffers ?? 0,
-                ManagementWallet = model.ManagementWallet
+                ManagementWallet = model.ManagementWallet,
+                model.BlockchainID
             });
         }
 
@@ -113,10 +115,11 @@ WHERE Identity = @Identity", new
         {
             connection.Execute(@"UPDATE OTIdentity
 SET LastSyncedTimestamp = @LastSyncedTimestamp
-WHERE Identity = @Identity", new
+WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
             {
                 model.Identity,
-                model.LastSyncedTimestamp
+                model.LastSyncedTimestamp,
+                model.BlockchainID
             });
         }
     }

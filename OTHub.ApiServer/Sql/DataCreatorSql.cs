@@ -33,10 +33,11 @@ GROUP BY I.NodeId";
                     join otidentity i on i.NodeId = o.DCNodeId
                     join otcontract_holding_offercreated oc on oc.OfferID = o.OfferID
                     left join otcontract_holding_offerfinalized of on of.OfferID = o.OfferID
-                    WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)";
+                    WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)
+    GROUP BY o.OfferID, i.NodeId";
 
         public const String GetJobsCount =
-            @"SELECT COUNT(o.OfferId)
+            @"SELECT COUNT(distinct o.OfferId)
                     FROM OTOffer o
                     join otidentity i on i.NodeId = o.DCNodeId
                     WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)";

@@ -77,7 +77,7 @@
             <div class="homeField">
               Average job reward:
               <span class="homeData">
-                {{Data?.All.JobsReward24H != null ? (Data?.All.JobsReward24H | number:'1.0-2') : '?'}}
+                {{Data?.All.JobsReward24H != null ? (Data?.All.JobsReward24H | number:'1.0-2') : '?'}}  <small class="tokenSmall">{{Data?.All.TokenTicker}}</small>
               </span>
             </div>
             <div class="homeField">
@@ -229,7 +229,7 @@
             <div class="homeField">
               Average job reward:
               <span class="homeData">
-                {{bc.JobsReward24H != null ? (bc.JobsReward24H | number:'1.0-2') : '?'}} {{bc.TokenTicker}}
+                {{bc.JobsReward24H != null ? (bc.JobsReward24H | number:'1.0-2') : '?'}}  <small class="tokenSmall">{{bc.TokenTicker}}</small>
               </span>
             </div>
             <div class="homeField">
