@@ -93,7 +93,7 @@ from OTIdentity I
 JOIN blockchains bc ON bc.ID = I.BlockchainID
 LEFT JOIN OTOffer_Holders OH ON OH.Holder = I.Identity
 LEFT JOIN OTOffer O ON O.OfferID = OH.OfferID
-WHERE (@NodeId_like IS NULL OR I.NodeId = @NodeId_like) AND {(nodes.Any() ? "I.NodeId in @nodes AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version
+WHERE (@NodeId_like IS NULL OR (I.NodeId = @NodeId_like OR I.Identity = @NodeId_like)) AND {(nodes.Any() ? "I.NodeId in @nodes AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version
 GROUP BY I.NodeId
 {orderBy}
 {limitSql}";
