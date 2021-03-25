@@ -138,8 +138,8 @@ WHERE bc.ID = @blockchainID", new
                     ActiveNodes = model.Blockchains.Sum(b => b.ActiveNodes),
                     Jobs24H = model.Blockchains.Sum(b => b.Jobs24H),
                     JobsDuration24H = (long?)model.Blockchains.Select(b => b.JobsDuration24H).DefaultIfEmpty(null).Average(),
-                    JobsReward24H = (long?) model.Blockchains.Average(b => b.JobsReward24H),
-                    JobsSize24H = (long?) model.Blockchains.Average(b => b.JobsSize24H),
+                    JobsReward24H = (long?) model.Blockchains.Where(b => b.JobsReward24H.HasValue).Average(b => b.JobsReward24H),
+                    JobsSize24H = (long?) model.Blockchains.Where(b => b.JobsSize24H.HasValue).Average(b => b.JobsSize24H),
                     StakedTokens = model.Blockchains.Sum(b => b.StakedTokens),
                     TotalJobs = model.Blockchains.Sum(b => b.TotalJobs)
                 };
