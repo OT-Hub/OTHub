@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using MySqlConnector;
 using OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children;
 using OTHub.BackendSync.Logging;
@@ -16,6 +17,16 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync
             Add(new SyncReplacementContractTask());
             Add(new LoadProfileBalancesTask());
             Add(new ProcessJobsTask());
+        }
+
+        public override TimeSpan GetExecutingInterval(BlockchainType type)
+        {
+            if (type == BlockchainType.xDai)
+            {
+                return TimeSpan.FromSeconds(50);
+            }
+
+            return TimeSpan.FromMinutes(5);
         }
 
         public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)

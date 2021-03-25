@@ -6,7 +6,8 @@ import { Component } from '@angular/core';
   template: `
   <div>
   <a href="/system/status">OT Hub Status</a>&nbsp;
-  <a href="/system/smartcontracts">Smart Contracts</a>
+  <a href="/system/smartcontracts">Smart Contracts</a>&nbsp;
+  <a href="/misc/donations">Donations</a>
   </div>
   `,
 })

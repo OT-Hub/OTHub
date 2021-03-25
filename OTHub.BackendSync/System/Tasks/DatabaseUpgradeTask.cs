@@ -748,6 +748,20 @@ ADD COLUMN IF NOT EXISTS `TransactionUrl` varchar(500) NULL");
 
                 connection.Execute(@"ALTER TABLE blockchains
 ADD COLUMN IF NOT EXISTS `IsGasStableCoin` BIT(1) NOT NULL DEFAULT 0");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS `ticker_eth_to_usd` (
+	`ID` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`Timestamp` DATETIME NOT NULL,
+	`Price` DECIMAL(16,6) NOT NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	UNIQUE INDEX `Timestamp` (`Timestamp`, `Price`) USING BTREE
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"TRUNCATE otnode_history");
             }
         }
     }

@@ -78,9 +78,9 @@ SELECT COALESCE(SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_ADD(FinalizedTim
 FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
 (select COALESCE(sum(Stake), 0) from otidentity WHERE blockchainid = b.id AND version = (select max(ii.version) from otidentity ii)) StakedTokens,
 (SELECT COUNT(*) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
-(SELECT COALESCE(AVG(otoffer.TokenAmountPerHolder), 0) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
+(SELECT AVG(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
 (SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
-(SELECT COALESCE(AVG(otoffer.DataSetSizeInBytes), 0) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
+(SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
 FROM blockchains b
 order by b.id")).ToArray();
 
@@ -94,13 +94,13 @@ CAST(AVG((CAST(of.GasUsed AS DECIMAL(20,4)) * (CAST(of.GasPrice AS DECIMAL(20,6)
 FROM blockchains bc
 LEFT JOIN otcontract_holding_offercreated oc ON bc.ID = oc.BlockchainID AND oc.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
 LEFT JOIN otcontract_holding_offerfinalized of ON of.OfferID = oc.OfferID AND of.BlockchainID = oc.BlockchainID AND of.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
-LEFT JOIN ticker_trac ocTicker ON bc.IsGasStableCoin = 0 AND ocTicker.Timestamp = (
+LEFT JOIN ticker_eth_to_usd ocTicker ON bc.IsGasStableCoin = 0 AND ocTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
-FROM ticker_trac
+FROM ticker_eth_to_usd
 WHERE TIMESTAMP <= oc.Timestamp)
-LEFT JOIN ticker_trac ofTicker ON bc.IsGasStableCoin = 0 AND ofTicker.Timestamp = (
+LEFT JOIN ticker_eth_to_usd ofTicker ON bc.IsGasStableCoin = 0 AND ofTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
-FROM ticker_trac
+FROM ticker_eth_to_usd
 WHERE TIMESTAMP <= of.Timestamp)
 WHERE bc.ID = @blockchainID", new
                     {
@@ -111,9 +111,9 @@ WHERE bc.ID = @blockchainID", new
 CAST(AVG((CAST(po.GasUsed AS DECIMAL(20,4)) * (CAST(po.GasPrice as decimal(20,6)) / 1000000000000000000)) * (CASE WHEN bc.ShowCostInUSD AND bc.IsGasStableCoin = 0 THEN ocTicker.Price ELSE 1 END)) AS DECIMAL(20, 8)) PayoutCost
 FROM blockchains bc
 LEFT JOIN otcontract_holding_paidout po ON po.BlockchainID = bc.ID AND po.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
-LEFT JOIN ticker_trac ocTicker ON bc.IsGasStableCoin = 0 AND ocTicker.Timestamp = (
+LEFT JOIN ticker_eth_to_usd ocTicker ON bc.IsGasStableCoin = 0 AND ocTicker.Timestamp = (
 SELECT MAX(TIMESTAMP)
-FROM ticker_trac
+FROM ticker_eth_to_usd
 WHERE TIMESTAMP <= po.Timestamp)
 WHERE bc.ID = @blockchainID", new
                     {
@@ -138,10 +138,11 @@ WHERE bc.ID = @blockchainID", new
                     ActiveNodes = model.Blockchains.Sum(b => b.ActiveNodes),
                     Jobs24H = model.Blockchains.Sum(b => b.Jobs24H),
                     JobsDuration24H = (long?)model.Blockchains.Select(b => b.JobsDuration24H).DefaultIfEmpty(null).Average(),
-                    JobsReward24H = (long?) model.Blockchains.Average(b => b.JobsReward24H),
-                    JobsSize24H = (long?) model.Blockchains.Average(b => b.JobsSize24H),
+                    JobsReward24H = (decimal?) model.Blockchains.Where(b => b.JobsReward24H.HasValue).Average(b => b.JobsReward24H),
+                    JobsSize24H = (long?) model.Blockchains.Where(b => b.JobsSize24H.HasValue).Average(b => b.JobsSize24H),
                     StakedTokens = model.Blockchains.Sum(b => b.StakedTokens),
-                    TotalJobs = model.Blockchains.Sum(b => b.TotalJobs)
+                    TotalJobs = model.Blockchains.Sum(b => b.TotalJobs),
+                    TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b)
                 };
 
                 _cache.Set("HomeV3", model, TimeSpan.FromMinutes(3));
