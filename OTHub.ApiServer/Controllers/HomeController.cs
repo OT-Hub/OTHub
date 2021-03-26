@@ -181,7 +181,7 @@ SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FR
                     TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b)
                 };
 
-                _cache.Set("HomeV3", model, TimeSpan.FromMinutes(3));
+                _cache.Set("HomeV3", model, TimeSpan.FromMinutes(1));
 
 
                 return model;
@@ -212,7 +212,7 @@ LEFT JOIN otoffer o ON bc.ID = o.BlockchainID AND o.IsFinalized = 1 AND o.Finali
 GROUP BY bc.Id
 ORDER BY Percentage")).ToArray();
 
-                _cache.Set("24HJobBlockchainDistribution", data, TimeSpan.FromHours(6));
+                _cache.Set("24HJobBlockchainDistribution", data, TimeSpan.FromMinutes(5));
 
                 return data;
             }
