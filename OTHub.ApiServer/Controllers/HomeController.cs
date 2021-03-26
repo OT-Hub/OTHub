@@ -272,17 +272,44 @@ ORDER BY Percentage")).ToArray();
         [Route("JobsChartDataV3")]
         public async Task<JobsChartDataV2Model[]> JobsChartDataV3()
         {
-            //if (_cache.TryGetValue("JobsChartDataV3", out var model) && model is JobsChartDataV2 chartModel)
-            //    return chartModel;
+            if (_cache.TryGetValue("JobsChartDataV3", out var model) && model is JobsChartDataV2Model[] chartModel)
+                return chartModel;
 
             //var response = new JobsChartDataV2();
 
             await using (var connection =
                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var data = (await connection.QueryAsync<JobsChartDataV2Model>(@"SELECT * FROM jobhistorybyday")).ToArray();
+                var data = (await connection.QueryAsync<JobsChartDataV2Model>(@"SELECT * FROM jobhistorybyday")).ToList();
 
-                return data;
+                if (data.LastOrDefault()?.Date.Date < DateTime.Now.Date)
+                {
+                    JobsChartDataV2Model today = await connection.QueryFirstOrDefaultAsync<JobsChartDataV2Model>(@"
+SELECT 
+x.Date,
+COUNT(O.OfferId) NewJobs,
+(
+	SELECT COUNT(OI.OfferId) FROM OTOffer OI 
+	WHERE 
+	OI.IsFinalized = 1
+	AND 
+	DATE(DATE_Add(OI.FinalizedTimeStamp, INTERVAL + OI.HoldingTimeInMinutes MINUTE)) = x.Date
+	)
+	as CompletedJobs
+FROM (
+SELECT DATE(NOW()) Date
+) x 
+LEFT JOIN OTOffer O on O.IsFinalized = 1 AND x.Date = DATE(O.FinalizedTimestamp)
+GROUP BY x.Date");
+
+                    data.Add(today);
+                }
+
+                var output = data.ToArray();
+
+                _cache.Set("JobsChartDataV3", output, TimeSpan.FromMinutes(1));
+
+                return output;
 
                 //response.Data = new int[][]
                 //{
@@ -293,7 +320,7 @@ ORDER BY Percentage")).ToArray();
                 //response.Labels = data.Select(d => d.Label).ToArray();
 
 
-                //_cache.Set("JobsChartDataV3", response, TimeSpan.FromMinutes(10));
+         
 
                 //return response;
             }
