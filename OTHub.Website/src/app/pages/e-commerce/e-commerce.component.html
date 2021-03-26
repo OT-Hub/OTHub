@@ -238,10 +238,16 @@
                 {{formatTime(bc.JobsDuration24H)}}
               </span>
             </div>
-            <div class="homeField">
+            <!-- <div class="homeField">
               Average job data size:
               <span class="homeData">
                 {{bc.JobsSize24H != null ? ((bc.JobsSize24H / 1000 | number:'1.2-2') + ' KB') : '?'}}
+              </span>
+            </div> -->
+            <div class="homeField">
+              Average time to win first job:
+              <span class="homeData">
+                {{bc.HoursTillFirstJob != null ? bc.HoursTillFirstJob + ' hours' : '?'}}
               </span>
             </div>
 

@@ -82,7 +82,7 @@ FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
 (SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
 (SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
 FROM blockchains b
-order by b.id")).ToArray();
+order by b.id desc")).ToArray();
 
 
                 foreach (HomeV3BlockchainModel blockchain in model.Blockchains)
@@ -121,6 +121,42 @@ WHERE bc.ID = @blockchainID", new
                     }));
 
                     blockchain.Fees.PayoutCost = payoutFee;
+
+                    if (blockchain.BlockchainName == "xDai")
+                    {
+                        blockchain.HoursTillFirstJob = await connection.ExecuteScalarAsync<int?>(@"
+WITH CTE AS (
+SELECT 
+I.Identity,
+I.NodeID,
+(
+SELECT o.FinalizedTimestamp
+FROM otoffer_holders h 
+JOIN otoffer o ON o.OfferID = h.OfferID
+WHERE h.Holder = i.Identity 
+ORDER BY o.FinalizedTimestamp
+LIMIT 1
+) FirstOfferDate,
+bb.Timestamp CreatedDate
+FROM otidentity i
+JOIN otcontract_profile_identitycreated ic ON ic.NewIdentity = i.Identity AND ic.BlockchainID = i.BlockchainID
+JOIN ethblock bb ON bb.BlockchainID = ic.BlockchainID AND bb.BlockNumber = ic.BlockNumber
+WHERE i.BlockchainID = @id AND i.VERSION > 0 AND (
+SELECT o.FinalizedTimestamp
+FROM otoffer_holders h 
+JOIN otoffer o ON o.OfferID = h.OfferID
+WHERE h.Holder = i.Identity 
+ORDER BY o.FinalizedTimestamp
+LIMIT 1
+) >= DATE_Add(NOW(), INTERVAL -1 DAY)
+ORDER BY FirstOfferDate DESC
+)
+
+SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FROM CTE", new
+                        {
+                            id = blockchain.BlockchainID
+                        });
+                    }
                 }
 
                 model.PriceUsd = tickerInfo.PriceUsd;
