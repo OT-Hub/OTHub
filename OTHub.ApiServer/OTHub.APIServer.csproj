@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Auth0.ManagementApi" Version="7.7.0" />
     <PackageReference Include="CoinGeckoAsyncApi" Version="1.4.1" />
     <PackageReference Include="CoinMarketCap-API" Version="2.0.0" />
     <PackageReference Include="CoinpaprikaAPI" Version="1.2.8" />

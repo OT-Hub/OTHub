@@ -5,6 +5,7 @@ using OTHub.BackendSync.Blockchain.Tasks;
 using OTHub.BackendSync.Blockchain.Tasks.BlockchainMaintenance;
 using OTHub.BackendSync.Blockchain.Tasks.BlockchainSync;
 using OTHub.BackendSync.Blockchain.Tasks.Misc;
+using OTHub.BackendSync.Blockchain.Tasks.Misc.Children;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Markets.Tasks;
 
@@ -22,8 +23,6 @@ namespace OTHub.BackendSync
 
                 controller.Schedule(new MiscTask(), TimeSpan.FromHours(6), true);
 
-                //controller.Schedule(new BoardingContractSyncTask(), TimeSpan.FromMinutes(5), true);
-
                 await controller.Start();
             }));
 
@@ -37,6 +36,16 @@ namespace OTHub.BackendSync
 
                 await controller.Start();
             }));
+
+            tasks.Add(Task.Run(async () =>
+            {
+                TaskController controller = new TaskController(Source.Startup);
+
+                controller.Schedule(new xDaiBountyTask(), TimeSpan.FromMinutes(10), true);
+
+                await controller.Start();
+            }));
+
 
             //This will never return
             Task.WaitAll(tasks.ToArray());

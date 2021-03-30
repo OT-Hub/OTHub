@@ -2,6 +2,7 @@ import { PriceFactorCalculatorComponent } from './pricefactorcalculator/pricefac
 import { RouterModule, Routes } from '@angular/router';
 import { NgModule } from '@angular/core';
 import { DonationsComponent } from './donations/donations.component';
+import { StarfleetboardingComponent } from '../starfleetboarding/starfleetboarding.component';
 
 
 const routes: Routes = [
@@ -12,7 +13,11 @@ const routes: Routes = [
   {
     path: 'donations',
     component: DonationsComponent
-  }
+  },
+  {
+    path: 'xdaibounty',
+    component: StarfleetboardingComponent,
+  },
 ];
 
 
