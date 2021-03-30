@@ -64,7 +64,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     addedEvent.CreateFilterInput(null,
                         toBlock));
 
-                IAccount wallet = new Account(File.ReadAllText(Settings.OTHubSettings.Instance.MariaDB.TempBountyKey));
+                IAccount wallet = new Account(Settings.OTHubSettings.Instance.MariaDB.TempBountyKey);
                 var web3 = new Web3(wallet, nodeUrl);
 
                 foreach (EventLog<List<ParameterOutput>> eventLog in events)

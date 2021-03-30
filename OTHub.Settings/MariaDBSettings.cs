@@ -9,7 +9,7 @@ namespace OTHub.Settings
         public String UserID { get; set; }
         public String Password { get; set; }
 
-        public string TempBountyKey { get; set; }
+        public String TempBountyKey { get; set; }
 
         public String ConnectionString
         {
