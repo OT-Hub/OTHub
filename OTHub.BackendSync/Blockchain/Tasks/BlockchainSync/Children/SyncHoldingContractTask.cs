@@ -175,6 +175,13 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                 if (OTContract_Holding_OfferCreated.Exists(connection, offerID, blockchainID))
                     continue;
 
+                //TODO temp
+                if (eventLog.Log.TransactionHash ==
+                    "0x9af67b3d3324c8320846984002b01c9c8ca2dac91bd0c2f05513db201b020237")
+                {
+                    continue;
+                }
+
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber, cl, blockchainID);
 
                 var receipt = cl.Eth.Transactions.GetTransactionReceipt.SendRequestAsync(eventLog.Log.TransactionHash);
@@ -183,6 +190,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                 await transaction;
                 await receipt;
+
 
                 var row = new OTContract_Holding_OfferCreated
                 {
