@@ -23,10 +23,10 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync
         {
             if (type == BlockchainType.xDai)
             {
-                return TimeSpan.FromSeconds(50);
+                return TimeSpan.FromMinutes(2);
             }
 
-            return TimeSpan.FromMinutes(5);
+            return TimeSpan.FromMinutes(6);
         }
 
         public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)

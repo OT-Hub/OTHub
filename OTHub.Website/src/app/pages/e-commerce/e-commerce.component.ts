@@ -264,6 +264,7 @@ export class HomeV3BlockchainModel {
   GasTicker: string;
   TokenTicker: string;
   Fees: HomeFeesByBlockchainModel;
+  HoursTillFirstJob: number;
 }
 
 export class HomeFeesByBlockchainModel {

@@ -19,6 +19,7 @@ namespace OTHub.Settings.Abis
         Replacement,
         ERC725,
         Hub,
-        StarfleetStake
+        StarfleetStake,
+        StarfleetBounty
     }
 }

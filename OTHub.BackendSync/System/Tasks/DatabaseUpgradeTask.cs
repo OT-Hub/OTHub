@@ -761,7 +761,24 @@ ENGINE=InnoDB
 ;
 ");
 
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `Auth0Token` varchar(300) NULL");
+
                 connection.Execute(@"TRUNCATE otnode_history");
+
+                connection.Execute(@"CREATE TABLE if not exists `xdaibounty` (
+	`ID` INT(11) NOT NULL AUTO_INCREMENT,
+	`Address` VARCHAR(100) NOT NULL COLLATE 'latin1_swedish_ci',
+	`TransactionHash` VARCHAR(200) NULL COLLATE 'latin1_swedish_ci',
+	`HasClaimed` BIT(1) NOT NULL DEFAULT b'0',
+	`Tried` BIT(1) NOT NULL DEFAULT b'0',
+	`Sent` BIT(1) NOT NULL DEFAULT b'0',
+	PRIMARY KEY (`ID`) USING BTREE
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
             }
         }
     }

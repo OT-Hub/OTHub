@@ -44,6 +44,7 @@
     <None Remove="Abis\Ethereum\Rinkeby\replacement.json" />
     <None Remove="Abis\Ethereum\Rinkeby\token.json" />
     <None Remove="Abis\xDai\Mainnet\approval.json" />
+    <None Remove="Abis\xDai\Mainnet\bounty.json" />
     <None Remove="Abis\xDai\Mainnet\creditor-handler.json" />
     <None Remove="Abis\xDai\Mainnet\erc725.json" />
     <None Remove="Abis\xDai\Mainnet\holding-storage.json" />
@@ -108,6 +109,7 @@
     <EmbeddedResource Include="Abis\Ethereum\Rinkeby\replacement.json" />
     <EmbeddedResource Include="Abis\Ethereum\Rinkeby\token.json" />
     <EmbeddedResource Include="Abis\xDai\Mainnet\approval.json" />
+    <EmbeddedResource Include="Abis\xDai\Mainnet\bounty.json" />
     <EmbeddedResource Include="Abis\xDai\Mainnet\creditor-handler.json" />
     <EmbeddedResource Include="Abis\xDai\Mainnet\erc725.json" />
     <EmbeddedResource Include="Abis\xDai\Mainnet\holding-storage.json" />

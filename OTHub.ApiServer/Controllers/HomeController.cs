@@ -82,7 +82,7 @@ FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
 (SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
 (SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND CreatedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
 FROM blockchains b
-order by b.id")).ToArray();
+order by b.id desc")).ToArray();
 
 
                 foreach (HomeV3BlockchainModel blockchain in model.Blockchains)
@@ -121,6 +121,42 @@ WHERE bc.ID = @blockchainID", new
                     }));
 
                     blockchain.Fees.PayoutCost = payoutFee;
+
+                    if (blockchain.BlockchainName == "xDai")
+                    {
+                        blockchain.HoursTillFirstJob = await connection.ExecuteScalarAsync<int?>(@"
+WITH CTE AS (
+SELECT 
+I.Identity,
+I.NodeID,
+(
+SELECT o.FinalizedTimestamp
+FROM otoffer_holders h 
+JOIN otoffer o ON o.OfferID = h.OfferID
+WHERE h.Holder = i.Identity 
+ORDER BY o.FinalizedTimestamp
+LIMIT 1
+) FirstOfferDate,
+bb.Timestamp CreatedDate
+FROM otidentity i
+JOIN otcontract_profile_identitycreated ic ON ic.NewIdentity = i.Identity AND ic.BlockchainID = i.BlockchainID
+JOIN ethblock bb ON bb.BlockchainID = ic.BlockchainID AND bb.BlockNumber = ic.BlockNumber
+WHERE i.BlockchainID = @id AND i.VERSION > 0 AND (
+SELECT o.FinalizedTimestamp
+FROM otoffer_holders h 
+JOIN otoffer o ON o.OfferID = h.OfferID
+WHERE h.Holder = i.Identity 
+ORDER BY o.FinalizedTimestamp
+LIMIT 1
+) >= DATE_Add(NOW(), INTERVAL -1 DAY)
+ORDER BY FirstOfferDate DESC
+)
+
+SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FROM CTE", new
+                        {
+                            id = blockchain.BlockchainID
+                        });
+                    }
                 }
 
                 model.PriceUsd = tickerInfo.PriceUsd;
@@ -145,7 +181,7 @@ WHERE bc.ID = @blockchainID", new
                     TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b)
                 };
 
-                _cache.Set("HomeV3", model, TimeSpan.FromMinutes(3));
+                _cache.Set("HomeV3", model, TimeSpan.FromMinutes(1));
 
 
                 return model;
@@ -176,7 +212,7 @@ LEFT JOIN otoffer o ON bc.ID = o.BlockchainID AND o.IsFinalized = 1 AND o.Finali
 GROUP BY bc.Id
 ORDER BY Percentage")).ToArray();
 
-                _cache.Set("24HJobBlockchainDistribution", data, TimeSpan.FromHours(6));
+                _cache.Set("24HJobBlockchainDistribution", data, TimeSpan.FromMinutes(5));
 
                 return data;
             }
@@ -236,17 +272,44 @@ ORDER BY Percentage")).ToArray();
         [Route("JobsChartDataV3")]
         public async Task<JobsChartDataV2Model[]> JobsChartDataV3()
         {
-            //if (_cache.TryGetValue("JobsChartDataV3", out var model) && model is JobsChartDataV2 chartModel)
-            //    return chartModel;
+            if (_cache.TryGetValue("JobsChartDataV3", out var model) && model is JobsChartDataV2Model[] chartModel)
+                return chartModel;
 
             //var response = new JobsChartDataV2();
 
             await using (var connection =
                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var data = (await connection.QueryAsync<JobsChartDataV2Model>(@"SELECT * FROM jobhistorybyday")).ToArray();
+                var data = (await connection.QueryAsync<JobsChartDataV2Model>(@"SELECT * FROM jobhistorybyday")).ToList();
 
-                return data;
+                if (data.LastOrDefault()?.Date.Date < DateTime.Now.Date)
+                {
+                    JobsChartDataV2Model today = await connection.QueryFirstOrDefaultAsync<JobsChartDataV2Model>(@"
+SELECT 
+x.Date,
+COUNT(O.OfferId) NewJobs,
+(
+	SELECT COUNT(OI.OfferId) FROM OTOffer OI 
+	WHERE 
+	OI.IsFinalized = 1
+	AND 
+	DATE(DATE_Add(OI.FinalizedTimeStamp, INTERVAL + OI.HoldingTimeInMinutes MINUTE)) = x.Date
+	)
+	as CompletedJobs
+FROM (
+SELECT DATE(NOW()) Date
+) x 
+LEFT JOIN OTOffer O on O.IsFinalized = 1 AND x.Date = DATE(O.FinalizedTimestamp)
+GROUP BY x.Date");
+
+                    data.Add(today);
+                }
+
+                var output = data.ToArray();
+
+                _cache.Set("JobsChartDataV3", output, TimeSpan.FromMinutes(1));
+
+                return output;
 
                 //response.Data = new int[][]
                 //{
@@ -257,7 +320,7 @@ ORDER BY Percentage")).ToArray();
                 //response.Labels = data.Select(d => d.Label).ToArray();
 
 
-                //_cache.Set("JobsChartDataV3", response, TimeSpan.FromMinutes(10));
+         
 
                 //return response;
             }
