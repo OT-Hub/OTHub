@@ -26,7 +26,8 @@ namespace OTHub.APIServer
         public void ConfigureServices(IServiceCollection services)
         {
 
-            var settings = Configuration.Get<OTHubSettings>();
+            var settings = new OTHubSettings();
+            Configuration.Bind("OTHub", settings);
 
             settings.Validate();
 

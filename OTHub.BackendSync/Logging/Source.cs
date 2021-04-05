@@ -4,7 +4,6 @@
     {
         Startup,
         BlockchainSync,
-        NodeUptimeAndMisc,
-        NodeApi
+        Misc,
     }
 }

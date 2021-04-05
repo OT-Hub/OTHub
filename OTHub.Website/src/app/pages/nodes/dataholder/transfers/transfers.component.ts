@@ -56,8 +56,12 @@ delete: false
       TransactionHash: {
         sort: false,
         title: 'Transaction Hash',
-        type: 'string',
+        type: 'html',
         filter: true,
+        valuePrepareFunction: (data, row) => {
+          return '<a title="' + data + '" href="' + row.RealTransactionUrl +  '" target="_blank">' + data + '</a>';
+
+        }
       },
       Timestamp: {
         sort: true,
@@ -96,7 +100,7 @@ delete: false
         type: 'string',
         filter: false,
         valuePrepareFunction: (value, row) => {
-          return (row.GasUsed * (row.GasPrice / 1000000000000000000)).toFixed(6) + ' ETH';
+          return (row.GasUsed * (row.GasPrice / 1000000000000000000)).toFixed(6) + ' ' + row.GasTicker;
         }
       },
     },

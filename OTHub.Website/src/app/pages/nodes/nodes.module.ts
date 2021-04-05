@@ -24,6 +24,7 @@ import { LitigationsComponent as DCLitigationsComponent } from './datacreator/li
 import { JobsComponent as DCJobsComponent } from './datacreator/jobs/jobs.component';
 import { OnlineIndicatorRenderComponent } from './dataholders/onlineindicator.component';
 import { PaidoutColumnComponent } from './dataholder/jobs/paidoutcolumns.component';
+import { NbAccordionModule } from '@nebular/theme';
 @NgModule({
   declarations: [DataHoldersComponent, DataHolderComponent, DatacreatorsComponent,
      DatacreatorComponent, MynodesComponent, FindbymanagementwalletComponent, ManualPayoutPageComponent, SafePipe,
@@ -48,7 +49,8 @@ import { PaidoutColumnComponent } from './dataholder/jobs/paidoutcolumns.compone
     NbBadgeModule,
     NbAlertModule,
     NbToggleModule,
-    NbUserModule
+    NbUserModule,
+    NbAccordionModule
   ]
 })
 export class NodesModule { }

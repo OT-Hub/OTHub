@@ -2,12 +2,6 @@ import { NbMenuItem } from '@nebular/theme';
 
 export const MENU_ITEMS: NbMenuItem[] = [
   {
-    title: 'Starfleet Boarding',
-    icon: 'flash-outline',
-    link: '/starfleetboarding',
-    home: true,
-  },
-  {
     title: 'Dashboard',
     icon: 'home-outline',
     link: '/dashboard',
@@ -16,7 +10,11 @@ export const MENU_ITEMS: NbMenuItem[] = [
   {
     title: 'Jobs',
     icon: 'briefcase-outline',
-    link: '/offers/recent'
+    link: '/offers/recent',
+    // badge: {
+    //   text: '30',
+    //   status: 'primary',
+    // },
   },
   {
     title: 'Nodes',
@@ -56,4 +54,9 @@ export const MENU_ITEMS: NbMenuItem[] = [
   //   icon: 'activity-outline',
   //   link: '/system/status'
   // },
+  {
+    title: 'xDai Bounty',
+    icon: 'flash-outline',
+    link: '/misc/xdaibounty',
+  },
 ];

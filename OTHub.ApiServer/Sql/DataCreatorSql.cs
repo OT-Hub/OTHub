@@ -15,7 +15,6 @@ substring(I.NodeId, 1, 40) as NodeId,
 SUM(COALESCE(I.StakeReserved, 0)) as StakeReservedTokens
 from OTIdentity I
 JOIN blockchains bc ON bc.ID = I.BlockchainID
-JOIN otoffer O ON O.DCNodeId = I.NodeId
 WHERE I.NodeId = @nodeId
 GROUP BY I.NodeId";
 
@@ -33,10 +32,11 @@ GROUP BY I.NodeId";
                     join otidentity i on i.NodeId = o.DCNodeId
                     join otcontract_holding_offercreated oc on oc.OfferID = o.OfferID
                     left join otcontract_holding_offerfinalized of on of.OfferID = o.OfferID
-                    WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)";
+                    WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)
+    GROUP BY o.OfferID, i.NodeId";
 
         public const String GetJobsCount =
-            @"SELECT COUNT(o.OfferId)
+            @"SELECT COUNT(distinct o.OfferId)
                     FROM OTOffer o
                     join otidentity i on i.NodeId = o.DCNodeId
                     WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)";

@@ -20,22 +20,13 @@ export class StarfleetboardingComponent implements OnInit {
       { endPoint: url });
   }
 
-  stakedTotal: number;
   source: ServerDataSource;
 
 
-  getStaked() {
-    const headers = new HttpHeaders()
-      .set('Content-Type', 'application/json')
-      .set('Accept', 'application/json');
-    let url = this.httpService.ApiUrl + '/api/starfleetboarding/total';
-    return this.http.get<number>(url, {headers});
-  }
+
 
   ngOnInit(): void {
-    this.getStaked().subscribe(data => {
-      this.stakedTotal = data;
-    });
+
   }
 
   pageSizeChanged(event) {
@@ -55,16 +46,23 @@ export class StarfleetboardingComponent implements OnInit {
         filter: true,
         title: 'Address'
       },
-      Amount: {
-        title: 'Amount',
-        type: 'number',
+      HasClaimed: {
+        type: 'string',
+        sort: false,
         filter: false,
-        sort: true,
-        sortDirection: 'desc',
-        valuePrepareFunction: (value) => {
-          const tokenAmount = parseFloat(value);
-          return tokenAmount.toFixed(2).replace(/[.,]00$/, '');
-        }
+        title: 'Claimed Bounty?'
+      },
+      Tried: {
+        type: 'string',
+        sort: false,
+        filter: false,
+        title: 'OT Hub Checked your wallet balance?'
+      },
+      Sent: {
+        type: 'string',
+        sort: false,
+        filter: false,
+        title: 'OT Hub Sent you 0.01 xDai?'
       },
     },
     pager: {

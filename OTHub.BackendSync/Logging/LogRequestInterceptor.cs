@@ -25,7 +25,7 @@ namespace OTHub.BackendSync.Logging
             await TimeConstraint;
 
 #if DEBUG
-            Logger.WriteLine(Source.NodeUptimeAndMisc, request.Method);
+            Logger.WriteLine(Source.Misc, request.Method);
 #endif
 
             await base.InterceptSendRequestAsync(interceptedSendRequestAsync, request, route);
@@ -36,7 +36,7 @@ namespace OTHub.BackendSync.Logging
             await TimeConstraint;
 
 #if DEBUG
-            Logger.WriteLine(Source.NodeUptimeAndMisc, request.Method);
+            Logger.WriteLine(Source.Misc, request.Method);
 #endif
 
             return await base.InterceptSendRequestAsync(interceptedSendRequestAsync, request, route);
@@ -48,7 +48,7 @@ namespace OTHub.BackendSync.Logging
             await TimeConstraint;
 
 #if DEBUG
-            Logger.WriteLine(Source.NodeUptimeAndMisc, method);
+            Logger.WriteLine(Source.Misc, method);
 #endif
 
             return await base.InterceptSendRequestAsync(interceptedSendRequestAsync, method, route, paramList);
@@ -60,7 +60,7 @@ namespace OTHub.BackendSync.Logging
             await TimeConstraint;
 
 #if DEBUG
-            Logger.WriteLine(Source.NodeUptimeAndMisc, method);
+            Logger.WriteLine(Source.Misc, method);
 #endif
 
             await base.InterceptSendRequestAsync(interceptedSendRequestAsync, method, route, paramList);

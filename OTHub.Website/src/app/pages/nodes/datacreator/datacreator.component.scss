@@ -14,3 +14,21 @@
   line-height: 18px;
   margin-right: 6px;
 }
+
+.dataRow {
+  border-bottom: 1px solid #edf1f7;
+  color: #222b45;
+  font-family: Open Sans, sans-serif;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  line-height: 1.25rem;
+  padding: 1rem;
+}
+
+.nb-theme-default .item-body {
+  padding:0;
+}
+
+.accordionBody {
+  border: 1px solid #edf1f7;
+}

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 using OTHub.APIServer.Sql.Models;
@@ -19,13 +20,13 @@ WHERE Timestamp >= DATE_Add(NOW(), INTERVAL -3 DAY)
 GROUP BY GasPrice
 ORDER BY GasPrice";
 
-        public static NodeDataHolderSummaryModel[] Get(int ercVersion,
-            string[] identity,
+        public static async Task<(NodeDataHolderSummaryModel[] results, int total)> Get(int ercVersion,
+            string[] nodes,
             string[] managementWallet,
             int limit, int page,
-            string Identity_like,
+            string NodeId_like,
             string sort,
-            string order, out int total)
+            string order)
         {
             string orderBy = String.Empty;
 
@@ -71,51 +72,42 @@ ORDER BY GasPrice";
                 limitSql = $"LIMIT {page * limit},{limit}";
             }
 
-            //History is expensive which can be improved on in the future. I think I fixed the performance but better to be safe
-            bool includeHistory = false;
-
-            if (identity.Any())
-            {
-                includeHistory = true;
-            }
-
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 //{ (includeHistory ? ",MAX(CASE WHEN H.Success = 1 THEN H.Timestamp ELSE NULL END) LastSeenOnline," : "")}
                 //{ (includeHistory ? "MAX(CASE WHEN H.Success = 0 THEN H.Timestamp ELSE NULL END) LastSeenOffline" : "")}
                 //{(includeHistory ? "LEFT JOIN (SELECT NodeID, Success, MAX(TIMESTAMP) Timestamp FROM otnode_history GROUP BY NodeID, Success) H ON H.NodeID = I.NodeID" : "")}
 
-                var sql = $@"select COUNT(DISTINCT CASE WHEN O.IsFinalized = 1 
+                var sql = $@"select 
+substring(I.NodeId, 1, 40) as NodeId, 
+MAX(I.Version) Version, 
+SUM(COALESCE(I.Stake, 0))  as StakeTokens,
+SUM(COALESCE(I.StakeReserved, 0))  as StakeReservedTokens, 
+SUM(COALESCE(I.Paidout, 0))  as PaidTokens,
+SUM(COALESCE(I.TotalOffers, 0))  as TotalWonOffers, 
+SUM(COALESCE(I.OffersLast7Days, 0))  WonOffersLast7Days,
+(SELECT COUNT(DISTINCT  CASE WHEN O.IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN O.OfferId ELSE null END)
 	ELSE null
-END) as ActiveOffers,
-substring(I.NodeId, 1, 40) as NodeId, I.Version, 
-SUM(COALESCE(I.Stake, 0)) OVER(PARTITION BY I.NodeId)  as StakeTokens,
-SUM(COALESCE(I.StakeReserved, 0)) OVER(PARTITION BY I.NodeId) as StakeReservedTokens, 
-SUM(COALESCE(I.Paidout, 0)) OVER(PARTITION BY I.NodeId) as PaidTokens,
-SUM(COALESCE(I.TotalOffers, 0)) OVER(PARTITION BY I.NodeId) as TotalWonOffers, 
-SUM(COALESCE(I.OffersLast7Days, 0)) OVER(PARTITION BY I.NodeId)  WonOffersLast7Days
+END) FROM otoffer o 
+JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
+WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity) ActiveJobs
 from OTIdentity I
-JOIN blockchains bc ON bc.ID = I.BlockchainID
-LEFT JOIN OTOffer_Holders OH ON OH.Holder = I.Identity
-LEFT JOIN OTOffer O ON O.OfferID = OH.OfferID
-WHERE (@Identity_like IS NULL OR I.Identity = @Identity_like) AND {(identity.Any() ? "I.Identity in @identity AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version
+WHERE (@NodeId_like IS NULL OR (I.NodeId = @NodeId_like OR I.Identity = @NodeId_like)) AND {(nodes.Any() ? "I.NodeId in @nodes AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version
 GROUP BY I.NodeId
 {orderBy}
 {limitSql}";
 
                 NodeDataHolderSummaryModel[] summary = connection.Query<NodeDataHolderSummaryModel>(
-                    sql, new {version = ercVersion, identity, managementWallet, Identity_like}).ToArray();
+                    sql, new {version = ercVersion, nodes, managementWallet, NodeId_like}).ToArray();
 
-                total = connection.ExecuteScalar<int>($@"select COUNT(DISTINCT I.NodeId)
+                var total = connection.ExecuteScalar<int>($@"select COUNT(DISTINCT I.NodeId)
 from OTIdentity I
-LEFT JOIN OTOffer_Holders OH ON OH.Holder = I.Identity
-LEFT JOIN OTOffer O ON O.OfferID = OH.OfferID
-WHERE (@Identity_like IS NULL OR I.Identity = @Identity_like) AND {(identity.Any() ? "I.Identity in @identity AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version",
-                    new {version = ercVersion, identity, managementWallet, Identity_like});
+WHERE (@NodeId_like IS NULL OR I.NodeId = @NodeId_like) AND {(nodes.Any() ? "I.NodeId in @nodes AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version",
+                    new {version = ercVersion, nodes, managementWallet, NodeId_like });
 
-                return summary;
+                return (summary, total);
             }
         }
     }

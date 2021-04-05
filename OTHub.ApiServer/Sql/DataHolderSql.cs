@@ -88,19 +88,22 @@ WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR po.OfferId = @OfferId_lik
 JOIN otidentity i ON i.Identity = po.Holder
 WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR po.OfferId = @OfferId_like) AND (@TransactionHash_like is null OR po.TransactionHash = @TransactionHash_like)";
 
-        public const String GetProfileTransfers = @"SELECT t.TransactionHash, t.AmountDeposited as Amount, b.Timestamp, t.GasPrice, t.GasUsed FROM otcontract_profile_tokensdeposited t
+        public const String GetProfileTransfers = @"SELECT t.TransactionHash, t.AmountDeposited as Amount, b.Timestamp, t.GasPrice, t.GasUsed, bb.GasTicker, bb.TransactionUrl FROM otcontract_profile_tokensdeposited t
 JOIN ethblock b on b.BlockNumber = t.BlockNumber AND b.BlockchainID = t.BlockchainID
 JOIN otidentity i ON i.Identity = t.Profile
+JOIN blockchains bb ON bb.id = b.BlockchainID
 where i.NodeId = @nodeId AND (@TransactionHash_like is null OR t.TransactionHash = @TransactionHash_like)
 UNION
-SELECT t.TransactionHash, t.AmountWithdrawn * - 1 as Amount, b.Timestamp, t.GasPrice, t.GasUsed FROM otcontract_profile_tokenswithdrawn t
+SELECT t.TransactionHash, t.AmountWithdrawn * - 1 as Amount, b.Timestamp, t.GasPrice, t.GasUsed, bb.GasTicker, bb.TransactionUrl  FROM otcontract_profile_tokenswithdrawn t
 JOIN ethblock b on b.BlockNumber = t.BlockNumber AND b.BlockchainID = t.BlockchainID
 JOIN otidentity i ON i.Identity = t.Profile
+JOIN blockchains bb ON bb.id = b.BlockchainID
 where i.NodeId = @nodeId AND (@TransactionHash_like is null OR t.TransactionHash = @TransactionHash_like)
 union
-select pc.TransactionHash, pc.InitialBalance as Amount, b.Timestamp, pc.GasPrice, pc.GasUsed  from otcontract_profile_profilecreated pc
+select pc.TransactionHash, pc.InitialBalance as Amount, b.Timestamp, pc.GasPrice, pc.GasUsed, bb.GasTicker, bb.TransactionUrl   from otcontract_profile_profilecreated pc
 join ethblock b on b.BlockNumber = pc.BlockNumber AND b.BlockchainID = pc.BlockchainID
 JOIN otidentity i ON i.Identity = pc.Profile
+JOIN blockchains bb ON bb.id = b.BlockchainID
 WHERE i.NodeId = @nodeId AND (@TransactionHash_like is null OR pc.TransactionHash = @TransactionHash_like)";
 
         public const String GetProfileTransfersCount = @"

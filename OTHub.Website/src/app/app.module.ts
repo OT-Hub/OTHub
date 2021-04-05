@@ -20,10 +20,10 @@ import {
   NbThemeService, NbCardModule, NbSelectModule
 } from '@nebular/theme';
 import {Ng2SmartTableModule} from "ng2-smart-table";
-import { StarfleetboardingComponent } from './pages/starfleetboarding/starfleetboarding.component';
+import { AuthModule } from '@auth0/auth0-angular';
 
 @NgModule({
-  declarations: [AppComponent, StarfleetboardingComponent],
+  declarations: [AppComponent],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -39,6 +39,10 @@ import { StarfleetboardingComponent } from './pages/starfleetboarding/starfleetb
     Ng2SmartTableModule,
     NbCardModule,
     NbSelectModule,
+    AuthModule.forRoot({
+      domain: 'othub.eu.auth0.com',
+      clientId: 'Yx384WexDQj9xz8DBK62mdUw74G54f2B'
+    }),
   ],
   bootstrap: [AppComponent],
 })

@@ -29,6 +29,7 @@ namespace OTHub.APIServer.Sql.Models.Nodes
         public string Identity { get; set; }
 
         public string BlockchainName { get; set; }
-        public string NetworkName { get; set; }
+        public string Stake { get; set; }
+        public string StakeReserved { get; set; }
     }
 }

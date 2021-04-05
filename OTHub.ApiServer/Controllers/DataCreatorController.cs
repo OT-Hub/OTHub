@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
@@ -33,23 +34,23 @@ Data Included:
         )]
         [SwaggerResponse(200, type: typeof(NodeDataCreatorDetailedModel))]
         [SwaggerResponse(500, "Internal server error")]
-        public NodeDataCreatorDetailedModel Get([SwaggerParameter("The ERC 725 identity for the data creator.", Required = true)] string nodeId)
+        public async Task<NodeDataCreatorDetailedModel> Get([SwaggerParameter("The ERC 725 identity for the data creator.", Required = true)] string nodeId)
         {
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var profile = connection.QueryFirstOrDefault<NodeDataCreatorDetailedModel>(
+                var profile = await connection.QueryFirstOrDefaultAsync<NodeDataCreatorDetailedModel>(
                     DataCreatorSql.GetDetailed, new { nodeId = nodeId });
 
                 if (profile != null)
                 {
-                    profile.Identities = connection.Query<NodeDetailedIdentity>(
-                        @"SELECT i.Identity, bc.BlockchainName, bc.NetworkName FROM otidentity i
+                    profile.Identities = (await connection.QueryAsync<NodeDetailedIdentity>(
+                        @"SELECT i.Identity, bc.DisplayName BlockchainName, i.Stake, i.StakeReserved FROM otidentity i
 JOIN blockchains bc ON bc.id = i.blockchainid
 WHERE i.NodeId = @NodeId", new
                         {
                             nodeId = nodeId
-                        }).ToArray();
+                        })).ToArray();
                 }
 
                 return profile;
@@ -59,7 +60,7 @@ WHERE i.NodeId = @NodeId", new
 
         [Route("{nodeId}/Jobs")]
         [HttpGet]
-        public IActionResult GetJobs(
+        public async Task<IActionResult> GetJobs(
             string nodeId,
             [FromQuery]
             int _limit,
@@ -125,15 +126,15 @@ WHERE i.NodeId = @NodeId", new
                 limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
-            using (var connection =
+            await using (var connection =
              new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var offers = connection.Query<OfferSummaryModel>(
+                var offers = (await connection.QueryAsync<OfferSummaryModel>(
                     DataCreatorSql.GetJobs + $@"
 {orderBy}
-{limit}", new { nodeId = nodeId, OfferId_like }).ToArray();
+{limit}", new { nodeId = nodeId, OfferId_like })).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetJobsCount, new { nodeId = nodeId, OfferId_like });
+                var total = await connection.ExecuteScalarAsync<int>(DataCreatorSql.GetJobsCount, new { nodeId = nodeId, OfferId_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -156,7 +157,7 @@ WHERE i.NodeId = @NodeId", new
 
         [Route("{nodeId}/ProfileTransfers")]
         [HttpGet]
-        public IActionResult GetProfileTransfers(
+        public async Task<IActionResult> GetProfileTransfers(
             string nodeId,
             [FromQuery] string TransactionHash_like,
             [FromQuery]
@@ -214,15 +215,15 @@ WHERE i.NodeId = @NodeId", new
                 limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
-            using (var connection =
+            await using (var connection =
              new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var transfers = connection.Query<NodeProfileDetailedModel_ProfileTransfer>(
+                var transfers = (await connection.QueryAsync<NodeProfileDetailedModel_ProfileTransfer>(
                     DataHolderSql.GetProfileTransfers + $@"
 {orderBy}
-{limit}", new { nodeId = nodeId, TransactionHash_like }).ToArray();
+{limit}", new { nodeId = nodeId, TransactionHash_like })).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataHolderSql.GetProfileTransfersCount, new { nodeId = nodeId, TransactionHash_like });
+                var total = await connection.ExecuteScalarAsync<int>(DataHolderSql.GetProfileTransfersCount, new { nodeId = nodeId, TransactionHash_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();
@@ -245,7 +246,7 @@ WHERE i.NodeId = @NodeId", new
 
         [Route("{nodeId}/Litigations")]
         [HttpGet]
-        public IActionResult GetLitigations(
+        public async Task<IActionResult> GetLitigations(
             string nodeId,
             [FromQuery]
             int _limit,
@@ -308,15 +309,15 @@ WHERE i.NodeId = @NodeId", new
                 limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
-            using (var connection =
+            await using (var connection =
              new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var litigations = connection.Query<DataCreatorLitigationSummary>(
+                var litigations = (await connection.QueryAsync<DataCreatorLitigationSummary>(
                     DataCreatorSql.GetLitigations + $@"
 {orderBy}
-{limit}", new { nodeId = nodeId, OfferId_like, HolderIdentity_like }).ToArray();
+{limit}", new { nodeId = nodeId, OfferId_like, HolderIdentity_like })).ToArray();
 
-                var total = connection.ExecuteScalar<int>(DataCreatorSql.GetLitigationsCount, new { nodeId = nodeId, OfferId_like, HolderIdentity_like });
+                var total = await connection.ExecuteScalarAsync<int>(DataCreatorSql.GetLitigationsCount, new { nodeId = nodeId, OfferId_like, HolderIdentity_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
                 HttpContext.Response.Headers["X-Total-Count"] = total.ToString();

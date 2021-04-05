@@ -1,4 +1,5 @@
 ﻿
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -58,6 +59,12 @@ namespace OTHub.BackendSync
             }
         }
 
+        public virtual TimeSpan GetExecutingInterval(BlockchainType type)
+        {
+            return TimeSpan.FromMinutes(5);
+
+        }
+
         public override string ParentName => _childTasks.Any() ? null : "System";
 
         protected TaskRunBlockchain(string name) : base(name)
@@ -99,8 +106,15 @@ namespace OTHub.BackendSync
             {
                 var cl = GetWeb3(connection, GetBlockchainID(connection, blockchain, network));
 
+                int defaultBlocksToIgnore = 2;
+
+                if (blockchain == BlockchainType.xDai)
+                {
+                    defaultBlocksToIgnore = 40;
+                }
+
                 var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-                LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - 1);
+                LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - defaultBlocksToIgnore);
 
                 foreach (TaskRunBlockchain childTask in _childTasks)
                 {

@@ -385,7 +385,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%'
+          //width: '1%'
           // valuePrepareFunction: (value) => {
           //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
           // }
@@ -398,7 +398,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '7%'
+          //width: '7%'
           // valuePrepareFunction: (value) => {
           //   const stillUtc = moment.utc(value).toDate();
           //   const local = moment(stillUtc).local().format('DD/MM/YYYY HH:mm');
@@ -412,7 +412,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%'
+          //width: '1%'
           // valuePrepareFunction: (value) => { return (value / 1000).toFixed(2).replace(/[.,]00$/, '') + ' KB';}
         },
         PaidTokens: {
@@ -422,7 +422,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%',
+          //width: '1%',
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }
@@ -434,7 +434,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%',
+          //width: '1%',
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }
@@ -446,7 +446,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           filter: false,
           editable: false,
           addable: false,
-          width: '1%',
+          //width: '1%',
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }

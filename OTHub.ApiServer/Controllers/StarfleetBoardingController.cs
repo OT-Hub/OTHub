@@ -13,15 +13,15 @@ namespace OTHub.APIServer.Controllers
     [Route("api/[controller]")]
     public class StarfleetBoardingController : Controller
     {
-        [Route("total")]
-        [HttpGet]
-        public async Task<decimal> GetAmountStaked()
-        {
-            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-            {
-                return connection.ExecuteScalar<decimal>(@"SELECT SUM(Amount) Amount FROM starfleetboarding_deposit");
-            }
-        }
+        //[Route("total")]
+        //[HttpGet]
+        //public async Task<decimal> GetAmountStaked()
+        //{
+        //    await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+        //    {
+        //        return connection.ExecuteScalar<decimal>(@"SELECT SUM(Amount) Amount FROM starfleetboarding_deposit");
+        //    }
+        //}
 
         [Route("")]
         [HttpGet]
@@ -42,8 +42,6 @@ namespace OTHub.APIServer.Controllers
                     case "Address":
                         orderBy = "ORDER BY Address";
                         break;
-                    case "Amount":
-                        orderBy = "ORDER BY Amount";
                         break;
                 }
 
@@ -71,16 +69,18 @@ namespace OTHub.APIServer.Controllers
                 HttpContext.Response.Headers["X-Total-Count"] = connection.ExecuteScalar<int>(
                     @$"SELECT 
 COUNT(DISTINCT Address)
-FROM starfleetboarding_deposit WHERE @address is null or Address = @address", new
+FROM xdaibounty WHERE @address is null or Address = @address", new
                     {
                         address = Address_like
                     }).ToString();
 
                 return connection.Query<StarfleetBoardingAddressBalanceModel>(
                     @$"SELECT 
-Address, 
-SUM(Amount) Amount 
-FROM starfleetboarding_deposit
+Address,
+HasClaimed,
+Tried,
+Sent
+FROM xdaibounty
 WHERE @address is null or Address = @address
 GROUP BY Address
 {orderBy}
@@ -95,6 +95,8 @@ GROUP BY Address
     public class StarfleetBoardingAddressBalanceModel
     {
         public String Address { get; set; }
-        public decimal Amount { get; set; }
+        public bool HasClaimed { get; set; }
+        public bool Tried { get; set; }
+        public bool Sent { get; set; }
     }
 }

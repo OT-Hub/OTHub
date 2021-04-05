@@ -26,7 +26,6 @@
 }
 
 .tokenSmall {
-  margin-left: 2px;
   background-color: #eff2f5;
   color: #58667e;
   border-radius: 4px;
@@ -52,4 +51,27 @@
 
 .homeCard {
 
+}
+
+.blockchainLogo {
+  height: 30px;
+  width: 30px;
+  border-radius: 23px;
+  margin-right: 7px;
+}
+
+.blockchainHeader {
+  font-size:18px;
+  display: flex;
+  align-items: center;
+}
+
+.btcPrice {
+  color: #808a9d;
+  margin-left:5px;
+}
+
+.btnPricePercent {
+  font-size: 14px;
+  padding: 0.1rem 0.1rem;
 }

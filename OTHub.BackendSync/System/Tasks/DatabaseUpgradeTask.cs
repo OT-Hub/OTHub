@@ -221,30 +221,30 @@ ENGINE=InnoDB
 //                connection.Execute(@"ALTER TABLE otoffer
 //ADD COLUMN IF NOT EXISTS	`ContractAddress` varchar(100) NULL DEFAULT NULL");
 
-                var duplicates = connection.Query(@"select address, type from otcontract
-group by address, type
-having count(*) > 1");
+//                var duplicates = connection.Query(@"select address, type from otcontract
+//group by address, type
+//having count(*) > 1");
 
-                foreach (var duplicate in duplicates)
-                {
-                    var each = connection.Query(
-                        @"SELECT * FROM otcontract WHERE address = @address and type = @type order by id", new
-                        {
-                            address = duplicate.address, type = duplicate.type
-                        }).ToArray();
+//                foreach (var duplicate in duplicates)
+//                {
+//                    var each = connection.Query(
+//                        @"SELECT * FROM otcontract WHERE address = @address and type = @type order by id", new
+//                        {
+//                            address = duplicate.address, type = duplicate.type
+//                        }).ToArray();
 
-                    if (each.Length > 1)
-                    {
-                        for (int i = 2; i <= each.Length; i++)
-                        {
-                            var id = each[i - 1].ID;
+//                    if (each.Length > 1)
+//                    {
+//                        for (int i = 2; i <= each.Length; i++)
+//                        {
+//                            var id = each[i - 1].ID;
 
-                            Console.WriteLine("Deleting address " + duplicate.address + " type " + duplicate.type);
+//                            Console.WriteLine("Deleting address " + duplicate.address + " type " + duplicate.type);
 
-                            connection.Execute(@"DELETE FROM otcontract where id = @id", new {id});
-                        }
-                    }
-                }
+//                            connection.Execute(@"DELETE FROM otcontract where id = @id", new {id});
+//                        }
+//                    }
+//                }
 
                 //                Console.WriteLine("NEED TO REMOVE THIS LINE");
                 //                connection.Execute("truncate otnode_history");
@@ -730,6 +730,50 @@ ADD COLUMN IF NOT EXISTS `ParentName` VARCHAR(100) NULL");
 	`NewJobs` INT(11) NOT NULL DEFAULT '0',
 	`CompletedJobs` INT(11) NOT NULL DEFAULT '0',
 	PRIMARY KEY (`Date`) USING BTREE
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `LogoLocation` varchar(30) NULL");
+
+
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `Enabled` BIT(1) NOT NULL DEFAULT 1");
+
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `TransactionUrl` varchar(500) NULL");
+
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `IsGasStableCoin` BIT(1) NOT NULL DEFAULT 0");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS `ticker_eth_to_usd` (
+	`ID` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`Timestamp` DATETIME NOT NULL,
+	`Price` DECIMAL(16,6) NOT NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	UNIQUE INDEX `Timestamp` (`Timestamp`, `Price`) USING BTREE
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `Auth0Token` varchar(300) NULL");
+
+                connection.Execute(@"TRUNCATE otnode_history");
+
+                connection.Execute(@"CREATE TABLE if not exists `xdaibounty` (
+	`ID` INT(11) NOT NULL AUTO_INCREMENT,
+	`Address` VARCHAR(100) NOT NULL COLLATE 'latin1_swedish_ci',
+	`TransactionHash` VARCHAR(200) NULL COLLATE 'latin1_swedish_ci',
+	`HasClaimed` BIT(1) NOT NULL DEFAULT b'0',
+	`Tried` BIT(1) NOT NULL DEFAULT b'0',
+	`Sent` BIT(1) NOT NULL DEFAULT b'0',
+	PRIMARY KEY (`ID`) USING BTREE
 )
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB

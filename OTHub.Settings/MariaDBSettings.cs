@@ -9,6 +9,8 @@ namespace OTHub.Settings
         public String UserID { get; set; }
         public String Password { get; set; }
 
+        public String TempBountyKey { get; set; }
+
         public String ConnectionString
         {
             get { return $"Server={Server};User ID={UserID};Password={Password};Database={Database};Allow User Variables=True;"; }

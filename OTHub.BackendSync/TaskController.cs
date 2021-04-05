@@ -130,11 +130,11 @@ namespace OTHub.BackendSync
             }
         }
 
-        public void Schedule(TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow)
+        public void Schedule(TaskRunBlockchain task, bool startNow)
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var blockchains = connection.Query(@"SELECT * FROM blockchains").ToArray();
+                var blockchains = connection.Query(@"SELECT * FROM blockchains WHERE enabled = 1").ToArray();
 
                 foreach (var blockchain in blockchains)
                 {
@@ -142,11 +142,15 @@ namespace OTHub.BackendSync
                     string blockchainName = blockchain.BlockchainName;
                     string networkName = blockchain.NetworkName;
 
+                    Logger.WriteLine(Source.BlockchainSync,
+                        $"Setting up processes for {blockchainName} {networkName}. Task is " + task.Name);
+
                     BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
                     BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
 
-                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task,
-                        runEveryTimeSpan, startNow, id);
+                    TimeSpan interval = task.GetExecutingInterval(blockchainEnum);
+
+                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, interval, startNow, id);
                     _items.Add(item);
                 }
             }
@@ -160,7 +164,7 @@ namespace OTHub.BackendSync
             _source = source;
         }
 
-        public void Start()
+        public async Task Start()
         {
             while (true)
             {
@@ -173,7 +177,7 @@ namespace OTHub.BackendSync
 
                 foreach (var taskControllerItem in items)
                 {
-                    taskControllerItem.Execute().GetAwaiter().GetResult();
+                    await taskControllerItem.Execute();
                 }
 
                 if (!items.Any())
@@ -184,7 +188,7 @@ namespace OTHub.BackendSync
                         Logger.WriteLine(_source, "Sleeping...");
                     }
 
-                    Thread.Sleep(2000);
+                    await Task.Delay(2000);
                 }
                 else
                 {

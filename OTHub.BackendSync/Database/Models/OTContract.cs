@@ -2,6 +2,7 @@
 using System.Linq;
 using Dapper;
 using MySqlConnector;
+using OTHub.Settings.Abis;
 
 namespace OTHub.BackendSync.Database.Models
 {
@@ -118,7 +119,7 @@ WHERE Address = @address and type = @type AND BlockchainID = @blockchainID", new
 
             if (count == 0)
             {
-                Console.WriteLine("Inserting " + otContract.Address + ". Type: " + otContract.Type);
+                Console.WriteLine("Inserting " + otContract.Address + ". Type: " + (ContractTypeEnum)otContract.Type);
 
                 Insert(connection, otContract);
             }

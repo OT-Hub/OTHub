@@ -3,14 +3,14 @@
     <nb-card class="homeCard" status="basic" accent="success">
       <nb-card-header>
         <img src="assets/images/2467.png" alt="OriginTrail" height="32" width="32" class="otLogo" />
-        OriginTrail <h4>Starfleet Boarding</h4>
+        OriginTrail <h4>xDai Bounty</h4>
       </nb-card-header>
       <nb-card-body>
 
-        <p>This page allows you to view tokens staked for Starfleet Boarding.</p>
-        <p>Please note this is a community page which works by reading the boarding smart contract data. There is a delay of up to 5 minutes.</p>
+        <p>OT Hub is watching for when xDai bounties are processed by OriginTrail ready for you to claim manually.</p>
+        <p>When your bounty is ready to be claimed, OT Hub will check if you have an empty balance on xDai. If you have 0 xDai you will be sent 0.01 xDai without you needing to do anything!</p>
 
-        <p><b>{{stakedTotal | number:'1.0-0'}} tokens</b> have been staked so far.</p>
+  <p>This idea originally came from <b>@kirk0 @MilianCrypto @Tybranha @bboysl @OG_Lister @fcmarine</b> in Telegram so big thanks to them for doing so many of these by hand.</p>
 
         <nb-select selected="25" (selectedChange)="pageSizeChanged($event)">
           <nb-option value="10">10 per Page</nb-option>

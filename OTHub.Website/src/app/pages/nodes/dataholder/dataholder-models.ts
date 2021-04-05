@@ -30,7 +30,8 @@ export class DataHolderDetailedModel   {
 export class DataholderIdentityModel {
   Identity: string;
   BlockchainName: string;
-  NetworkName: string;
+  Stake: string;
+  StakeReservedTokens: string;
 }
 
 export class DataHolderDetailedOfferModel {

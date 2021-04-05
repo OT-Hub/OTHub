@@ -6,17 +6,31 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using CoinpaprikaAPI.Entity;
+using ComposableAsync;
 using Dapper;
 using MySqlConnector;
 using Newtonsoft.Json;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Helpers;
+using RateLimiter;
 
 namespace OTHub.BackendSync.Markets.Tasks
 {
     public class GetMarketDataTask : TaskRunGeneric
     {
+        static GetMarketDataTask()
+        {
+            CountByIntervalAwaitableConstraint constraint = new CountByIntervalAwaitableConstraint(3, TimeSpan.FromSeconds(1));
+
+
+            CountByIntervalAwaitableConstraint constraint2 = new CountByIntervalAwaitableConstraint(1, TimeSpan.FromMilliseconds(600));
+
+            TimeConstraint = TimeLimiter.Compose(constraint, constraint2);
+        }
+
+        public static TimeLimiter TimeConstraint { get; set; }
+
         public override async Task Execute(Source source)
         {
             Logger.WriteLine(source, "Syncing TRAC Market (USD)");
@@ -46,7 +60,7 @@ namespace OTHub.BackendSync.Markets.Tasks
                         if (date > now)
                             break;
 
-                        Thread.Sleep(800);
+                        await TimeConstraint;
 
                         var tickers = client.GetHistoricalTickerForIdAsync("trac-origintrail",
                                 date,
@@ -109,6 +123,7 @@ namespace OTHub.BackendSync.Markets.Tasks
             }
 
 
+            await ExecuteEthToUSD(source);
 
             await ExecuteEth(source);
         }
@@ -171,12 +186,13 @@ namespace OTHub.BackendSync.Markets.Tasks
 
                         for (int i = 0; i < 24; i++)
                         {
-                            Thread.Sleep(450);
 
                             Int32 unixStartTimestamp =
-                                (Int32) (date.AddHours(i).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                                (Int32)(date.AddHours(i).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
                             Int32 unixEndTimestamp =
-                                (Int32) (date.AddHours(i).AddHours(1).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+                                (Int32)(date.AddHours(i).AddHours(1).Subtract(new DateTime(1970, 1, 1))).TotalSeconds;
+
+                            await TimeConstraint;
 
                             var data = wc.DownloadString(
                                 $"https://api.coingecko.com/api/v3/coins/origintrail/market_chart/range?vs_currency=eth&from={unixStartTimestamp}&to={unixEndTimestamp}");
@@ -243,6 +259,98 @@ namespace OTHub.BackendSync.Markets.Tasks
 
 
 
+                    }
+                }
+            }
+        }
+
+        public async Task ExecuteEthToUSD(Source source)
+        {
+            Logger.WriteLine(source, "Syncing Market (ETH to USD)");
+
+            DateTime now = DateTime.UtcNow;
+            DateTime latestTimestamp;
+
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                latestTimestamp =
+                    connection.ExecuteScalar<DateTime?>(@"select max(ticker_eth_to_usd.Timestamp) from ticker_eth_to_usd") ??
+                    connection.ExecuteScalar<DateTime>(@"SELECT Min(b.Timestamp) FROM ethblock b
+                    where b.Timestamp >= COALESCE((select max(ticker_eth_to_usd.Timestamp) from ticker_eth_to_usd), (SELECT Min(b.Timestamp) FROM ethblock b))");
+            }
+
+            if ((now - latestTimestamp).TotalHours > 6)
+            {
+
+                CoinpaprikaAPI.Client client = new CoinpaprikaAPI.Client();
+
+                await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                {
+                    await connection.OpenAsync();
+
+                    for (DateTime date = latestTimestamp.Date; date.Date <= now; date = date.AddDays(1))
+                    {
+                        if (date > now)
+                            break;
+
+                        await TimeConstraint;
+
+                        var tickers = client.GetHistoricalTickerForIdAsync("eth-ethereum",
+                                date,
+                                date.AddDays(1), 1000, "USD",
+                                TickerInterval.SixHours)
+                            .Result;
+
+                        DataTable rawData = new DataTable();
+                        rawData.Columns.Add("Timestamp", typeof(DateTime));
+                        rawData.Columns.Add("Price", typeof(decimal));
+
+                        if (tickers?.Value == null)
+                            continue;
+
+                        foreach (var ticker in tickers.Value)
+                        {
+                            if (ticker.Timestamp.UtcDateTime <= latestTimestamp)
+                                continue;
+
+                            var row = rawData.NewRow();
+
+
+                            row["Timestamp"] = ticker.Timestamp.UtcDateTime;
+                            row["Price"] = ticker.Price;
+                            rawData.Rows.Add(row);
+
+                        }
+
+                        if (rawData.Rows.Count == 0)
+                            continue;
+
+
+                        await using (MySqlTransaction tran =
+                            await connection.BeginTransactionAsync(global::System.Data.IsolationLevel.Serializable))
+                        {
+                            await using (MySqlCommand cmd = new MySqlCommand())
+                            {
+                                cmd.Connection = connection;
+                                cmd.Transaction = tran;
+                                cmd.CommandText = "SELECT * FROM ticker_eth_to_usd";
+                                using (MySqlDataAdapter da = new MySqlDataAdapter(cmd))
+                                {
+                                    //da.UpdateBatchSize = 1000;
+                                    using (MySqlCommandBuilder cb = new MySqlCommandBuilder(da))
+                                    {
+                                        da.Update(rawData);
+                                        await tran.CommitAsync();
+
+                                        var max = tickers.Value.Max(v => v.Timestamp.UtcDateTime);
+                                        if (max > latestTimestamp)
+                                        {
+                                            latestTimestamp = max;
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
