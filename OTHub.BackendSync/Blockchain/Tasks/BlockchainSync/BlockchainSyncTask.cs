@@ -23,7 +23,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync
         {
             if (type == BlockchainType.xDai)
             {
-                return TimeSpan.FromMinutes(2);
+                return TimeSpan.FromSeconds(150);
             }
 
             return TimeSpan.FromMinutes(6);
