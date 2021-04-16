@@ -33,13 +33,13 @@ namespace OTHub.APIServer
 
             services.AddMemoryCache();
 
-            List<string> origins = new List<string>();
+//            List<string> origins = new List<string>();
 
-#if DEBUG
-            origins.Add("http://localhost:4200");
-#endif
+//#if DEBUG
+//            origins.Add("http://localhost:4200");
+//#endif
 
-            origins.Add(OTHubSettings.Instance.WebServer.AccessControlAllowOrigin);
+//            origins.Add(OTHubSettings.Instance.WebServer.AccessControlAllowOrigin);
 
 
             services.AddSwaggerExamples();
@@ -48,7 +48,7 @@ namespace OTHub.APIServer
                 options.AddPolicy(MyAllowSpecificOrigins,
                     builder =>
                     {
-                        builder.WithOrigins(origins.Distinct().ToArray()).AllowAnyHeader().AllowAnyMethod().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromDays(7));
+                        builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromDays(7));
                     });
             });
 
