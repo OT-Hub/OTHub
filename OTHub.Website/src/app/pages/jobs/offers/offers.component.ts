@@ -166,8 +166,9 @@ delete: false
         type: 'number',
         filter: false,
         valuePrepareFunction: (value) => {
-          const tokenAmount = parseFloat(value);
-          return tokenAmount.toFixed(2).replace(/[.,]00$/, '');
+          let tokenAmount = parseFloat(value);
+          let formatted = +tokenAmount.toFixed(4);
+          return formatted;
         }
       },
       Status: {
