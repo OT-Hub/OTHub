@@ -153,7 +153,10 @@ delete: false
         valuePrepareFunction: (value) => {
           if (value > 1440) {
             const days = (value / 1440);
-            return days.toFixed(1).replace(/[.,]00$/, '') + (days === 1 ? ' day' : ' days');
+            if ((days / 365) % 1 == 0) {
+              return (days / 365).toString() + ' years';
+            }
+            return +days.toFixed(1).replace(/[.,]00$/, '') + (days === 1 ? ' day' : ' days');
           }
           return value + ' minute(s)';
         }
