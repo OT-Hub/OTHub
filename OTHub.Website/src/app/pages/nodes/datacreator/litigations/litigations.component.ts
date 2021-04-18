@@ -2,7 +2,6 @@ import { Component, OnInit, Input } from '@angular/core';
 import * as moment from 'moment';
 import { HubHttpService } from '../../../hub-http-service';
 import { HttpClient } from '@angular/common/http';
-import { MyNodeService } from '../../mynodeservice';
 import { ServerDataSource } from 'ng2-smart-table';
 import { OfferIdColumnComponent } from '../../../miscellaneous/offeridcolumn.component';
 import { DataHolderIdentityColumnComponent } from '../../../miscellaneous/identitycolumn.component';
@@ -13,7 +12,7 @@ import { DataHolderIdentityColumnComponent } from '../../../miscellaneous/identi
 })
 export class LitigationsComponent implements OnInit {
 
-  constructor(private httpService: HubHttpService, private http: HttpClient, public myNodeService: MyNodeService) { }
+  constructor(private httpService: HubHttpService, private http: HttpClient) { }
 
   @Input('identity') identity: string;
   isDarkTheme: boolean;

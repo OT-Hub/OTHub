@@ -20,9 +20,8 @@ WHERE Timestamp >= DATE_Add(NOW(), INTERVAL -3 DAY)
 GROUP BY GasPrice
 ORDER BY GasPrice";
 
-        public static async Task<(NodeDataHolderSummaryModel[] results, int total)> Get(int ercVersion,
-            string[] nodes,
-            string[] managementWallet,
+        public static async Task<(NodeDataHolderSummaryModel[] results, int total)> Get(
+            string userID,
             int limit, int page,
             string NodeId_like,
             string sort,
@@ -81,6 +80,7 @@ ORDER BY GasPrice";
 
                 var sql = $@"select 
 substring(I.NodeId, 1, 40) as NodeId, 
+{(userID != null ? "MN.DisplayName as DisplayName," : "")}
 MAX(I.Version) Version, 
 SUM(COALESCE(I.Stake, 0))  as StakeTokens,
 SUM(COALESCE(I.StakeReserved, 0))  as StakeReservedTokens, 
@@ -94,18 +94,21 @@ END) FROM otoffer o
 JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
 WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity) ActiveJobs
 from OTIdentity I
-WHERE (@NodeId_like IS NULL OR (I.NodeId = @NodeId_like OR I.Identity = @NodeId_like)) AND {(nodes.Any() ? "I.NodeId in @nodes AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version
+{(userID != null ? "JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
+WHERE (@NodeId_like IS NULL OR (I.NodeId = @NodeId_like OR I.Identity = @NodeId_like))
+AND I.Version = 1
 GROUP BY I.NodeId
 {orderBy}
 {limitSql}";
 
-                NodeDataHolderSummaryModel[] summary = connection.Query<NodeDataHolderSummaryModel>(
-                    sql, new {version = ercVersion, nodes, managementWallet, NodeId_like}).ToArray();
+                NodeDataHolderSummaryModel[] summary = (await connection.QueryAsync<NodeDataHolderSummaryModel>(
+                    sql, new { userID = userID, NodeId_like })).ToArray();
 
-                var total = connection.ExecuteScalar<int>($@"select COUNT(DISTINCT I.NodeId)
+                var total = await connection.ExecuteScalarAsync<int>($@"select COUNT(DISTINCT I.NodeId)
 from OTIdentity I
-WHERE (@NodeId_like IS NULL OR I.NodeId = @NodeId_like) AND {(nodes.Any() ? "I.NodeId in @nodes AND" : "")} {(managementWallet.Any() ? "I.ManagementWallet in @managementWallet AND" : "")} I.Version = @version",
-                    new {version = ercVersion, nodes, managementWallet, NodeId_like });
+{(userID != null ? "JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
+WHERE (@NodeId_like IS NULL OR I.NodeId = @NodeId_like) AND I.Version = 1",
+                    new { userID = userID, NodeId_like });
 
                 return (summary, total);
             }

@@ -2,12 +2,10 @@ import { DataCreatorSummaryModel } from './datacreators-models';
 import { Component, OnInit, ChangeDetectorRef, Input, OnDestroy, Output, EventEmitter } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { MomentModule } from 'ngx-moment';
-import { MyNodeService } from '../mynodeservice';
 import { HubHttpService } from '../../hub-http-service';
 declare const $: any;
 import * as moment from 'moment';
 import { ServerDataSource } from 'ng2-smart-table';
-import { MyNodeModel } from '../mynodemodel';
 import { NbToastrConfig, NbToastrService, NbComponentStatus } from '@nebular/theme';
 import { DataHolderDetailedModel } from '../dataholder/dataholder-models';
 import { ServerSourceConf } from 'ng2-smart-table/lib/lib/data-source/server/server-source.conf';
@@ -19,7 +17,7 @@ import {DataCreatorIdentityColumnComponent} from '../../miscellaneous/identityco
 })
 export class DatacreatorsComponent implements OnInit  {
   getNodesObserver: any;
-  constructor(private http: HttpClient, private myNodeService: MyNodeService,
+  constructor(private http: HttpClient,
               private httpService: HubHttpService, private toastrService: NbToastrService) {
     this.isLoading = true;
     this.failedLoading = false;
@@ -112,15 +110,15 @@ export class DatacreatorsComponent implements OnInit  {
     this.getNode(newData.Identity).subscribe(data => {
       if (data) {
 
-        const oldModel = new MyNodeModel();
-        oldModel.Identity = oldData.Identity;
-        oldModel.DisplayName = '';
-        this.myNodeService.Remove(oldModel);
+        // const oldModel = new MyNodeModel();
+        // oldModel.Identity = oldData.Identity;
+        // oldModel.DisplayName = '';
+        // //this.myNodeService.Remove(oldModel);
 
-        const model = new MyNodeModel();
-        model.Identity = newData.Identity;
-        model.DisplayName = newData.DisplayName;
-        this.myNodeService.Add(model);
+        // const model = new MyNodeModel();
+        // model.Identity = newData.Identity;
+        // model.DisplayName = newData.DisplayName;
+        //this.myNodeService.Add(model);
         this.resetSource();
         event.confirm.resolve();
         this.source.refresh();
@@ -136,10 +134,10 @@ export class DatacreatorsComponent implements OnInit  {
   onDelete(event) {
     const deleteData = event.data;
 
-    const model = new MyNodeModel();
-    model.Identity = deleteData.Identity;
-    model.DisplayName = '';
-    this.myNodeService.Remove(model);
+    // const model = new MyNodeModel();
+    // model.Identity = deleteData.Identity;
+    // model.DisplayName = '';
+    //this.myNodeService.Remove(model);
     this.resetSource();
     event.confirm.resolve();
   }
@@ -149,10 +147,10 @@ export class DatacreatorsComponent implements OnInit  {
 
   this.getNode(newData.Identity).subscribe(data => {
     if (data) {
-      const model = new MyNodeModel();
-      model.Identity = newData.Identity;
-      model.DisplayName = newData.DisplayName;
-      this.myNodeService.Add(model);
+      // const model = new MyNodeModel();
+      // model.Identity = newData.Identity;
+      // model.DisplayName = newData.DisplayName;
+      //this.myNodeService.Add(model);
       this.resetSource();
       event.confirm.resolve();
     } else {
@@ -342,6 +340,16 @@ export class DatacreatorsComponent implements OnInit  {
 
     if (this.showOnlyMyNodes !== 'true') {
       delete this.settings.columns.DisplayName;
+    } else {
+      
+      delete this.settings.columns.OffersTotal;
+      delete this.settings.columns.OffersLast7Days;
+      delete this.settings.columns.LastJob;
+      delete this.settings.columns.StakeTokens;
+      delete this.settings.columns.StakeReservedTokens;
+      delete this.settings.columns.AvgDataSetSizeKB;
+      delete this.settings.columns.AvgHoldingTimeInMinutes;
+      delete this.settings.columns.AvgTokenAmountPerHolder;
     }
 
     this.resetSource();
@@ -350,17 +358,7 @@ export class DatacreatorsComponent implements OnInit  {
   getUrl() {
     let url = this.httpService.ApiUrl + '/api/nodes/datacreators?ercVersion=1';
     if (this.showOnlyMyNodes === 'true') {
-      const myNodes = this.myNodeService.GetAll();
-      // tslint:disable-next-line:prefer-for-of
-      const l = Object.keys(myNodes).length;
-      for (let index = 0; index < l; index++) {
-        const element = Object.values(myNodes)[index];
-        url += '&identity=' + element.Identity;
-      }
-
-      if (l == 0) {
-        url += "&identity=N/A";
-      }
+      url += "&restrictToMyNodes=true";
     }
 
     return url;
@@ -370,7 +368,7 @@ export class DatacreatorsComponent implements OnInit  {
     let url = this.getUrl();
 
     if (this.source == null) {
-    this.source = new OTHubServerDataSource(this.http, this.myNodeService,
+    this.source = new OTHubServerDataSource(this.http,
       { endPoint: url,} ) ;
     }
     else {
@@ -385,7 +383,7 @@ class OTHubServerDataSource extends ServerDataSource {
     this.conf.endPoint = endpoint;
   }
 
-  constructor(http: HttpClient, private myNodeService: MyNodeService, conf?: ServerSourceConf | {}) {
+  constructor(http: HttpClient, conf?: ServerSourceConf | {}) {
     super(http, conf);
   }
 
@@ -393,7 +391,7 @@ class OTHubServerDataSource extends ServerDataSource {
     var data = super.extractDataFromResponse(res);
 
     data.forEach(element => {
-      element.DisplayName = this.myNodeService.GetName(element.Identity, true);
+      //element.DisplayName = this.myNodeService.GetName(element.Identity, true);
     });
     return data;
   }

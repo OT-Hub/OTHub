@@ -2,7 +2,6 @@ import { DataCreatorSummaryModel } from './../datacreators/datacreators-models';
 import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 
 import { ActivatedRoute, Router } from '@angular/router';
-import { MyNodeService } from '../mynodeservice';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DataCreatedDetailedModel } from './datacreator-model';
 import { HubHttpService } from '../../hub-http-service';
@@ -15,7 +14,7 @@ declare const $: any;
 export class DatacreatorComponent implements OnInit, OnDestroy {
 
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router,
-              private chRef: ChangeDetectorRef, public myNodeService: MyNodeService, private httpService: HubHttpService) {
+              private chRef: ChangeDetectorRef, private httpService: HubHttpService) {
     this.isLoading = true;
     this.failedLoading = false;
     this.IsTestNet = httpService.IsTestNet;

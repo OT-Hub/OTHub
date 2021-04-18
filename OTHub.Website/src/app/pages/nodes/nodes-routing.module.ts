@@ -8,6 +8,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { DataHolderComponent } from './dataholder/dataholder.component';
 import { DatacreatorsComponent } from './datacreators/datacreators.component';
 import { ManualPayoutPageComponent } from './manual-payout-page/manual-payout-page.component';
+import { MynodesoverviewComponent } from './mynodesoverview/mynodesoverview.component';
 
 const routes: Routes = [
   {
@@ -37,10 +38,14 @@ const routes: Routes = [
     path: 'datacreators/:identity',
     component: DatacreatorComponent
   },
-  // {
-  //   path: 'mynodes',
-  //   component: MynodesComponent
-  // },
+  {
+    path: 'mynodes/settings',
+    component: MynodesComponent
+  },
+  {
+    path: 'mynodes',
+    component: MynodesoverviewComponent
+  },
   { path: 'dataholders/:identity/report/usd',
   component: PayoutPricesComponent
   },
