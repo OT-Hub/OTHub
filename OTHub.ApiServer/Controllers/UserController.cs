@@ -1,13 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Auth0.ManagementApi;
 using Dapper;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MySqlConnector;
 using OTHub.Settings;
-using RestSharp;
 
 namespace OTHub.APIServer.Controllers
 {
@@ -15,18 +12,26 @@ namespace OTHub.APIServer.Controllers
     public class UserController : Controller
     {
         [HttpPost]
-        public async Task CreateUser([FromBody] string model)
+        [Authorize]
+        [Route("EnsureCreated")]
+        public async Task EnsureCreated()
         {
-            await using (var connection =
+            await using (MySqlConnection connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
+                bool exists = await connection.ExecuteScalarAsync<bool>(@"SELECT 1 FROM Users WHERE ID = @userID", new
+                {
+                    userID = User.Identity.Name
+                });
 
+                if (!exists)
+                {
+                    await connection.ExecuteAsync("INSERT INTO Users (ID) VALUES (@userID)", new
+                    {
+                        userID = User.Identity.Name
+                    });
+                }
             }
         }
-    }
-
-    public class CreateUserModel
-    {
-
     }
 }

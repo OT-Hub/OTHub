@@ -6,6 +6,7 @@ namespace OTHub.APIServer.Sql.Models.Nodes.DataHolders
     {
         //public String Identity { get; set; }
         public String NodeId { get; set; }
+        public string DisplayName { get; set; }
         public Int32 Version { get; set; }
         public String StakeTokens { get; set; }
         public String StakeReservedTokens { get; set; }

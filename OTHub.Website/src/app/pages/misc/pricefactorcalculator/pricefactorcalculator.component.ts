@@ -5,7 +5,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 declare const $: any;
 declare const noUiSlider: any;
 import * as moment from 'moment';
-import { MyNodeService } from '../../nodes/mynodeservice';
 import { HubHttpService } from '../../hub-http-service';
 
 export interface OrigintrailPriceEthWrapper {
@@ -30,7 +29,7 @@ export interface OrigintrailPriceUsd {
 })
 export class PriceFactorCalculatorComponent implements OnInit, OnDestroy {
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router,
-    public myNodeService: MyNodeService, private httpService: HubHttpService) {
+    private httpService: HubHttpService) {
     this.isLoading = true;
     this.failedLoading = false;
     this.IsTestNet = httpService.IsTestNet;

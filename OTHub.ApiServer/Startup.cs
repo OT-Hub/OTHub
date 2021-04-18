@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
 using OTHub.Settings;
 using Swashbuckle.AspNetCore.Filters;
@@ -33,13 +36,13 @@ namespace OTHub.APIServer
 
             services.AddMemoryCache();
 
-            List<string> origins = new List<string>();
+//            List<string> origins = new List<string>();
 
-#if DEBUG
-            origins.Add("http://localhost:4200");
-#endif
+//#if DEBUG
+//            origins.Add("http://localhost:4200");
+//#endif
 
-            origins.Add(OTHubSettings.Instance.WebServer.AccessControlAllowOrigin);
+//            origins.Add(OTHubSettings.Instance.WebServer.AccessControlAllowOrigin);
 
 
             services.AddSwaggerExamples();
@@ -48,7 +51,7 @@ namespace OTHub.APIServer
                 options.AddPolicy(MyAllowSpecificOrigins,
                     builder =>
                     {
-                        builder.WithOrigins(origins.Distinct().ToArray()).AllowAnyHeader().AllowAnyMethod().AllowCredentials().SetPreflightMaxAge(TimeSpan.FromDays(7));
+                        builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod().SetPreflightMaxAge(TimeSpan.FromDays(7));
                     });
             });
 
@@ -78,6 +81,20 @@ namespace OTHub.APIServer
                 c.EnableAnnotations();
                 c.ExampleFilters();
                 c.SwaggerDoc("Mainnet", new Microsoft.OpenApi.Models.OpenApiInfo { Title = "OT Hub", Version = "1.0.0" });
+            });
+
+            services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            }).AddJwtBearer(options =>
+            {
+                options.Authority = "https://othub.eu.auth0.com/";
+                options.Audience = "https://othubapi";
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    NameClaimType = ClaimTypes.NameIdentifier
+                };
             });
         }
 
@@ -116,8 +133,10 @@ namespace OTHub.APIServer
             //    app.UseSignalR(route => { route.MapHub<LogHub>("/signalr/testnet/log"); });
             //}
 
-            app.UseRouting();
+            app.UseAuthentication();
 
+            app.UseRouting();
+            app.UseAuthorization();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();

@@ -4,19 +4,17 @@ import { ViewCell } from 'ng2-smart-table';
 import { NbIconLibraries, NbIconComponent, NbComponentStatus } from '@nebular/theme';
 import { RouterModule } from '@angular/router';
 import { HubHttpService } from '../../../hub-http-service';
-import { MyNodeService } from '../../mynodeservice';
-import { MyNodeModel } from '../../mynodemodel';
 
 @Component({
     selector: 'paidoutcolumn',
     template: `
-    <span>
-    <span *ngIf="canPayout === true && MyNode">
+    <span> TODO
+    <!-- <span *ngIf="canPayout === true && MyNode">
         No (<a routerLink="/nodes/dataholders/{{identity}}/payout/{{offerID}}">Payout</a>)
     </span>
     <span *ngIf="!MyNode || canPayout === false">
         {{rowData.Paidout === true ? 'Yes' : 'No'}}
-    </span>
+    </span> -->
 
 </span>
   `,
@@ -28,12 +26,12 @@ export class PaidoutColumnComponent implements ViewCell, OnInit {
     @Input() value: string;
     @Input() rowData: any;
 
-    MyNode: MyNodeModel;
+    //MyNode: MyNodeModel;
     canPayout: boolean;
     offerID: string;
     identity: string;
 
-    constructor(private httpService: HubHttpService, public myNodeService: MyNodeService) {
+    constructor(private httpService: HubHttpService) {
 
     }
 
@@ -41,7 +39,7 @@ export class PaidoutColumnComponent implements ViewCell, OnInit {
     ngOnInit() {
         this.renderValue = null;
 
-        this.MyNode = this.myNodeService.Get(this.rowData.Identity);
+        //this.MyNode = this.myNodeService.Get(this.rowData.Identity);
         this.canPayout = this.rowData.CanPayout;
         this.offerID = this.rowData.OfferId;
         this.identity = this.rowData.Identity;

@@ -110,7 +110,7 @@ namespace OTHub.BackendSync
 
                 if (blockchain == BlockchainType.xDai)
                 {
-                    defaultBlocksToIgnore = 40;
+                    defaultBlocksToIgnore = 20;
                 }
 
                 var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();

@@ -6,7 +6,6 @@ import {
 import { MomentModule } from 'ngx-moment';
 import { OTOfferDetailModel, OTOfferDetailTimelineEventModel } from './offersdetail-models';
 import { ActivatedRoute, Router } from '@angular/router';
-import { MyNodeService } from '../../nodes/mynodeservice';
 import { HubHttpService } from '../../hub-http-service';
 import * as am4core from '@amcharts/amcharts4/core';
 import am4themes_animated from '@amcharts/amcharts4/themes/animated';
@@ -26,7 +25,7 @@ import {Color} from "@amcharts/amcharts4/core";
   styleUrls: ['./offersdetail.component.scss'],
 })
 export class OffersDetailComponent implements OnInit {
-  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private myNodeService: MyNodeService,
+  constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, 
               private httpService: HubHttpService,
               @Inject(PLATFORM_ID) private platformId, private zone: NgZone,
               private datePipe: DatePipe) {

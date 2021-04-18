@@ -28,21 +28,7 @@ If you want to get more information about a specific data holder you should use 
         )]
         [SwaggerResponse(200, type: typeof(NodeDataHolderSummaryModel[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public async Task<IActionResult> Get([FromQuery,
-                                             SwaggerParameter(
-                                                 "The filter to use for the ERC version of the identity. The ODN launched with version 0 for. In Decemember 2018 all nodes upgraded their identities (which also generated them new identities) which are version 1. The OT Hub website only shows users version 1 identities.",
-                                                 Required = true)]
-            int ercVersion,
-            [FromQuery,
-             SwaggerParameter(
-                 "Filter the results to only include node ids listed. Multiple node ids can be provided by seperating them with &. Up to 50 can be provided maximum.",
-                 Required = false)]
-            string[] nodes,
-            [FromQuery,
-             SwaggerParameter(
-                 "Filter the results to only include identities with the specified management wallet address. Multiple management wallet addresses can be provided by seperating them with &. Up to 50 can be provided maximum.",
-                 Required = false)]
-            string[] managementWallet,
+        public async Task<IActionResult> Get(
             [FromQuery, SwaggerParameter("How many offers you want to return per page", Required = true)]
             int _limit,
             [FromQuery, SwaggerParameter("The page number to start from. The first page is 0.", Required = true)]
@@ -51,27 +37,20 @@ If you want to get more information about a specific data holder you should use 
             [FromQuery] string _sort,
             [FromQuery] string _order,
             [FromQuery] bool export,
-            [FromQuery] int? exportType)
+            [FromQuery] int? exportType,
+            [FromQuery] bool restrictToMyNodes)
         {
             _page--;
 
-            if (nodes.Length >= 50 || nodes.Any(i => i.Length >= 50 || i.Contains(" ")))
-            {
-                return new OkObjectResult(new NodeDataHolderSummaryModel[0]);
-            }
-
-            if (managementWallet.Length >= 50 ||
-                managementWallet.Any(i => i.Length >= 50 || !i.StartsWith("0x") || i.Contains(" ")))
-            {
-                return new OkObjectResult(new NodeDataHolderSummaryModel[0]);
-            }
 
             if (NodeId_like != null && NodeId_like.Length > 200)
             {
                 NodeId_like = null;
             }
 
-            var result = await DataHoldersSql.Get(ercVersion, nodes, managementWallet, _limit,
+            string userID = restrictToMyNodes ? User?.Identity?.Name : null;
+
+            var result = await DataHoldersSql.Get(userID, _limit,
                 _page, NodeId_like, _sort, _order);
 
             HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
