@@ -10,7 +10,6 @@ import { HubHttpService } from '../../hub-http-service';
 declare const $: any;
 import * as moment from 'moment';
 import { LocalDataSource, ServerDataSource } from 'ng2-smart-table';
-import { MyNodeService } from '../../nodes/mynodeservice';
 import { DataCreatorColumnComponent } from './datacreatorcolumn.component';
 import { OfferIdColumnComponent } from '../../miscellaneous/offeridcolumn.component';
 import * as am4core from '@amcharts/amcharts4/core';
@@ -28,7 +27,7 @@ import { HomeJobsChartDataModel } from 'app/pages/e-commerce/e-commerce.componen
 export class OffersComponent implements OnInit, OnDestroy {
 
   constructor(private http: HttpClient, private chRef: ChangeDetectorRef, private httpService: HubHttpService, private router: Router,
-              private zone: NgZone, public myNodeService: MyNodeService,
+              private zone: NgZone, 
               @Inject(PLATFORM_ID) private platformId) {
     this.isLoading = true;
     this.failedLoading = false;

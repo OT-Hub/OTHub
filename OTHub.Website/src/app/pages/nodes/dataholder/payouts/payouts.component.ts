@@ -2,7 +2,6 @@ import { Component, OnInit, Input } from '@angular/core';
 import { Router } from '@angular/router';
 import { HubHttpService } from '../../../hub-http-service';
 import { HttpClient } from '@angular/common/http';
-import { MyNodeService } from '../../mynodeservice';
 import { ServerDataSource } from 'ng2-smart-table';
 import * as moment from 'moment';
 import { OfferIdColumnComponent } from '../../../miscellaneous/offeridcolumn.component';
@@ -13,7 +12,7 @@ import { OfferIdColumnComponent } from '../../../miscellaneous/offeridcolumn.com
 })
 export class PayoutsComponent implements OnInit {
 
-  constructor(private httpService: HubHttpService, private http: HttpClient, public myNodeService: MyNodeService, private router: Router) { 
+  constructor(private httpService: HubHttpService, private http: HttpClient, private router: Router) { 
  
   }
 

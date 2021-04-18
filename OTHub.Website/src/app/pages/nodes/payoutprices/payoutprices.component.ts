@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpHeaders, HttpClient } from '@angular/common/http';
 import { PayoutInUsdModel } from './payoutprices-model';
 //import Web3 from 'web3';
-import { MyNodeService } from '../mynodeservice';
 import * as moment from 'moment';
 import { ServerDataSource } from 'ng2-smart-table';
 import { OfferIdColumnComponent } from '../../miscellaneous/offeridcolumn.component';
@@ -18,7 +17,7 @@ declare const $: any;
 export class PayoutPricesComponent implements OnInit, OnDestroy {
 
     constructor(private httpService: HubHttpService, private route: ActivatedRoute, private router: Router,
-                private http: HttpClient, public myNodeService: MyNodeService) {
+                private http: HttpClient) {
         this.isLoading = true;
         this.failedLoading = false;
         //this.web3 = new Web3();

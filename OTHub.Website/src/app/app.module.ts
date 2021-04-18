@@ -21,7 +21,8 @@ import {
 } from '@nebular/theme';
 import {Ng2SmartTableModule} from "ng2-smart-table";
 import { AuthModule } from '@auth0/auth0-angular';
-
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { AuthHttpInterceptor } from '@auth0/auth0-angular';
 @NgModule({
   declarations: [AppComponent],
   imports: [
@@ -41,8 +42,31 @@ import { AuthModule } from '@auth0/auth0-angular';
     NbSelectModule,
     AuthModule.forRoot({
       domain: 'othub.eu.auth0.com',
-      clientId: 'Yx384WexDQj9xz8DBK62mdUw74G54f2B'
+      clientId: 'Yx384WexDQj9xz8DBK62mdUw74G54f2B',
+      scope: 'profile offline_access openid',
+      audience: 'https://othubapi',
+      allowAnonymous: true,
+      httpInterceptor: {
+        allowedList: [
+          {
+            uri: `http://localhost:5000/*`,
+            allowAnonymous: true,
+          }, {
+            uri: `https://v5api.othub.info/*`,
+            allowAnonymous: true,
+          }, {
+            uri: `https://testnet-api.othub.info/*`,
+            allowAnonymous: true,
+          }]
+      },
     }),
+  ],
+  providers: [
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: AuthHttpInterceptor,
+      multi: true,
+    },
   ],
   bootstrap: [AppComponent],
 })

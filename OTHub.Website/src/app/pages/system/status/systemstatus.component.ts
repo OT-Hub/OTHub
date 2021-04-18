@@ -4,7 +4,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 declare const $: any;
 import * as moment from 'moment';
-import { MyNodeService } from '../../nodes/mynodeservice';
 import { HubHttpService } from '../../hub-http-service';
 import { SystemStatusModel } from './system-models';
 @Component({
@@ -14,7 +13,7 @@ import { SystemStatusModel } from './system-models';
 })
 export class SystemStatusComponent implements OnInit, OnDestroy {
     constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router,
-                public myNodeService: MyNodeService, private httpService: HubHttpService) {
+                private httpService: HubHttpService) {
         this.isLoading = true;
         this.failedLoading = false;
         this.IsTestNet = httpService.IsTestNet;

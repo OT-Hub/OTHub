@@ -1,0 +1,72 @@
+<h3>My Nodes</h3>
+
+<nb-alert status="primary" *ngIf="isLoggedIn == false && isLoading == false">
+    Log in to use this feature!
+  </nb-alert>
+
+<div class="row" *ngIf="isLoggedIn == true">
+    <div class="col-xxxl-4 col-xxl-4 col-lg-5 col-md-6">
+        <nb-select [selected]="selectedNode" (selectedChange)="changeNode($event)"
+            style="width:100%;margin-bottom:10px;max-width:none;">
+            <nb-option value="All Nodes">All Nodes</nb-option>
+            <nb-option *ngFor="let node of data?.Nodes" [value]="node.NodeId">{{ (node.DisplayName == null ? node.NodeId
+                :
+                node.DisplayName) }}</nb-option>
+        </nb-select>
+    </div>
+</div>
+
+<div class="row" *ngIf="isLoggedIn == true">
+    <!-- <div class="col-xxxl-4 col-xxl-4 col-lg-4 col-md-">
+        <nb-card size="large">
+            <nb-card-header>
+              Nodes
+            </nb-card-header>
+            <nb-list>
+                <nb-list-item class="contact" *ngFor="let node of data?.Nodes">
+                  <nb-user name="{{(node.DisplayName == null ? node.NodeId:node.DisplayName)}}" title="c.type" size="large"></nb-user>
+                  <span class="caption">abc</span>
+                </nb-list-item>
+              </nb-list>
+          </nb-card>
+    </div> -->
+
+    <div class="col-xxxl-4 col-xxl-4 col-lg-5 col-md-6">
+
+
+        <!-- <nb-card class="cards-container"> -->
+        <nb-card size="large" class="table-card">
+            <nb-card-header>
+                Jobs by Month
+            </nb-card-header>
+            <nb-tabset fullWidth>
+                <nb-tab *ngFor="let year of selectedData?.Years" [tabTitle]="year.Year" [active]="year.Active">
+                    <nb-list>
+                        <nb-list-item *ngFor="let month of year.Months">
+                            <span class="month">{{ month.Month }}</span>
+                            <span>
+                                <nb-icon [class.down]="month.Down" [class.up]="!month.Down"
+                                    [icon]="month.Down ? 'arrow-down' : 'arrow-up'" pack="eva">
+                                </nb-icon>
+                                {{ month.JobCount }} Jobs
+                            </span>
+                            <span class="results extraPadding">
+                                {{ formatAmount(month.TokenAmount) }} <span class="caption">TRAC</span> / {{
+                                month.USDAmount | number:'1.0-2' }} <span class="caption">USD</span>
+                            </span>
+                        </nb-list-item>
+                    </nb-list>
+                </nb-tab>
+            </nb-tabset>
+        </nb-card>
+        <!-- </nb-card> -->
+    </div>
+    <div class="col-xxxl-8 col-xxl-8 col-lg-7 col-md-6">
+        <nb-card size="large" class="table-card">
+            <nb-card-header>
+                Latest Jobs
+            </nb-card-header>
+            <p style="margin:10px;">I haven't done this bit yet!</p>
+        </nb-card>
+    </div>
+</div>

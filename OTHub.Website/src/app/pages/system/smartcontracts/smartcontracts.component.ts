@@ -2,7 +2,6 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HubHttpService } from 'app/pages/hub-http-service';
-import { MyNodeService } from 'app/pages/nodes/mynodeservice';
 import { SystemStatusModel } from '../status/system-models';
 import { SmartContractGroupModel } from './smartcontracts-model';
 
@@ -14,7 +13,7 @@ import { SmartContractGroupModel } from './smartcontracts-model';
 export class SmartcontractsComponent implements OnInit {
 
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router,
-    public myNodeService: MyNodeService, private httpService: HubHttpService) {
+    private httpService: HubHttpService) {
     this.isLoading = true;
     this.failedLoading = false;
     this.IsTestNet = httpService.IsTestNet;

@@ -4,7 +4,6 @@ import { isPlatformBrowser } from '@angular/common';
 import {NbThemeService, NbMediaBreakpoint, NbMediaBreakpointsService, NbPopoverDirective} from '@nebular/theme';
 import {SystemStatusModel} from "../system/status/system-models";
 import {HttpClient, HttpHeaders} from "@angular/common/http";
-import {MyNodeService} from "../nodes/mynodeservice";
 import {HubHttpService} from "../hub-http-service";
 import * as moment from 'moment';
 import * as am4core from '@amcharts/amcharts4/core';

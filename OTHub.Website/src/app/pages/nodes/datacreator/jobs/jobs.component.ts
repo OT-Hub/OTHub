@@ -3,7 +3,6 @@ import * as moment from 'moment';
 import { ServerDataSource } from 'ng2-smart-table';
 import { HubHttpService } from '../../../hub-http-service';
 import { HttpClient } from '@angular/common/http';
-import { MyNodeService } from '../../mynodeservice';
 
 import { OfferIdColumnComponent } from '../../../miscellaneous/offeridcolumn.component';
 @Component({
@@ -13,7 +12,7 @@ import { OfferIdColumnComponent } from '../../../miscellaneous/offeridcolumn.com
 })
 export class JobsComponent implements OnInit {
 
-  constructor(private httpService: HubHttpService, private http: HttpClient, public myNodeService: MyNodeService) { 
+  constructor(private httpService: HubHttpService, private http: HttpClient) { 
  
   }
 

@@ -2,7 +2,7 @@ import { NbMenuItem } from '@nebular/theme';
 
 export const MENU_ITEMS: NbMenuItem[] = [
   {
-    title: 'Dashboard',
+    title: 'Home',
     icon: 'home-outline',
     link: '/dashboard',
     home: true,
@@ -20,10 +20,6 @@ export const MENU_ITEMS: NbMenuItem[] = [
     title: 'Nodes',
     icon: 'hard-drive-outline',
     children: [
-      // {
-      //   title: 'My Nodes',
-      //   link: '/nodes/mynodes',
-      // },
       {
         title: 'Data Holders',
         link: '/nodes/dataholders',
@@ -32,6 +28,20 @@ export const MENU_ITEMS: NbMenuItem[] = [
         title: 'Data Creators',
         link: '/nodes/datacreators',
       }
+    ],
+  },
+  {
+    title: 'My Nodes',
+    icon: 'star-outline',
+    children: [
+      {
+        title: 'Dashboard',
+        link: '/nodes/mynodes',
+      },
+      {
+        title: 'Settings',
+        link: '/nodes/mynodes/settings',
+      },
     ],
   },
   // {

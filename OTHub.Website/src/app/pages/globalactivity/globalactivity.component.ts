@@ -5,7 +5,6 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 declare const $: any;
 import { HubHttpService } from '../hub-http-service';
-import { MyNodeService } from '../nodes/mynodeservice';
 import * as moment from 'moment';
 @Component({
     selector: 'app-globalactivity',
@@ -15,7 +14,7 @@ import * as moment from 'moment';
 export class GlobalActivityComponent {
 
     constructor(private http: HttpClient,
-        public myNodeService: MyNodeService, private httpService: HubHttpService,
+        private httpService: HubHttpService,
         private router: Router,
         private ngZone: NgZone) {
         this.isLoading = true;
@@ -110,7 +109,7 @@ export class GlobalActivityComponent {
                         || row.EventName === 'Tokens Deposited' || row.EventName === 'Identity Created' || row.EventName === 'Litigation Failed' ||
                         row.EventName === 'Litigation Passed' || row.EventName === 'Litigation Answered' || row.EventName === 'Litigation Initiated' ||
                         row.EventName === 'Replacement Started' || row.EventName === 'Data Holder Chosen as Replacement' || row.EventName === 'Data Holder Chosen') {
-                        const name = this.myNodeService.GetName(value, false);
+                        //const name = this.myNodeService.GetName(value, false);
                         return value;
                         //return '<a class="navigateJqueryToAngular" href="/nodes/dataholders/' + value + '" onclick="return false;">' + name + '</a>';
                     }
@@ -129,7 +128,7 @@ export class GlobalActivityComponent {
                     if (row.EventName === 'Litigation Failed' ||
                         row.EventName === 'Litigation Passed' || row.EventName === 'Litigation Answered' || row.EventName === 'Litigation Initiated' ||
                         row.EventName === 'Replacement Started' || row.EventName === 'Data Holder Chosen as Replacement' || row.EventName === 'Data Holder Chosen') {
-                        const name = this.myNodeService.GetName(value, false);
+                        //const name = this.myNodeService.GetName(value, false);
                         return '<a title="' + value + '" class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;">' + value.substring(0, 40) + '...</a>';
                     }
 

@@ -1,4 +1,3 @@
-import { MyNodeService } from './../mynodeservice';
 import { Component, OnInit, ChangeDetectorRef, Input, OnDestroy, EventEmitter, Output } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { OTNodeSummaryModel } from './dataholders-models';
@@ -8,10 +7,8 @@ declare const $: any;
 import { ServerDataSource } from 'ng2-smart-table';
 import { DecimalPipe } from '@angular/common';
 import { DataHolderDetailedModel } from '../dataholder/dataholder-models';
-import { NbToastrService, NbGlobalLogicalPosition, NbToastrConfig, NbComponentStatus  } from '@nebular/theme';
-import { MyNodeModel } from '../mynodemodel';
+import { NbToastrService, NbGlobalLogicalPosition, NbToastrConfig, NbComponentStatus } from '@nebular/theme';
 import { ServerSourceConf } from 'ng2-smart-table/lib/lib/data-source/server/server-source.conf';
-import { OnlineIndicatorRenderComponent } from './onlineindicator.component';
 import { DataHolderIdentityColumnComponent } from '../../miscellaneous/identitycolumn.component';
 @Component({
   selector: 'app-dataholders',
@@ -22,7 +19,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
   getNodesObserver: any;
   settings: any;
 
-  constructor(private http: HttpClient, private chRef: ChangeDetectorRef, private myNodeService: MyNodeService,
+  constructor(private http: HttpClient, private chRef: ChangeDetectorRef,
     private httpService: HubHttpService, private toastrService: NbToastrService) {
     this.isTableInit = false;
     this.isLoading = true;
@@ -67,8 +64,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         lastSplit = lastSplit.substring(0, 3);
       }
 
-      if (lastSplit == '000')
-      {
+      if (lastSplit == '000') {
         return split[0];
       }
 
@@ -85,24 +81,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     this.source.setPaging(1, event, true);
   }
 
-  // getNodes() {
-  //   const headers = new HttpHeaders()
-  //     .set('Content-Type', 'application/json')
-  //     .set('Accept', 'application/json');
-  //   let url = this.httpService.ApiUrl + '/api/nodes/dataholders?ercVersion=1';
-  //   if (this.showOnlyMyNodes) {
-  //     const myNodes = this.myNodeService.GetAll();
-  //     // tslint:disable-next-line:prefer-for-of
-  //     for (let index = 0; index < Object.keys(myNodes).length; index++) {
-  //       const element = Object.values(myNodes)[index];
-  //       url += '&identity=' + element.Identity;
-  //     }
-  //   } else if (this.managementWallet) {
-  //     url += '&managementWallet=' + this.managementWallet;
-  //   }
-  //   url += '&' + (new Date()).getTime();
-  //   return this.http.get<OTNodeSummaryModel[]>(url, { headers });
-  // }
+
 
   ngOnDestroy() {
     // this.chRef.detach();
@@ -174,42 +153,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
   //   });
   // }
 
-  // copyToClipboard() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.copyHtml5;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.copyHtml5.action.call(that, e, this.dataTable, config, button);
-  // }
 
-  // exportToCSV() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.csvHtml5;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.csvHtml5.action.call(that, e, this.dataTable, config, button);
-  // }
-
-
-  // exportToExcel() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.excelHtml5;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.excelHtml5.action.call(that, e, this.dataTable, config, button);
-  // }
-
-  // print() {
-  //   const that = { processing(isProcessing) { } };
-  //   const e = null;
-  //   const button = $.fn.dataTable.ext.buttons.print;
-  //   const config = this.exportOptionsObj;
-  //   button.exportOptions = config;
-  //   $.fn.dataTable.ext.buttons.print.action.call(that, e, this.dataTable, config, button);
-  // }
 
   getNode(identity: string) {
     const headers = new HttpHeaders()
@@ -227,27 +171,43 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     const oldData = event.data;
     const newData = event.newData;
 
-    this.getNode(newData.Identity).subscribe(data => {
+    this.getNode(newData.NodeId).subscribe(data => {
       if (data) {
 
-        const oldModel = new MyNodeModel();
-        oldModel.Identity = oldData.Identity;
-        oldModel.DisplayName = '';
-        this.myNodeService.Remove(oldModel);
+        // const oldModel = new MyNodeModel();
+        // oldModel.Identity = oldData.Identity;
+        // oldModel.DisplayName = '';
+        //this.myNodeService.Remove(oldModel);
 
-        const model = new MyNodeModel();
-        model.Identity = newData.Identity;
-        model.DisplayName = newData.DisplayName;
-        this.myNodeService.Add(model);
-        this.resetSource();
-        event.confirm.resolve();
-        this.source.refresh();
-      } else {
-        this.config = new NbToastrConfig({duration: 8000});
+        // const model = new MyNodeModel();
+        // model.Identity = newData.Identity;
+        // model.DisplayName = newData.DisplayName;
+        //this.myNodeService.Add(model);
+        const headers = new HttpHeaders()
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json');
+        let url = this.httpService.ApiUrl + '/api/mynodes/addeditnode?nodeID=' + newData.NodeId;
+        if (newData.DisplayName != null) {
+          url += '&name=' + newData.DisplayName;
+        }
+        this.http.post(url, { headers }).subscribe(data => {
+          this.resetSource();
+          event.confirm.resolve();
+          this.source.refresh();
+        }, err => {
+          this.config = new NbToastrConfig({ duration: 8000 });
+          this.config.status = "warning";
+          this.config.icon = 'alert-triangle';
+          this.toastrService.show(
+            'A node was not found by searching for the NodeId ' + newData.NodeId + '. Please check you have entered the right NodeId.', 'Add Node', this.config);
+        });
+      }
+      else {
+        this.config = new NbToastrConfig({ duration: 8000 });
         this.config.status = "warning";
-      this.config.icon = 'alert-triangle';
+        this.config.icon = 'alert-triangle';
         this.toastrService.show(
-          'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
+          'A node was not found by searching for the NodeId ' + newData.NodeId + '. Please check you have entered the right NodeId.', 'Add Node', this.config);
       }
     });
   }
@@ -257,34 +217,64 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
 
     var r = confirm("Are you sure you want to delete this node?");
     if (r == true) {
-      const model = new MyNodeModel();
-      model.Identity = deleteData.Identity;
-      model.DisplayName = '';
-      this.myNodeService.Remove(model);
-      this.resetSource();
-      event.confirm.resolve();
+      // const model = new MyNodeModel();
+      // model.Identity = deleteData.Identity;
+      // model.DisplayName = '';
+      //this.myNodeService.Remove(model);
+      const headers = new HttpHeaders()
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json');
+      const url = this.httpService.ApiUrl + '/api/mynodes/deletenode?nodeID=' + deleteData.NodeId;
+      this.http.delete(url, { headers }).subscribe(data => {
+        this.resetSource();
+        event.confirm.resolve();
+      }, err => {
+        this.config = new NbToastrConfig({ duration: 8000 });
+        this.config.status = "warning";
+        this.config.icon = 'alert-triangle';
+        this.toastrService.show(
+          'A node was not found by searching for the NodeId ' + deleteData.NodeId + '. Please check you have entered the right NodeId.', 'Add Node', this.config);
+      });
     }
-}
+  }
 
   onCreate(event) {
-  var newData = event.newData;
+    var newData = event.newData;
 
-  this.getNode(newData.Identity).subscribe(data => {
-    if (data) {
-      const model = new MyNodeModel();
-      model.Identity = newData.Identity;
-      model.DisplayName = newData.DisplayName;
-      this.myNodeService.Add(model);
-      this.resetSource();
-      event.confirm.resolve();
-    } else {
-      this.config = new NbToastrConfig({duration: 8000});
-      this.config.status = "warning";
-      this.config.icon = 'alert-triangle';
-      this.toastrService.show(
-        'A node was not found by searching for the identity ' + newData.Identity + '. Please check you have entered the right identity.',  'Add Node', this.config);
-    }
-  });
+    this.getNode(newData.NodeId).subscribe(data => {
+      if (data) {
+        // const model = new MyNodeModel();
+        // model.Identity = newData.Identity;
+        // model.DisplayName = newData.DisplayName;
+        //this.myNodeService.Add(model);
+
+
+        const headers = new HttpHeaders()
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json');
+          let url = this.httpService.ApiUrl + '/api/mynodes/addeditnode?nodeID=' + newData.NodeId;
+          if (newData.DisplayName != null) {
+            url += '&name=' + newData.DisplayName;
+          }
+        this.http.post(url, { headers }).subscribe(data => {
+          this.resetSource();
+          event.confirm.resolve();
+        }, err => {
+          this.config = new NbToastrConfig({ duration: 8000 });
+          this.config.status = "warning";
+          this.config.icon = 'alert-triangle';
+          this.toastrService.show(
+            'A node was not found by searching for the NodeId ' + newData.NodeId + '. Please check you have entered the right NodeId.', 'Add Node', this.config);
+        });
+
+      } else {
+        this.config = new NbToastrConfig({ duration: 8000 });
+        this.config.status = "warning";
+        this.config.icon = 'alert-triangle';
+        this.toastrService.show(
+          'A node was not found by searching for the NodeId ' + newData.NodeId + '. Please check you have entered the right NodeId.', 'Add Node', this.config);
+      }
+    });
   }
 
   ngOnInit() {
@@ -295,8 +285,8 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
       mode: 'inline',
       actions: {
         add: this.showOnlyMyNodes === 'true',
-        edit: this.showOnlyMyNodes  === 'true',
-        delete: this.showOnlyMyNodes  === 'true'
+        edit: this.showOnlyMyNodes === 'true',
+        delete: this.showOnlyMyNodes === 'true'
       },
       add: {
         addButtonContent: '<i class="nb-plus"></i>',
@@ -315,36 +305,6 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         confirmDelete: true,
       },
       columns: {
-        // LastSeenOnline: {
-        //   title: '',
-        //   type: 'custom',
-        //   class: "onlineIndicator",
-        //   renderComponent: OnlineIndicatorRenderComponent,
-        //   filter: false,
-        //   sort: false,
-        //   editable: false,
-        //   addable: false,
-        //   width: '1%'
-        //   // valuePrepareFunction: (value, row) => {
-        //   //   return '<div style="font-size:30px;"><i class="nb-checkmark-circle"></i></div>';
-        //   // }
-        // },
-        // Identity: {
-        //   sort: false,
-        //   title: 'Identity',
-        //   type: 'custom',
-        //   filter: true,
-        //   renderComponent: DataHolderIdentityColumnComponent,
-        //   // valuePrepareFunction: (value) => {
-        //   //   if (!value) {
-        //   //     return 'Unknown';
-        //   //   }
-        //
-        //   //   return '<a target=_self href="/nodes/dataholders/' + value +
-        //   //    '""><img class="lazy" style="height:16px;width:16px;" title="' +
-        //   //     value + '" src="' + this.getIdentityIcon(value) + '">' + value + '</a>';
-        //   // }
-        // },
         NodeId: {
           title: 'Node Id',
           type: 'custom',
@@ -364,20 +324,6 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           editable: true,
           addable: true,
         },
-        // BlockchainName: {
-        //   type: 'string',
-        //   sort: false,
-        //   filter: false,
-        //   title: 'Blockchain',
-        //   editable: false,
-        // },
-        // NetworkName: {
-        //   type: 'string',
-        //   sort: false,
-        //   filter: false,
-        //   title: 'Network',
-        //   editable: false,
-        // },
         TotalWonOffers: {
           sort: true,
           title: 'Jobs',
@@ -460,7 +406,13 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
 
     if (this.showOnlyMyNodes !== 'true') {
       delete this.settings.columns.DisplayName;
-      delete this.settings.columns.LastSeenOnline;
+    } else {
+      delete this.settings.columns.TotalWonOffers;
+      delete this.settings.columns.WonOffersLast7Days;
+      delete this.settings.columns.ActiveOffers;
+      delete this.settings.columns.PaidTokens;
+      delete this.settings.columns.StakeTokens;
+      delete this.settings.columns.StakeReservedTokens;
     }
 
     this.resetSource();
@@ -469,17 +421,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
   getUrl() {
     let url = this.httpService.ApiUrl + '/api/nodes/dataholders?ercVersion=1';
     if (this.showOnlyMyNodes === 'true') {
-      const myNodes = this.myNodeService.GetAll();
-      // tslint:disable-next-line:prefer-for-of
-      const l = Object.keys(myNodes).length;
-      for (let index = 0; index < l; index++) {
-        const element = Object.values(myNodes)[index];
-        url += '&identity=' + element.Identity;
-      }
-
-      if (l == 0) {
-        url += "&identity=N/A";
-      }
+      url += "&restrictToMyNodes=true";
     } else if (this.managementWallet) {
       url += '&managementWallet=' + this.managementWallet;
     }
@@ -491,8 +433,8 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     let url = this.getUrl();
 
     if (this.source == null) {
-    this.source = new OTHubServerDataSource(this.http, this.myNodeService,
-      { endPoint: url });
+      this.source = new OTHubServerDataSource(this.http,
+        { endPoint: url });
     }
     else {
       this.source.ResetEndpoint(url);
@@ -506,7 +448,7 @@ class OTHubServerDataSource extends ServerDataSource {
     this.conf.endPoint = endpoint;
   }
 
-  constructor(http: HttpClient, private myNodeService: MyNodeService, conf?: ServerSourceConf | {}) {
+  constructor(http: HttpClient, conf?: ServerSourceConf | {}) {
     super(http, conf);
   }
 
@@ -514,32 +456,32 @@ class OTHubServerDataSource extends ServerDataSource {
     var data = super.extractDataFromResponse(res);
 
     data.forEach(element => {
-      element.DisplayName = this.myNodeService.GetName(element.Identity, true);
+      //element.DisplayName = this.myNodeService.GetName(element.Identity, true);
     });
     return data;
   }
 
   public update(element, values): Promise<any> {
     return new Promise((resolve, reject) => {
-        this.find(element).then(found => {
-            //Copy the new values into element so we use the same instance
-            //in the update call.
-            // element.name = values.name;
-            // element.enabled = values.enabled;
-            // element.condition = values.condition;
-            element.Identity = values.Identity;
-            element.DisplayName = values.DisplayName;
-            //Don't call super because that will cause problems - instead copy what DataSource.ts does.
-            ///super.update(found, values).then(resolve).catch(reject);
-            this.emitOnUpdated(element);
-            this.emitOnChanged('update');
-            resolve(true);
-        }).catch(reject);
+      this.find(element).then(found => {
+        //Copy the new values into element so we use the same instance
+        //in the update call.
+        // element.name = values.name;
+        // element.enabled = values.enabled;
+        // element.condition = values.condition;
+        element.NodeId = values.NodeId;
+        element.DisplayName = values.DisplayName;
+        //Don't call super because that will cause problems - instead copy what DataSource.ts does.
+        ///super.update(found, values).then(resolve).catch(reject);
+        this.emitOnUpdated(element);
+        this.emitOnChanged('update');
+        resolve(true);
+      }).catch(reject);
     });
-}
+  }
 
   find(element) {
-    const found = this.data.find(el => el.Identity == element.Identity);
+    const found = this.data.find(el => el.NodeId == element.NodeId);
     if (found) {
       return Promise.resolve(found);
     }
