@@ -787,6 +787,7 @@ ENGINE=InnoDB
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
 ;
+
 ");
 
                 connection.Execute(@"CREATE TABLE if not exists `mynodes` (
@@ -797,13 +798,13 @@ ENGINE=InnoDB
 	PRIMARY KEY (`ID`) USING BTREE,
 	UNIQUE INDEX `UserID_NodeID` (`UserID`, `NodeID`) USING BTREE,
 	INDEX `FK_mynodes_otidentity` (`NodeID`) USING BTREE,
-	CONSTRAINT `FK_mynodes_otidentity` FOREIGN KEY (`NodeID`) REFERENCES `othubmainnet`.`otidentity` (`NodeId`) ON UPDATE NO ACTION ON DELETE NO ACTION,
-	CONSTRAINT `FK_mynodes_users` FOREIGN KEY (`UserID`) REFERENCES `othubmainnet`.`users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+	CONSTRAINT `FK_mynodes_otidentity` FOREIGN KEY (`NodeID`) REFERENCES `otidentity` (`NodeId`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+	CONSTRAINT `FK_mynodes_users` FOREIGN KEY (`UserID`) REFERENCES users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
 )
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
-AUTO_INCREMENT=16
 ;
+
 ");
             }
         }
