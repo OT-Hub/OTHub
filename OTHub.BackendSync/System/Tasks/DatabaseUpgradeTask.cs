@@ -779,6 +779,32 @@ COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
 ;
 ");
+
+                connection.Execute(@"CREATE TABLE if not exists `users` (
+	`ID` VARCHAR(45) NOT NULL COLLATE 'latin1_swedish_ci',
+	PRIMARY KEY (`ID`) USING BTREE
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"CREATE TABLE if not exists `mynodes` (
+	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`UserID` VARCHAR(45) NOT NULL COLLATE 'latin1_swedish_ci',
+	`NodeID` VARCHAR(100) NOT NULL COLLATE 'latin1_swedish_ci',
+	`DisplayName` VARCHAR(200) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+	PRIMARY KEY (`ID`) USING BTREE,
+	UNIQUE INDEX `UserID_NodeID` (`UserID`, `NodeID`) USING BTREE,
+	INDEX `FK_mynodes_otidentity` (`NodeID`) USING BTREE,
+	CONSTRAINT `FK_mynodes_otidentity` FOREIGN KEY (`NodeID`) REFERENCES `othubmainnet`.`otidentity` (`NodeId`) ON UPDATE NO ACTION ON DELETE NO ACTION,
+	CONSTRAINT `FK_mynodes_users` FOREIGN KEY (`UserID`) REFERENCES `othubmainnet`.`users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=16
+;
+");
             }
         }
     }
