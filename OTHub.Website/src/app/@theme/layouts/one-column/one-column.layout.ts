@@ -16,6 +16,9 @@ import { Router, NavigationStart } from '@angular/router';
       </nb-sidebar>
 
       <nb-layout-column>
+      <div class="alert alert-danger">
+        This is the old OTHub website. Please go to the new website to see all jobs <a href="https://v5.othub.info">https://v5.othub.info</a>
+</div>
         <ng-content select="router-outlet"></ng-content>
       </nb-layout-column>
 
