@@ -30,8 +30,7 @@
                         <nb-list-item *ngIf="OfferModel?.FinalizedTransactionHash !== null">
                             Completion:
                             {{OfferModel?.EndTimestamp | amFromUtc | amLocal | amDateFormat:'LL h:mm A'}}
-                            ({{(OfferModel?.HoldingTimeInMinutes > 1440 ? OfferModel?.HoldingTimeInMinutes / 1440 : OfferModel?.HoldingTimeInMinutes) | number:'1.0-1'}}
-                            {{OfferModel?.HoldingTimeInMinutes > 1440 ? 'day(s)' : 'minutes'}} holding time)
+                            ({{formatTime(OfferModel?.HoldingTimeInMinutes)}} holding time)
                         </nb-list-item>
                     </nb-list>
                 </nb-card>
@@ -47,7 +46,7 @@
                             Dataset Size: {{OfferModel?.DataSetSizeInBytes / 1000 | number:'1.2-2'}} KB
                         </nb-list-item>
                         <nb-list-item>
-                            Token Amount: {{formatAmount(OfferModel?.TokenAmountPerHolder)}}
+                            Token Amount: {{formatAmount(OfferModel?.TokenAmountPerHolder)}}&nbsp;
                             <span
                                 *ngIf="OfferModel?.Holders.length === 3 && OfferModel?.TokenAmountPerHolder > 1">({{formatAmount(6 * OfferModel?.TokenAmountPerHolder)}}
                                 total,
@@ -78,7 +77,7 @@
 <!--                              <img-->
 <!--                                    style="width:16px;height:16px;" [src]="getIdentityIcon(OfferModel?.DCIdentity)">-->
 <!--                                {{myNodeService.GetName(OfferModel?.DCNodeId)}}-->
-                              {{OfferModel?.DCNodeId}}
+                              {{(OfferModel?.DcDisplayName != null ? OfferModel?.DcDisplayName : OfferModel?.DCNodeId)}}
                             </a>
 
                             <span *ngIf="OfferModel?.DCNodeId == null">Unknown Node Id:
@@ -111,7 +110,7 @@
 <!--                              <img style="width:16px;height:16px;"-->
 <!--                                    [src]="getIdentityIcon(holder.NodeId)">-->
 <!--                                {{myNodeService.GetName(holder.NodeId)}}-->
-                              {{holder.NodeId}}
+                              {{(holder.DisplayName != null ? holder.DisplayName : holder.NodeId)}}
                             </a>
                             <nb-badge [text]="holder.LitigationStatusText"
                                 status="{{holder.LitigationStatus === null ? 'success' : 'danger'}}"

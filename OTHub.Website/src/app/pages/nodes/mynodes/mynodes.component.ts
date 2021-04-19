@@ -1,6 +1,6 @@
 import { DatacreatorsComponent } from './../datacreators/datacreators.component';
 import { DataHoldersComponent } from './../dataholders/dataholders.component';
-import { Component, OnInit, ViewChildren, OnDestroy, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef, AfterViewChecked } from '@angular/core';
+import { Component, OnInit, ViewChildren, OnDestroy, AfterViewInit, ViewChild, ElementRef, ChangeDetectorRef, AfterViewChecked, Inject } from '@angular/core';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { DataHolderDetailedModel } from '../dataholder/dataholder-models';
 import { FormsModule } from '@angular/forms';
@@ -8,6 +8,7 @@ import { HubHttpService } from '../../hub-http-service';
 import * as moment from 'moment';
 import { RecentActivityJobModel } from './mynodes-model';
 import { AuthService } from '@auth0/auth0-angular';
+import { DOCUMENT } from '@angular/common';
 declare const $: any;
 declare const swal: any;
 @Component({
@@ -19,7 +20,7 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
 
 
 
-  constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService) {
+  constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService,  @Inject(DOCUMENT) private _document: Document) {
     this.isLoggedIn = false;
     this.isLoading = true;
   }
@@ -51,7 +52,16 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
 
 
 
-
+  importNodes() {
+    let data = prompt("Please paste the text you copied from the old OT Hub website.", "");
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/mynodes/importnodes?identities=' + data;
+    this.http.post(url, { headers }).subscribe(data => {
+      this._document.defaultView.location.reload();
+    });
+  }
 
 
   ngOnDestroy() {

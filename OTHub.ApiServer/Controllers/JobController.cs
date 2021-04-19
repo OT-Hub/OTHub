@@ -32,13 +32,16 @@ Data Included:
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 OfferDetailedModel model = await connection.QueryFirstOrDefaultAsync<OfferDetailedModel>(
-                    JobSql.GetJobDetailed, new { offerID = offerID });
+                    JobSql.GetJobDetailed, new { offerID = offerID,
+                        userID = User?.Identity?.Name
+                    });
                 if (model != null)
                 {
                     model.Holders = (await connection.QueryAsync<OfferDetailedHolderModel>(
                         JobSql.GetJobHolders, new
                         {
-                            offerID = offerID
+                            offerID = offerID,
+                            userID = User?.Identity?.Name
                         })).ToArray();
 
                     model.TimelineEvents = (await connection.QueryAsync<OfferDetailedTimelineEventModel>(JobSql.GetJobTimelineEvents(), new { offerID = offerID })).OrderBy(t => t.Timestamp).ToArray();

@@ -10,6 +10,7 @@ export class DataHolderDetailedModel   {
     PaidTokens: number;
     TotalWonOffers: number;
     WonOffersLast7Days: number;
+    DisplayName: string;
     // Approved: boolean;
     // OldIdentity: string;
     // NewIdentity: string;

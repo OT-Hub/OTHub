@@ -143,6 +143,17 @@ export class OffersDetailComponent implements OnInit {
 
   }
 
+  formatTime(value) {
+    if (value > 1440) {
+      const days = (value / 1440);
+      if ((days / 365) % 1 == 0) {
+        return (days / 365).toString() + ' years';
+      }
+      return +days.toFixed(1).replace(/[.,]00$/, '') + (days === 1 ? ' day' : ' days');
+    }
+    return value + ' minute' + (value == 1 ? '' : 's');
+  }
+
   loadTimelineChart() {
 
 
@@ -163,6 +174,9 @@ export class OffersDetailComponent implements OnInit {
     let data = [
 
     ];
+
+    if (this.OfferModel.Holders == null)
+    return;
 
     this.OfferModel.Holders.forEach((v) => {
         data.push({
