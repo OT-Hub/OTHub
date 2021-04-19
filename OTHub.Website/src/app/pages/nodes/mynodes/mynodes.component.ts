@@ -57,6 +57,12 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
 
   }
 
+  copyNodes() {
+    let identities = this.MyNodesKeys;
+    let text = identities.join(';')
+    window.prompt("Copy to clipboard: Ctrl+C, Enter", text);
+  }
+
   ngAfterViewChecked() {
     // if (this.recentActivityView != null && this.dataHoldersView != null) {
     //   this.recentActivityView.nativeElement.style.height = this.dataHoldersView.nativeElement.offsetHeight - 30 + 'px';
