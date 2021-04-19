@@ -32,7 +32,7 @@ JOIN ticker_trac ticker ON ticker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= o.FinalizedTimestamp)
-WHERE o.FinalizedTimestamp >= DATE_Add(DATE(NOW()), INTERVAL -7 DAY)
+WHERE o.FinalizedTimestamp >= DATE_Add(DATE(NOW()), INTERVAL -7 DAY) AND mn.UserID = @userID
 ORDER BY o.FinalizedTimestamp DESC", new
                 {
                     userID = User.Identity.Name
