@@ -214,6 +214,31 @@ ORDER BY JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
 
         [HttpPost]
         [Authorize]
+        [Route("ImportNodes")]
+        public async Task ImportNodes([FromQuery] string identities)
+        {
+            string[] split = identities.Split(";").Where(t => t.StartsWith("0x") && t.Length <= 100).ToArray();
+
+            IEnumerable<string> nodeIds;
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                nodeIds = await connection.QueryAsync<string>(
+                    @"SELECT NodeID FROM OTIdentity WHERE Identity in @identities", new
+                    {
+                        identities = split
+                    });
+            }
+
+            foreach (var nodeId in nodeIds.Distinct())
+            {
+                await AddEditNode(nodeId, null);
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
         [Route("AddEditNode")]
         public async Task AddEditNode([FromQuery] string nodeID, [FromQuery] string name)
         {

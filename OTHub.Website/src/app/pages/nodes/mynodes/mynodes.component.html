@@ -1,5 +1,8 @@
 <section class="content">
 
+
+
+
     <div #dataHoldersView >
       <app-dataholders hideBreadcrumb="true" showOnlyMyNodes="true" [hidden]="isLoggedIn != true"
       (afterLoadWithCount)="afterDataHoldersLoad($event)">
@@ -13,6 +16,8 @@
           </div>
    
           </div> -->
+
+          <button nbButton status="primary" outline (click)="importNodes()" *ngIf="isLoggedIn == true">Import Nodes</button>
 
           <nb-alert status="primary" *ngIf="isLoggedIn == false && isLoading == false">
             Log in to use this feature!
