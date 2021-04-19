@@ -17,6 +17,46 @@ namespace OTHub.APIServer.Controllers
     {
         [HttpGet]
         [Authorize]
+        [Route("RecentJobs")]
+        public async Task<RecentJobsByDay[]> GetRecentJobs()
+        {
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var jobs = (await connection.QueryAsync<RecentJobs>(@"SELECT mn.NodeID, mn.DisplayName, o.OfferID, o.HoldingTimeInMinutes, o.TokenAmountPerHolder, o.FinalizedTimestamp,
+ticker.Price * o.TokenAmountPerHolder AS USDAmount FROM mynodes mn
+JOIN otidentity i ON i.NodeId = mn.NodeID
+JOIN otoffer_holders h ON h.Holder = i.Identity AND h.BlockchainID = i.BlockchainID
+JOIN otoffer o ON o.OfferID = h.OfferID AND o.BlockchainID = i.BlockchainID
+JOIN ticker_trac ticker ON ticker.Timestamp = (
+SELECT MAX(TIMESTAMP)
+FROM ticker_trac
+WHERE TIMESTAMP <= o.FinalizedTimestamp)
+WHERE o.FinalizedTimestamp >= DATE_Add(DATE(NOW()), INTERVAL -7 DAY)
+ORDER BY o.FinalizedTimestamp DESC", new
+                {
+                    userID = User.Identity.Name
+                })).ToArray();
+
+                List<RecentJobsByDay> days = new List<RecentJobsByDay>(7);
+                DateTime date = DateTime.Now.Date;
+
+                for (int i = 1; i <= 7; i++)
+                {
+                    RecentJobsByDay day = new RecentJobsByDay();
+                    day.Active = i == 1;
+                    day.Day = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedDayName(date.DayOfWeek);
+                    day.Jobs = jobs.Where(j => j.FinalizedTimestamp.Date == date).ToArray();
+                    days.Add(day);
+                    date = date.AddDays(-1);
+                }
+
+                return days.ToArray();
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
         [Route("JobsPerMonth")]
         public async Task<NodesPerYearMonthResponse> GetJobsPerMonth()
         {
@@ -174,9 +214,39 @@ ORDER BY JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
 
         [HttpPost]
         [Authorize]
+        [Route("ImportNodes")]
+        public async Task ImportNodes([FromQuery] string identities)
+        {
+            string[] split = identities.Split(";").Where(t => t.StartsWith("0x") && t.Length <= 100).ToArray();
+
+            IEnumerable<string> nodeIds;
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                nodeIds = await connection.QueryAsync<string>(
+                    @"SELECT NodeID FROM OTIdentity WHERE Identity in @identities", new
+                    {
+                        identities = split
+                    });
+            }
+
+            foreach (var nodeId in nodeIds.Distinct())
+            {
+                await AddEditNode(nodeId, null);
+            }
+        }
+
+        [HttpPost]
+        [Authorize]
         [Route("AddEditNode")]
         public async Task AddEditNode([FromQuery] string nodeID, [FromQuery] string name)
         {
+            if (name != null && name.Length > 200)
+            {
+                name = name.Substring(0, 200);
+            }
+
             await using (MySqlConnection connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -287,5 +357,23 @@ ORDER BY JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         public int JobCount { get; set; }
         public decimal USDAmount { get; set; }
         public bool Down { get; set; }
+    }
+
+    public class RecentJobsByDay
+    {
+        public string Day { get; set; }
+        public RecentJobs[] Jobs { get; set; }
+        public bool Active { get; set; }
+    }
+
+    public class RecentJobs
+    {
+        public string NodeId { get; set; }
+        public string DisplayName { get; set; }
+        public string OfferID { get; set; }
+        public int HoldingTimeInMinutes { get; set; }
+        public decimal TokenAmountPerHolder { get; set; }
+        public DateTime FinalizedTimestamp { get; set; }
+        public decimal USDAmount { get; set; }
     }
 }

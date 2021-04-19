@@ -86,11 +86,17 @@
     padding-left:10px;
   }
 
-  // @include media-breakpoint-down(xl) {
-  //   .table-card {
-  //     display: none;
-  //   }
-  // }
+  .jobNode {
+    word-wrap: break-word;
+    overflow: hidden;
+    overflow-wrap: anywhere;
+  }
 
-  
+  /deep/ nb-user .user-picture, /deep/ nb-user .user-name  {
+    font-size:1rem;
+  }
+  /deep/ nb-user .user-picture {
+    height: 2rem;
+    width: 2rem;
+  }
 }

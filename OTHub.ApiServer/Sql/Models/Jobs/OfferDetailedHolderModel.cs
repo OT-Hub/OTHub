@@ -9,5 +9,6 @@ namespace OTHub.APIServer.Sql.Models.Jobs
         public String LitigationStatusText { get; set; }
         public DateTime JobStarted { get; set; }
         public DateTime JobCompleted { get; set; }
+        public string DisplayName { get; set; }
     }
 }

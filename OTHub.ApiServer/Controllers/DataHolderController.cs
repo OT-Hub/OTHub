@@ -401,7 +401,9 @@ Data Included:
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var profile = await connection.QueryFirstOrDefaultAsync<NodeDataHolderDetailedModel>(DataHolderSql.GetDetailed, new { nodeId = nodeId });
+                var profile = await connection.QueryFirstOrDefaultAsync<NodeDataHolderDetailedModel>(DataHolderSql.GetDetailed, new { nodeId = nodeId,
+                    userID = User?.Identity?.Name
+                });
 
                 if (profile != null)
                 {
