@@ -242,6 +242,11 @@ ORDER BY JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         [Route("AddEditNode")]
         public async Task AddEditNode([FromQuery] string nodeID, [FromQuery] string name)
         {
+            if (name != null && name.Length > 200)
+            {
+                name = name.Substring(0, 200);
+            }
+
             await using (MySqlConnection connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
