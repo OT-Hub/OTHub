@@ -14,7 +14,7 @@
                     <nb-card-header>
 <!--                      <img [src]="identityIconUrl" style="-->
 <!--                       width:24px;height:24px;margin-right:5px" />-->
-                        Data Holder</nb-card-header>
+<nb-icon icon="star" status="warning" *ngIf="NodeModel?.DisplayName != null"></nb-icon>  Data Holder</nb-card-header>
                     <nb-list>
 <!--                        <nb-list-item>-->
 <!--                            Blockchain: {{NodeModel?.BlockchainName}}-->
@@ -38,6 +38,9 @@
 <!--                            New Identity: <a title="You may find more historical data for this node on this identity."-->
 <!--                                routerLink="/nodes/dataholders/{{NodeModel?.NewIdentity}}">{{NodeModel?.NewIdentity}}</a>-->
 <!--                        </nb-list-item>-->
+<nb-list-item class="dont-break-out" *ngIf="NodeModel?.DisplayName != null">
+  Name: {{NodeModel?.DisplayName}}
+</nb-list-item>
                         <nb-list-item *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'" class="dont-break-out">
                             Node Id: {{NodeModel?.NodeId}}&nbsp;<app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
                                 style="vertical-align:middle">

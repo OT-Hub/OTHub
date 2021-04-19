@@ -13,6 +13,7 @@ namespace OTHub.APIServer.Sql.Models.Nodes
         public Int32 Version { get; set; }
         public String StakeTokens { get; set; }
         public String StakeReservedTokens { get; set; }
+        public string DisplayName { get; set; }
         //public Boolean Approved { get; set; }
         //public String OldIdentity { get; set; }
         //public String NewIdentity { get; set; }

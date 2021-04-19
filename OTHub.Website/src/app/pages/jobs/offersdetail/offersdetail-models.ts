@@ -17,6 +17,7 @@ export class OTOfferDetailModel {
     FinalizedBlockNumber: number;
     FinalizedTransactionHash: string;
     DCNodeId: string;
+    DcDisplayName: string;
     // DCIdentity: string;
     Holders: OTOfferDetailIdentityModel[];
     TimelineEvents: OTOfferDetailTimelineEventModel[];
@@ -40,6 +41,7 @@ export class OTOfferDetailIdentityModel {
     LitigationStatusText: string;
   JobStarted: Date;
   JobCompleted: Date;
+  DisplayName: string;
 }
 
 export class OTOfferDetailTimelineEventModel {

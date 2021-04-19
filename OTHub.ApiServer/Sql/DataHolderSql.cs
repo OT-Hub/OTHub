@@ -21,11 +21,13 @@ SUM(COALESCE(I.TotalOffers, 0)) as TotalWonOffers,
 SUM(COALESCE(I.OffersLast7Days, 0)) WonOffersLast7Days,
 (SELECT COUNT(O.OfferID) FROM OTOffer O WHERE O.DCNodeId = I.NodeId) as DCOfferCount,
 bc.BlockchainName,
-bc.NetworkName
+bc.NetworkName,
+mn.DisplayName
 from OTIdentity I
 JOIN blockchains bc ON bc.ID = I.BlockchainID
 left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity AND ic.BlockchainID = I.BlockchainID
 left JOIN otcontract_profile_profilecreated pc on pc.Profile = I.Identity AND pc.BlockchainID = I.BlockchainID
+left join mynodes mn on mn.UserID = @userID and mn.NodeID = I.NodeID
 WHERE I.NodeID = @nodeId
 GROUP BY I.NodeId";
 
