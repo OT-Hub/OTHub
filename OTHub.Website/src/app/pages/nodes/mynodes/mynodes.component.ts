@@ -17,7 +17,7 @@ declare const swal: any;
   styleUrls: ['./mynodes.component.scss']
 })
 export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
-
+  usdAmountCalculationMode: string;
 
 
   constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService,  @Inject(DOCUMENT) private _document: Document) {
@@ -50,6 +50,14 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
 
   }
 
+  onUsdAmountCalculationModeChange(value: string) {
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + '/api/mynodes/UpdateMyNodesPriceCalculationMode?mode=' + value;
+  this.http.post(url, { headers }).subscribe(data => {
+  });
+  }
 
 
   importNodes() {
@@ -62,6 +70,8 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
       this._document.defaultView.location.reload();
     });
   }
+
+  option;
 
 
   ngOnDestroy() {
@@ -144,8 +154,16 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
     self.loadMyNodes();
 
     this.auth.user$.subscribe(usr => {
-      if (usr != null) {
+      if (usr != null && this.isLoading == false) {
         this.isLoggedIn = true;
+      
+        const headers = new HttpHeaders()
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json');
+      const url = this.httpService.ApiUrl + '/api/mynodes/MyNodesPriceCalculationMode';
+      this.http.get<Number>(url, { headers }).subscribe(data => {
+       this.usdAmountCalculationMode = data.toString();
+      });
       }
       this.isLoading = false;
     });
