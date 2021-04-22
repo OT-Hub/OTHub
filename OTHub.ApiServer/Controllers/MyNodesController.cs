@@ -87,7 +87,7 @@ SELECT mn.DisplayName, JobsCTE.*
 FROM mynodes mn
 JOIN JobsCTE ON mn.NodeId = JobsCTE.NodeID
 WHERE mn.UserID = @userID
-ORDER BY JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
+ORDER BY mn.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                 {
                     userID = User.Identity.Name,
                 })).ToArray();

@@ -27,7 +27,7 @@ export class MynodesoverviewComponent implements OnInit {
   launchDataHolderPage() {
     this.router.navigateByUrl('nodes/dataholders/' + this.selectedData.NodeId);
   }
-
+  
   changeNode(nodeName: string) {
     if (nodeName == 'All Nodes') {
       this.selectedData = this.data.AllNodes;
