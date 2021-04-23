@@ -4,10 +4,13 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
+using CoinpaprikaAPI.Entity;
 using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using MySqlConnector;
+using OTHub.APIServer.Helpers;
 using OTHub.Settings;
 
 namespace OTHub.APIServer.Controllers
@@ -15,27 +18,82 @@ namespace OTHub.APIServer.Controllers
     [Route("api/[controller]")]
     public class MyNodesController : Controller
     {
+        private readonly IMemoryCache _cache;
+
+        public MyNodesController(IMemoryCache cache)
+        {
+            _cache = cache;
+        }
+
+        [HttpPost]
+        [Authorize]
+        [Route("UpdateMyNodesPriceCalculationMode")]
+        public async Task UpdateMyNodesPriceCalculationMode([FromQuery]int mode)
+        {
+            if (mode != 0 && mode != 1)
+            {
+                return;
+            }
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                await connection.ExecuteAsync("UPDATE Users SET USDPriceCalculationMode = @mode WHERE ID = @userID", new
+                {
+                    userID = User?.Identity.Name,
+                    mode = mode
+                });
+            }
+
+            _cache.Remove("MyNodes-GetRecentJobs-" + User.Identity.Name);
+            _cache.Remove("MyNodes-JobsPerMonth-" + User.Identity.Name);
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("MyNodesPriceCalculationMode")]
+        public async Task<int> GetMyNodesPriceCalculationMode()
+        {
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                return await connection.ExecuteScalarAsync<int>(@"SELECT USDPriceCalculationMode FROM Users where ID = @userID", new
+                {
+                    userID = User?.Identity?.Name
+                });
+            }
+        }
+
         [HttpGet]
         [Authorize]
         [Route("RecentJobs")]
         public async Task<RecentJobsByDay[]> GetRecentJobs()
         {
+            if (_cache.TryGetValue("MyNodes-GetRecentJobs-" + User.Identity.Name, out var cached))
+            {
+                return (RecentJobsByDay[]) cached;
+            }
+
+            TickerInfo ticker = await TickerHelper.GetTickerInfo(_cache);
+
             await using (MySqlConnection connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var jobs = (await connection.QueryAsync<RecentJobs>(@"SELECT mn.NodeID, mn.DisplayName, o.OfferID, o.HoldingTimeInMinutes, o.TokenAmountPerHolder, o.FinalizedTimestamp,
-ticker.Price * o.TokenAmountPerHolder AS USDAmount FROM mynodes mn
+(CASE WHEN u.USDPriceCalculationMode = 0 THEN ticker.Price ELSE @overrideUSDPrice END) * o.TokenAmountPerHolder AS USDAmount FROM mynodes mn
+JOIN users u ON u.ID = mn.UserID
 JOIN otidentity i ON i.NodeId = mn.NodeID
 JOIN otoffer_holders h ON h.Holder = i.Identity AND h.BlockchainID = i.BlockchainID
 JOIN otoffer o ON o.OfferID = h.OfferID AND o.BlockchainID = i.BlockchainID
-JOIN ticker_trac ticker ON ticker.Timestamp = (
+LEFT JOIN ticker_trac ticker ON u.USDPriceCalculationMode = 0 AND ticker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= o.FinalizedTimestamp)
 WHERE o.FinalizedTimestamp >= DATE_Add(DATE(NOW()), INTERVAL -7 DAY) AND mn.UserID = @userID
 ORDER BY o.FinalizedTimestamp DESC", new
                 {
-                    userID = User.Identity.Name
+                    userID = User.Identity.Name,
+                    overrideUSDPrice = ticker.PriceUsd
                 })).ToArray();
 
                 List<RecentJobsByDay> days = new List<RecentJobsByDay>(7);
@@ -51,7 +109,11 @@ ORDER BY o.FinalizedTimestamp DESC", new
                     date = date.AddDays(-1);
                 }
 
-                return days.ToArray();
+                var data = days.ToArray();
+
+                _cache.Set("MyNodes-GetRecentJobs-" + User.Identity.Name, data, TimeSpan.FromSeconds(30));
+
+                return data;
             }
         }
 
@@ -60,6 +122,13 @@ ORDER BY o.FinalizedTimestamp DESC", new
         [Route("JobsPerMonth")]
         public async Task<NodesPerYearMonthResponse> GetJobsPerMonth()
         {
+            if (_cache.TryGetValue("MyNodes-JobsPerMonth-" + User.Identity.Name, out var cached))
+            {
+                //return (NodesPerYearMonthResponse)cached;
+            }
+
+            TickerInfo ticker = await TickerHelper.GetTickerInfo(_cache);
+
             NodesPerYearMonthResponse response = new NodesPerYearMonthResponse();
 
             await using (MySqlConnection connection =
@@ -67,29 +136,32 @@ ORDER BY o.FinalizedTimestamp DESC", new
             {
                 JobsPerMonthModel[] data = (await connection.QueryAsync<JobsPerMonthModel>(@"WITH JobsCTE AS (
 SELECT 
+mn.DisplayName,
 i.NodeId, 
 YEAR(o.FinalizedTimestamp) AS 'Year', 
 MONTH(o.FinalizedTimestamp) AS 'Month',
 SUM(o.TokenAmountPerHolder) AS TokenAmount,
 COUNT(o.OfferID) AS JobCount,
-SUM(ticker.Price * o.TokenAmountPerHolder) AS USDAmount
+SUM((CASE WHEN u.USDPriceCalculationMode = 0 THEN ticker.Price ELSE @overrideUSDPrice END) * o.TokenAmountPerHolder) AS USDAmount
 FROM otoffer o
 JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
 JOIN otidentity i ON i.Identity = h.Holder AND i.BlockchainID = o.BlockchainID
-JOIN ticker_trac ticker ON ticker.Timestamp = (
+JOIN mynodes mn ON mn.NodeID = i.NodeId
+JOIN users u ON u.ID = mn.UserID
+LEFT JOIN ticker_trac ticker ON u.USDPriceCalculationMode = 0 AND ticker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= o.FinalizedTimestamp)
+WHERE mn.UserID = @userID
 GROUP BY i.NodeId, YEAR(o.FinalizedTimestamp), MONTH(o.FinalizedTimestamp)
 )
 
-SELECT mn.DisplayName, JobsCTE.*
-FROM mynodes mn
-JOIN JobsCTE ON mn.NodeId = JobsCTE.NodeID
-WHERE mn.UserID = @userID
-ORDER BY JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
+SELECT JobsCTE.DisplayName, JobsCTE.NodeId, JobsCTE.Year, JobsCTE.Month, JobsCTE.TokenAmount, JobsCTE.JobCount, JobsCTE.USDAmount
+FROM JobsCTE
+ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                 {
                     userID = User.Identity.Name,
+                    overrideUSDPrice = ticker.PriceUsd
                 })).ToArray();
 
                 IEnumerable<IGrouping<string, JobsPerMonthModel>> groupedByNodes = data.GroupBy(m => m.NodeId);
@@ -208,6 +280,8 @@ ORDER BY JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                     previousMonth = month;
                 }
             }
+
+            _cache.Set("MyNodes-JobsPerMonth-" + User.Identity.Name, response, TimeSpan.FromSeconds(30));
 
             return response;
         }

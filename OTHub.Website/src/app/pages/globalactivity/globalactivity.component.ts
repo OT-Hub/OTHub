@@ -109,9 +109,11 @@ export class GlobalActivityComponent {
                         || row.EventName === 'Tokens Deposited' || row.EventName === 'Identity Created' || row.EventName === 'Litigation Failed' ||
                         row.EventName === 'Litigation Passed' || row.EventName === 'Litigation Answered' || row.EventName === 'Litigation Initiated' ||
                         row.EventName === 'Replacement Started' || row.EventName === 'Data Holder Chosen as Replacement' || row.EventName === 'Data Holder Chosen') {
-                        //const name = this.myNodeService.GetName(value, false);
-                        return value;
-                        //return '<a class="navigateJqueryToAngular" href="/nodes/dataholders/' + value + '" onclick="return false;">' + name + '</a>';
+                        let name = value;
+                        if (row.RelatedEntityName) {
+                            name = row.RelatedEntityName;
+                        }
+                        return '<a class="navigateJqueryToAngular" href="/nodes/dataholders/' + value + '" onclick="return false;">' + name + '</a>';
                     }
                     if (row.EventName === 'New Offer' || row.EventName === 'Finalized Offer') {
                         return '<a title="' + value + '" class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;">' + value.substring(0, 40) + '...</a>';
@@ -132,7 +134,7 @@ export class GlobalActivityComponent {
                         return '<a title="' + value + '" class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;">' + value.substring(0, 40) + '...</a>';
                     }
 
-                    return '';
+                    return value;
                 }
             },
             TransactionHash: {

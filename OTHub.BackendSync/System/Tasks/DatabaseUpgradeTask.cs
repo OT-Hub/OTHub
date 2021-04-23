@@ -761,8 +761,6 @@ ENGINE=InnoDB
 ;
 ");
 
-                connection.Execute(@"ALTER TABLE blockchains
-ADD COLUMN IF NOT EXISTS `Auth0Token` varchar(300) NULL");
 
                 connection.Execute(@"TRUNCATE otnode_history");
 
@@ -806,6 +804,9 @@ ENGINE=InnoDB
 ;
 
 ");
+
+                connection.Execute(@"ALTER TABLE users
+ADD COLUMN IF NOT EXISTS `USDPriceCalculationMode` bit not null default 0");
             }
         }
     }
