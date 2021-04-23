@@ -1,4 +1,11 @@
-<section class="content">
+<div class="content" *ngIf="IsConvertingIdentityToNodeID == true">
+    <nb-card accent="success" size="tiny" nbSpinner="true"
+             nbSpinnerStatus="success"
+             nbSpinnerSize="large"
+             nbSpinnerMessage="Loading...">
+    </nb-card>
+</div>
+<section class="content" *ngIf="IsConvertingIdentityToNodeID == false">
     <div class="container-fluid">
 
         <div *ngIf="isLoading === false && failedLoading === true">

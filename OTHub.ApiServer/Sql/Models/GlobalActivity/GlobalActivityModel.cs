@@ -8,6 +8,8 @@ namespace OTHub.APIServer.Sql.Models.GlobalActivity
         public String EventName { get; set; }
         public String RelatedEntity { get; set; }
         public String RelatedEntity2 { get; set; }
+        public String RelatedEntityName { get; set; }
+        public String RelatedEntity2Name { get; set; }
         public String TransactionHash { get; set; }
         public String Message { get; set; }
         public string BlockchainDisplayName { get; set; }

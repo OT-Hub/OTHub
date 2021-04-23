@@ -12,6 +12,7 @@ using Dapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using MySqlConnector;
+using OTHub.APIServer.Helpers;
 using OTHub.APIServer.Sql.Models.Home;
 using OTHub.Settings;
 using Swashbuckle.AspNetCore.Annotations;
@@ -37,19 +38,7 @@ namespace OTHub.APIServer.Controllers
                 return (HomeV3Model) homeModel;
             }
 
-            CoinpaprikaAPI.Client client = new CoinpaprikaAPI.Client();
-
-
-            TickerInfo tickerInfo = null;
-
-            if (!_cache.TryGetValue("HomeV3Ticker", out object tickerModel))
-            {
-                tickerModel = (await client.GetTickerForIdAsync(@"trac-origintrail")).Value;
-
-                _cache.Set("HomeV3Ticker", tickerModel, TimeSpan.FromMinutes(5));
-            }
-
-            tickerInfo = (TickerInfo)tickerModel;
+            TickerInfo tickerInfo = await TickerHelper.GetTickerInfo(_cache);
 
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))

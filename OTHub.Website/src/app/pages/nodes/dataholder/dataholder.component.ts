@@ -1,8 +1,8 @@
-import {ChangeDetectorRef, Component, OnDestroy, OnInit} from '@angular/core';
-import {HttpClient, HttpHeaders} from '@angular/common/http';
-import {DataHolderDetailedModel, DataHolderTestOnlineResult} from './dataholder-models';
-import {ActivatedRoute} from '@angular/router';
-import {HubHttpService} from '../../hub-http-service';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { DataHolderDetailedModel, DataHolderTestOnlineResult } from './dataholder-models';
+import { ActivatedRoute } from '@angular/router';
+import { HubHttpService } from '../../hub-http-service';
 
 declare const $: any;
 
@@ -15,12 +15,14 @@ export class DataHolderComponent implements OnInit, OnDestroy {
 
 
   constructor(private http: HttpClient, private route: ActivatedRoute,
-              private chRef: ChangeDetectorRef, private httpService: HubHttpService) {
+    private chRef: ChangeDetectorRef, private httpService: HubHttpService) {
     this.isLoading = true;
     this.failedLoading = false;
     this.IsTestNet = httpService.IsTestNet;
+    this.IsConvertingIdentityToNodeID = false;
   }
 
+  IsConvertingIdentityToNodeID: boolean;
   IsTestNet: boolean;
   DisplayName: string;
   NodeModel: DataHolderDetailedModel;
@@ -40,9 +42,9 @@ export class DataHolderComponent implements OnInit, OnDestroy {
       .set('Accept', 'application/json');
     let url = this.httpService.ApiUrl + '/api/nodes/dataholder/' + this.identity;
 
-      url += '?' + (new Date()).getTime();
-    
-    return this.http.get<DataHolderDetailedModel>(url, {headers});
+    url += '?' + (new Date()).getTime();
+
+    return this.http.get<DataHolderDetailedModel>(url, { headers });
   }
 
   AddToMyNodes() {
@@ -73,40 +75,56 @@ export class DataHolderComponent implements OnInit, OnDestroy {
 
 
 
- 
-
-    ngOnDestroy()
-    {
-      this.chRef.detach();
-      this.GetNodeObservable.unsubscribe();
-      this.RouteObservable.unsubscribe();
-    }
 
 
-    ngOnInit()
-    {
-      this.RouteObservable = this.route.params.subscribe(params => {
-        // this.isDarkTheme = $('body').hasClass('dark');
-        this.identity = params.identity;
+  ngOnDestroy() {
+    this.chRef.detach();
+    this.GetNodeObservable.unsubscribe();
+    this.RouteObservable.unsubscribe();
+  }
 
-        // tslint:disable-next-line:max-line-length
-        this.identityIconUrl = this.httpService.ApiUrl + '/api/icon/node/' + this.identity + '/' + (this.isDarkTheme ? 'dark' : 'light') + '/48';
+  loadData() {
 
+    this.GetNodeObservable = this.getNode().subscribe(data => {
 
+      this.NodeModel = data;
+      // debugger;
+      this.chRef.detectChanges();
 
-        this.GetNodeObservable = this.getNode().subscribe(data => {
+    }, err => {
+      this.failedLoading = true;
+      this.isLoading = false;
+    });
+  }
 
-          this.NodeModel = data;
-          // debugger;
-          this.chRef.detectChanges();
+  ngOnInit() {
+    this.RouteObservable = this.route.params.subscribe(params => {
+      // this.isDarkTheme = $('body').hasClass('dark');
+      this.identity = params.identity;
 
-        }, err => {
-          this.failedLoading = true;
-          this.isLoading = false;
+      // tslint:disable-next-line:max-line-length
+      this.identityIconUrl = this.httpService.ApiUrl + '/api/icon/node/' + this.identity + '/' + (this.isDarkTheme ? 'dark' : 'light') + '/48';
+
+      if (this.identity.startsWith('0x')) {
+        this.IsConvertingIdentityToNodeID = true;
+
+        const headers = new HttpHeaders()
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json');
+        let url = this.httpService.ApiUrl + '/api/nodes/dataholders/GetNodeIDForIdentity?identity=' + this.identity;
+        this.http.get<string>(url, { headers }).subscribe(data => {
+          this.identity = data;
+          if (this.identity != null) {
+            this.loadData();
+            this.IsConvertingIdentityToNodeID = false;
+          }
         });
 
-      });
-    }
+      } else {
+        this.loadData();
+      }
+    });
+  }
 
 
 }

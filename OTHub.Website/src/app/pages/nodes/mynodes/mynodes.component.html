@@ -3,12 +3,12 @@
 
 
 
-    <div #dataHoldersView >
-      <app-dataholders hideBreadcrumb="true" showOnlyMyNodes="true" [hidden]="isLoggedIn != true"
+  <div #dataHoldersView>
+    <app-dataholders hideBreadcrumb="true" showOnlyMyNodes="true" [hidden]="isLoggedIn != true"
       (afterLoadWithCount)="afterDataHoldersLoad($event)">
     </app-dataholders>
 
-        <!-- <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
+    <!-- <div class="col-lg-8 col-md-12 col-sm-12 col-xs-12">
           <div #dataHoldersView>
               <app-dataholders hideBreadcrumb="true" showOnlyMyNodes="true"
               (afterLoadWithCount)="afterDataHoldersLoad($event)">
@@ -17,12 +17,49 @@
    
           </div> -->
 
-          <button nbButton status="primary" outline (click)="importNodes()" *ngIf="isLoggedIn == true">Import Nodes</button>
+    <button nbButton status="primary" outline (click)="importNodes()" *ngIf="isLoggedIn == true">Import Nodes</button>
 
-          <nb-alert status="primary" *ngIf="isLoggedIn == false && isLoading == false">
-            Log in to use this feature!
-          </nb-alert>
+    <nb-alert status="primary" *ngIf="isLoggedIn == false && isLoading == false">
+      Log in to use this feature!
+    </nb-alert>
     <!-- <app-datacreators [hidden]="showDataCreators != showDataCreators" hideBreadcrumb="true" showOnlyMyNodes="true" (afterLoadWithCount)="afterDataCreatorsLoad($event)" #dataCreators>
     </app-datacreators> -->
+  </div>
+  <br *ngIf="isLoggedIn == true">
+  <div class="row clearfix" *ngIf="isLoggedIn == true">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+      <nb-card>
+        <nb-card-header>
+          My Nodes - USD Amount Calculation
+        </nb-card-header>
+        <nb-list>
+          <nb-list-item>
+              <nb-radio-group [(ngModel)]="usdAmountCalculationMode" (ngModelChange)="onUsdAmountCalculationModeChange($event)">
+                <nb-radio value="0">
+                  Use TRAC Price at Job Start
+                </nb-radio>
+                <nb-radio value="1">
+                  Use Live TRAC Price
+                </nb-radio>
+              </nb-radio-group>
+          </nb-list-item>
+        </nb-list>
+      </nb-card>
+    </div>
+  </div>  
+  <br *ngIf="isLoggedIn == true">
+  <div class="row clearfix" *ngIf="isLoggedIn == true">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+      <nb-card>
+        <nb-card-header>
+          Time Settings
+        </nb-card-header>
+        <nb-list>
+          <nb-list-item>
+            Time Zone: Coming soon
+          </nb-list-item>
+        </nb-list>
+      </nb-card>
+    </div>
   </div>
 </section>
