@@ -87,11 +87,11 @@ namespace OTHub.BackendSync.Blockchain
         {
             Logger.WriteLine(Source.BlockchainSync, "WebSockets: Processing " + type + " event on " + blockchainType + " " + transaction.TransactionHash);
 
-            if (type is ContractTypeEnum.Holding)
+            if (type == ContractTypeEnum.Holding)
             {
                 await ProcessHoldingSmartContractEvent(blockchainID, blockchainType, blockchainNetwork, eth, filterLog, transaction, cl);
             }
-            else if (type is ContractTypeEnum.Profile)
+            else if (type == ContractTypeEnum.Profile)
             {
                 await ProcessProfileSmartContractEvent(blockchainID, blockchainType, blockchainNetwork, eth, filterLog, transaction, cl);
             }
