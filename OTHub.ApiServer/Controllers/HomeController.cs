@@ -170,7 +170,7 @@ SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FR
                     TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b)
                 };
 
-                _cache.Set("HomeV3", model, TimeSpan.FromMinutes(1));
+                _cache.Set("HomeV3", model, TimeSpan.FromSeconds(30));
 
 
                 return model;

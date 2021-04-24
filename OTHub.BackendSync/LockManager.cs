@@ -36,7 +36,6 @@ namespace OTHub.BackendSync
         public void Dispose()
         {
             _lck.Release();
-            _lck.Dispose();
         }
 
         public async Task<LockRelease> Lock()
