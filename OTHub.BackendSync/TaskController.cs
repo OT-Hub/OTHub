@@ -27,7 +27,7 @@ namespace OTHub.BackendSync
             private SystemStatus _systemStatus;
 
             internal TaskControllerItem(BlockchainType blockchain, BlockchainNetwork network, Source source,
-                TaskRunBase task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID)
+                TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID)
             {
                 _blockchain = blockchain;
                 _network = network;
@@ -41,10 +41,12 @@ namespace OTHub.BackendSync
                 {
                     _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName);
                 }
+
+                task.BlockchainStartup(blockchainID, blockchain, network);
             }
 
             internal TaskControllerItem(Source source,
-                TaskRunBase task, TimeSpan runEveryTimeSpan, bool startNow)
+                TaskRunGeneric task, TimeSpan runEveryTimeSpan, bool startNow)
             {
                 _source = source;
                 _task = task;

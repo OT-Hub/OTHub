@@ -19,7 +19,14 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int blockchainID = GetBlockchainID(connection, blockchain, network);
+                await Execute(connection, blockchainID, blockchain, network);
+            }
+        }
 
+        public static async Task Execute(MySqlConnection connection, int blockchainID, BlockchainType blockchain, BlockchainNetwork network)
+        {
+            using (await LockManager.GetLock(LockType.ProcessJobs).Lock())
+            {
                 OTContract_Holding_OfferCreated[] offersToAdd =
                     OTContract_Holding_OfferCreated.GetUnprocessed(connection, blockchainID);
 
