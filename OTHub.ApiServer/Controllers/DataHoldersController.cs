@@ -92,6 +92,7 @@ If you want to get more information about a specific data holder you should use 
 
 
 
+
         [Route("GetNodeIDForIdentity")]
         [HttpGet]
         public async Task<string> GetNodeIDForIdentity([FromQuery] string identity)
@@ -107,6 +108,7 @@ If you want to get more information about a specific data holder you should use 
                 return data;
             }
         }
+
 
 
         [Route("GetManagementWalletForIdentity")]

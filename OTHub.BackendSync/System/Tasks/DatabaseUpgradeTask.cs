@@ -810,6 +810,9 @@ ADD COLUMN IF NOT EXISTS `USDPriceCalculationMode` bit not null default 0");
                 connection.Execute(@"ALTER TABLE blockchains
 ADD COLUMN IF NOT EXISTS `BlockchainWebSocketsUrl` varchar(500) NULL");
 
+
+
+
             }
         }
     }
