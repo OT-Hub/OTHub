@@ -56,7 +56,7 @@
             <div class="homeField">
               Staked tokens:
               <span class="homeData">
-                {{formatAmount(Data?.All.StakedTokens)}} / {{Data?.CirculatingSupply}} {{(Data?.All.StakedTokens /
+                {{formatAmount(Data?.All.StakedTokens)  | number: '1.0-2'}} / {{Data?.CirculatingSupply  | number: '1.0-2'}} {{(Data?.All.StakedTokens /
                 Data?.CirculatingSupply) * 100 | number: '1.0-2'}}%
               </span>
             </div>
@@ -74,7 +74,7 @@
                 {{Data?.All.Jobs24H}}
               </span>
             </div>
-            <div class="homeField">
+            <!-- <div class="homeField">
               Average job reward:
               <span class="homeData">
                 {{Data?.All.JobsReward24H != null ? (Data?.All.JobsReward24H | number:'1.0-2') : '?'}}  <small class="tokenSmall">{{Data?.All.TokenTicker}}</small>
@@ -91,7 +91,7 @@
               <span class="homeData">
                 {{Data?.All.JobsSize24H != null ? ((Data?.All.JobsSize24H / 1000 | number:'1.2-2') + ' KB') : '?'}}
               </span>
-            </div>
+            </div> -->
 
           </div>
 
@@ -210,7 +210,7 @@
             <div class="homeField">
               Staked tokens:
               <span class="homeData">
-                {{formatAmount(bc.StakedTokens)}} / {{Data?.CirculatingSupply}} {{(bc.StakedTokens /
+                {{formatAmount(bc.StakedTokens) | number: '1.0-2'}} / {{Data?.CirculatingSupply | number: '1.0-2'}} {{(bc.StakedTokens /
                   Data?.CirculatingSupply) * 100 | number: '1.0-2'}}%
               </span>
             </div>

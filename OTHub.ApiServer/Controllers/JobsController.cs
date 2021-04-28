@@ -62,5 +62,25 @@ If you want to get more information about a specific offer you should use /api/j
 
             return new OkObjectResult(result.results);
         }
+
+        [HttpGet]
+        [Route("last24h")]
+        [SwaggerOperation(
+    Summary = "Gets all offers (last 24h)",
+    Description = @"
+This will return a summary of information about each offer.
+
+If you want to get more information about a specific offer you should use /api/jobs/detail/{offerID} API call"
+)]
+        [SwaggerResponse(200, type: typeof(OfferSummaryModel[]))]
+        [SwaggerResponse(500, "Internal server error")]
+        public async Task<IActionResult> GetLast24H()
+        {
+
+            var result = await JobsSql.GetLast24H();
+
+
+            return new OkObjectResult(result);
+        }
     }
 }

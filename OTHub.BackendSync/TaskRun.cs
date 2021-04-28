@@ -59,6 +59,10 @@ namespace OTHub.BackendSync
             }
         }
 
+        public virtual void BlockchainStartup(int blockchainId, BlockchainType blockchain, BlockchainNetwork network)
+        {
+        }
+
         public virtual TimeSpan GetExecutingInterval(BlockchainType type)
         {
             return TimeSpan.FromMinutes(5);
@@ -70,6 +74,7 @@ namespace OTHub.BackendSync
         protected TaskRunBlockchain(string name) : base(name)
         {
         }
+
         protected int GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
         {
             var id = connection.ExecuteScalar<int?>(
@@ -158,6 +163,8 @@ namespace OTHub.BackendSync
                 }
             }
         }
+
+
     }
 
     public abstract class TaskRunGeneric : TaskRunBase<TaskRunGeneric>

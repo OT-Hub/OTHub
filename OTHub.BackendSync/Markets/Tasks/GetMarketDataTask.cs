@@ -21,10 +21,10 @@ namespace OTHub.BackendSync.Markets.Tasks
     {
         static GetMarketDataTask()
         {
-            CountByIntervalAwaitableConstraint constraint = new CountByIntervalAwaitableConstraint(3, TimeSpan.FromSeconds(1));
+            CountByIntervalAwaitableConstraint constraint = new CountByIntervalAwaitableConstraint(3, TimeSpan.FromSeconds(5));
 
 
-            CountByIntervalAwaitableConstraint constraint2 = new CountByIntervalAwaitableConstraint(1, TimeSpan.FromMilliseconds(600));
+            CountByIntervalAwaitableConstraint constraint2 = new CountByIntervalAwaitableConstraint(1, TimeSpan.FromMilliseconds(1500));
 
             TimeConstraint = TimeLimiter.Compose(constraint, constraint2);
         }
