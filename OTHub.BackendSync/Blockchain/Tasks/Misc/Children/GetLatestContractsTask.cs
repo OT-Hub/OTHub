@@ -43,6 +43,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         address == currentHubAddress, blockchainID, blockchain, network);
                 }
             }
+
+            await SmartContractManager.Load();
         }
 
         private async Task PopulateSmartContracts(MySqlConnection connection, string hubAddress, bool isLatest, int blockchainID, BlockchainType blockchain, BlockchainNetwork network)

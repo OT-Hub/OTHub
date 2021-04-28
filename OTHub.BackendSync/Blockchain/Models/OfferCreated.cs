@@ -3,7 +3,7 @@ using Nethereum.ABI.FunctionEncoding.Attributes;
 
 namespace OTHub.BackendSync.Blockchain.Models
 {
-    partial class Program
+    public partial class Program
     {
         [Event("OfferCreated")]
         public class OfferCreated : IEventDTO

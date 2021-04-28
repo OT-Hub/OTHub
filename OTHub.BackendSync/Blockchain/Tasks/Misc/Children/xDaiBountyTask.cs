@@ -30,7 +30,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 
         public override async Task Execute(Source source)
         {
-            if (Settings.OTHubSettings.Instance.MariaDB.TempBountyKey == null)
+            if ((Settings.OTHubSettings.Instance.MariaDB.TempBountyKey ?? "") == "")
                 return;
 
             Logger.WriteLine(source, "Starting xdai bounty task.");

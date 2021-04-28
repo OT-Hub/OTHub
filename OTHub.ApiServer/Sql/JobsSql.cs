@@ -73,7 +73,7 @@ bc.DisplayName BlockchainDisplayName
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
-WHERE O.IsFinalized = 1 AND COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like
+WHERE O.IsFinalized = 1 AND (COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like)
 GROUP BY O.OfferID
 {orderBy}
 {limitSql}", new
@@ -85,13 +85,40 @@ GROUP BY O.OfferID
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
-WHERE O.IsFinalized = 1 AND COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like", new
+WHERE O.IsFinalized = 1 AND (COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like)", new
                 {
                     OfferId_like
                 });
 
 
                 return (rows, total);
+            }
+        }
+
+        public static async Task<OfferSummaryModel[]> GetLast24H()
+        {
+            await using (var connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                OfferSummaryModel[] rows = (await connection.QueryAsync<OfferSummaryModel>(
+                    $@"SELECT I.Identity DCIdentity, O.OfferId, O.CreatedTimestamp as CreatedTimestamp, o.FinalizedTimestamp as FinalizedTimestamp, O.DataSetSizeInBytes, O.TokenAmountPerHolder, O.HoldingTimeInMinutes, O.IsFinalized,
+(CASE WHEN O.IsFinalized = 1 
+	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN 'Active' ELSE 'Completed' END)
+	ELSE (CASE WHEN O.CreatedTimeStamp <= DATE_Add(NOW(), INTERVAL -30 MINUTE)
+		THEN 'Not Started'
+		ELSE 'Not Started'
+	END)
+END) as Status,
+(CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp,
+bc.DisplayName BlockchainDisplayName
+FROM OTOffer O
+JOIN blockchains bc ON bc.ID = O.BlockchainID
+LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
+WHERE O.IsFinalized = 1  AND O.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
+GROUP BY O.OfferID
+ORDER BY o.FinalizedTimestamp DESC")).ToArray();
+
+                return rows;
             }
         }
     }
