@@ -80,7 +80,7 @@ Timestamp, BlockNumber, TransactionHash, DataSetSizeInBytes, TokenAmountPerHolde
 
         public static OTContract_Holding_OfferCreated[] GetUnprocessed(MySqlConnection connection, int blockchainID)
         {
-            return connection.Query<OTContract_Holding_OfferCreated>("SELECT * FROM OTContract_Holding_OfferCreated WHERE Processed = 0 AND BlockchainID = blockchainID", new
+            return connection.Query<OTContract_Holding_OfferCreated>("SELECT * FROM OTContract_Holding_OfferCreated WHERE Processed = 0 AND BlockchainID = @blockchainID", new
             {
                 blockchainID = blockchainID
             }).ToArray();
@@ -88,7 +88,7 @@ Timestamp, BlockNumber, TransactionHash, DataSetSizeInBytes, TokenAmountPerHolde
 
         public static void SetProcessed(MySqlConnection connection, OTContract_Holding_OfferCreated offerToAdd)
         {
-            connection.Execute(@"UPDATE OTContract_Holding_OfferCreated SET Processed = 1 WHERE OfferID = @offerID AND BlockchainID = blockchainID", new
+            connection.Execute(@"UPDATE OTContract_Holding_OfferCreated SET Processed = 1 WHERE OfferID = @offerID AND BlockchainID = @blockchainID", new
             {
                 offerID = offerToAdd.OfferID,
                 blockchainID = offerToAdd.BlockchainID
