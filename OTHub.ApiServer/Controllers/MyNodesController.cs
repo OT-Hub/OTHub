@@ -111,7 +111,9 @@ ORDER BY o.FinalizedTimestamp DESC", new
 
                 var data = days.ToArray();
 
+
                 _cache.Set("MyNodes-GetRecentJobs-" + User.Identity.Name, data, TimeSpan.FromSeconds(15));
+
 
                 return data;
             }
@@ -281,7 +283,9 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                 }
             }
 
-            _cache.Set("MyNodes-JobsPerMonth-" + User.Identity.Name, response, TimeSpan.FromSeconds(15));
+
+            _cache.Set("MyNodes-JobsPerMonth-" + User.Identity.Name, response, TimeSpan.FromSeconds(30));
+
 
             return response;
         }
