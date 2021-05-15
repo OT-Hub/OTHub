@@ -7,6 +7,7 @@ import { Component } from '@angular/core';
   <div>
   <a href="/system/status">OT Hub Status</a>&nbsp;
   <a href="/system/smartcontracts">Smart Contracts</a>&nbsp;
+  <a href="/misc/recentupdates">Recent Updates</a>&nbsp;
   <a href="/misc/donations">Donations</a>
   </div>
   `,

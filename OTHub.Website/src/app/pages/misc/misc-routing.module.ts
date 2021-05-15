@@ -3,6 +3,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { NgModule } from '@angular/core';
 import { DonationsComponent } from './donations/donations.component';
 import { StarfleetboardingComponent } from '../starfleetboarding/starfleetboarding.component';
+import { RecentUpdatesComponent } from './recent-updates/recent-updates.component';
 
 
 const routes: Routes = [
@@ -17,6 +18,10 @@ const routes: Routes = [
   {
     path: 'xdaibounty',
     component: StarfleetboardingComponent,
+  },
+  {
+    path: 'recentupdates',
+    component: RecentUpdatesComponent,
   },
 ];
 

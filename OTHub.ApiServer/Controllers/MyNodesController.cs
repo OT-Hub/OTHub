@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using MySqlConnector;
 using OTHub.APIServer.Helpers;
+using OTHub.APIServer.Sql.Models.Nodes;
 using OTHub.Settings;
 
 namespace OTHub.APIServer.Controllers
@@ -65,6 +66,111 @@ namespace OTHub.APIServer.Controllers
         }
 
         [HttpGet]
+        [Authorize]
+        [Route("TaxReport")]
+        public async Task<TaxReportModel[]> TaxReport([FromQuery]int usdMode, [FromQuery] string nodeID,
+            [FromQuery]DateTime startDate, [FromQuery]DateTime endDate,
+            [FromQuery] bool includeActiveJobs, [FromQuery] bool includeCompletedJobs)
+        {
+            //TaxModel model = new TaxModel();
+
+            TaxReportModel[] rows = null;
+
+            var args = new
+            {
+                userID = User?.Identity?.Name,
+                startDate = startDate.Date,
+                endDate = endDate.Date,
+                nodeID = nodeID,
+                includeActiveJobs = includeActiveJobs,
+                includeCompletedJobs = includeCompletedJobs
+            };
+
+
+            await using (MySqlConnection connection =
+             new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                switch (usdMode)
+                {
+                    case 0:
+                        rows = (await connection.QueryAsync<TaxReportModel>(@"CREATE TEMPORARY TABLE IF NOT EXISTS tmpIdentitiesForQuery AS (
+SELECT i.Identity 
+FROM otidentity i 
+LEFT JOIN mynodes mn ON mn.NodeID = i.NodeId AND mn.UserID = @userID
+WHERE (@nodeID IS NOT NULL AND i.NodeId = @nodeID) OR (@nodeID IS NULL AND mn.UserID = @userID)
+);
+
+SELECT 
+o.OfferID, o.FinalizedTimestamp AS Date, o.TokenAmountPerHolder Amount, ticker.Timestamp TickerTimestamp, ticker.Price TickerUSDPrice, ticker.Price * o.TokenAmountPerHolder USDAmount
+FROM otoffer o
+JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
+JOIN tmpIdentitiesForQuery ii ON ii.Identity = h.Holder
+JOIN ticker_trac ticker ON ticker.Timestamp = (
+SELECT MAX(TIMESTAMP)
+FROM ticker_trac
+WHERE TIMESTAMP <= o.FinalizedTimestamp)
+WHERE o.IsFinalized = 1 
+AND o.FinalizedTimestamp >= @startDate 
+AND o.FinalizedTimestamp <= @endDate
+AND ((@includeActiveJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) > NOW()) 
+OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) < NOW()))", args)).ToArray();
+                        break;
+                    case 1:
+                        rows = (await connection.QueryAsync<TaxReportModel>(@"CREATE TEMPORARY TABLE IF NOT EXISTS tmpIdentitiesForQuery AS (
+SELECT i.Identity 
+FROM otidentity i 
+LEFT JOIN mynodes mn ON mn.NodeID = i.NodeId AND mn.UserID = @userID
+WHERE (@nodeID IS NOT NULL AND i.NodeId = @nodeID) OR (@nodeID IS NULL AND mn.UserID = @userID)
+);
+
+SELECT 
+o.OfferID, DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) AS Date, o.TokenAmountPerHolder Amount, ticker.Timestamp TickerTimestamp, ticker.Price TickerUSDPrice, ticker.Price * o.TokenAmountPerHolder USDAmount
+FROM otoffer o
+JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
+JOIN tmpIdentitiesForQuery ii ON ii.Identity = h.Holder
+JOIN ticker_trac ticker ON ticker.Timestamp = (
+SELECT MAX(TIMESTAMP)
+FROM ticker_trac
+WHERE TIMESTAMP <= (CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END))
+WHERE o.IsFinalized = 1 
+AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) >= @startDate
+AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) <= @endDate
+AND ((@includeActiveJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) > NOW()) 
+OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) < NOW()))", args)).ToArray();
+                        break;
+                    case 2:
+                        rows = (await connection.QueryAsync<TaxReportModel>(@"CREATE TEMPORARY TABLE IF NOT EXISTS tmpIdentitiesForQuery AS (
+SELECT i.Identity 
+FROM otidentity i 
+LEFT JOIN mynodes mn ON mn.NodeID = i.NodeId AND mn.UserID = @userID
+WHERE (@nodeID IS NOT NULL AND i.NodeId = @nodeID) OR (@nodeID IS NULL AND mn.UserID = @userID)
+);
+
+SELECT 
+po.OfferID, po.Timestamp AS Date, po.Amount Amount, ticker.Timestamp TickerTimestamp, ticker.Price TickerUSDPrice, ticker.Price * po.Amount USDAmount
+FROM otcontract_holding_paidout po
+JOIN otoffer_holders h ON h.OfferID = po.OfferID AND h.Holder = po.Holder AND po.BlockchainID = h.BlockchainID
+JOIN otoffer o on o.OfferID = po.OfferID AND o.BlockchainID = po.BlockchainID
+JOIN tmpIdentitiesForQuery ii ON ii.Identity = h.Holder
+JOIN ticker_trac ticker ON ticker.Timestamp = (
+SELECT MAX(TIMESTAMP)
+FROM ticker_trac
+WHERE TIMESTAMP <= po.Timestamp)
+WHERE po.Timestamp >= @startDate 
+AND po.Timestamp <= @endDate 
+AND o.IsFinalized = 1
+AND ((@includeActiveJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) > NOW()) 
+OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) < NOW()))", args)).ToArray();
+                        break;
+                }
+            }
+
+            //model.Items = rows;
+
+            return rows;
+        }
+
+            [HttpGet]
         [Authorize]
         [Route("RecentJobs")]
         public async Task<RecentJobsByDay[]> GetRecentJobs()
