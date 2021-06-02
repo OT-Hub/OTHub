@@ -8,8 +8,9 @@ import { NbListModule, NbCardModule, NbSelectModule } from '@nebular/theme';
 import { DonationsComponent } from './donations/donations.component';
 import { StarfleetboardingComponent } from '../starfleetboarding/starfleetboarding.component';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
+import { RecentUpdatesComponent } from './recent-updates/recent-updates.component';
 @NgModule({
-  declarations: [PriceFactorCalculatorComponent, DonationsComponent, StarfleetboardingComponent ],
+  declarations: [PriceFactorCalculatorComponent, DonationsComponent, StarfleetboardingComponent, RecentUpdatesComponent ],
   imports: [
     CommonModule,
     MiscRoutingModule,

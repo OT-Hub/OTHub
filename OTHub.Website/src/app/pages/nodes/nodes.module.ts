@@ -13,7 +13,7 @@ import { SharedModule } from '../shared.module';
 import { FindbymanagementwalletComponent } from './findbymanagementwallet/findbymanagementwallet.component';
 import { ManualPayoutPageComponent } from './manual-payout-page/manual-payout-page.component';
 import { SafePipe } from './safe.pipe';
-import { NbCardModule, NbButtonModule, NbSelectModule, NbStepperModule, NbPopoverModule, NbIconModule, NbListModule, NbBadgeModule, NbAlertModule, NbToggleModule, NbActionsModule, NbUserModule, NbTabsetComponent, NbTabComponent, NbTabsetModule, NbCheckboxModule, NbRadioModule, NbSpinnerModule } from '@nebular/theme';
+import { NbCardModule, NbButtonModule, NbSelectModule, NbStepperModule, NbPopoverModule, NbIconModule, NbListModule, NbBadgeModule, NbAlertModule, NbToggleModule, NbActionsModule, NbUserModule, NbTabsetComponent, NbTabComponent, NbTabsetModule, NbCheckboxModule, NbRadioModule, NbSpinnerModule, NbDatepickerModule, NbCalendarRangeModule } from '@nebular/theme';
 import { Ng2SmartTableModule } from 'ng2-smart-table';
 import { JobsComponent } from './dataholder/jobs/jobs.component';
 import { LitigationsComponent } from './dataholder/litigations/litigations.component';
@@ -27,6 +27,7 @@ import { PaidoutColumnComponent } from './dataholder/jobs/paidoutcolumns.compone
 import { NbAccordionModule } from '@nebular/theme';
 import { MynodesoverviewComponent } from './mynodesoverview/mynodesoverview.component';
 import { FormsModule } from '@angular/forms';
+import { MynodestaxexportComponent } from './mynodestaxexport/mynodestaxexport.component';
 @NgModule({
   declarations: [DataHoldersComponent, DataHolderComponent, DatacreatorsComponent,
      DatacreatorComponent, MynodesComponent, FindbymanagementwalletComponent, ManualPayoutPageComponent, SafePipe,
@@ -34,7 +35,7 @@ import { FormsModule } from '@angular/forms';
      JobsComponent,
      LitigationsComponent,
      PayoutsComponent,
-     TransfersComponent, OnlineIndicatorRenderComponent, DCTransfersComponent, DCLitigationsComponent, DCJobsComponent, PaidoutColumnComponent, MynodesoverviewComponent ],
+     TransfersComponent, OnlineIndicatorRenderComponent, DCTransfersComponent, DCLitigationsComponent, DCJobsComponent, PaidoutColumnComponent, MynodesoverviewComponent, MynodestaxexportComponent ],
   imports: [
     CommonModule,
     NodesRoutingModule,
@@ -56,7 +57,10 @@ import { FormsModule } from '@angular/forms';
     NbTabsetModule,
     NbRadioModule,
     FormsModule,
-    NbSpinnerModule
+    NbSpinnerModule,
+    NbCheckboxModule,
+    NbDatepickerModule,
+    NbCalendarRangeModule
   ]
 })
 export class NodesModule { }

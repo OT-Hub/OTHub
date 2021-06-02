@@ -10,12 +10,12 @@ namespace OTHub.APIServer.Sql.Models.Home
     {
         public HomeV3BlockchainModel All { get; set; }
         public HomeV3BlockchainModel[] Blockchains { get; set; }
-        public decimal PercentChange24H { get; set; }
-        public decimal PriceUsd { get; set; }
-        public long CirculatingSupply { get; set; }
-        public long MarketCapUsd { get; set; }
-        public decimal Volume24HUsd { get; set; }
-        public decimal PriceBtc { get; set; }
+        public decimal? PercentChange24H { get; set; }
+        public decimal? PriceUsd { get; set; }
+        public long? CirculatingSupply { get; set; }
+        public long? MarketCapUsd { get; set; }
+        public decimal? Volume24HUsd { get; set; }
+        public decimal? PriceBtc { get; set; }
     }
 
     public class HomeV3BlockchainModel

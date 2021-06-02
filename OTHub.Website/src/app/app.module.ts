@@ -17,7 +17,7 @@ import {
   NbSidebarModule,
   NbToastrModule,
   NbWindowModule,
-  NbThemeService, NbCardModule, NbSelectModule
+  NbThemeService, NbCardModule, NbSelectModule, NbDatepickerModule
 } from '@nebular/theme';
 import {Ng2SmartTableModule} from "ng2-smart-table";
 import { AuthModule } from '@auth0/auth0-angular';
@@ -37,6 +37,7 @@ import { AuthHttpInterceptor } from '@auth0/auth0-angular';
     NbToastrModule.forRoot(),
     CoreModule.forRoot(),
     ThemeModule.forRoot(),
+    NbDatepickerModule.forRoot(),
     Ng2SmartTableModule,
     NbCardModule,
     NbSelectModule,

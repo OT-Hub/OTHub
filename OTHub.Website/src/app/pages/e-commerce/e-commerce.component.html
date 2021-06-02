@@ -19,7 +19,13 @@
       </nb-card-header>
       </nb-card>
       </div>
+
+      
 </div> -->
+
+<div class="alert alert-danger">
+  There is a problem with the websites live cryptocurrency market data. The website will have reduced functionality during this outage.
+</div>
 
 <div class="row">
   <div class="col-md-8 col-xxxl-8">
@@ -53,7 +59,7 @@
                 {{Data?.All.ActiveNodes}}
               </span>
             </div>
-            <div class="homeField">
+            <div class="homeField" *ngIf="Data?.CirculatingSupply != null">
               Staked tokens:
               <span class="homeData">
                 {{formatAmount(Data?.All.StakedTokens)  | number: '1.0-2'}} / {{Data?.CirculatingSupply  | number: '1.0-2'}} {{(Data?.All.StakedTokens /
@@ -99,7 +105,7 @@
             <div class="homeHeader">
               Market     <small class="tokenSmall">TRAC</small>
             </div>
-            <div class="homeField">
+            <div class="homeField" *ngIf="Data?.PriceUsd != null">
         
             <div style="display:inline-block;">
               ${{Data?.PriceUsd | number: '1.2-4'}}
@@ -108,19 +114,19 @@
                 <span class="btcPrice">{{Data?.PriceBtc}} BTC</span>
             </div>
             </div>
-            <div class="homeField">
+            <div class="homeField" *ngIf="Data?.CirculatingSupply != null">
               Circulating Supply: 
               <span class="homeData">
                 {{Data?.CirculatingSupply | number:'1.0-0'}}
               </span>
             </div>
-            <div class="homeField">
+            <div class="homeField" *ngIf="Data?.MarketCapUsd != null">
               Market Cap: 
               <span class="homeData">
                 ${{Data?.MarketCapUsd | number:'1.0-0'}}
               </span>
             </div>
-            <div class="homeField">
+            <div class="homeField" *ngIf="Data?.Volume24HUsd != null">
               24h Volume: 
               <span class="homeData">
                 ${{Data?.Volume24HUsd | number:'1.0-0'}}
@@ -207,7 +213,7 @@
                 {{bc.ActiveNodes}}
               </span>
             </div>
-            <div class="homeField">
+            <div class="homeField" *ngIf="Data?.CirculatingSupply != null">
               Staked tokens:
               <span class="homeData">
                 {{formatAmount(bc.StakedTokens) | number: '1.0-2'}} / {{Data?.CirculatingSupply | number: '1.0-2'}} {{(bc.StakedTokens /
@@ -253,18 +259,18 @@
 
           </div>
           <div class="col-md-4 col-sm-12  col-xs-12">
-            <div class="homeHeader">
+            <div class="homeHeader" *ngIf="Data?.PriceUsd != null">
               24h Fee Stats
             </div>
             <div>
-              <div class="homeField">
+              <div class="homeField" *ngIf="Data?.PriceUsd != null">
                 Average job fee:
                 <span class="homeData">
                   {{bc.Fees.ShowCostInUSD ? "$" : ""}}{{bc.Fees.JobCreationCost != null && bc.Fees.JobFinalisedCost != null ?
                   (bc.Fees.JobCreationCost + bc.Fees.JobFinalisedCost | number: '1.0-5') : '?'}}{{bc.Fees.ShowCostInUSD ? "" : (" " + bc.GasTicker )}}
                 </span>
               </div>
-              <div class="homeField">
+              <div class="homeField" *ngIf="Data?.PriceUsd != null">
                 Average payout fee:
                 <span class="homeData">
                   {{bc.Fees.ShowCostInUSD ? "$" : ""}}{{bc.Fees.PayoutCost != null ? bc.Fees.PayoutCost: '?'}}{{bc.Fees.ShowCostInUSD ? "" :
