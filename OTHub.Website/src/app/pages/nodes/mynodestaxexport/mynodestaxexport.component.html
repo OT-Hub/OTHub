@@ -1,0 +1,48 @@
+<nb-card>
+    <nb-card-header>
+        Tax Report
+
+    </nb-card-header>
+
+    <nb-card-body>
+        <p>Please check your local tax regulations and only use this page as assistance in calculations.</p>
+        <b style="color:red;">THIS PAGE IS STILL UNDER DEVELOPMENT. DO NOT TRUST THE NUMBERS... YET! This is mostly to get feedback.</b>
+        <br><br>
+
+        <b>USD Price Calculation Mode</b>
+        <nb-radio-group  [(ngModel)]="usdAmountCalculationMode" (ngModelChange)="onUsdAmountCalculationModeChange($event)">
+            <nb-radio value="0">
+                Price at job start
+            </nb-radio>
+            <nb-radio value="1">
+                Price at job completion
+            </nb-radio>
+            <nb-radio value="2">
+                Price at job payouts
+            </nb-radio>
+        </nb-radio-group>
+<br>
+<b>Filters</b>
+<br>
+        <nb-checkbox [disabled]="includeActiveJobsDisabled" [checked]="includeActiveJobs" (checkedChange)="toggleActiveJobs($event)">Include Active Jobs</nb-checkbox>
+        <br>
+        <nb-checkbox [disabled]="includeCompletedJobsDisabled" [checked]="includeCompletedJobs" (checkedChange)="toggleCompletedJobs($event)">Include Completed Jobs</nb-checkbox>
+        <br><br>
+        <b>Date range based on {{usdAmountCalculationMode == '0' ? 'job start date' : (usdAmountCalculationMode == '1' ? 'job completion date' : 'job payout dates')}}</b>
+        <nb-calendar-range [(range)]="range"></nb-calendar-range>
+        <!-- <br>
+        Filter by Node:         <nb-select style="width:100%;" [selected]="selectedNode" (selectedChange)="changeNode($event)">
+        <nb-option value="All Nodes">All Nodes</nb-option>
+    </nb-select> -->
+
+    <br>
+    <br>
+    <button nbButton status="primary" style="margin-left:10px;" (click)="generateReport()">Generate Report</button>
+
+    <br>
+    <br>
+    <ng2-smart-table [settings]="settings" [source]="source">
+    </ng2-smart-table>
+
+    </nb-card-body>
+</nb-card>

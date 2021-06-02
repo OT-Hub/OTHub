@@ -42,6 +42,10 @@ export const MENU_ITEMS: NbMenuItem[] = [
         title: 'Settings',
         link: '/nodes/mynodes/settings',
       },
+      {
+        title: 'Tax Report',
+        link: '/nodes/mynodes/taxreport',
+      },
     ],
   },
   // {

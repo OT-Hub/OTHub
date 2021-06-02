@@ -9,6 +9,7 @@ import { DataHolderComponent } from './dataholder/dataholder.component';
 import { DatacreatorsComponent } from './datacreators/datacreators.component';
 import { ManualPayoutPageComponent } from './manual-payout-page/manual-payout-page.component';
 import { MynodesoverviewComponent } from './mynodesoverview/mynodesoverview.component';
+import { MynodestaxexportComponent } from './mynodestaxexport/mynodestaxexport.component';
 
 const routes: Routes = [
   {
@@ -41,6 +42,10 @@ const routes: Routes = [
   {
     path: 'mynodes/settings',
     component: MynodesComponent
+  },
+  {
+    path: 'mynodes/taxreport',
+    component: MynodestaxexportComponent
   },
   {
     path: 'mynodes',

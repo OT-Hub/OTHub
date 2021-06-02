@@ -247,6 +247,7 @@ delete: false
       dateAxis.renderer.grid.template.location = 0;
 
 
+
       let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
       valueAxis.tooltip.disabled = true;
       valueAxis.renderer.minWidth = 35;
@@ -287,6 +288,7 @@ delete: false
       chart.cursor = new am4charts.XYCursor();
       chart.cursor.behavior = "panXY";
       chart.cursor.xAxis = dateAxis;
+      chart.cursor.selection 
       //chart.cursor.snapToSeries = series;
 
       let scrollbarX = new am4charts.XYChartScrollbar();
@@ -294,6 +296,7 @@ delete: false
       scrollbarX.series.push(series2);
       chart.scrollbarX = scrollbarX;
       scrollbarX.parent = chart.chartAndLegendContainer;
+
 
       // let scrollAxisX = chart.xAxes.getIndex(0);
       // let range: DateAxisDataItem;
@@ -309,7 +312,19 @@ delete: false
       // scrollbarX.series.push(series2);
       // chart.scrollbarX = scrollbarX;
 
+      chart.events.on('ready', () => {
+        let start = new Date();
+        start.setDate(start.getDate() - 31);
+        let end = new Date();
+        dateAxis.zoomToDates(start, end);
+      });
+
       let title = chart.titles.create();
+
+
+
+
+
       title.text = "Jobs";
       title.fontSize = 18;
       title.marginBottom = 15;
