@@ -45,6 +45,7 @@ namespace OTHub.APIServer.Controllers
             {
                 HomeV3Model model = new HomeV3Model();
 
+         
                 model.Blockchains = (await connection.QueryAsync<HomeV3BlockchainModel>(@"SELECT
 b.Id BlockchainID,
 b.GasTicker,
@@ -148,12 +149,12 @@ SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FR
                     }
                 }
 
-                model.PriceUsd = tickerInfo.PriceUsd;
-                model.PercentChange24H = tickerInfo.PercentChange24H;
-                model.CirculatingSupply = tickerInfo.CirculatingSupply;
-                model.MarketCapUsd = tickerInfo.MarketCapUsd;
-                model.Volume24HUsd = tickerInfo.Volume24HUsd;
-                model.PriceBtc = tickerInfo.PriceBtc;
+                model.PriceUsd = tickerInfo?.PriceUsd;
+                model.PercentChange24H = tickerInfo?.PercentChange24H;
+                model.CirculatingSupply = tickerInfo?.CirculatingSupply;
+                model.MarketCapUsd = tickerInfo?.MarketCapUsd;
+                model.Volume24HUsd = tickerInfo?.Volume24HUsd;
+                model.PriceBtc = tickerInfo?.PriceBtc;
 
                 model.All = new HomeV3BlockchainModel
                 {

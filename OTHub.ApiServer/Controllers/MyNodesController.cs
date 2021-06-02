@@ -199,7 +199,7 @@ WHERE o.FinalizedTimestamp >= DATE_Add(DATE(NOW()), INTERVAL -7 DAY) AND mn.User
 ORDER BY o.FinalizedTimestamp DESC", new
                 {
                     userID = User.Identity.Name,
-                    overrideUSDPrice = ticker.PriceUsd
+                    overrideUSDPrice = ticker?.PriceUsd ?? 0
                 })).ToArray();
 
                 List<RecentJobsByDay> days = new List<RecentJobsByDay>(7);
@@ -269,7 +269,7 @@ FROM JobsCTE
 ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                 {
                     userID = User.Identity.Name,
-                    overrideUSDPrice = ticker.PriceUsd
+                    overrideUSDPrice = ticker?.PriceUsd ?? 0
                 })).ToArray();
 
                 IEnumerable<IGrouping<string, JobsPerMonthModel>> groupedByNodes = data.GroupBy(m => m.NodeId);
