@@ -65,7 +65,9 @@ namespace OTHub.BackendSync.Blockchain
 
 
 
+
                 int errorCounter = 0;
+
 
 
                 while (true)
@@ -99,6 +101,7 @@ namespace OTHub.BackendSync.Blockchain
                         {
                             Logger.WriteLine(Source.BlockchainSync, ex.ToString());
                         }
+
                     }
 
                     await Task.Delay(30000);
