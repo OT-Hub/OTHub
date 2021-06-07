@@ -32,7 +32,6 @@ namespace OTHub.APIServer.Helpers
                     if (!cache.TryGetValue("HomeV3Ticker", out tickerModel))
                     {
                         CoinpaprikaAPI.Client client = new CoinpaprikaAPI.Client();
-                        throw new Exception();
 
                         tickerModel = (await client.GetTickerForIdAsync(@"trac-origintrail")).Value;
 
