@@ -64,7 +64,9 @@ namespace OTHub.BackendSync.Blockchain
                 await logsSubscription.SubscribeAsync();
 
 
+
                 int errorCounter = 0;
+
 
                 while (true)
                 {
@@ -79,6 +81,7 @@ namespace OTHub.BackendSync.Blockchain
                             status.InsertOrUpdate(connection, true, null, false, "Blockchain Sync");
                         }
                     }
+
                     catch (Exception ex) when (errorCounter <= 100)
                     {
                         Logger.WriteLine(Source.BlockchainSync, ex.ToString());
