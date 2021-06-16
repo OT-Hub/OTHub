@@ -111,7 +111,7 @@
               ${{Data?.PriceUsd | number: '1.2-4'}}
               <small class="btn-sm btnPricePercent" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0"
                 [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
-                <span class="btcPrice">{{Data?.PriceBtc}} BTC</span>
+                <span class="btcPrice">{{Data?.PriceBtc  | number:'1.0-8'}} BTC</span>
             </div>
             </div>
             <div class="homeField" *ngIf="Data?.CirculatingSupply != null">

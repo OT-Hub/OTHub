@@ -44,6 +44,10 @@ const routes: Routes = [
     component: MynodesComponent
   },
   {
+    path: 'mynodes/manage',
+    component: MynodesComponent
+  },
+  {
     path: 'mynodes/taxreport',
     component: MynodestaxexportComponent
   },

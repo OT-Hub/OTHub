@@ -407,12 +407,12 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     if (this.showOnlyMyNodes !== 'true') {
       //delete this.settings.columns.DisplayName;
     } else {
-      delete this.settings.columns.TotalWonOffers;
-      delete this.settings.columns.WonOffersLast7Days;
-      delete this.settings.columns.ActiveOffers;
-      delete this.settings.columns.PaidTokens;
-      delete this.settings.columns.StakeTokens;
-      delete this.settings.columns.StakeReservedTokens;
+      // delete this.settings.columns.TotalWonOffers;
+      // delete this.settings.columns.WonOffersLast7Days;
+      // delete this.settings.columns.ActiveOffers;
+      // delete this.settings.columns.PaidTokens;
+      // delete this.settings.columns.StakeTokens;
+      // delete this.settings.columns.StakeReservedTokens;
     }
 
     this.resetSource();
