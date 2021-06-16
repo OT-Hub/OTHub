@@ -23,7 +23,7 @@
       
 </div> -->
 
-<div class="alert alert-danger">
+<div class="alert alert-danger"*ngIf="Data != null && Data?.PriceUsd == null">
   There is a problem with the websites live cryptocurrency market data. The website will have reduced functionality during this outage.
 </div>
 
