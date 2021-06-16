@@ -25,7 +25,8 @@ ORDER BY GasPrice";
             int limit, int page,
             string NodeId_like,
             string sort,
-            string order)
+            string order,
+            bool filterByMyNodes)
         {
             string orderBy = String.Empty;
 
@@ -94,7 +95,7 @@ END) FROM otoffer o
 JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
 WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity) ActiveJobs
 from OTIdentity I
-{(userID != null ? "JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
+{(userID != null ? $"{(filterByMyNodes ? "INNER" : "LEFT")} JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
 WHERE (@NodeId_like IS NULL OR (I.NodeId = @NodeId_like OR I.Identity = @NodeId_like))
 AND I.Version = 1
 GROUP BY I.NodeId
@@ -106,7 +107,7 @@ GROUP BY I.NodeId
 
                 var total = await connection.ExecuteScalarAsync<int>($@"select COUNT(DISTINCT I.NodeId)
 from OTIdentity I
-{(userID != null ? "JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
+{(userID != null ? $"{(filterByMyNodes ? "INNER" : "LEFT")} JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
 WHERE (@NodeId_like IS NULL OR I.NodeId = @NodeId_like) AND I.Version = 1",
                     new { userID = userID, NodeId_like });
 

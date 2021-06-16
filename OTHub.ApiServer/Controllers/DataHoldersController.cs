@@ -48,10 +48,11 @@ If you want to get more information about a specific data holder you should use 
                 NodeId_like = null;
             }
 
-            string userID = restrictToMyNodes ? User?.Identity?.Name : null;
+            string userID = User?.Identity?.Name;
+            bool filterByMyNodes = restrictToMyNodes;
 
             var result = await DataHoldersSql.Get(userID, _limit,
-                _page, NodeId_like, _sort, _order);
+                _page, NodeId_like, _sort, _order, filterByMyNodes);
 
             HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
             HttpContext.Response.Headers["X-Total-Count"] = result.total.ToString();

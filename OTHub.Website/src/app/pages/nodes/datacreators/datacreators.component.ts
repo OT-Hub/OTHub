@@ -339,7 +339,7 @@ export class DatacreatorsComponent implements OnInit  {
     };
 
     if (this.showOnlyMyNodes !== 'true') {
-      delete this.settings.columns.DisplayName;
+      //delete this.settings.columns.DisplayName;
     } else {
       
       delete this.settings.columns.OffersTotal;

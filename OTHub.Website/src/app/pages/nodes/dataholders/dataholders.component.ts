@@ -405,7 +405,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     };
 
     if (this.showOnlyMyNodes !== 'true') {
-      delete this.settings.columns.DisplayName;
+      //delete this.settings.columns.DisplayName;
     } else {
       delete this.settings.columns.TotalWonOffers;
       delete this.settings.columns.WonOffersLast7Days;
