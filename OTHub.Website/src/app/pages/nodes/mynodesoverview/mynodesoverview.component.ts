@@ -12,29 +12,38 @@ import { HubHttpService } from 'app/pages/hub-http-service';
 export class MynodesoverviewComponent implements OnInit {
   isLoggedIn: boolean;
   isLoading: boolean
+  isJobsPerMonthLoading: boolean;
+  isRecentJobsLoading: boolean;
   data: NodesPerYearMonthResponse;
   selectedData: NodeJobsPerYear;
   selectedNode: string;
   recentJobs: RecentJobsByDay[];
+  nodeStats: NodeStats;
 
   constructor(private httpService: HubHttpService,
     private http: HttpClient, private auth: AuthService, private router: Router) {
     this.selectedNode = 'All Nodes';
     this.isLoggedIn = false;
     this.isLoading = true;
+    this.isJobsPerMonthLoading = true;
+    this.isRecentJobsLoading = true;
   }
 
   launchDataHolderPage() {
     this.router.navigateByUrl('nodes/dataholders/' + this.selectedData.NodeId);
   }
-  
+
   changeNode(nodeName: string) {
+    this.nodeStats = null;
+    this.selectedNode = nodeName;
     if (nodeName == 'All Nodes') {
       this.selectedData = this.data.AllNodes;
+      this.loadNodeStats(null);
     } else {
       var node = this.data.Nodes.find(n => n.NodeId == nodeName);
       if (node != null) {
         this.selectedData = node;
+        this.loadNodeStats(node.NodeId);
       }
     }
   }
@@ -52,38 +61,61 @@ export class MynodesoverviewComponent implements OnInit {
         this.isLoading = false;
         this.isLoggedIn = true;
         const headers = new HttpHeaders()
-        .set('Content-Type', 'application/json')
-        .set('Accept', 'application/json');
-      let url = this.httpService.ApiUrl + '/api/mynodes/JobsPerMonth';
-      this.http.get<NodesPerYearMonthResponse>(url, { headers }).subscribe(data => {
-        this.data = data;
-        this.selectedData = this.data.AllNodes;
-      });
+          .set('Content-Type', 'application/json')
+          .set('Accept', 'application/json');
+        let url = this.httpService.ApiUrl + '/api/mynodes/JobsPerMonth';
+        this.http.get<NodesPerYearMonthResponse>(url, { headers }).subscribe(data => {
+          this.data = data;
+          this.selectedData = this.data.AllNodes;
+          this.isJobsPerMonthLoading = false;
+        });
 
-      url = this.httpService.ApiUrl + '/api/mynodes/RecentJobs';
-      this.http.get<RecentJobsByDay[]>(url, { headers }).subscribe(data => {
-        this.recentJobs = data;
-      });
+        url = this.httpService.ApiUrl + '/api/mynodes/RecentJobs';
+        this.http.get<RecentJobsByDay[]>(url, { headers }).subscribe(data => {
+          this.recentJobs = data;
+          this.isRecentJobsLoading = false;
+        });
+        this.loadNodeStats(null);
       }
 
     });
 
   }
 
-formatTime(value) {
-  if (value > 1440) {
-    const days = (value / 1440);
-    if ((days / 365) % 1 == 0) {
-      return (days / 365).toString() + ' years';
+  loadNodeStats(nodeIDFilter: string) {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+    let params = '';
+    if (nodeIDFilter != null) {
+      params = '?nodeID=' + nodeIDFilter;
     }
-    return +days.toFixed(1).replace(/[.,]00$/, '') + (days === 1 ? ' day' : ' days');
+    let url = this.httpService.ApiUrl + '/api/mynodes/GetNodeStats' + params;
+    this.http.get<NodeStats>(url, { headers }).subscribe(data => {
+      this.nodeStats = data;
+    });
   }
-  return value + ' minute' + (value == 1 ? '' : 's');
-}
+
+  formatTime(value) {
+    if (value > 1440) {
+      const days = (value / 1440);
+      if ((days / 365) % 1 == 0) {
+        return (days / 365).toString() + ' years';
+      }
+      return +days.toFixed(1).replace(/[.,]00$/, '') + (days === 1 ? ' day' : ' days');
+    }
+    return value + ' minute' + (value == 1 ? '' : 's');
+  }
 
   formatAmount(value) {
     let tokenAmount = parseFloat(value);
     let formatted = +tokenAmount.toFixed(4);
+    return formatted;
+  }
+
+  formatAmountConstrained(value) {
+    let tokenAmount = parseFloat(value);
+    let formatted = +tokenAmount.toFixed(2);
     return formatted;
   }
 }
@@ -127,4 +159,22 @@ export interface RecentJob {
   TokenAmountPerHolder: number;
   FinalizedTimestamp: Date;
   USDAmount: number;
+}
+
+export interface NodeStats {
+  TotalJobs: NodeStatsNumeric;
+  TotalRewards: NodeStatsToken;
+  TotalStaked: NodeStatsToken;
+  TotalLocked: NodeStatsToken;
+}
+
+export interface NodeStatsNumeric {
+  Value: number;
+  BetterThanActiveNodesPercentage: number;
+}
+
+export interface NodeStatsToken {
+  USDAmount: number;
+  TokenAmount: number;
+  BetterThanActiveNodesPercentage: number;
 }

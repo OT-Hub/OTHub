@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using CoinpaprikaAPI.Entity;
 using Dapper;
@@ -41,8 +40,7 @@ namespace OTHub.APIServer.Controllers
             {
                 await connection.ExecuteAsync("UPDATE Users SET USDPriceCalculationMode = @mode WHERE ID = @userID", new
                 {
-                    userID = User?.Identity.Name,
-                    mode = mode
+                    userID = User?.Identity.Name, mode
                 });
             }
 
@@ -81,9 +79,9 @@ namespace OTHub.APIServer.Controllers
                 userID = User?.Identity?.Name,
                 startDate = startDate.Date,
                 endDate = endDate.Date,
-                nodeID = nodeID,
-                includeActiveJobs = includeActiveJobs,
-                includeCompletedJobs = includeCompletedJobs
+                nodeID,
+                includeActiveJobs,
+                includeCompletedJobs
             };
 
 
@@ -230,12 +228,146 @@ ORDER BY o.FinalizedTimestamp DESC", new
 
         [HttpGet]
         [Authorize]
+        [Route("GetNodeStats")]
+        public async Task<NodeStats> GetNodeStats([FromQuery]string nodeID)
+        {
+            TickerInfo ticker = await TickerHelper.GetTickerInfo(_cache);
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                using (var multi = await connection.QueryMultipleAsync(@"
+SET @priceMode = (SELECT u.USDPriceCalculationMode FROM users u WHERE u.ID = @userID);
+
+CREATE TEMPORARY TABLE JobsCTELocal (SELECT 
+i.NodeId, 
+SUM(o.TokenAmountPerHolder) AS TokenAmount,
+SUM((CASE WHEN @priceMode = 0 THEN ticker.Price ELSE @overrideUSDPrice END) * o.TokenAmountPerHolder) AS USDAmount,
+COUNT(o.OfferID) AS JobCount,
+CASE WHEN mn.ID IS NOT NULL THEN 1 ELSE 0 END AS IsMyNode
+FROM otoffer o
+JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
+JOIN otidentity i ON i.Identity = h.Holder AND i.BlockchainID = o.BlockchainID
+LEFT JOIN mynodes mn ON mn.UserID = @userID AND mn.NodeID = i.NodeId
+LEFT JOIN ticker_trac ticker ON @priceMode = 0 AND (i.NodeId = @nodeID OR mn.ID IS NOT null) AND ticker.Timestamp = (
+SELECT MAX(TIMESTAMP)
+FROM ticker_trac
+WHERE TIMESTAMP <= o.FinalizedTimestamp)
+WHERE i.Version > 0 AND i.NodeId != '0000000000000000000000000000000000000000'
+GROUP BY i.NodeId);
+
+
+SELECT * FROM (
+SELECT l.NodeId
+, l.IsMyNode
+,SUM(l.TokenAmount) RewardTokenAmount
+,SUM(l.USDAmount) RewardUSDAmount
+,  ROUND(PERCENT_RANK() OVER (
+          ORDER BY SUM(l.TokenAmount)
+       ) * 100 ) RewardTokenAmountRank
+,SUM(l.JobCount) JobCount
+,  ROUND(PERCENT_RANK() OVER (
+          ORDER BY SUM(l.JobCount)
+       ) * 100)  JobCountRank
+FROM JobsCTELocal l
+GROUP BY l.NodeId) X
+WHERE (@nodeID IS NULL AND X.IsMyNode = 1) OR X.NodeId = @nodeID
+;
+
+SELECT * FROM (
+SELECT 
+i.NodeId
+,SUM(i.Stake) StakeTokenAmount
+,SUM(i.Stake) * @overrideUSDPrice StakeUSDAmount
+,  ROUND(PERCENT_RANK() OVER (
+          ORDER BY SUM(i.Stake)
+       ) * 100)  StakeTokenAmountRank
+,SUM(i.StakeReserved) StakeReservedTokenAmount
+,SUM(i.StakeReserved) * @overrideUSDPrice StakeReservedUSDAmount
+,  ROUND(PERCENT_RANK() OVER (
+          ORDER BY SUM(i.StakeReserved)
+       ) * 100) StakeReservedTokenAmountRank
+FROM otidentity i
+WHERE i.NodeId IN (SELECT j.NodeID FROM JobsCTELocal j) AND i.Version > 0 AND i.NodeId != '0000000000000000000000000000000000000000'
+GROUP BY i.NodeId) X
+WHERE (@nodeID IS NULL AND X.NodeId IN (SELECT j.NodeID FROM JobsCTELocal j WHERE j.IsMyNode = 1)) OR X.NodeId = @nodeID
+", new
+                {
+                    userID = User.Identity.Name,
+                    overrideUSDPrice = ticker?.PriceUsd ?? 0,
+                    nodeID
+                }))
+                {
+                    NodeStatsModel1 model1;
+                    NodeStatsModel2 model2;
+
+                    if (!String.IsNullOrWhiteSpace(nodeID))
+                    {
+                        model1 = multi.ReadFirstOrDefault<NodeStatsModel1>();
+                        model2 = multi.ReadFirstOrDefault<NodeStatsModel2>();
+                    }
+                    else
+                    {
+                        var model1rows = multi.Read<NodeStatsModel1>().ToArray();
+                        model1 = new NodeStatsModel1
+                        {
+                            JobCount = model1rows.Sum(r => r.JobCount),
+                            RewardTokenAmount = model1rows.Sum(r => r.RewardTokenAmount),
+                            RewardUSDAmount = model1rows.Sum(r => r.RewardUSDAmount)
+                        };
+                        var model2rows = multi.Read<NodeStatsModel2>().ToArray();
+                        model2 = new NodeStatsModel2
+                        {
+                            StakeReservedTokenAmount = model2rows.Sum(r => r.StakeReservedTokenAmount),
+                            StakeReservedUSDAmount = model2rows.Sum(r => r.StakeReservedUSDAmount),
+                            StakeTokenAmount = model2rows.Sum(r => r.StakeTokenAmount),
+                            StakeUSDAmount = model2rows.Sum(r => r.StakeUSDAmount)
+                        };
+                    }
+
+          
+
+                    NodeStats stats = new NodeStats
+                    {
+                        TotalJobs = new NodeStats.NodeStatsNumeric
+                        {
+                            Value = model1.JobCount,
+                            BetterThanActiveNodesPercentage = model1.JobCountRank
+                        },
+                        TotalLocked =
+                            new NodeStats.NodeStatsToken
+                            {
+                                TokenAmount = model2.StakeReservedTokenAmount,
+                                USDAmount = model2.StakeReservedUSDAmount,
+                                BetterThanActiveNodesPercentage = model2.StakeReservedTokenAmountRank
+                            },
+                        TotalRewards =
+                            new NodeStats.NodeStatsToken
+                            {
+                                TokenAmount = model1.RewardTokenAmount, 
+                                USDAmount = model1.RewardUSDAmount,
+                                BetterThanActiveNodesPercentage = model1.RewardTokenAmountRank
+                            },
+                        TotalStaked = new NodeStats.NodeStatsToken
+                        {
+                            TokenAmount = model2.StakeTokenAmount, 
+                            USDAmount = model2.StakeUSDAmount,
+                            BetterThanActiveNodesPercentage = model2.StakeTokenAmountRank
+                        }
+                    };
+                    return stats;
+                }
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
         [Route("JobsPerMonth")]
         public async Task<NodesPerYearMonthResponse> GetJobsPerMonth()
         {
             if (_cache.TryGetValue("MyNodes-JobsPerMonth-" + User.Identity.Name, out var cached))
             {
-                //return (NodesPerYearMonthResponse)cached;
+                return (NodesPerYearMonthResponse)cached;
             }
 
             TickerInfo ticker = await TickerHelper.GetTickerInfo(_cache);
@@ -291,7 +423,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                         Dictionary<int, JobsPerMonthModel> months = yearGroup
                             .ToDictionary(k => k.Month, v => v);
 
-                        JobsPerYear year = new JobsPerYear()
+                        JobsPerYear year = new JobsPerYear
                         {
                             Year = yearGroup.Key.ToString(),
                             Active = yearGroup.Key == DateTime.Now.Year
@@ -307,7 +439,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                             }
                             else
                             {
-                                month = new JobsPerMonth()
+                                month = new JobsPerMonth
                                 {
                                     Month = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(i)
                                 };
@@ -346,10 +478,10 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
 
             IEnumerable<IGrouping<string, JobsPerYear>> allGroupedByYear = allYears.GroupBy(a => a.Year);
 
-            response.AllNodes = new NodeJobsPerYear()
+            response.AllNodes = new NodeJobsPerYear
             {
                 DisplayName = "All Nodes",
-                Years = allGroupedByYear.Select(y => new JobsPerYear()
+                Years = allGroupedByYear.Select(y => new JobsPerYear
                 {
                     Year = y.Key,
                     Active = y.First().Active,
@@ -394,7 +526,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
 
 
 
-            _cache.Set("MyNodes-JobsPerMonth-" + User.Identity.Name, response, TimeSpan.FromSeconds(30));
+            _cache.Set("MyNodes-JobsPerMonth-" + User.Identity.Name, response, TimeSpan.FromSeconds(15));
 
 
 
@@ -441,8 +573,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
             {
                 bool exists = await connection.ExecuteScalarAsync<bool>(@"SELECT 1 FROM MyNodes WHERE UserID = @userID AND NodeID = @nodeID", new
                 {
-                    userID = User.Identity.Name,
-                    nodeID = nodeID
+                    userID = User.Identity.Name, nodeID
                 });
 
                 if (!exists)
@@ -450,8 +581,8 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                     await connection.ExecuteAsync("INSERT INTO MyNodes (UserID, NodeID, DisplayName) VALUES (@userID, @nodeID, @name)", new
                     {
                         userID = User.Identity.Name,
-                        nodeID = nodeID,
-                        name = name
+                        nodeID,
+                        name
                     });
                 }
                 else
@@ -459,8 +590,8 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                     await connection.ExecuteAsync("UPDATE MyNodes SET DisplayName = @name WHERE UserID = @userID AND NodeID = @nodeID", new
                     {
                         userID = User.Identity.Name,
-                        nodeID = nodeID,
-                        name = name
+                        nodeID,
+                        name
                     });
                 }
             }
@@ -477,16 +608,14 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                 bool exists = await connection.ExecuteScalarAsync<bool>(
                     @"SELECT 1 FROM MyNodes WHERE UserID = @userID AND NodeID = @nodeID", new
                     {
-                        userID = User.Identity.Name,
-                        nodeID = nodeID
+                        userID = User.Identity.Name, nodeID
                     });
 
                 if (exists)
                 {
                     await connection.ExecuteAsync("DELETE FROM MyNodes WHERE UserID = @userID AND NodeID = @nodeID", new
                     {
-                        userID = User.Identity.Name,
-                        nodeID = nodeID
+                        userID = User.Identity.Name, nodeID
                     });
                 }
             }
@@ -564,5 +693,45 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         public decimal TokenAmountPerHolder { get; set; }
         public DateTime FinalizedTimestamp { get; set; }
         public decimal USDAmount { get; set; }
+    }
+
+    internal class NodeStatsModel1
+    {
+        public int JobCount { get; set; }
+        public int JobCountRank { get; set; }
+        public decimal RewardTokenAmount { get; set; }
+        public int RewardTokenAmountRank { get; set; }
+        public decimal RewardUSDAmount { get; set; }
+    }
+
+    internal class NodeStatsModel2
+    {
+        public decimal StakeTokenAmount { get; set; }
+        public int StakeTokenAmountRank { get; set; }
+        public decimal StakeUSDAmount { get; set; }
+        public decimal StakeReservedTokenAmount { get; set; }
+        public decimal StakeReservedUSDAmount { get; set; }
+        public int StakeReservedTokenAmountRank { get; set; }
+    }
+
+    public class NodeStats
+    {
+        public NodeStatsNumeric TotalJobs { get; set; }
+        public NodeStatsToken TotalRewards { get; set; }
+        public NodeStatsToken TotalStaked { get; set; }
+        public NodeStatsToken TotalLocked { get; set; }
+
+        public class NodeStatsToken
+        {
+            public decimal TokenAmount { get; set; }
+            public decimal USDAmount { get; set; }
+            public int? BetterThanActiveNodesPercentage { get; set; }
+        }
+        public class NodeStatsNumeric
+        {
+            public int Value { get; set; }
+
+            public int? BetterThanActiveNodesPercentage { get; set; }
+        }
     }
 }

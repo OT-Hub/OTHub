@@ -4,6 +4,19 @@
 
 @include nb-install-component() {
 
+  .tokenSmall {
+    background-color: #eff2f5;
+    color: #58667e;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    margin-right: 6px;
+    vertical-align: middle;
+  }
+  
+
   .cards-container {
     display: flex;
     flex-direction: row;
@@ -17,6 +30,10 @@
     border-width: 0;
   }
 
+  .statValue {
+    padding: 5px 0px;
+  }
+
   .table-card {
     flex: 0 0 auto;
   }
@@ -24,6 +41,18 @@
   .chart-card {
     flex: 1 0 auto;
   }
+
+  .progress-info {
+    margin-top:15px;
+  }
+
+.caption.description {
+  padding-top: 6px;
+}
+
+.progress-info.topmargin {
+  margin-top: 0px;
+}
 
   .chart-card nb-card-header {
     display: flex;

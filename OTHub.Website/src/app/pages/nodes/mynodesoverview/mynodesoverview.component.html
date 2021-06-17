@@ -14,16 +14,16 @@
                 :
                 node.DisplayName) }} -->
                 <nb-user size="medium" shape="semi-round"
-                name="{{(node.DisplayName != null ? node.DisplayName : node.NodeId)}}">
+                    name="{{(node.DisplayName != null ? node.DisplayName : node.NodeId)}}">
                 </nb-user>
-            
+
             </nb-option>
         </nb-select>
 
     </div>
     <div class="col-xxxl-8 col-xxl-8 col-lg-7 col-md-6">
         <button nbButton size="small" tooltip="Launch Data Holder Page" (click)="launchDataHolderPage()"
-         *ngIf="selectedData != null && selectedData?.DisplayName != 'All Nodes'">
+            *ngIf="selectedData != null && selectedData?.DisplayName != 'All Nodes'">
             <nb-icon icon="external-link-outline" pack="eva"></nb-icon>
         </button>
     </div>
@@ -44,15 +44,71 @@
           </nb-card>
     </div> -->
 
+
+    <div class="col-xxxl-12 col-xxl-12 col-lg-12 col-md-12">
+        <nb-card class="table-card">
+            <nb-card-header>
+                Latest Jobs
+            </nb-card-header>
+            <div *ngIf="isRecentJobsLoading == true" style="margin:10px;">
+                <span>Loading...</span>
+            </div>
+            <nb-tabset fullWidth>
+                <nb-tab *ngFor="let day of recentJobs; let i = index" [tabTitle]="day.Day" [active]="day.Active"
+                    badgeText="{{day.Jobs.length}}" badgePosition="top right" badgeStatus="primary">
+                    <nb-list>
+                        <nb-list-item *ngIf="day.Jobs.length == 0">
+                            <span>You have not won any jobs {{(i == 0 ? 'today' : 'this day')}}</span>
+                        </nb-list-item>
+                        <nb-list-item *ngFor="let job of day.Jobs" class="jobNode">
+
+                            <nb-user size="small" shape="semi-round"
+                                name="{{(job.DisplayName != null ? job.DisplayName : job.NodeId)}}">
+                            </nb-user>
+
+                            <span>&nbsp;chosen for job at {{job.FinalizedTimestamp | amFromUtc | amLocal |
+                                amDateFormat:'HH:mmA'}} ({{formatTime(job.HoldingTimeInMinutes)}})</span>
+                            <a nbButton routerLink="/offers/{{job.OfferID}}" size="small" style="margin-left:5px;">
+                                <!-- <button nbButton size="small" tooltip="Launch Data Holder Page" (click)="launchDataHolderPage()" style="margin-left:5px;">
+                      
+                        </button> -->
+                                <nb-icon icon="arrow-ios-forward-outline" pack="eva"></nb-icon>
+                            </a>
+
+                            <!-- <span class="month">{{ month.Month }}</span>
+                    <span>
+                        <nb-icon [class.down]="month.Down" [class.up]="!month.Down"
+                            [icon]="month.Down ? 'arrow-down' : 'arrow-up'" pack="eva">
+                        </nb-icon>
+                        {{ month.JobCount }} Jobs
+                    </span>
+                    <span class="results extraPadding">
+                        {{ formatAmount(month.TokenAmount) }} <span class="caption">TRAC</span> / {{
+                        month.USDAmount | number:'1.0-2' }} <span class="caption">USD</span>
+                    </span> -->
+                            <span class="results extraPadding">
+                                {{ formatAmount(job.TokenAmountPerHolder) }} <span class="caption">TRAC</span> / {{
+                                job.USDAmount | number:'1.0-2' }} <span class="caption">USD</span>
+                            </span>
+
+                        </nb-list-item>
+                    </nb-list>
+                </nb-tab>
+            </nb-tabset>
+        </nb-card>
+    </div>
+</div>
+<br>
+<div class="row">
     <div class="col-xxxl-4 col-xxl-4 col-lg-5 col-md-6">
-
-
-        <!-- <nb-card class="cards-container"> -->
         <nb-card size="large" class="table-card">
             <nb-card-header>
                 Jobs by Month
             </nb-card-header>
-            <nb-tabset fullWidth>
+            <div *ngIf="isJobsPerMonthLoading == true" style="margin:10px;">
+                <span>Loading...</span>
+            </div>
+            <nb-tabset fullWidth *ngIf="isJobsPerMonthLoading == false">
                 <nb-tab *ngFor="let year of selectedData?.Years" [tabTitle]="year.Year" [active]="year.Active">
                     <nb-list>
                         <nb-list-item *ngFor="let month of year.Months">
@@ -72,62 +128,84 @@
                 </nb-tab>
             </nb-tabset>
         </nb-card>
-        <!-- </nb-card> -->
     </div>
-    <div class="col-xxxl-8 col-xxl-8 col-lg-7 col-md-6">
-        <nb-card size="large" class="table-card">
-            <nb-card-header>
-                Latest Jobs
-            </nb-card-header>
-            <nb-tabset fullWidth>
-                <nb-tab *ngFor="let day of recentJobs" [tabTitle]="day.Day" [active]="day.Active" badgeText="{{day.Jobs.length}}"
-                badgePosition="top right"
-                badgeStatus="primary">
-            <nb-list>
-                <nb-list-item *ngFor="let job of day.Jobs" class="jobNode"> 
-        
-                    <nb-user size="small" shape="semi-round" 
-                    name="{{(job.DisplayName != null ? job.DisplayName : job.NodeId)}}">
-           </nb-user>
+    <div class="col-xxxl-4 col-xxl-4 col-lg-4 col-md-4">
+        <nb-card size="large">
+            <nb-card-body>
+                <div *ngIf="nodeStats == null || data?.Nodes == null">
+                    <span>Loading...</span>
+                </div>
+                <div *ngIf="nodeStats != null && data?.Nodes != null">
+                    <div class="progress-info topmargin">
+                        <div class="subtitle">Total Jobs</div>
+                        <div class="statValue">{{nodeStats.TotalJobs.Value}}</div>
+                        <nb-progress-bar [value]="nodeStats.TotalJobs.BetterThanActiveNodesPercentage" *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
+                        <nb-progress-bar value="0" *ngIf="selectedNode == 'All Nodes'"></nb-progress-bar>
+                        <div class="caption description">
+                            <bdi *ngIf="selectedNode != 'All Nodes'">Won more jobs than {{nodeStats.TotalJobs.BetterThanActiveNodesPercentage}}% of nodes</bdi>
+                            <bdi *ngIf="selectedNode == 'All Nodes'">On {{data?.Nodes?.length}} nodes</bdi>
+                        </div>
+                    </div>
+                    <div class="progress-info">
+                        <div class="subtitle">Total Rewards</div>
+                        <div class="statValue">{{formatAmountConstrained(nodeStats.TotalRewards.TokenAmount)}} <span
+                                class="caption">TRAC</span> / {{nodeStats.TotalRewards.USDAmount | number:'1.0-2'}}
+                            <span class="caption">USD</span> </div>
+                        <nb-progress-bar [value]="nodeStats.TotalRewards.BetterThanActiveNodesPercentage" *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
+                        <nb-progress-bar value="0" *ngIf="selectedNode == 'All Nodes'"></nb-progress-bar>
+                        <div class="caption description">
+                            <bdi *ngIf="selectedNode != 'All Nodes'">Earned more tokens than {{nodeStats.TotalRewards.BetterThanActiveNodesPercentage}}% of nodes</bdi>
+                            <bdi *ngIf="selectedNode == 'All Nodes'">On {{data?.Nodes?.length}} nodes</bdi>
+                        </div>
+                    </div>
+                    <div class="progress-info">
+                        <div class="subtitle">Total Staked</div>
+                        <div class="statValue">{{formatAmountConstrained(nodeStats.TotalStaked.TokenAmount)}} <span
+                                class="caption">TRAC</span> / {{nodeStats.TotalStaked.USDAmount | number:'1.0-2'}} <span
+                                class="caption">USD</span> </div>
+                        <nb-progress-bar [value]="nodeStats.TotalStaked.BetterThanActiveNodesPercentage" *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
+                        <nb-progress-bar value="0" *ngIf="selectedNode == 'All Nodes'"></nb-progress-bar>
+                        <div class="caption description">
+                            <bdi *ngIf="selectedNode != 'All Nodes'">Staked more tokens than {{nodeStats.TotalStaked.BetterThanActiveNodesPercentage}}% of nodes</bdi>
+                            <bdi *ngIf="selectedNode == 'All Nodes'">On {{data?.Nodes?.length}} nodes</bdi>
+                        </div>
+                    </div>
+                    <div class="progress-info">
+                        <div class="subtitle">Total Locked</div>
+                        <div class="statValue">{{formatAmountConstrained(nodeStats.TotalLocked.TokenAmount)}} <span
+                                class="caption">TRAC</span> / {{nodeStats.TotalLocked.USDAmount | number:'1.0-2'}} <span
+                                class="caption">USD</span> </div>
+                        <nb-progress-bar [value]="nodeStats.TotalLocked.BetterThanActiveNodesPercentage" *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
+                        <nb-progress-bar value="0" *ngIf="selectedNode == 'All Nodes'"></nb-progress-bar>
+                        <div class="caption description">
+                            <bdi *ngIf="selectedNode != 'All Nodes'">Locked more tokens in jobs than {{nodeStats.TotalLocked.BetterThanActiveNodesPercentage}}% of nodes</bdi>
+                            <bdi *ngIf="selectedNode == 'All Nodes'">On {{data?.Nodes?.length}} nodes</bdi>
+                        </div>
+                    </div>
+                    <!-- <div class="progress-info" >
+                        <div class="subtitle">Total Locked</div>
+                        <div class="statValue">50 <span class="caption">TRAC</span> / 1.00 <span class="caption">USD</span> </div>
+                        <nb-progress-bar value="50" *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
+                        <div class="caption description"  *ngIf="selectedNode != 'All Nodes'">
+                          <bdi>More than 70% of active nodes</bdi>
+                        </div>
+                      </div> -->
+                </div>
 
-                    <span>&nbsp;chosen for job at {{job.FinalizedTimestamp  | amFromUtc | amLocal | amDateFormat:'HH:mmA'}} ({{formatTime(job.HoldingTimeInMinutes)}})</span>
-                    <a nbButton routerLink="/offers/{{job.OfferID}}" size="small" style="margin-left:5px;">
-                        <!-- <button nbButton size="small" tooltip="Launch Data Holder Page" (click)="launchDataHolderPage()" style="margin-left:5px;">
-                      
-                        </button> -->
-                        <nb-icon icon="arrow-ios-forward-outline" pack="eva"></nb-icon>
-                    </a>
-
-                    <!-- <span class="month">{{ month.Month }}</span>
-                    <span>
-                        <nb-icon [class.down]="month.Down" [class.up]="!month.Down"
-                            [icon]="month.Down ? 'arrow-down' : 'arrow-up'" pack="eva">
-                        </nb-icon>
-                        {{ month.JobCount }} Jobs
-                    </span>
-                    <span class="results extraPadding">
-                        {{ formatAmount(month.TokenAmount) }} <span class="caption">TRAC</span> / {{
-                        month.USDAmount | number:'1.0-2' }} <span class="caption">USD</span>
-                    </span> -->
-                    <span class="results extraPadding">
-                        {{ formatAmount(job.TokenAmountPerHolder) }} <span class="caption">TRAC</span> / {{
-                            job.USDAmount | number:'1.0-2' }} <span class="caption">USD</span>
-                    </span>
-           
-                </nb-list-item>
-            </nb-list>
-            </nb-tab>
-            </nb-tabset>
+            </nb-card-body>
         </nb-card>
     </div>
 </div>
+
+
+
 <br>
 
-<div class="row" *ngIf="isLoggedIn == true">
+<!-- <div class="row" *ngIf="isLoggedIn == true">
     
     <div class="col-xxxl-12">
 <div class="alert alert-info">
     More information will be added to this page soon such as Staked/Locked tokens.
 </div>
 </div>
-</div>
+</div> -->
