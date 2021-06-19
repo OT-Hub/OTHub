@@ -152,6 +152,11 @@
                   placeholder="Gas Price (Gwei)*" required (keyup)="onGasPriceKeyUp($event)" (keypress)="onGasPriceKeyDown($event)">
               </div>
             </div>
+
+            <h6 *ngIf="selectedChainID == requiredChainID">Estimated Payout</h6>
+            <div *ngIf="canPayoutResult != null && sentTransactionHash == null && canPayoutResult.CanTryPayout == true && selectedChainID == requiredChainID">
+                {{canPayoutResult?.EstimatedPayout}}
+            </div>
             <!-- && selectedAddress == managementWallet-->
             <!-- <div class="alert alert-warning" *ngIf="1 > gasPrice">
               Warning! You have entered a low gas price.

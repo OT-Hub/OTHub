@@ -53,6 +53,5 @@ export class PaidoutColumnComponent implements ViewCell, OnInit {
         this.canPayout = this.rowData.CanPayout && this.rowData.IsMyNode;
         this.offerID = this.rowData.OfferId;
         this.nodeID = this.rowData.NodeId;
-        debugger;
     }
 }

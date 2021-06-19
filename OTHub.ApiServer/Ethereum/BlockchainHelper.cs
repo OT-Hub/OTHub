@@ -128,16 +128,16 @@ namespace OTHub.APIServer.Ethereum
                 var block = await cl.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(latestBlockParam);
 
 
-                //var amountToTransfer = holderStakedAmount;
-                //amountToTransfer = amountToTransfer * (block.Timestamp - holderPaymentTimestamp);
-                //amountToTransfer = amountToTransfer / (offerHoldingTimeInMinutes * 60);
+                var amountToTransfer = holderStakedAmount;
+                amountToTransfer = amountToTransfer * (block.Timestamp - holderPaymentTimestamp);
+                amountToTransfer = amountToTransfer / (offerHoldingTimeInMinutes * 60);
 
-                //if (amountToTransfer + holderPaidAmount >= holderStakedAmount)
-                //{
+                if (amountToTransfer + holderPaidAmount >= holderStakedAmount)
+                {
 
-                //}
+                }
 
-                //var tt = Web3.Convert.FromWei(amountToTransfer);
+                decimal friendlyEstimatedPayout = Web3.Convert.FromWei(amountToTransfer);
 
 
 
@@ -239,7 +239,8 @@ where Type = 9 AND Address = @litigationStorageAddress AND blockchainID = @block
                 return new BeforePayoutResult
                 {
                     CanTryPayout = true,
-                    BlockchainExplorerUrlFormat = explorerTransactionUrl
+                    BlockchainExplorerUrlFormat = explorerTransactionUrl,
+                    EstimatedPayout = friendlyEstimatedPayout
                 };
             }
         }

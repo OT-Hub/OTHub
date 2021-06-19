@@ -3,6 +3,7 @@ export class BeforePayoutResult {
     Header: string;
     Message: string;
     BlockchainExplorerUrlFormat: string;
+    EstimatedPayout: number;
 }
 
 export class ContractAddress {

@@ -698,6 +698,11 @@ export class ManualPayoutPageComponent implements OnInit {
     })
     .then((result) => {
       this.loadAccount(result);
+      this.dect.detectChanges();
+
+      this.canTryPayout().subscribe(data => {
+        this.canPayoutResult = data;
+      });
     })
     .catch((error) => {
       alert(error);
