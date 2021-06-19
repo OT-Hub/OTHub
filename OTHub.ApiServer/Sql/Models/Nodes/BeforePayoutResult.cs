@@ -7,5 +7,6 @@ namespace OTHub.APIServer.Sql.Models.Nodes
         public String Header { get; set; }
         public String Message { get; set; }
         public Boolean CanTryPayout { get; set; }
+        public string BlockchainExplorerUrlFormat { get; set; }
     }
 }

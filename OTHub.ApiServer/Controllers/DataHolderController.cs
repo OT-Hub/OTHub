@@ -89,13 +89,20 @@ namespace OTHub.APIServer.Controllers
                 limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
+            string userID = HttpContext.User?.Identity?.Name;
+
             await using (var connection =
              new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var offers = connection.Query<NodeProfileDetailedModel_OfferSummary>(
                     DataHolderSql.GetJobs + $@"
 {orderBy}
-{limit}", new { nodeId = nodeId, OfferId_like }).ToArray();
+{limit}", new
+                    {
+                        nodeId = nodeId, 
+                        OfferId_like,
+                        userID
+                    }).ToArray();
 
                 var total = await connection.ExecuteScalarAsync<int>(DataHolderSql.GetJobsCount, new { nodeId = nodeId, OfferId_like });
 
@@ -509,9 +516,26 @@ OT Hub enforces this API call is successful before letting users use Metamask to
         )]
         [SwaggerResponse(200, type: typeof(BeforePayoutResult))]
         [SwaggerResponse(500, "Internal server error")]
-        public async Task<BeforePayoutResult> CanTryPayout([FromQuery, SwaggerParameter("The ERC 725 identity for the node", Required = true)] string identity, [FromQuery, SwaggerParameter("The ID of the offer", Required = true)] string offerId, [FromQuery] string holdingAddress, [FromQuery] string holdingStorageAddress, [FromQuery] string litigationStorageAddress)
+        public async Task<BeforePayoutResult> CanTryPayout([FromQuery, SwaggerParameter("Node ID", Required = true)]
+            string nodeID, [FromQuery] string identity, [FromQuery] int? blockchainID, [FromQuery, SwaggerParameter("The ID of the offer", Required = true)] string offerId, 
+            [FromQuery] string holdingAddress, [FromQuery] string holdingStorageAddress, [FromQuery] string litigationStorageAddress)
         {
-            return await BlockchainHelper.CanTryPayout(identity, offerId, holdingAddress, holdingStorageAddress, litigationStorageAddress);
+            return await BlockchainHelper.CanTryPayout(nodeID, offerId, holdingAddress, holdingStorageAddress, litigationStorageAddress, identity, blockchainID);
+        }
+
+        [Route("GetTotalPaidoutForJob")]
+        [HttpGet]
+        [SwaggerResponse(200, type: typeof(string))]
+        [SwaggerResponse(500, "Internal server error")]
+        public async Task<String> GetTotalPaidoutForJob([FromQuery] string identity, [FromQuery] string offerID)
+        {
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                return await connection.ExecuteScalarAsync<string>(@"SELECT SUM(Amount) FROM otcontract_holding_paidout WHERE Holder = @identity AND OfferID = @offerID", new
+                {
+                    identity, offerID
+                });
+            }
         }
     }
 }

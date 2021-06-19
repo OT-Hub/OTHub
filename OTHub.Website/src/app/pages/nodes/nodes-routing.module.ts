@@ -28,7 +28,7 @@ const routes: Routes = [
   { path: 'dataholders/:identity',
   component: DataHolderComponent
   },
-  { path: 'dataholders/:identity/payout/:offerId',
+  { path: 'dataholders/:nodeID/payout/:blockchainID/:identity/:offerId',
   component: ManualPayoutPageComponent
   },
   {

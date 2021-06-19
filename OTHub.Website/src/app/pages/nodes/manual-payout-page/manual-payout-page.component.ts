@@ -3,10 +3,13 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 declare const $: any;
 declare const ethereum: any;
-//declare const web3: any;
-//import Web3 from 'web3';
+declare const web3: any;
+import { MomentModule } from 'ngx-moment';
+import {DatePipe, isPlatformBrowser} from '@angular/common';
+import Web3 from 'web3';
 import { HubHttpService } from '../../hub-http-service';
 import { ContractAddress, RecentPayoutGasPrice, BeforePayoutResult } from './manual-payout-models';
+import { OTOfferDetailModel } from 'app/pages/jobs/offersdetail/offersdetail-models';
 @Component({
   selector: 'app-manual-payout-page',
   templateUrl: './manual-payout-page.component.html',
@@ -15,7 +18,11 @@ import { ContractAddress, RecentPayoutGasPrice, BeforePayoutResult } from './man
 export class ManualPayoutPageComponent implements OnInit {
   RouteObservable: any;
   identity: string;
+  nodeID: string;
   offerId: string;
+  blockchainID: number;
+  selectedChainID: string;
+  requiredChainID: string;
   isMetaMaskInstalled: boolean;
   isMetaMaskUnlocked: boolean;
   selectedAddress: string;
@@ -26,7 +33,6 @@ export class ManualPayoutPageComponent implements OnInit {
   allHoldingAddresses: ContractAddress[];
   allHoldingStorageAddresses: ContractAddress[];
   allLitigationStorageAddresses: ContractAddress[];
-  managementWallet: string;
   failedLoading: boolean;
   isLoading: boolean;
   gasPrice: number;
@@ -35,6 +41,11 @@ export class ManualPayoutPageComponent implements OnInit {
   sentTransactionHash: string;
   canPayoutResult: BeforePayoutResult;
   isBusySending: boolean;
+  erc725Abi: string;
+  keccakAbi: string;
+  offer: OTOfferDetailModel;
+  paidoutSoFar: Number;
+  showLitigationWarning: boolean;
 
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router, private dect: ChangeDetectorRef,
     private httpService: HubHttpService) {
@@ -42,19 +53,393 @@ export class ManualPayoutPageComponent implements OnInit {
     this.failedLoading = false;
     this.isBusySending = false;
     this.hasSentTransaction = false;
+    this.keccakAbi = `
+    [
+      {
+        "constant": false,
+        "inputs": [],
+        "name": "error",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "constant": false,
+        "inputs": [],
+        "name": "moveTheBlock",
+        "outputs": [],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "name": "a",
+            "type": "uint256"
+          }
+        ],
+        "name": "PreIPosle",
+        "type": "event"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "message",
+            "type": "bytes32"
+          },
+          {
+            "name": "signature",
+            "type": "bytes"
+          }
+        ],
+        "name": "ecrecovery",
+        "outputs": [
+          {
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "offer_hash",
+            "type": "bytes32"
+          },
+          {
+            "name": "DH_wallet",
+            "type": "address"
+          },
+          {
+            "name": "DH_node_id",
+            "type": "bytes32"
+          }
+        ],
+        "name": "escrowHash",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "getBlockNumber",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "getBlockTimestamp",
+        "outputs": [
+          {
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "holderIdentity0",
+            "type": "address"
+          },
+          {
+            "name": "holderIdentity1",
+            "type": "address"
+          },
+          {
+            "name": "holderIdentity2",
+            "type": "address"
+          },
+          {
+            "name": "shift",
+            "type": "uint256"
+          }
+        ],
+        "name": "getSolution",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "a",
+            "type": "bytes32"
+          },
+          {
+            "name": "b",
+            "type": "bytes32"
+          }
+        ],
+        "name": "keccak2hashes",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "a",
+            "type": "address"
+          }
+        ],
+        "name": "keccakAddress",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "a",
+            "type": "address"
+          },
+          {
+            "name": "b",
+            "type": "address"
+          },
+          {
+            "name": "c",
+            "type": "address"
+          }
+        ],
+        "name": "keccakAddressAddressAddress",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "adr",
+            "type": "address"
+          },
+          {
+            "name": "byt",
+            "type": "bytes32"
+          }
+        ],
+        "name": "keccakAddressBytes",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "a",
+            "type": "bytes32"
+          },
+          {
+            "name": "b",
+            "type": "address"
+          }
+        ],
+        "name": "keccakBytesAddress",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "a",
+            "type": "bytes32"
+          },
+          {
+            "name": "b",
+            "type": "uint256"
+          }
+        ],
+        "name": "keccakIndex",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "adr",
+            "type": "address"
+          },
+          {
+            "name": "nod_id",
+            "type": "bytes32"
+          },
+          {
+            "name": "data_id",
+            "type": "uint256"
+          }
+        ],
+        "name": "keccakOffer",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [],
+        "name": "keccakSender",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "constant": true,
+        "inputs": [
+          {
+            "name": "a",
+            "type": "string"
+          }
+        ],
+        "name": "keccakString",
+        "outputs": [
+          {
+            "name": "",
+            "type": "bytes32"
+          }
+        ],
+        "payable": false,
+        "stateMutability": "pure",
+        "type": "function"
+      }
+    ]
+    `;
+  }
+
+  getTotalPaidoutForJob() {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/nodes/dataholder/GetTotalPaidoutForJob?offerID=' + this.offerId + '&identity=' + this.identity;
+    const promise = this.http.get<Number>(url, { headers: headers });
+    return promise;
+  }
+
+  getOffer() {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/job/detail/' + this.offerId + '?' + (new Date()).getTime();
+    const promise = this.http.get<OTOfferDetailModel>(url, { headers: headers });
+    return promise;
   }
 
   ngOnInit() {
 
-    // $(function () {
-    //   $('#gasPriceInput').inputmask('99.9', { placeholder: '__._' });
-    // });
-
     this.RouteObservable = this.route.params.subscribe(params => {
-      this.identity = params.identity;
+      this.nodeID = params.nodeID;
       this.offerId = params.offerId;
+      this.blockchainID = params.blockchainID;
+      this.identity = params.identity;
 
       const self = this;
+
+      this.getOffer().subscribe(data => {
+        this.offer = data;
+
+        if (this.offer) {
+          var holder = this.offer.Holders.find(h => h.NodeId == this.nodeID);
+          if (holder) {
+            if (holder.LitigationStatus == 4 || holder.LitigationStatus == 3 || holder.LitigationStatus == 0) {
+              this.showLitigationWarning = true;
+            }
+          }
+        }
+      });
+
+      this.getTotalPaidoutForJob().subscribe(data => {
+        this.paidoutSoFar = data;
+      });
 
       this.getHoldingStorageAddresses().subscribe(holdingStorageAddresses => {
 
@@ -94,6 +479,17 @@ export class ManualPayoutPageComponent implements OnInit {
               }
             }
             this.checkFinishedLoading();
+
+            this.getNetworkID().subscribe(data => {
+              this.requiredChainID = data.toString();
+              this.checkFinishedLoading();
+
+              this.getContractAbi(11).subscribe(data => {
+                this.erc725Abi = data;
+                this.checkFinishedLoading();
+              });
+            });
+
           }, err => {
             this.failedLoading = true;
             this.isLoading = false;
@@ -103,17 +499,6 @@ export class ManualPayoutPageComponent implements OnInit {
           this.failedLoading = true;
           this.isLoading = false;
         });
-
-      }, err => {
-        this.failedLoading = true;
-        this.isLoading = false;
-      });
-
-
-
-      this.getManagementWalletForNode().subscribe(data => {
-        this.managementWallet = data;
-        this.checkFinishedLoading();
       }, err => {
         this.failedLoading = true;
         this.isLoading = false;
@@ -138,12 +523,30 @@ export class ManualPayoutPageComponent implements OnInit {
             self.loadAccount(accounts);
           });
 
+          ethereum.on('chainChanged', function (chainID: string) {
+            setTimeout(function(){ 
+              self.selectedChainID = ethereum.networkVersion;
+            }, -1);
+        
+          });
+
           this.isMetaMaskUnlocked = false;
         }
       } catch (error) {
         this.isMetaMaskInstalled = false;
       }
     });
+  }
+
+  formatTime(value) {
+    if (value > 1440) {
+      const days = (value / 1440);
+      if ((days / 365) % 1 == 0) {
+        return (days / 365).toString() + ' years';
+      }
+      return +days.toFixed(1).replace(/[.,]00$/, '') + (days === 1 ? ' day' : ' days');
+    }
+    return value + ' minute' + (value == 1 ? '' : 's');
   }
 
   holdingSmartContractChanged(address: string) {
@@ -184,7 +587,7 @@ export class ManualPayoutPageComponent implements OnInit {
 
   checkFinishedLoading() {
     // tslint:disable-next-line:max-line-length
-    if (this.holdingAddress && this.managementWallet && this.recentGasPrices && this.litigationStorageAddress && this.holdingStorageAddress) {
+    if (this.erc725Abi && this.holdingAddress && this.recentGasPrices && this.litigationStorageAddress && this.holdingStorageAddress && this.requiredChainID) {
       this.isLoading = false;
     }
   }
@@ -210,8 +613,8 @@ export class ManualPayoutPageComponent implements OnInit {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
-    let url = this.httpService.ApiUrl + '/api/contracts/getholdingaddresses';
-    url += '?' + (new Date()).getTime();
+    let url = this.httpService.ApiUrl + '/api/contracts/getholdingaddresses?blockchainID=' + this.blockchainID;
+    url += '&' + (new Date()).getTime();
     return this.http.get<ContractAddress[]>(url, { headers });
   }
 
@@ -219,8 +622,8 @@ export class ManualPayoutPageComponent implements OnInit {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
-    let url = this.httpService.ApiUrl + '/api/contracts/getholdingstorageaddresses';
-    url += '?' + (new Date()).getTime();
+    let url = this.httpService.ApiUrl + '/api/contracts/getholdingstorageaddresses?blockchainID=' + this.blockchainID;
+    url += '&' + (new Date()).getTime();
     return this.http.get<ContractAddress[]>(url, { headers });
   }
 
@@ -228,8 +631,8 @@ export class ManualPayoutPageComponent implements OnInit {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
-    let url = this.httpService.ApiUrl + '/api/contracts/getlitigationstorageaddresses';
-    url += '?' + (new Date()).getTime();
+    let url = this.httpService.ApiUrl + '/api/contracts/getlitigationstorageaddresses?blockchainID=' + this.blockchainID;
+    url += '&' + (new Date()).getTime();
     return this.http.get<ContractAddress[]>(url, { headers });
   }
 
@@ -242,11 +645,20 @@ export class ManualPayoutPageComponent implements OnInit {
     return this.http.get<RecentPayoutGasPrice[]>(url, { headers });
   }
 
-  getManagementWalletForNode() {
+  getNetworkID() {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
-    let url = this.httpService.ApiUrl + '/api/nodes/dataholders/getmanagementwalletforidentity?identity=' + this.identity;
+    let url = this.httpService.ApiUrl + '/api/blockchain/networkid?blockchainID=' + this.blockchainID;
+    url += '&' + (new Date()).getTime();
+    return this.http.get<number>(url, { headers });
+  }
+
+  getContractAbi(type: number) {
+    const headers = new HttpHeaders()
+      .set('Content-Type', 'application/json')
+      .set('Accept', 'application/json');
+    let url = this.httpService.ApiUrl + '/api/contracts/GetLatestABIForContract?blockchainID=' + this.blockchainID + '&contractType=' + type;
     url += '&' + (new Date()).getTime();
     return this.http.get<string>(url, { headers });
   }
@@ -256,7 +668,7 @@ export class ManualPayoutPageComponent implements OnInit {
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
     // tslint:disable-next-line:max-line-length
-    let url = this.httpService.ApiUrl + '/api/nodes/dataholder/cantrypayout?identity=' + this.identity + '&offerId=' + this.offerId + '&holdingAddress=' + this.holdingAddress.Address + '&holdingStorageAddress=' + this.holdingStorageAddress.Address + '&litigationStorageAddress=' + this.litigationStorageAddress.Address;
+    let url = this.httpService.ApiUrl + '/api/nodes/dataholder/cantrypayout?nodeID=' + this.nodeID + '&offerId=' + this.offerId + '&holdingAddress=' + this.holdingAddress.Address + '&holdingStorageAddress=' + this.holdingStorageAddress.Address + '&litigationStorageAddress=' + this.litigationStorageAddress.Address + '&identity=' + this.identity + '&blockchainID=' + this.blockchainID;
     url += '&' + (new Date()).getTime();
     return this.http.get<BeforePayoutResult>(url, { headers });
   }
@@ -277,6 +689,9 @@ export class ManualPayoutPageComponent implements OnInit {
 
   async enableMetaMask() {
 
+    this.selectedChainID = ethereum.networkVersion;
+
+
     ethereum
     .request({
       method: 'eth_requestAccounts',
@@ -289,29 +704,73 @@ export class ManualPayoutPageComponent implements OnInit {
     });
   }
 
+//   checkManagementWallet() {
+//     debugger;
+
+//     const provider = web3.currentProvider;
+
+//     {
+//       const web3 = new Web3(provider);
+//       const erc = new web3.eth.Contract(JSON.parse(this.erc725Abi),this.selectedAddress);
+//       const keccakContract = new web3.eth.Contract(JSON.parse(this.keccakAbi),'0x7e1bbcd25507a6fcb6503a5be75795848dca32b7');
+//       let builder = keccakContract.methods.keccakAddress(this.selectedAddress);
+//       builder.call((err, result) => {
+// debugger;
+//       });
+      
+//       // .then((response) => {
+//       //   const responseArray = Object.values(response);
+//       //   const wallet = responseArray[0];
+//       //   erc.methods.getKeysByPurpose(1).then((result) => {
+//       //     const keys = result.keys;
+//       //     const isValid = keys.includes(wallet);
+//       //     if (!isValid) {
+//       //       // this.$message.error({
+//       //       //   message: 'This wallet is not registered as a management wallet, please change it in MetaMask!',
+//       //       //   duration: 7000,
+//       //       // });
+//       //     }
+//       //   });
+//       // });
+//     }
+
+
+//   }
+
+  getTransactionUrl() {
+    return this.canPayoutResult.BlockchainExplorerUrlFormat.replace('{0}', this.sentTransactionHash);
+  }
+
   sendTransaction() {
     this.sendError = null;
 
-    if (this.identity == null) {
-      this.sendError = 'The transaction was not sent. There appears to be a problem loading the identity for this node.';
-      return;
-    }
-    if (this.managementWallet == null) {
-      this.sendError = 'The transaction was not sent. There appears to be a problem loading the management wallet for this node.';
+    this.selectedChainID = ethereum.networkVersion;
+
+    if (this.selectedChainID != this.requiredChainID) {
+      this.sendError = 'You have the wrong blockchain network selected in MetaMask. You need to have ' + this.requiredChainID + ' selected, you currently have ' + this.selectedChainID + ' selected. Look on this website to see what network the numbers belong to https://chainid.network/.';
       return;
     }
 
-    // const provider = web3.currentProvider;
-    // if (provider == null) {
-    //   this.sendError = 'The transaction was not sent. There appears to be a problem interacting with MetaMask.';
+    if (this.nodeID == null) {
+      this.sendError = 'The transaction was not sent. There appears to be a problem loading the node ID for this node.';
+      return;
+    }
+    // if (this.managementWallet == null) {
+    //   this.sendError = 'The transaction was not sent. There appears to be a problem loading the management wallet for this node.';
     //   return;
     // }
 
-    // const providerAddress = provider.selectedAddress;
-    // if (providerAddress == null) {
-    //   this.sendError = 'The transaction was not sent. There appears to be a problem interacting with MetaMask (address related).';
-    //   return;
-    // }
+    const provider = web3.currentProvider;
+    if (provider == null) {
+      this.sendError = 'The transaction was not sent. There appears to be a problem interacting with MetaMask.';
+      return;
+    }
+
+    const providerAddress = provider.selectedAddress;
+    if (providerAddress == null) {
+      this.sendError = 'The transaction was not sent. There appears to be a problem interacting with MetaMask (address related).';
+      return;
+    }
 
     // if (providerAddress !== this.managementWallet) {
     //   this.sendError = 'The transaction was not sent. The address loaded in MetaMask is not the correct management wallet.';
@@ -323,7 +782,7 @@ export class ManualPayoutPageComponent implements OnInit {
       return;
     }
 
-    if (this.gasPrice == null || this.gasPrice === 0) {
+    if (this.gasPrice == null || this.gasPrice <= 0 || isNaN(this.gasPrice)) {
       this.sendError = 'The transaction was not sent. The gas price has not been set properly.';
       return;
     }
@@ -337,71 +796,71 @@ export class ManualPayoutPageComponent implements OnInit {
 
     this.dect.detectChanges();
 
-    // this.canTryPayout().subscribe(data => {
-    //   this.canPayoutResult = data;
-    //
-    //   if (this.canPayoutResult.CanTryPayout) {
-    //
-    //     try {
-    //       // tslint:disable-next-line:no-string-literal
-    //       const web3 = new Web3(provider);
-    //       const abi = `[
-    //         {
-    //             "constant": false,
-    //             "inputs": [
-    //                 {
-    //                     "name": "identity",
-    //                     "type": "address"
-    //                 },
-    //                 {
-    //                     "name": "offerId",
-    //                     "type": "uint256"
-    //                 }
-    //             ],
-    //             "name": "payOut",
-    //             "outputs": [],
-    //             "payable": false,
-    //             "stateMutability": "nonpayable",
-    //             "type": "function"
-    //         }
-    //         ]`;
-    //
-    //       const contractInfo = JSON.parse(abi);
-    //
-    //
-    //
-    //
-    //       const contractInstance = new web3.eth.Contract(contractInfo, this.holdingAddress.Address);
-    //
-    //       const self = this;
-    //
-    //       // Call a function of the contract:
-    //       let builder = contractInstance.methods.payOut(this.identity, this.offerId);
-    //       let response = builder.send({
-    //         from: providerAddress, value: 0, gas: 300000,
-    //         to: this.holdingAddress.Address,
-    //         gasPrice: web3.utils.toWei(this.gasPrice.toString(), 'gwei')
-    //       },
-    //         (err, res) => {
-    //           this.isBusySending = false;
-    //           if (err) {
-    //             self.sendError = err.message;
-    //           } else if (res) {
-    //             self.sentTransactionHash = res;
-    //             self.hasSentTransaction = true;
-    //           }
-    //           self.dect.detectChanges();
-    //         });
-    //     } catch (error) {
-    //       this.isBusySending = false;
-    //       this.sendError = error.message;
-    //     }
-    //   } else {
-    //     this.isBusySending = false;
-    //   }
-    // }, err => {
-    //   this.isBusySending = false;
-    //   this.sendError = err.message;
-    // });
+    this.canTryPayout().subscribe(data => {
+      this.canPayoutResult = data;
+    
+      if (this.canPayoutResult.CanTryPayout) {
+    
+        try {
+        
+           const web3 = new Web3(provider);
+          const abi = `[
+            {
+                "constant": false,
+                "inputs": [
+                    {
+                        "name": "identity",
+                        "type": "address"
+                    },
+                    {
+                        "name": "offerId",
+                        "type": "uint256"
+                    }
+                ],
+                "name": "payOut",
+                "outputs": [],
+                "payable": false,
+                "stateMutability": "nonpayable",
+                "type": "function"
+            }
+            ]`;
+    
+           const contractInfo = JSON.parse(abi);
+    
+    
+    
+    
+          const contractInstance = new web3.eth.Contract(contractInfo, this.holdingAddress.Address);
+    
+          const self = this;
+    
+          // Call a function of the contract:
+          let builder = contractInstance.methods.payOut(this.identity, this.offerId);
+          let response = builder.send({
+            from: providerAddress, value: 0, gas: 300000,
+            to: this.holdingAddress.Address,
+            gasPrice: web3.utils.toWei(this.gasPrice.toString(), 'gwei')
+          },
+            (err, res) => {
+              this.isBusySending = false;
+              if (err) {
+                self.sendError = err.message;
+              } else if (res) {
+                self.sentTransactionHash = res;
+                self.hasSentTransaction = true;
+              }
+              self.dect.detectChanges();
+            });
+        } catch (error) {
+          this.isBusySending = false;
+          this.sendError = error.message;
+        }
+      } else {
+        this.isBusySending = false;
+      }
+    }, err => {
+      this.isBusySending = false;
+      this.sendError = err.message;
+    });
   }
 }

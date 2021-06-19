@@ -88,18 +88,74 @@ delete: false
       },
       HoldingTimeInMinutes: {
         sort: true,
-        title: 'Holding Time',
+        title: 'Total Time',
         type: 'string',
         filter: false,
         valuePrepareFunction: (value) => {
-          if (value > 1440) {
-            const days = (value / 1440);
-            if ((days / 365) % 1 == 0) {
-              return (days / 365).toString() + ' years';
+
+          const nowUtc = moment.utc();
+          const endDate = moment.utc().add(value, 'minutes');
+       
+          let daysRemaining = endDate.diff(nowUtc, 'days');
+
+          if (daysRemaining > 365) {
+            if (daysRemaining > 730) {
+              let yearsRemaining = endDate.diff(nowUtc, 'years', true);
+              return +yearsRemaining.toFixed(1) + ' years';
+            } else {
+            let monthsRemaining = endDate.diff(nowUtc, 'months');
+            return monthsRemaining + ' months';
             }
-            return +days.toFixed(1).replace(/[.,]00$/, '') + (days === 1 ? ' day' : ' days');
           }
-          return value + ' minute(s)';
+          else if (daysRemaining >= 1) {
+            return daysRemaining + ' days';
+          } else if (daysRemaining < 0) {
+            return 'None';
+          } else {
+            let hoursRemaining = endDate.diff(nowUtc, 'hours');
+            if (hoursRemaining < 2) {
+              let minutesRemaining = endDate.diff(nowUtc, 'minutes');
+              return minutesRemaining + ' minutes';
+            }
+            return hoursRemaining + ' hours';
+          }
+        }
+      },
+      RemainingTime: {
+        sort: false,
+        title: 'Remaining Time',
+        type: 'string',
+        filter: false,
+        valuePrepareFunction: (value, row) => {
+
+          let endDate = row.EndTimestamp;
+
+          const stillUtc = moment.utc(endDate);
+          const nowUtc = moment.utc();
+
+          let daysRemaining = stillUtc.diff(nowUtc, 'days');
+
+          if (daysRemaining > 365) {
+            if (daysRemaining > 730) {
+              let yearsRemaining = stillUtc.diff(nowUtc, 'years', true);
+              return +yearsRemaining.toFixed(1) + ' years';
+            } else {
+            let monthsRemaining = stillUtc.diff(nowUtc, 'months');
+            return monthsRemaining + ' months';
+            }
+          }
+          else if (daysRemaining >= 1) {
+            return daysRemaining + ' days';
+          } else if (daysRemaining < 0) {
+            return 'None';
+          } else {
+            let hoursRemaining = endDate.diff(nowUtc, 'hours');
+            if (hoursRemaining < 2) {
+              let minutesRemaining = endDate.diff(nowUtc, 'minutes');
+              return minutesRemaining + ' minutes';
+            }
+            return hoursRemaining + ' hours';
+          }
         }
       },
       TokenAmountPerHolder: {

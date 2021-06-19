@@ -31,11 +31,12 @@ left join mynodes mn on mn.UserID = @userID and mn.NodeID = I.NodeID
 WHERE I.NodeID = @nodeId
 GROUP BY I.NodeId";
 
-        public const String GetJobs = @"SELECT h.Holder Identity, h.OfferId, 
+        public const String GetJobs = @"SELECT h.Holder Identity, i.NodeId, h.OfferId, 
                 h.IsOriginalHolder,
                 o.FinalizedTimestamp, 
                 o.HoldingTimeInMinutes, 
                 o.TokenAmountPerHolder,
+                o.BlockchainID,
                 DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) as EndTimestamp,
                 (CASE WHEN IsFinalized = 1 
                 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN
@@ -60,13 +61,13 @@ GROUP BY I.NodeId";
                 	ELSE ''
                 END) as Status,
                 (CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then true else false end) as Paidout,
-                (CASE WHEN po.ID is null THEN 
-                	(CASE WHEN (h.LitigationStatus is null OR h.LitigationStatus = 0 OR h.LitigationStatus = 1 OR h.LitigationStatus = 2)
-                		 THEN true else false END) 
-                ELSE false END) as CanPayout
+                SUM(po.Amount) as PaidoutAmount,
+                CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then 0 ELSE 1 END  as CanPayout,
+                mn.ID IS NOT NULL AS IsMyNode
                 FROM otoffer_holders h
                 join otoffer o on o.offerid = h.offerid
                 JOIN otidentity i ON i.Identity = h.Holder
+                LEFT JOIN mynodes mn ON mn.NodeID = i.NodeId AND mn.UserID = @userID
                 left join otcontract_holding_paidout po on po.OfferID = h.OfferID and po.Holder = h.Holder
                 left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
                 WHERE i.nodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)

@@ -8,13 +8,17 @@ import { HubHttpService } from '../../../hub-http-service';
 @Component({
     selector: 'paidoutcolumn',
     template: `
-    <span> TODO
-    <!-- <span *ngIf="canPayout === true && MyNode">
-        No (<a routerLink="/nodes/dataholders/{{identity}}/payout/{{offerID}}">Payout</a>)
+    <span> 
+    <span style="margin-right:3px;">
+    {{formatAmount(rowData.PaidoutAmount)}}
     </span>
-    <span *ngIf="!MyNode || canPayout === false">
-        {{rowData.Paidout === true ? 'Yes' : 'No'}}
-    </span> -->
+  <a *ngIf="canPayout === true" routerLink="/nodes/dataholders/{{nodeID}}/payout/{{rowData.BlockchainID}}/{{rowData.Identity}}/{{offerID}}">
+  <button nbButton size="tiny" tooltip="Start Payout" title="Start Payout">
+            <nb-icon icon="flash-outline" pack="eva"></nb-icon>
+        </button>
+</a>
+         <!-- <a routerLink="/nodes/dataholders/{{nodeID}}/payout/{{offerID}}">Payout</a> -->
+   
 
 </span>
   `,
@@ -26,27 +30,29 @@ export class PaidoutColumnComponent implements ViewCell, OnInit {
     @Input() value: string;
     @Input() rowData: any;
 
-    //MyNode: MyNodeModel;
     canPayout: boolean;
     offerID: string;
-    identity: string;
+    nodeID: string;
 
-    constructor(private httpService: HubHttpService) {
+    constructor() {
 
+    }
+
+    formatAmount(input: string) {
+        if (input == null) {
+            return '0';
+        }
+        let tokenAmount = parseFloat(input);
+        let formatted = +tokenAmount.toFixed(4);
+        return formatted;
     }
 
 
     ngOnInit() {
         this.renderValue = null;
-
-        //this.MyNode = this.myNodeService.Get(this.rowData.Identity);
-        this.canPayout = this.rowData.CanPayout;
+        this.canPayout = this.rowData.CanPayout && this.rowData.IsMyNode;
         this.offerID = this.rowData.OfferId;
-        this.identity = this.rowData.Identity;
+        this.nodeID = this.rowData.NodeId;
+        debugger;
     }
-
-    getIdentityIcon(identity: string) {
-        return this.httpService.ApiUrl + '/api/icon/node/' + identity + '/' + (false ? 'dark' : 'light') + '/16';
-      }
-
 }
