@@ -305,6 +305,9 @@ WHERE (@nodeID IS NULL AND X.NodeId IN (SELECT j.NodeID FROM JobsCTELocal j WHER
                     {
                         model1 = multi.ReadFirstOrDefault<NodeStatsModel1>();
                         model2 = multi.ReadFirstOrDefault<NodeStatsModel2>();
+
+                        if (model1 == null || model2 == null)
+                            return null;
                     }
                     else
                     {
@@ -325,7 +328,6 @@ WHERE (@nodeID IS NULL AND X.NodeId IN (SELECT j.NodeID FROM JobsCTELocal j WHER
                         };
                     }
 
-          
 
                     NodeStats stats = new NodeStats
                     {

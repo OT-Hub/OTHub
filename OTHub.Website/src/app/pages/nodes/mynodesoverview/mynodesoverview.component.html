@@ -6,8 +6,9 @@
 
 <div class="row" *ngIf="isLoggedIn == true">
     <div class="col-xxxl-4 col-xxl-4 col-lg-5 col-md-6">
-        <nb-select [selected]="selectedNode" (selectedChange)="changeNode($event)"
+        <nb-select [(ngModel)]="selectedNode" (selectedChange)="changeNode($event)"
             style="width:100%;margin-bottom:10px;max-width:none;">
+
             <nb-option value="All Nodes">All Nodes</nb-option>
             <nb-option *ngFor="let node of data?.Nodes" [value]="node.NodeId">
                 <!-- {{ (node.DisplayName == null ? node.NodeId

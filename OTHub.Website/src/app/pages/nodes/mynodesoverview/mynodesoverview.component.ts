@@ -66,7 +66,13 @@ export class MynodesoverviewComponent implements OnInit {
         let url = this.httpService.ApiUrl + '/api/mynodes/JobsPerMonth';
         this.http.get<NodesPerYearMonthResponse>(url, { headers }).subscribe(data => {
           this.data = data;
+          if (this.data.Nodes.length == 1) {
+            this.selectedData = this.data.Nodes[0];
+            this.selectedNode = this.selectedData.NodeId;
+          } else {
           this.selectedData = this.data.AllNodes;
+          }
+          this.loadNodeStats(this.selectedNode == 'All Nodes' ? null : this.selectedNode);
           this.isJobsPerMonthLoading = false;
         });
 
@@ -75,7 +81,6 @@ export class MynodesoverviewComponent implements OnInit {
           this.recentJobs = data;
           this.isRecentJobsLoading = false;
         });
-        this.loadNodeStats(null);
       }
 
     });
