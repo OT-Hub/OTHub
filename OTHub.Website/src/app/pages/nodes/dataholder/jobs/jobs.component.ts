@@ -149,9 +149,12 @@ delete: false
           } else if (daysRemaining < 0) {
             return 'None';
           } else {
-            let hoursRemaining = endDate.diff(nowUtc, 'hours');
+            let hoursRemaining = stillUtc.diff(nowUtc, 'hours');
+            if (hoursRemaining < 0) {
+              return 'None';
+            }
             if (hoursRemaining < 2) {
-              let minutesRemaining = endDate.diff(nowUtc, 'minutes');
+              let minutesRemaining = stillUtc.diff(nowUtc, 'minutes');
               return minutesRemaining + ' minutes';
             }
             return hoursRemaining + ' hours';
