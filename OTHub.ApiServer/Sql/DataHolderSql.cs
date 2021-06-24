@@ -81,9 +81,10 @@ GROUP BY I.NodeId";
                 left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
                 WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)";
 
-        public const String GetPayouts = @"SELECT po.OfferID, po.Amount, po.Timestamp, po.TransactionHash, po.GasUsed, po.GasPrice
+        public const String GetPayouts = @"SELECT po.OfferID, po.Amount, po.Timestamp, po.TransactionHash, po.GasUsed, po.GasPrice, bc.GasTicker
 FROM otcontract_holding_paidout po
 JOIN otidentity i ON i.Identity = po.Holder
+JOIN blockchains bc on bc.ID = po.BlockchainID
 WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR po.OfferId = @OfferId_like) AND (@TransactionHash_like is null OR po.TransactionHash = @TransactionHash_like)";
 
 

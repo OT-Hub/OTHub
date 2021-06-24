@@ -87,7 +87,7 @@ delete: false
         filter: false,
         valuePrepareFunction: (value) => {
           const tokenAmount = parseFloat(value);
-          return tokenAmount.toFixed(2).replace(/[.,]00$/, '');
+          return +tokenAmount.toFixed(4).replace(/[.,]00$/, '');
         }
       },
       GasUsed: {
@@ -96,7 +96,7 @@ delete: false
         type: 'string',
         filter: false,
         valuePrepareFunction: (value, row) => {
-          return (row.GasUsed * (row.GasPrice / 1000000000000000000)).toFixed(6) + ' ETH';
+          return +(row.GasUsed * (row.GasPrice / 1000000000000000000)).toFixed(8) + ' ' + row.GasTicker;
         }
       },
     },

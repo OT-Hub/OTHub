@@ -125,7 +125,7 @@ namespace OTHub.APIServer.Controllers
             }
         }
 
-        [Route("{identity}/payouts")]
+        [Route("{nodeId}/payouts")]
         [HttpGet]
         public async Task<IActionResult> GetPayouts(string nodeId,
             [FromQuery] int _limit,
