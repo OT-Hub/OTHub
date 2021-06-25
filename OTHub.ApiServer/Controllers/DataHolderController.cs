@@ -518,9 +518,10 @@ OT Hub enforces this API call is successful before letting users use Metamask to
         [SwaggerResponse(500, "Internal server error")]
         public async Task<BeforePayoutResult> CanTryPayout([FromQuery, SwaggerParameter("Node ID", Required = true)]
             string nodeID, [FromQuery] string identity, [FromQuery] int? blockchainID, [FromQuery, SwaggerParameter("The ID of the offer", Required = true)] string offerId, 
-            [FromQuery] string holdingAddress, [FromQuery] string holdingStorageAddress, [FromQuery] string litigationStorageAddress)
+            [FromQuery] string holdingAddress, [FromQuery] string holdingStorageAddress, [FromQuery] string litigationStorageAddress,
+            [FromQuery]string selectedAddress)
         {
-            return await BlockchainHelper.CanTryPayout(nodeID, offerId, holdingAddress, holdingStorageAddress, litigationStorageAddress, identity, blockchainID);
+            return await BlockchainHelper.CanTryPayout(nodeID, offerId, holdingAddress, holdingStorageAddress, litigationStorageAddress, identity, blockchainID, selectedAddress);
         }
 
         [Route("GetTotalPaidoutForJob")]

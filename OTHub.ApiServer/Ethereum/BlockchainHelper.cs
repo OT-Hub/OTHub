@@ -1,28 +1,51 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
+using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
+using Nethereum.ABI;
 using Nethereum.Contracts;
 using Nethereum.Hex.HexConvertors.Extensions;
+using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using Org.BouncyCastle.Crypto.Digests;
 using OTHub.APIServer.Sql;
 using OTHub.APIServer.Sql.Models.Contracts;
 using OTHub.APIServer.Sql.Models.Nodes;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
-using OTHub.Settings.Helpers;
 
 namespace OTHub.APIServer.Ethereum
 {
     public static class BlockchainHelper
     {
-        public static async Task<BeforePayoutResult> CanTryPayout(string nodeID, string offerId, string holdingAddress,
-            string holdingStorageAddress, string litigationStorageAddress, string identity, int? blockchainID)
+        public static byte[] CalculateHash(string value)
         {
-            if (nodeID == null || offerId == null || holdingAddress == null || holdingStorageAddress == null || litigationStorageAddress == null || identity == null || blockchainID == null)
+            var input = Encoding.UTF8.GetBytes(value);
+            var output = CalculateHash(input);
+            return output;
+        }
+
+
+        public static byte[] CalculateHash(byte[] value)
+        {
+            var digest = new KeccakDigest(256);
+            var output = new byte[digest.GetDigestSize()];
+            digest.BlockUpdate(value, 0, value.Length);
+            digest.DoFinal(output, 0);
+            return output;
+        }
+
+
+        public static async Task<BeforePayoutResult> CanTryPayout(string nodeID, string offerId, string holdingAddress,
+            string holdingStorageAddress, string litigationStorageAddress, string identity, int? blockchainID,
+            string selectedAddress)
+        {
+            if (nodeID == null || offerId == null || holdingAddress == null || holdingStorageAddress == null || litigationStorageAddress == null || identity == null || blockchainID == null || selectedAddress == null)
             {
                 return new BeforePayoutResult
                 {
@@ -34,6 +57,9 @@ namespace OTHub.APIServer.Ethereum
 
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
+
+
+
                 var holdingStorageAddressModel = await connection.QueryFirstOrDefaultAsync<ContractAddress>(ContractsSql.GetHoldingStorageAddressByAddress, new
                 {
                     holdingStorageAddress = holdingStorageAddress,
@@ -66,6 +92,32 @@ namespace OTHub.APIServer.Ethereum
                 });
 
                 var cl = new Web3(nodeUrl);
+
+                var eth = new EthApiService(cl.Client);
+
+
+                var ercContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.ERC725, blockchainEnum, networkNameEnum), identity);
+
+                Function keyHasPurposeFunction = ercContract.GetFunction("keyHasPurpose");
+
+
+                var abiEncode = new ABIEncode();
+                byte[] test = abiEncode.GetABIEncodedPacked(selectedAddress.HexToByteArray());
+
+                byte[] bytes = CalculateHash(test);
+
+                bool hasPermission = await keyHasPurposeFunction.CallAsync<bool>(bytes, 1) || await keyHasPurposeFunction.CallAsync<bool>(bytes, 2); ;
+
+                if (!hasPermission)
+                {
+                    return new BeforePayoutResult
+                    {
+                        CanTryPayout = false,
+                        Header = "Stop!",
+                        Message = "The address you have selected in MetaMask (" + selectedAddress + ") does not have permission to payout on the identity " + identity + ". You need to pick either your management wallet or operational wallet."
+                    };
+                }
+
 
                 var holdingStorageAbi = AbiHelper.GetContractAbi(ContractTypeEnum.HoldingStorage, blockchainEnum, networkNameEnum);
 
@@ -101,8 +153,6 @@ namespace OTHub.APIServer.Ethereum
 
                 var getHolderPaidAmountFunction = holdingStorageContract.GetFunction("getHolderPaidAmount");
                 var holderPaidAmount = await getHolderPaidAmountFunction.CallAsync<BigInteger>(offerIdArray, identity);
-
-
 
                 if (holderStakedAmount <= 0)
                 {
