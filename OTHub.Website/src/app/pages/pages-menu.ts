@@ -68,9 +68,9 @@ export const MENU_ITEMS: NbMenuItem[] = [
   //   icon: 'activity-outline',
   //   link: '/system/status'
   // },
-  {
-    title: 'xDai Bounty',
-    icon: 'flash-outline',
-    link: '/misc/xdaibounty',
-  },
+  // {
+  //   title: 'xDai Bounty',
+  //   icon: 'flash-outline',
+  //   link: '/misc/xdaibounty',
+  // },
 ];
