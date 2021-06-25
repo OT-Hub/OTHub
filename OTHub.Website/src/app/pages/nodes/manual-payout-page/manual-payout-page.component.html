@@ -21,7 +21,7 @@
             <br>OT Hub will try to verify that the job will successfully payout before the payout is started.
             <br>
             <br>
-            You will need some {{offer?.GasTicker}} in your management wallet to send the payout transaction via MetaMask.
+            You will need some {{offer?.GasTicker}} in your wallet to send the payout transaction via MetaMask.
           </p>
         
        </nb-card-body>
@@ -124,8 +124,7 @@
             <br>
             <br>
             <div class="alert alert-warning">
-              This is your selected wallet in MetaMask. This must be your management wallet for your node. OT Hub is currently unable to verify if you have the correct wallet in MetaMask selected.
-              If you have the wrong address picked the payout will fail after sending.
+              This is your selected wallet in MetaMask. This must be your management wallet or operational wallet for the node. OT Hub will validate this is correct before payout.
                           </div>
          
               Selected Network ID: {{selectedChainID}}
