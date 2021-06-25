@@ -71,8 +71,8 @@ FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
 (SELECT AVG(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
 (SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
 (SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H,
-(SELECT SUM(otoffer.TokenAmountPerHolder * 6) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -10 DAY)) AS TokensLocked24H,
-(SELECT SUM(otcontract_holding_paidout.Amount) FROM otcontract_holding_paidout WHERE blockchainid = b.id and Timestamp >= DATE_Add(NOW(), INTERVAL -10 DAY)) AS TokensPaidout24H
+(SELECT SUM(otoffer.TokenAmountPerHolder * 6) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensLocked24H,
+(SELECT SUM(otcontract_holding_paidout.Amount) FROM otcontract_holding_paidout WHERE blockchainid = b.id and Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensPaidout24H
 FROM blockchains b
 order by b.id desc")).ToArray();
 
