@@ -70,7 +70,9 @@ FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
 (SELECT COUNT(*) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
 (SELECT AVG(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
 (SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
-(SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
+(SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H,
+(SELECT SUM(otoffer.TokenAmountPerHolder * 6) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -10 DAY)) AS TokensLocked24H,
+(SELECT SUM(otcontract_holding_paidout.Amount) FROM otcontract_holding_paidout WHERE blockchainid = b.id and Timestamp >= DATE_Add(NOW(), INTERVAL -10 DAY)) AS TokensPaidout24H
 FROM blockchains b
 order by b.id desc")).ToArray();
 
@@ -168,7 +170,9 @@ SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FR
                     JobsSize24H = (long?) model.Blockchains.Where(b => b.JobsSize24H.HasValue).Average(b => b.JobsSize24H),
                     StakedTokens = model.Blockchains.Sum(b => b.StakedTokens),
                     TotalJobs = model.Blockchains.Sum(b => b.TotalJobs),
-                    TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b)
+                    TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b),
+                    TokensLocked24H = model.Blockchains.Select(b => b.TokensLocked24H).DefaultIfEmpty(null).Sum(),
+                    TokensPaidout24H = model.Blockchains.Select(b => b.TokensPaidout24H).DefaultIfEmpty(null).Sum()
                 };
 
                 _cache.Set("HomeV3", model, TimeSpan.FromSeconds(30));

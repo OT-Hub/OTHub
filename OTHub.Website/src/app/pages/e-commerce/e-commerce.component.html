@@ -62,8 +62,10 @@
             <div class="homeField" *ngIf="Data?.CirculatingSupply != null">
               Staked tokens:
               <span class="homeData">
-                {{formatAmount(Data?.All.StakedTokens)  | number: '1.0-2'}} / {{Data?.CirculatingSupply  | number: '1.0-2'}} {{(Data?.All.StakedTokens /
-                Data?.CirculatingSupply) * 100 | number: '1.0-2'}}%
+                {{formatAmount(Data?.All.StakedTokens)  | number: '1.0-2'}}
+                  <div class="caption description">
+                    <bdi>{{(Data?.All.StakedTokens / Data?.CirculatingSupply) * 100 | number: '1.0-2'}}% of circulating supply</bdi>
+                </div>
               </span>
             </div>
           </div>
@@ -78,6 +80,18 @@
               Jobs:
               <span class="homeData">
                 {{Data?.All.Jobs24H}}
+              </span>
+            </div>
+            <div class="homeField">
+              Locked tokens:
+              <span class="homeData">
+                {{Data?.All.TokensLocked24H | number:'1.0-3'}}  <small class="tokenSmall">TRAC</small>
+              </span>
+            </div>
+            <div class="homeField">
+              Paidout tokens:
+              <span class="homeData">
+                {{Data?.All.TokensPaidout24H | number:'1.0-3'}}  <small class="tokenSmall">TRAC</small>
               </span>
             </div>
             <!-- <div class="homeField">
@@ -216,8 +230,10 @@
             <div class="homeField" *ngIf="Data?.CirculatingSupply != null">
               Staked tokens:
               <span class="homeData">
-                {{formatAmount(bc.StakedTokens) | number: '1.0-2'}} / {{Data?.CirculatingSupply | number: '1.0-2'}} {{(bc.StakedTokens /
-                  Data?.CirculatingSupply) * 100 | number: '1.0-2'}}%
+                {{formatAmount(bc.StakedTokens) | number: '1.0-2'}}
+                  <div class="caption description">
+                    <bdi>{{(bc.StakedTokens / Data?.CirculatingSupply) * 100 | number: '1.0-2'}}% of circulating supply</bdi>
+                </div>
               </span>
             </div>
           </div>

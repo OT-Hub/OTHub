@@ -26,6 +26,8 @@ namespace OTHub.APIServer.Sql.Models.Home
         public long TotalJobs { get; set; }
         public long ActiveJobs { get; set; }
         public decimal StakedTokens { get; set; }
+        public decimal? TokensLocked24H { get; set; }
+        public decimal? TokensPaidout24H { get; set; }
         public long Jobs24H { get; set; }
         public decimal? JobsReward24H { get; set; }
         public long? JobsDuration24H { get; set; }

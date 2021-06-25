@@ -259,6 +259,8 @@ export class HomeV3BlockchainModel {
   JobsReward24H: number;
   JobsDuration24H: number;
   JobsSize24H: number;
+  TokensLocked24H: number;
+  TokensPaidout24H: number;
   StakedTokens: string;
   GasTicker: string;
   TokenTicker: string;
