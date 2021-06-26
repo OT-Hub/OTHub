@@ -825,8 +825,8 @@ ADD COLUMN IF NOT EXISTS `NetworkID` int NULL");
 	PRIMARY KEY (`ID`) USING BTREE,
 	INDEX `FK_findnodesbywalletjob_users` (`UserID`) USING BTREE,
 	INDEX `FK_findnodesbywalletjob_blockchains` (`BlockchainID`) USING BTREE,
-	CONSTRAINT `FK_findnodesbywalletjob_blockchains` FOREIGN KEY (`BlockchainID`) REFERENCES `othubmainnet`.`blockchains` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT,
-	CONSTRAINT `FK_findnodesbywalletjob_users` FOREIGN KEY (`UserID`) REFERENCES `othubmainnet`.`users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+	CONSTRAINT `FK_findnodesbywalletjob_blockchains` FOREIGN KEY (`BlockchainID`) REFERENCES `blockchains` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT,
+	CONSTRAINT `FK_findnodesbywalletjob_users` FOREIGN KEY (`UserID`) REFERENCES `users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
 )
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
@@ -840,7 +840,7 @@ ENGINE=InnoDB
 	`IsUnknownResult` BIT(1) NULL,
 	PRIMARY KEY (`ID`) USING BTREE,
 	INDEX `FK_findnodesbywalletresult_findnodesbywalletjob` (`JobID`) USING BTREE,
-	CONSTRAINT `FK_findnodesbywalletresult_findnodesbywalletjob` FOREIGN KEY (`JobID`) REFERENCES `othubmainnet`.`findnodesbywalletjob` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+	CONSTRAINT `FK_findnodesbywalletresult_findnodesbywalletjob` FOREIGN KEY (`JobID`) REFERENCES `findnodesbywalletjob` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
 )
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
