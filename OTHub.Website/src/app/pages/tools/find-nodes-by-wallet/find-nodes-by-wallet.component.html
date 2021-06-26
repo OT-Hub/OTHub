@@ -1,0 +1,95 @@
+<div class="alert alert-warning" *ngIf="isLoggedIn == false">
+    You must be logged in to use this feature.
+</div>
+
+<nb-card *ngIf="isLoggedIn == true">
+    <nb-card-header>
+        Find Nodes by Wallet
+
+    </nb-card-header>
+    <nb-card-body>
+        <p>When you create an OriginTrail node it automatically takes the minimum stake from your wallet
+            into your node profile.</p>
+        <p>If you had issues setting up your node and reinstalled without backing up your files you could have your
+            minimum stake taken a second time.</p>
+        <br>
+        <p>This page allows you to enter your public addresses (ETH, xDai) that you may have used for management
+            wallets, it will then check every node ever made to see if you own any node you didn't realise you had.</p>
+        <br>
+        Blockchain:
+        <nb-radio-group [(ngModel)]="selectedBlockchain">
+            <nb-radio *ngFor="let bc of blockchains;" value="{{bc.ID}}">
+              {{bc.BlockchainName}}
+            </nb-radio>
+          </nb-radio-group>
+        <br>
+        <input type="text" nbInput placeholder="Public address (starts with 0x)"
+            [(ngModel)]="address" style="height:30px;width:380px;vertical-align: middle;margin-right:6px;">
+        <button class="btn btn-primary" (click)="search()">Start Search</button>
+        <br *ngIf="isSearching == true">
+        <br *ngIf="isSearching == true">
+        <div class="alert alert-success" *ngIf="isSearching == true">
+            <b>Your search has been started!</b> Searching is a time consuming process, please check back in on this
+            page later to see the results.
+            <br>
+            You are able to start multiple searches on different addresses if you have more to check.
+        </div>
+    </nb-card-body>
+</nb-card>
+
+<nb-card *ngIf="isLoggedIn == true">
+    <nb-card-header>
+        Searches
+    </nb-card-header>
+    <nb-card-body>
+        <div *ngFor="let job of jobs;let i = index">
+            <div style="float:left;clear:both; margin-bottom:10px;">
+                <span class="blockchainSmall">{{job.BlockchainName}}</span> {{job.Address}}
+                <div class="caption description">
+                    <bdi>Started on {{job.StartDate | amFromUtc | amLocal | amDateFormat:'LL h:mm A'}}</bdi>
+                </div>
+                <div class="caption description" *ngIf="job.EndDate != null && job.Failed != true">
+                    <bdi>Finished on {{job.EndDate | amFromUtc | amLocal | amDateFormat:'LL h:mm A'}}</bdi>
+                </div>
+                <div class="caption description" *ngIf="job.Failed == true">
+                    <bdi>There was an error processing this search. Please retry later or report this problem.</bdi>
+                </div>
+                <div class="caption description" *ngIf="job.EndDate == null">
+                    <bdi *ngIf="job.Progress > 0">{{job.Progress}}% of nodes have been searched so far</bdi>
+                    <bdi *ngIf="job.Progress == 0">You are currently in a queue to have your search run. Please check back later.</bdi>
+                </div>
+
+                <div *ngIf="job.ShowResults == true">
+                    <br>
+                    <p>{{job.Identities.length}} identities were found.</p>
+                    <p *ngIf="job.Identities.length > 0">If you see any nodes you weren't expecting with tokens on them you can withdraw/claim these tokens back!</p>
+                    <p *ngIf="job.Identities.length > 0">Go to <a href="https://node-profile.origintrail.io/" target="_blank">https://node-profile.origintrail.io/</a> if you want to withdraw tokens.</p>
+                    <div *ngFor="let result of job.Identities;let j = index" style="border: 1px grey solid;border-radius: 5px;padding: 7px;">
+                        <div>Node ID: {{result.NodeID}}  <span class="blockchainSmall">{{result.DisplayName != null ? ' ' + result.DisplayName : ''}}</span></div>
+                        <div>
+                           Identity: <a routerLink="/nodes/dataholders/{{result.Identity}}">{{result.Identity}}</a>
+                        </div>
+                        <div>
+                            Tokens: {{result.Tokens}}
+                        </div>
+                    </div>
+                 
+            
+                    <div class="alert alert-warning" *ngIf="job.Identities.length == 0">
+                        <b>No matching nodes for this management wallet were found.</b>
+                    </div>
+    
+                </div>
+                
+            </div>
+            <div style="float:right;" *ngIf="job.EndDate != null && job.ShowResults != true && job.Failed != true">
+                <button class="btn btn-info" (click)="showResults(job)">View Results</button>
+            </div>
+            <div style="float:right;" *ngIf="job.EndDate == null && job.ShowResults != true && job.Failed != true">
+                <button class="btn btn-primary" (click)="refresh()">Refresh</button>
+            </div>
+            <hr style="clear:both;">
+        </div>
+
+    </nb-card-body>
+</nb-card>

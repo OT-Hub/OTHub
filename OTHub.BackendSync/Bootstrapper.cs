@@ -11,6 +11,7 @@ using OTHub.BackendSync.Blockchain.Tasks.BlockchainMaintenance;
 using OTHub.BackendSync.Blockchain.Tasks.BlockchainSync;
 using OTHub.BackendSync.Blockchain.Tasks.Misc;
 using OTHub.BackendSync.Blockchain.Tasks.Misc.Children;
+using OTHub.BackendSync.Blockchain.Tasks.Tools;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Markets.Tasks;
 
@@ -46,7 +47,7 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.Startup);
 
-                controller.Schedule(new xDaiBountyTask(), TimeSpan.FromMinutes(10), true);
+                controller.Schedule(new ToolsTask(), true);
 
                 await controller.Start();
             }));

@@ -813,6 +813,39 @@ ADD COLUMN IF NOT EXISTS `BlockchainWebSocketsUrl` varchar(500) NULL");
                 connection.Execute(@"ALTER TABLE blockchains
 ADD COLUMN IF NOT EXISTS `NetworkID` int NULL");
 
+                connection.Execute(@"CREATE TABLE if not exists `findnodesbywalletjob` (
+	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`UserID` VARCHAR(45) NOT NULL COLLATE 'latin1_swedish_ci',
+	`BlockchainID` INT(11) NOT NULL,
+	`Address` VARCHAR(42) NOT NULL COLLATE 'latin1_swedish_ci',
+	`StartDate` DATETIME NOT NULL,
+	`EndDate` DATETIME NULL DEFAULT NULL,
+	`Progress` INT(11) NOT NULL,
+	`Failed` BIT(1) NULL DEFAULT NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_findnodesbywalletjob_users` (`UserID`) USING BTREE,
+	INDEX `FK_findnodesbywalletjob_blockchains` (`BlockchainID`) USING BTREE,
+	CONSTRAINT `FK_findnodesbywalletjob_blockchains` FOREIGN KEY (`BlockchainID`) REFERENCES `othubmainnet`.`blockchains` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT,
+	CONSTRAINT `FK_findnodesbywalletjob_users` FOREIGN KEY (`UserID`) REFERENCES `othubmainnet`.`users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"CREATE TABLE if not exists `findnodesbywalletresult` (
+	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`JobID` INT(10) UNSIGNED NOT NULL,
+	`Identity` VARCHAR(50) NOT NULL COLLATE 'latin1_swedish_ci',
+	`IsUnknownResult` BIT(1) NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_findnodesbywalletresult_findnodesbywalletjob` (`JobID`) USING BTREE,
+	CONSTRAINT `FK_findnodesbywalletresult_findnodesbywalletjob` FOREIGN KEY (`JobID`) REFERENCES `othubmainnet`.`findnodesbywalletjob` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
 
             }
         }

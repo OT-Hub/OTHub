@@ -18,7 +18,7 @@ namespace OTHub.APIServer.Controllers
         [SwaggerResponse(200, type: typeof(int))]
         public async Task<int?> GetNetworkID([FromQuery] int blockchainID)
         {
-            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int? networkID = await connection.ExecuteScalarAsync<int?>(@"SELECT NetworkID FROM blockchains WHERE id = @blockchainID",
                     new
@@ -29,5 +29,21 @@ namespace OTHub.APIServer.Controllers
                 return networkID;
             }
         }
+
+        [Route("GetBlockchains")]
+        [HttpGet]
+        public async Task<BlockchainModel[]> GetBlockchains()
+        {
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                return (await connection.QueryAsync<BlockchainModel>(@"SELECT ID, BlockchainName FROM blockchains")).ToArray();
+            }
+        }
+    }
+
+    public class BlockchainModel
+    {
+        public int ID { get; set; }
+        public string BlockchainName { get; set; }
     }
 }

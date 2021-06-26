@@ -48,6 +48,16 @@ export const MENU_ITEMS: NbMenuItem[] = [
       },
     ],
   },
+  {
+    title: 'Tools',
+    icon: 'award-outline',
+    children: [
+      {
+        title: 'Find Nodes by Wallet',
+        link: '/tools/findnodesbywallet',
+      },
+    ],
+  },
   // {
   //   title: 'Misc',
   //   icon: 'umbrella-outline',

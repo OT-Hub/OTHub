@@ -86,7 +86,7 @@ namespace OTHub.APIServer.Ethereum
                 BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
                 BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
 
-                string nodeUrl = connection.ExecuteScalar<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
                 {
                     id = blockchainID
                 });
@@ -106,7 +106,7 @@ namespace OTHub.APIServer.Ethereum
 
                 byte[] bytes = CalculateHash(test);
 
-                bool hasPermission = await keyHasPurposeFunction.CallAsync<bool>(bytes, 1) || await keyHasPurposeFunction.CallAsync<bool>(bytes, 2); ;
+                bool hasPermission = await keyHasPurposeFunction.CallAsync<bool>(bytes, 1) || await keyHasPurposeFunction.CallAsync<bool>(bytes, 2);
 
                 if (!hasPermission)
                 {
