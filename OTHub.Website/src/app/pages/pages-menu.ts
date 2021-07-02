@@ -49,6 +49,16 @@ export const MENU_ITEMS: NbMenuItem[] = [
     ],
   },
   {
+    title: 'Reports',
+    icon: 'pie-chart-outline',
+    children: [
+      {
+        title: 'Staked Tokens',
+        link: '/reports/stakedtokens',
+      },
+    ],
+  },
+  {
     title: 'Tools',
     icon: 'award-outline',
     children: [

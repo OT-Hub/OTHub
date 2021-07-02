@@ -306,7 +306,7 @@ delete: false
       chart.cursor = new am4charts.XYCursor();
       chart.cursor.behavior = "panXY";
       chart.cursor.xAxis = dateAxis;
-      chart.cursor.selection 
+    
       //chart.cursor.snapToSeries = series;
 
       let scrollbarX = new am4charts.XYChartScrollbar();

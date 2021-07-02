@@ -847,6 +847,18 @@ ENGINE=InnoDB
 ;
 ");
 
+                connection.Execute(@"CREATE TABLE if not exists `stakedtokensbyday` (
+	`Date` DATE NOT NULL,
+	`Deposited` DECIMAL(27,18) NOT NULL DEFAULT '0.000000000000000000',
+	`Withdrawn` DECIMAL(27,18) NOT NULL DEFAULT '0.000000000000000000',
+	`Staked` DECIMAL(27,18) NOT NULL DEFAULT '0.000000000000000000',
+	PRIMARY KEY (`Date`) USING BTREE
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
             }
         }
     }

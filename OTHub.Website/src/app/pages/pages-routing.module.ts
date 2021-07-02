@@ -37,6 +37,11 @@ const routes: Routes = [{
         .then(m => m.ToolsModule),
     },
     {
+      path: 'reports',
+      loadChildren: () => import('./reports/reports.module')
+        .then(m => m.ReportsModule),
+    },
+    {
       path: 'globalactivity',
       loadChildren: './globalactivity/globalactivity.module#GlobalActivityModule'
     },

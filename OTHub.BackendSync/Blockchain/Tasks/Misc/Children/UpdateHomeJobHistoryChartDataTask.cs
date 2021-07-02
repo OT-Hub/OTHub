@@ -17,9 +17,9 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 
         public override async Task Execute(Source source)
         {
-            using (var con = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            await using (var con = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                con.Execute(@"INSERT INTO jobhistorybyday 
+                await con.ExecuteAsync(@"INSERT INTO jobhistorybyday 
 SELECT 
 x.Date,
 COUNT(O.OfferId) NewJobs,
