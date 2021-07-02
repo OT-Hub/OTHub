@@ -54,7 +54,7 @@ select * from
 where Date BETWEEN (SELECT MIN(ethblock.Timestamp) FROM ethblock) AND (SELECT MAX(ethblock.Timestamp) FROM ethblock)
 AND DATE NOT IN (SELECT DATE FROM stakedtokensbyday) AND DATE < DATE(NOW())
 ) X 
-GROUP BY x.Date");
+GROUP BY x.Date", commandTimeout:500);
             }
         }
     }
