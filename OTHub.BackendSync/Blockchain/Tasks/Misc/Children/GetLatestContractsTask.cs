@@ -126,14 +126,15 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.HoldingStorage,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
-                    new OTContract(fromBlockNumber, fromBlockNumber)
-                    {
-                        Address = "0xf130e4df48aeef509a3e106223febcde1f9d1a4b",
-                        IsLatest = false,
-                        Type = (int)ContractTypeEnum.Holding,
-                        BlockchainID = blockchainID
-                    }, true);
+                //TODO remove from database
+                //OTContract.InsertOrUpdate(connection,
+                //    new OTContract(fromBlockNumber, fromBlockNumber)
+                //    {
+                //        Address = "0xf130e4df48aeef509a3e106223febcde1f9d1a4b",
+                //        IsLatest = false,
+                //        Type = (int)ContractTypeEnum.Holding,
+                //        BlockchainID = blockchainID
+                //    }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
@@ -206,14 +207,15 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Holding,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
-                    new OTContract(fromBlockNumber, fromBlockNumber)
-                    {
-                        Address = "0x8d92ee115c126b751cfb0849efa629d2aadb8753",
-                        IsLatest = false,
-                        Type = (int)ContractTypeEnum.Holding,
-                        BlockchainID = blockchainID
-                    }, true);
+                //TODO remove from database
+                //OTContract.InsertOrUpdate(connection,
+                //    new OTContract(fromBlockNumber, fromBlockNumber)
+                //    {
+                //        Address = "0x8d92ee115c126b751cfb0849efa629d2aadb8753",
+                //        IsLatest = false,
+                //        Type = (int)ContractTypeEnum.Holding,
+                //        BlockchainID = blockchainID
+                //    }, true);
                 OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
