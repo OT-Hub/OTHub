@@ -38,9 +38,23 @@ namespace OTHub.BackendSync
             _lck.Release();
         }
 
-        public async Task<LockRelease> Lock()
+        public int LockCurrentCount => _lck.CurrentCount;
+
+        public async Task<LockRelease> Lock(int? milliseconds = null)
         {
-            await _lck.WaitAsync();
+            if (milliseconds.HasValue)
+            {
+                bool result = await _lck.WaitAsync(milliseconds.Value);
+
+                if (!result)
+                {
+                    throw new Exception("Lock did not release in time.");
+                }
+            }
+            else
+            {
+                await _lck.WaitAsync();
+            }
 
             return this;
         }

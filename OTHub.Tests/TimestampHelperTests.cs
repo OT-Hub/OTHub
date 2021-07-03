@@ -17,7 +17,7 @@ namespace OTHub.Tests
 
             var expected = new DateTime(2021, 07, 03, 14, 41, 04, DateTimeKind.Local);
 
-            Assert.Equal(date, expected);
+            Assert.Equal(expected, date);
         }
     }
 }
