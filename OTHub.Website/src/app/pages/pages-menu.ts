@@ -57,7 +57,7 @@ export const MENU_ITEMS: NbMenuItem[] = [
         link: '/reports/stakedtokens',
       },
       {
-        title: 'TGS',
+        title: 'Total Graph Size',
         link: '/reports/tgs',
       },
     ],
