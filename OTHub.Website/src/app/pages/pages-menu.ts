@@ -56,6 +56,10 @@ export const MENU_ITEMS: NbMenuItem[] = [
         title: 'Staked Tokens',
         link: '/reports/stakedtokens',
       },
+      {
+        title: 'TGS',
+        link: '/reports/tgs',
+      },
     ],
   },
   {
