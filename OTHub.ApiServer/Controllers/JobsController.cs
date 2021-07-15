@@ -1,10 +1,15 @@
-﻿using System.Text;
+﻿using System;
+using System.Text;
 using System.Threading.Tasks;
+using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using MySqlConnector;
 using Newtonsoft.Json;
 using OTHub.APIServer.Sql;
 using OTHub.APIServer.Sql.Models;
 using OTHub.APIServer.Sql.Models.Jobs;
+using OTHub.Settings;
 using ServiceStack.Text;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -13,6 +18,77 @@ namespace OTHub.APIServer.Controllers
     [Route("api/[controller]")]
     public class JobsController : Controller
     {
+        private readonly IMemoryCache _cache;
+
+        public JobsController(IMemoryCache cache)
+        {
+            _cache = cache;
+        }
+
+        [HttpGet]
+        [Route("jobcreatedcountinperiod")]
+        public async Task<IActionResult> GetJobCreatedCountInTimePeriod([FromQuery] string timePeriod, [FromQuery] int time, [FromQuery] int? blockchainID)
+        {
+            string cacheKey = $@"JobsController-GetJobCreatedCountInTimePeriod-{blockchainID}-{timePeriod}-{time}";
+            if (_cache.TryGetValue(cacheKey, out object value))
+            {
+                if (value is long intVal)
+                {
+                    return Ok(intVal);
+                }
+            }
+
+            await using (var connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                DateTime date = DateTime.UtcNow;
+
+                time = Math.Abs(time) * -1;
+
+                switch (timePeriod)
+                {
+                    case "seconds":
+                        date = date.AddSeconds(time);
+                        break;
+                    case "minutes":
+                        date = date.AddMinutes(time);
+                        break;
+                    case "hours":
+                        date = date.AddHours(time);
+                        break;
+                    case "days":
+                        date = date.AddDays(time);
+                        break;
+                    case "months":
+                        date = date.AddMonths(time);
+                        break;
+                    case "years":
+                        date = date.AddYears(time);
+                        break;
+                    default:
+                        return BadRequest("Invalid timePeriod parameter. Valid options: minutes, hours, days, months, years");
+                }
+
+
+                var count = await connection.ExecuteScalarAsync<long>(@"SELECT COUNT(o.OfferID)
+FROM otcontract_holding_offercreated o
+WHERE (@blockchainID is null OR o.BlockchainID = @blockchainID) AND o.Timestamp >= @laterThanDate", new
+                {
+                    blockchainID = blockchainID,
+                    laterThanDate = date
+                });
+
+                using (ICacheEntry cacheEntry = _cache.CreateEntry(cacheKey))
+                {
+                    cacheEntry.Priority = CacheItemPriority.Low;
+                    cacheEntry.Value = count;
+                    cacheEntry.AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(1);
+                }
+
+                return Ok(count);
+            }
+        }
+
         [HttpGet]
         [Route("paging")]
         [SwaggerOperation(

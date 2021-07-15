@@ -12,6 +12,7 @@ using MySqlConnector;
 using OTHub.APIServer.Helpers;
 using OTHub.APIServer.Sql.Models.Nodes;
 using OTHub.Settings;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace OTHub.APIServer.Controllers
 {
@@ -28,6 +29,7 @@ namespace OTHub.APIServer.Controllers
         [HttpPost]
         [Authorize]
         [Route("UpdateMyNodesPriceCalculationMode")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task UpdateMyNodesPriceCalculationMode([FromQuery]int mode)
         {
             if (mode != 0 && mode != 1)
@@ -51,6 +53,7 @@ namespace OTHub.APIServer.Controllers
         [HttpGet]
         [Authorize]
         [Route("MyNodesPriceCalculationMode")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task<int> GetMyNodesPriceCalculationMode()
         {
             await using (MySqlConnection connection =
@@ -66,6 +69,7 @@ namespace OTHub.APIServer.Controllers
         [HttpGet]
         [Authorize]
         [Route("TaxReport")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task<TaxReportModel[]> TaxReport([FromQuery]int usdMode, [FromQuery] string nodeID,
             [FromQuery]DateTime startDate, [FromQuery]DateTime endDate,
             [FromQuery] bool includeActiveJobs, [FromQuery] bool includeCompletedJobs)
@@ -171,6 +175,7 @@ OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.Ho
             [HttpGet]
         [Authorize]
         [Route("RecentJobs")]
+            [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task<RecentJobsByDay[]> GetRecentJobs()
         {
             if (_cache.TryGetValue("MyNodes-GetRecentJobs-" + User.Identity.Name, out var cached))
@@ -229,6 +234,7 @@ ORDER BY o.FinalizedTimestamp DESC", new
         [HttpGet]
         [Authorize]
         [Route("GetNodeStats")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task<NodeStats> GetNodeStats([FromQuery]string nodeID)
         {
             TickerInfo ticker = await TickerHelper.GetTickerInfo(_cache);
@@ -365,6 +371,7 @@ WHERE (@nodeID IS NULL AND X.NodeId IN (SELECT j.NodeID FROM JobsCTELocal j WHER
         [HttpGet]
         [Authorize]
         [Route("JobsPerMonth")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task<NodesPerYearMonthResponse> GetJobsPerMonth()
         {
             if (_cache.TryGetValue("MyNodes-JobsPerMonth-" + User.Identity.Name, out var cached))
@@ -538,6 +545,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         [HttpPost]
         [Authorize]
         [Route("ImportNodes")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task ImportNodes([FromQuery] string identities)
         {
             string[] split = identities.Split(";").Where(t => t.StartsWith("0x") && t.Length <= 100).ToArray();
@@ -563,6 +571,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         [HttpPost]
         [Authorize]
         [Route("AddEditNode")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task AddEditNode([FromQuery] string nodeID, [FromQuery] string name)
         {
             if (name != null && name.Length > 200)
@@ -602,6 +611,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         [HttpDelete]
         [Authorize]
         [Route("DeleteNode")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task DeleteNode([FromQuery]string nodeID)
         {
             await using (MySqlConnection connection =
