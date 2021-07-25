@@ -5,22 +5,25 @@ using MySqlConnector;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
+using OTHub.Settings.Constants;
 
 namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 {
     public class ProcessJobsTask : TaskRunBlockchain
     {
-        public ProcessJobsTask() : base("Process Jobs")
+        public ProcessJobsTask() : base(TaskNames.ProcessJobs)
         {
         }
 
-        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = GetBlockchainID(connection, blockchain, network);
+                int blockchainID = await GetBlockchainID(connection, blockchain, network);
                 await Execute(connection, blockchainID, blockchain, network);
             }
+
+            return true;
         }
 
         public static async Task Execute(MySqlConnection connection, int blockchainID, BlockchainType blockchain, BlockchainNetwork network)
@@ -69,7 +72,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                 foreach (var offerToFinalize in offersToFinalize)
                 {
-                    OTOffer.FinalizeOffer(connection, offerToFinalize.OfferID, offerToFinalize.BlockNumber,
+                    await OTOffer.FinalizeOffer(connection, offerToFinalize.OfferID, offerToFinalize.BlockNumber,
                         offerToFinalize.TransactionHash, offerToFinalize.Holder1, offerToFinalize.Holder2,
                         offerToFinalize.Holder3, offerToFinalize.Timestamp, blockchainID);
 

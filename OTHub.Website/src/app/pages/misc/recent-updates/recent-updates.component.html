@@ -10,6 +10,17 @@
 
     <nb-list>
         <nb-list-item>
+            <h6>25th</h6>
+            <ul>
+                <li>Fixed an error during job sync processing.</li>
+                <li>Removed estimated lambda from the website as it's now nearly impossible to calculate.</li>
+                <li>Added live websocket updates for: Litigation Initiated, Litigation Answered, Litigation Timed Out, Litigation Completed, Litigation Replacement Started, Identity Created, Profile Created, Tokens Deposited, Tokens Released, Tokens Withdrawn, Offer Task.</li>
+                <li>Improvements to the stability of the websockets code to handle service unavailability on RPC and recover automatically.</li>
+                <li>Errors during the blockchain sync no longer stop the website from updating other areas which are successfully completing.</li>
+                <li>Website outages are reported at the top of the page to make users aware of problems.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
             <h6>4th</h6>
             <ul>
                 <li>Added a new report for viewing the total graph size.</li>

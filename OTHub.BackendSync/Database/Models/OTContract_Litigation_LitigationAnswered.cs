@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 
@@ -15,16 +16,17 @@ namespace OTHub.BackendSync.Database.Models
         public ulong GasUsed { get; set; }
         public int BlockchainID { get; set; }
 
-        public static void InsertIfNotExist(MySqlConnection connection, OTContract_Litigation_LitigationAnswered model)
+        public static async Task InsertIfNotExist(MySqlConnection connection, OTContract_Litigation_LitigationAnswered model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Litigation_LitigationAnswered WHERE TransactionHash = @hash AND BlockchainID = @blockchainID", new
+            var count = await connection.QueryFirstOrDefaultAsync<Int32>("SELECT COUNT(*) FROM OTContract_Litigation_LitigationAnswered WHERE TransactionHash = @hash AND BlockchainID = @blockchainID", new
             {
-                hash = model.TransactionHash
+                hash = model.TransactionHash,
+                blockchainID = model.BlockchainID
             });
 
             if (count == 0)
             {
-                connection.Execute(
+                await connection.ExecuteAsync(
                     @"INSERT INTO OTContract_Litigation_LitigationAnswered
 (TransactionHash, BlockNumber, Timestamp, OfferId, HolderIdentity, GasPrice, GasUsed, BlockchainID)
 VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @GasPrice, @GasUsed, @BlockchainID)",
@@ -40,8 +42,19 @@ VALUES(@TransactionHash, @BlockNumber, @Timestamp, @OfferId, @HolderIdentity, @G
                         model.BlockchainID
                     });
 
-                OTOfferHolder.UpdateLitigationStatusesForOffer(connection, model.OfferId, model.BlockchainID);
+                await OTOfferHolder.UpdateLitigationStatusesForOffer(connection, model.OfferId, model.BlockchainID);
             }
+        }
+
+        public static bool TransactionExists(MySqlConnection connection, string transactionHash, int blockchainID)
+        {
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Litigation_LitigationAnswered WHERE TransactionHash = @hash AND BlockchainID = @blockchainID", new
+            {
+                hash = transactionHash,
+                blockchainID = blockchainID
+            });
+
+            return count > 0;
         }
     }
 }

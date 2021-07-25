@@ -5,19 +5,20 @@ using MySqlConnector;
 using OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
+using OTHub.Settings.Constants;
 
 namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync
 {
     public class BlockchainSyncTask : TaskRunBlockchain
     {
-        public BlockchainSyncTask() : base("Blockchain Sync")
+        public BlockchainSyncTask() : base(TaskNames.BlockchainSync)
         {
             Add(new SyncProfileContractTask());
             Add(new SyncHoldingContractTask());
+            Add(new ProcessJobsTask());
             Add(new SyncLitigationContractTask());
             Add(new SyncReplacementContractTask());
             Add(new LoadProfileBalancesTask());
-            Add(new ProcessJobsTask());
         }
 
         public override TimeSpan GetExecutingInterval(BlockchainType type)
@@ -30,13 +31,13 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync
             return TimeSpan.FromMinutes(10);
         }
 
-        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = GetBlockchainID(connection, blockchain, network);
+                int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
-                await RunChildren(source, blockchain, network, blockchainID);
+                return await RunChildren(source, blockchain, network, blockchainID);
             }
         }
 

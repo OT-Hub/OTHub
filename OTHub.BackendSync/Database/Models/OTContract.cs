@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 using OTHub.Settings.Abis;
@@ -33,9 +34,9 @@ namespace OTHub.BackendSync.Database.Models
         public bool IsArchived { get; set; }
         public DateTime? LastSyncedTimestamp { get; set; }
 
-        public static void Insert(MySqlConnection connection, OTContract contract)
+        public static async Task Insert(MySqlConnection connection, OTContract contract)
         {
-            connection.Execute("INSERT INTO OTContract(Address, Type, IsLatest, FromBlockNumber, SyncBlockNumber, ToBlockNumber, IsArchived, LastSyncedTimestamp, BlockchainID) VALUES(@address, @type, @isLatest, @fromBlockNo, @syncBlockNo, @toBlockNo, @IsArchived, @LastSyncedTimestamp, @BlockchainID)",
+            await connection.ExecuteAsync("INSERT INTO OTContract(Address, Type, IsLatest, FromBlockNumber, SyncBlockNumber, ToBlockNumber, IsArchived, LastSyncedTimestamp, BlockchainID) VALUES(@address, @type, @isLatest, @fromBlockNo, @syncBlockNo, @toBlockNo, @IsArchived, @LastSyncedTimestamp, @BlockchainID)",
                 new
                 {
                     address = contract.Address,
@@ -50,11 +51,11 @@ namespace OTHub.BackendSync.Database.Models
                 });
         }
 
-        public static void Update(MySqlConnection connection, OTContract contract, bool onlyAllowIsLatestUpdate, bool onlyAllowIsArchivedUpdate)
+        public static async Task Update(MySqlConnection connection, OTContract contract, bool onlyAllowIsLatestUpdate, bool onlyAllowIsArchivedUpdate)
         {
             if (onlyAllowIsArchivedUpdate)
             {
-                connection.Execute("UPDATE OTContract SET IsArchived = @IsArchived WHERE Address = @address AND BlockchainID = @blockchainID", new
+                await connection.ExecuteAsync("UPDATE OTContract SET IsArchived = @IsArchived WHERE Address = @address AND BlockchainID = @blockchainID", new
                 {
                     address = contract.Address,
                     IsArchived = contract.IsArchived,
@@ -63,7 +64,7 @@ namespace OTHub.BackendSync.Database.Models
             }
             else if (onlyAllowIsLatestUpdate)
             {
-                connection.Execute("UPDATE OTContract SET IsLatest = @isLatest WHERE Address = @address AND BlockchainID = @blockchainID", new
+                await connection.ExecuteAsync("UPDATE OTContract SET IsLatest = @isLatest WHERE Address = @address AND BlockchainID = @blockchainID", new
                 {
                     address = contract.Address,
                     isLatest = contract.IsLatest,
@@ -74,7 +75,7 @@ namespace OTHub.BackendSync.Database.Models
             {
                 if (contract.IsLatest)
                 {
-                    connection.Execute(@"UPDATE OTContract
+                    await connection.ExecuteAsync(@"UPDATE OTContract
 SET IsLatest = 0
 WHERE Type = @type AND IsLatest = 1 AND Address != @address AND BlockchainID = @blockchainID", new
                     {
@@ -84,7 +85,7 @@ WHERE Type = @type AND IsLatest = 1 AND Address != @address AND BlockchainID = @
                     });
                 }
 
-                connection.Execute(@"UPDATE OTContract SET Type = @type, IsLatest = @isLatest, FromBlockNumber = @fromBlockNo, SyncBlockNumber = @syncBlockNo,
+                await connection.ExecuteAsync(@"UPDATE OTContract SET Type = @type, IsLatest = @isLatest, FromBlockNumber = @fromBlockNo, SyncBlockNumber = @syncBlockNo,
 IsArchived = @IsArchived, LastSyncedTimestamp = @LastSyncedTimestamp, BlockchainID = @blockchainID
 WHERE Address = @address and type = @type AND BlockchainID = @blockchainID", new
                 {
@@ -100,12 +101,12 @@ WHERE Address = @address and type = @type AND BlockchainID = @blockchainID", new
             }
         }
 
-        public static void InsertOrUpdate(MySqlConnection connection, OTContract otContract, bool onlyAllowIsLatestUpdate = false)
+        public static async Task InsertOrUpdate(MySqlConnection connection, OTContract otContract, bool onlyAllowIsLatestUpdate = false)
         {
             if (otContract.Address == null || otContract.Address == "0x0000000000000000000000000000000000000000")
                 return;
 
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract WHERE Address = @address AND Type = @type AND BlockchainID = @blockchainID", new
+            var count = await connection.QueryFirstOrDefaultAsync<Int32>("SELECT COUNT(*) FROM OTContract WHERE Address = @address AND Type = @type AND BlockchainID = @blockchainID", new
             {
                 address = otContract.Address,
                 type = otContract.Type,
@@ -121,22 +122,22 @@ WHERE Address = @address and type = @type AND BlockchainID = @blockchainID", new
             {
                 Console.WriteLine("Inserting " + otContract.Address + ". Type: " + (ContractTypeEnum)otContract.Type);
 
-                Insert(connection, otContract);
+                await Insert(connection, otContract);
             }
             else
             {
-                Update(connection, otContract, onlyAllowIsLatestUpdate, false);
+                await Update(connection, otContract, onlyAllowIsLatestUpdate, false);
             }
         }
 
-        public static OTContract[] GetAll(MySqlConnection connection)
-        {
-            return connection.Query<OTContract>("SELECT * FROM OTContract").ToArray();
-        }
+        //public static OTContract[] GetAll(MySqlConnection connection)
+        //{
+        //    return connection.Query<OTContract>("SELECT * FROM OTContract").ToArray();
+        //}
 
-        public static OTContract[] GetByTypeAndBlockchain(MySqlConnection connection, int type, int blockchainID)
+        public static async Task<OTContract[]> GetByTypeAndBlockchain(MySqlConnection connection, int type, int blockchainID)
         {
-            return connection.Query<OTContract>("SELECT * FROM OTContract where Type = @type AND BlockchainID = @blockchainID", new { type = type, blockchainID = blockchainID }).ToArray();
+            return (await connection.QueryAsync<OTContract>("SELECT * FROM OTContract where Type = @type AND BlockchainID = @blockchainID", new { type = type, blockchainID = blockchainID })).ToArray();
         }
     }
 }

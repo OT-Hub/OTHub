@@ -31,11 +31,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Tools
             TimeConstraint = TimeLimiter.Compose(constraint, constraint2);
         }
 
-        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = GetBlockchainID(connection, blockchain, network);
+                int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
                 var pendingJobs = (await connection.QueryAsync(
                     @"SELECT * FROM findnodesbywalletjob WHERE EndDate is null AND BlockchainID = @blockchainID ORDER BY StartDate",
@@ -46,7 +46,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Tools
 
                 foreach (var pendingJob in pendingJobs)
                 {
-                    OTIdentity[] identities = OTIdentity.GetAll(connection, blockchainID);
+                    OTIdentity[] identities = await OTIdentity.GetAll(connection, blockchainID);
                     uint id = pendingJob.ID;
                     string address = pendingJob.Address;
                     string userID = pendingJob.UserID;
@@ -67,10 +67,12 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Tools
                             id = id,
                             endDate = DateTime.UtcNow
                         });
-                        return;
+                        return false;
                     }
                 }
             }
+
+            return true;
         }
 
         private TimeLimiter TimeConstraint { get; }

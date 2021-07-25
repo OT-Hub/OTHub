@@ -12,6 +12,7 @@ using MySqlConnector;
 using Newtonsoft.Json;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
+using OTHub.Settings.Constants;
 using OTHub.Settings.Helpers;
 using RateLimiter;
 
@@ -356,7 +357,7 @@ namespace OTHub.BackendSync.Markets.Tasks
             }
         }
 
-        public GetMarketDataTask() : base("Get Market Data")
+        public GetMarketDataTask() : base(TaskNames.GetMarketData)
         {
         }
     }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,19 @@ namespace OTHub.BackendSync.Blockchain
         public static async Task Start(int blockchainID, string webSocketsUrl, string rpcUrl,
             BlockchainType blockchainType, BlockchainNetwork blockchainNetwork)
         {
+            bool failed = await Run(blockchainID, webSocketsUrl, rpcUrl, blockchainType, blockchainNetwork);
+
+            if (failed)
+            {
+                _ = Task.Run(() => Start(blockchainID, webSocketsUrl, rpcUrl, blockchainType, blockchainNetwork));
+            }
+        }
+
+        private static async Task<bool> Run(int blockchainID, string webSocketsUrl, string rpcUrl, BlockchainType blockchainType,
+            BlockchainNetwork blockchainNetwork)
+        {
+            bool hasFailed = false;
+
             using (var client = new StreamingWebSocketClient(webSocketsUrl))
             {
                 EthLogsObservableSubscription logsSubscription = new EthLogsObservableSubscription(client);
@@ -46,14 +60,15 @@ namespace OTHub.BackendSync.Blockchain
 
                     if (SmartContractManager.TryGetAddress(blockchainID, filterLog.Address, out ContractTypeEnum type))
                     {
-                        await ProcessSmartContractEvent(blockchainID, blockchainType, blockchainNetwork, type, eth, filterLog, transaction, cl);
+                        await ProcessSmartContractEvent(blockchainID, blockchainType, blockchainNetwork, type, eth, filterLog,
+                            transaction, cl);
                     }
                 });
 
                 _dictionary[blockchainID] = new Subscription(client, logsSubscription);
 
                 await client.StartAsync();
-                
+
                 client.Error += Client_Error;
 
                 while (!client.IsStarted)
@@ -63,12 +78,7 @@ namespace OTHub.BackendSync.Blockchain
 
                 await logsSubscription.SubscribeAsync();
 
-
-
-                int errorCounter = 0;
-
-
-                while (true)
+                while (!hasFailed)
                 {
                     try
                     {
@@ -76,34 +86,32 @@ namespace OTHub.BackendSync.Blockchain
                         handler.GetResponseAsObservable().Subscribe(integer => { });
                         await handler.SendRequestAsync();
                         SystemStatus status = new SystemStatus("WebSockets", blockchainID);
-                        using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                        await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                         {
-                            status.InsertOrUpdate(connection, true, null, false, "Blockchain Sync");
+                            await status.InsertOrUpdate(connection, true, null, false, "Blockchain Sync");
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        hasFailed = true;
+                        _dictionary.Remove(blockchainID, out _);
+                        client.Dispose();
+                        //try
+                        //{
+                        //    await client.StopAsync();
+                        //    await client.StartAsync();
+                        //}
+                        //catch (Exception)
+                        //{
+                        //    Logger.WriteLine(Source.BlockchainSync, ex.ToString());
+                        //}
                     }
 
-                    catch (Exception ex) when (errorCounter <= 100)
-                    {
-                        Logger.WriteLine(Source.BlockchainSync, ex.ToString());
-                        errorCounter++;
-                    }
-                    catch (Exception ex) when (errorCounter > 100)
-                    {
-                        errorCounter = 0;
-                        try
-                        {
-                            await client.StopAsync();
-                            await client.StartAsync();
-                        }
-                        catch (Exception)
-                        {
-                            Logger.WriteLine(Source.BlockchainSync, ex.ToString());
-                        }
-                    }
-
-                    await Task.Delay(30000);
+                    await Task.Delay(120000);
                 }
             }
+
+            return !hasFailed;
         }
 
         private static async Task ProcessSmartContractEvent(int blockchainID, BlockchainType blockchainType,
@@ -120,15 +128,202 @@ namespace OTHub.BackendSync.Blockchain
             {
                 await ProcessProfileSmartContractEvent(blockchainID, blockchainType, blockchainNetwork, eth, filterLog, transaction, cl);
             }
+            else if (type == ContractTypeEnum.Litigation)
+            {
+                await ProcessLitigationSmartContractEvent(blockchainID, blockchainType, blockchainNetwork, eth, filterLog, transaction, cl);
+            }
+        }
+
+        private static async Task ProcessLitigationSmartContractEvent(int blockchainID, BlockchainType blockchainType,
+            BlockchainNetwork blockchainNetwork, EthApiService eth, FilterLog filterLog, FilterLog transaction, Web3 cl)
+        {
+            var contract = new Contract(eth,
+                AbiHelper.GetContractAbi(ContractTypeEnum.Litigation, blockchainType, blockchainNetwork),
+                filterLog.Address);
+
+            var litigationInitiatedEvent = contract.GetEvent("LitigationInitiated");
+            var litigationAnsweredEvent = contract.GetEvent("LitigationAnswered");
+            var litigationTimedOutEvent = contract.GetEvent("LitigationTimedOut");
+            var litigationCompletedEvent = contract.GetEvent("LitigationCompleted");
+            var replacementStartedEvent = contract.GetEvent("ReplacementStarted");
+
+            await using (var connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                try
+                {
+                    if (litigationInitiatedEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            litigationInitiatedEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (EventLog<List<ParameterOutput>> eventLog in events)
+                        {
+                            await SyncLitigationContractTask.ProcessLitigationInitiated(connection,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+
+                    if (litigationAnsweredEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            litigationAnsweredEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (EventLog<List<ParameterOutput>> eventLog in events)
+                        {
+                            await SyncLitigationContractTask.ProcessLitigationAnswered(connection,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+
+                    if (litigationTimedOutEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            litigationTimedOutEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (EventLog<List<ParameterOutput>> eventLog in events)
+                        {
+                            await SyncLitigationContractTask.ProcessLitigationTimedOut(connection,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+
+                    if (litigationCompletedEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            litigationCompletedEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (EventLog<List<ParameterOutput>> eventLog in events)
+                        {
+                            await SyncLitigationContractTask.ProcessLitigationCompleted(connection,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+
+                    if (replacementStartedEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            replacementStartedEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (EventLog<List<ParameterOutput>> eventLog in events)
+                        {
+                            await SyncLitigationContractTask.ProcessLitigationCompleted(connection,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine(Source.BlockchainSync, ex.ToString());
+                }
+            }
         }
 
         private static async Task ProcessProfileSmartContractEvent(int blockchainID, BlockchainType blockchainType,
             BlockchainNetwork blockchainNetwork, EthApiService eth, FilterLog filterLog, FilterLog transaction, Web3 cl)
         {
             var contract = new Contract(eth,
-                AbiHelper.GetContractAbi(ContractTypeEnum.Profile, blockchainType, blockchainNetwork), filterLog.Address);
+                AbiHelper.GetContractAbi(ContractTypeEnum.Profile, blockchainType, blockchainNetwork),
+                filterLog.Address);
 
+            var identityCreatedEvent = contract.GetEvent("IdentityCreated");
+            var profileCreatedEvent = contract.GetEvent("ProfileCreated");
+            var tokensDepositedEvent = contract.GetEvent("TokensDeposited");
+            var tokensReleasedEvent = contract.GetEvent("TokensReleased");
+            var tokensWithdrawnEvent = contract.GetEvent("TokensWithdrawn");
 
+            await using (var connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                try
+                {
+                    if (identityCreatedEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            identityCreatedEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (EventLog<List<ParameterOutput>> eventLog in events)
+                        {
+                            await SyncProfileContractTask.ProcessIdentityCreated(connection, filterLog.Address,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+
+                    if (profileCreatedEvent.IsLogForEvent(transaction))
+                    {
+                        Function createProfileFunction = contract.GetFunction("createProfile");
+
+                        var events =
+                            profileCreatedEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (EventLog<List<ParameterOutput>> eventLog in events)
+                        {
+                            await SyncProfileContractTask.ProcessProfileCreated(connection, filterLog.Address, createProfileFunction,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+
+                    if (tokensDepositedEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            tokensDepositedEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (var eventLog in events.GroupBy(t => t.Log.TransactionHash))
+                        {
+                            await SyncProfileContractTask.ProcessTokensDeposited(connection, filterLog.Address,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+
+                    if (tokensReleasedEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            tokensReleasedEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (var eventLog in events.GroupBy(t => t.Log.TransactionHash))
+                        {
+                            await SyncProfileContractTask.ProcessTokensReleased(connection, filterLog.Address,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+
+                    if (tokensWithdrawnEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            tokensWithdrawnEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (var eventLog in events.GroupBy(t => t.Log.TransactionHash))
+                        {
+                            await SyncProfileContractTask.ProcessTokensWithdrawn(connection, filterLog.Address,
+                                blockchainID, cl,
+                                eventLog, eth);
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Logger.WriteLine(Source.BlockchainSync, ex.ToString());
+                }
+            }
         }
 
         private static async Task ProcessHoldingSmartContractEvent(int blockchainID, BlockchainType blockchainType,
@@ -139,6 +334,7 @@ namespace OTHub.BackendSync.Blockchain
 
             var offerCreatedEvent = contract.GetEvent("OfferCreated");
             var offerFinalizedEvent = contract.GetEvent("OfferFinalized");
+            var offerTaskEvent = contract.GetEvent("OfferTask");
             var paidOutEvent = contract.GetEvent("PaidOut");
 
             await using (var connection =
@@ -160,7 +356,21 @@ namespace OTHub.BackendSync.Blockchain
 
                         await ProcessJobsTask.Execute(connection, blockchainID, blockchainType, blockchainNetwork);
                     }
-                    else if (offerFinalizedEvent.IsLogForEvent(transaction))
+
+                    if (offerTaskEvent.IsLogForEvent(transaction))
+                    {
+                        var events =
+                            offerTaskEvent.DecodeAllEventsDefaultForEvent(
+                                new[] { filterLog });
+
+                        foreach (EventLog<List<ParameterOutput>> eventLog in events)
+                        {
+                            await SyncHoldingContractTask.ProcessOfferTasks(connection, blockchainID, cl,
+                                filterLog.Address, eventLog, eth);
+                        }
+                    }
+
+                    if (offerFinalizedEvent.IsLogForEvent(transaction))
                     {
                         var events =
                             offerFinalizedEvent.DecodeAllEventsDefaultForEvent(new[] {filterLog});
@@ -174,7 +384,7 @@ namespace OTHub.BackendSync.Blockchain
 
                         await ProcessJobsTask.Execute(connection, blockchainID, blockchainType, blockchainNetwork);
                     }
-                    else if (paidOutEvent.IsLogForEvent(transaction))
+                    if (paidOutEvent.IsLogForEvent(transaction))
                     {
                         var events =
                             paidOutEvent.DecodeAllEventsDefaultForEvent(new[] {filterLog});
@@ -199,20 +409,9 @@ namespace OTHub.BackendSync.Blockchain
             if (found.Key > 0)
             {
                 SystemStatus status = new SystemStatus("WebSockets", found.Key);
-                using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
-                    status.InsertOrUpdate(connection, false, null, false, "Blockchain Sync");
-                }
-
-                await Task.Delay(30000);
-
-                try
-                {
-                    await found.Value.Client.StartAsync();
-                }
-                catch (Exception x)
-                {
-                    Logger.WriteLine(Source.BlockchainSync, x.ToString());
+                    await status.InsertOrUpdate(connection, false, null, false, "Blockchain Sync");
                 }
             }
         }

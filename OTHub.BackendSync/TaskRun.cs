@@ -71,13 +71,15 @@ namespace OTHub.BackendSync
 
         public override string ParentName => _childTasks.Any() ? null : "System";
 
+        public virtual bool ContinueRunningChildrenOnError { get; } = true;
+
         protected TaskRunBlockchain(string name) : base(name)
         {
         }
 
-        protected int GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
+        protected async Task<int> GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
         {
-            var id = connection.ExecuteScalar<int?>(
+            var id = await connection.ExecuteScalarAsync<int?>(
                 "select ID FROM blockchains where BlockchainName = @blockchainName AND NetworkName = @networkName", new
                 {
                     blockchainName = blockchain.ToString(),
@@ -87,9 +89,9 @@ namespace OTHub.BackendSync
             return id.Value;
         }
 
-        protected Web3 GetWeb3(MySqlConnection connection, int blockchainID)
+        protected async Task<Web3> GetWeb3(MySqlConnection connection, int blockchainID)
         {
-            string nodeUrl = connection.ExecuteScalar<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+            string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
             {
                 id = blockchainID
             });
@@ -102,14 +104,16 @@ namespace OTHub.BackendSync
             return cl;
         }
 
-        public abstract Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network);
+        public abstract Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network);
 
-        protected async Task RunChildren(Source source, BlockchainType blockchain, BlockchainNetwork network,
+        protected async Task<bool> RunChildren(Source source, BlockchainType blockchain, BlockchainNetwork network,
             int blockchainId)
         {
+            bool anyChildFailed = false;
+
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var cl = GetWeb3(connection, GetBlockchainID(connection, blockchain, network));
+                var cl = await GetWeb3(connection, await GetBlockchainID(connection, blockchain, network));
 
                 int defaultBlocksToIgnore = 2;
 
@@ -129,17 +133,18 @@ namespace OTHub.BackendSync
                     try
                     {
 
-                        status.InsertOrUpdate(connection, true, null, true, Name);
+                        await status.InsertOrUpdate(connection, true, null, true, Name);
 
 
                         await childTask.Execute(source, blockchain, network);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        anyChildFailed = true;
                         try
                         {
 
-                            status.InsertOrUpdate(connection, false, null, false, Name);
+                            await status.InsertOrUpdate(connection, false, null, false, Name);
 
                         }
                         catch
@@ -147,13 +152,22 @@ namespace OTHub.BackendSync
 
                         }
 
-                        throw;
+                        if (ContinueRunningChildrenOnError)
+                        {
+                            Logger.WriteLine(source, ex.ToString());
+                            Logger.WriteLine(source, "Continuing to next child task.");
+                            continue;
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
 
                     try
                     {
 
-                        status.InsertOrUpdate(connection, true, null, false, Name);
+                        await status.InsertOrUpdate(connection, true, null, false, Name);
 
                     }
                     catch
@@ -162,6 +176,8 @@ namespace OTHub.BackendSync
                     }
                 }
             }
+
+            return !anyChildFailed;
         }
 
 
@@ -189,7 +205,7 @@ namespace OTHub.BackendSync
                     try
                     {
 
-                        status.InsertOrUpdate(connection, true, null, true, Name);
+                        await status.InsertOrUpdate(connection, true, null, true, Name);
 
 
                         await childTask.Execute(source);
@@ -199,7 +215,7 @@ namespace OTHub.BackendSync
                         try
                         {
 
-                            status.InsertOrUpdate(connection, false, null, false, Name);
+                            await status.InsertOrUpdate(connection, false, null, false, Name);
 
                         }
                         catch
@@ -213,7 +229,7 @@ namespace OTHub.BackendSync
                     try
                     {
 
-                        status.InsertOrUpdate(connection, true, null, false, Name);
+                        await status.InsertOrUpdate(connection, true, null, false, Name);
 
                     }
                     catch

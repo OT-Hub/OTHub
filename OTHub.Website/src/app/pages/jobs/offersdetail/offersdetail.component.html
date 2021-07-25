@@ -53,12 +53,12 @@
                                 {{formatAmount(3 * OfferModel?.TokenAmountPerHolder)}} from DC,
                                 {{formatAmount(OfferModel?.TokenAmountPerHolder)}} from each DH)</span>
                         </nb-list-item>
-                        <nb-list-item *ngIf="OfferModel?.EstimatedLambda !== null">
+                        <!-- <nb-list-item *ngIf="OfferModel?.EstimatedLambda !== null">
                             Estimated Price Factor: {{toFixed(OfferModel?.EstimatedLambda, 0)}}&nbsp;<i
                                 class="fas fa-info-circle"
                                 [nbPopover]="'This is only an estimate. The closest matching price factor found by OT Hub was ' + OfferModel?.EstimatedLambda + '.'"
                                 nbPopoverTrigger="hover"></i>
-                        </nb-list-item>
+                        </nb-list-item> -->
                         <nb-list-item>
                             Time Between Litigation Checks: {{OfferModel?.LitigationIntervalInMinutes}}
                             minutes

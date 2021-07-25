@@ -45,5 +45,16 @@ VALUES(@TransactionHash, @ContractAddress, @DataSetId, @DCNodeId, @OfferId, @Tas
                     });
             }
         }
+
+        public static Boolean Exists(MySqlConnection connection, string offerID, int blockchainID)
+        {
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Holding_OfferTask WHERE OfferID = @offerID AND BlockchainID = @blockchainID", new
+            {
+                offerID = offerID,
+                blockchainID = blockchainID
+            });
+
+            return count > 0;
+        }
     }
 }

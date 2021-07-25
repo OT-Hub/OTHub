@@ -47,5 +47,16 @@ VALUES(@TransactionHash, @ContractAddress, @Profile, @InitialBalance, @BlockNumb
                     });
             }
         }
+
+        public static bool Exists(MySqlConnection connection, string identity, int blockchainID)
+        {
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Profile_ProfileCreated WHERE Profile = @identity AND BlockchainID = @blockchainID", new
+            {
+                identity = identity,
+                blockchainID = blockchainID
+            });
+
+            return count > 0;
+        }
     }
 }

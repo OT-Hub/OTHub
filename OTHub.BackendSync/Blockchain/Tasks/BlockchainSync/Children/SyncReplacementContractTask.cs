@@ -12,16 +12,17 @@ using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
+using OTHub.Settings.Constants;
 
 namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 {
     public class SyncReplacementContractTask : TaskRunBlockchain
     {
-        public SyncReplacementContractTask() : base("Sync Replacement Contract")
+        public SyncReplacementContractTask() : base(TaskNames.ReplacementContractSync)
         {
         }
 
-        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
@@ -33,12 +34,12 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                 //Contract storageContract = new Contract((EthApiService)cl.Eth, Constants.GetContractAbi(ContractType.LitigationStorage), litigationStorageContract.Address);
                 // Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
 
-                int blockchainID = GetBlockchainID(connection, blockchain, network);
+                int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
-                var cl = GetWeb3(connection, blockchainID);
+                var cl = await GetWeb3(connection, blockchainID);
                 var eth = new EthApiService(cl.Client);
 
-                foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Replacement, blockchainID))
+                foreach (var contract in await OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Replacement, blockchainID))
                 {
                     if (contract.IsArchived && contract.LastSyncedTimestamp.HasValue &&
                         (DateTime.Now - contract.LastSyncedTimestamp.Value).TotalDays <= 5)
@@ -98,19 +99,21 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                             BlockchainID = blockchainID
                         };
 
-                        OTContract_Replacement_ReplacementCompleted.InsertIfNotExist(connection, row);
+                        await OTContract_Replacement_ReplacementCompleted.InsertIfNotExist(connection, row);
 
-                        OTOfferHolder.Insert(connection, offerId, chosenHolder, false, blockchainID);
+                        await OTOfferHolder.Insert(connection, offerId, chosenHolder, false, blockchainID);
 
-                        OTOfferHolder.UpdateLitigationStatusesForOffer(connection, offerId, blockchainID);
+                        await OTOfferHolder.UpdateLitigationStatusesForOffer(connection, offerId, blockchainID);
                     }
 
                     contract.LastSyncedTimestamp = DateTime.Now;
                     contract.SyncBlockNumber = (ulong)toBlock.BlockNumber.Value;
 
-                    OTContract.Update(connection, contract, false, false);
+                    await OTContract.Update(connection, contract, false, false);
                 }
             }
+
+            return true;
         }
     }
 }

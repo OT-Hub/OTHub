@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 
@@ -66,10 +67,10 @@ namespace OTHub.BackendSync.Database.Models
             }
         }
 
-        public static void FinalizeOffer(MySqlConnection connection, string offerId, UInt64 logBlockNumber,
+        public static async Task FinalizeOffer(MySqlConnection connection, string offerId, UInt64 logBlockNumber,
             string logTransactionHash, string holder1, string holder2, string holder3, DateTime blockTimestamp, int blockchainID)
         {
-            var count = connection.Execute(@"UPDATE OtOffer SET FinalizedBlockNumber = @logBlockNumber, FinalizedTransactionHash = @logTransactionHash, 
+            var count = await connection.ExecuteAsync(@"UPDATE OtOffer SET FinalizedBlockNumber = @logBlockNumber, FinalizedTransactionHash = @logTransactionHash, 
 FinalizedTimestamp = @FinalizedTimestamp, IsFinalized = 1 WHERE OfferID = @offerId And IsFinalized = 0 AND BlockchainID = @blockchainID", new
             {
                 offerId,
@@ -86,7 +87,7 @@ FinalizedTimestamp = @FinalizedTimestamp, IsFinalized = 1 WHERE OfferID = @offer
 
             foreach (var holder in new[] {holder1, holder2, holder3})
             {
-                added = OTOfferHolder.Insert(connection, offerId, holder, true, blockchainID);
+                added = await OTOfferHolder.Insert(connection, offerId, holder, true, blockchainID);
             }
             
         }

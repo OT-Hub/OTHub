@@ -7,12 +7,13 @@ using Dapper;
 using MySqlConnector;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
+using OTHub.Settings.Constants;
 
 namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 {
     public class UpdateStakedTokenReportTask : TaskRunGeneric
     {
-        public UpdateStakedTokenReportTask() : base("Update Staked Token Report")
+        public UpdateStakedTokenReportTask() : base(TaskNames.UpdateStakedTokenReport)
         {
         }
 

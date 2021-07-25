@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 
@@ -29,41 +30,41 @@ namespace OTHub.BackendSync.Database.Models
         public String ManagementWallet { get; set; }
         public int BlockchainID { get; set; }
 
-        public static void InsertIfNotExist(MySqlConnection connection, OTIdentity model)
+        public static async Task InsertIfNotExist(MySqlConnection connection, OTIdentity model)
         {
-            var count = GetCount(connection, model.Identity);
+            var count = await GetCount(connection, model.Identity);
 
             if (count == 0)
             {
-                Insert(connection, model);
+                await Insert(connection, model);
             }
         }
 
-        public static OTIdentity[] GetAll(MySqlConnection connection, int blockchainID)
+        public static async Task<OTIdentity[]> GetAll(MySqlConnection connection, int blockchainID)
         {
-            return connection.Query<OTIdentity>("SELECT * FROM OTIdentity where BlockchainID = @blockchainID", new
+            return (await connection.QueryAsync<OTIdentity>("SELECT * FROM OTIdentity where BlockchainID = @blockchainID", new
             {
                 blockchainID = blockchainID
-            }).ToArray();
+            })).ToArray();
         }
 
-        public static OTIdentity[] GetByVersion(MySqlConnection connection, int version)
+        public static async Task<OTIdentity[]> GetByVersion(MySqlConnection connection, int version)
         {
-            return connection.Query<OTIdentity>("SELECT * FROM OTIdentity WHERE Version = @version", new {version}).ToArray();
+            return (await connection.QueryAsync<OTIdentity>("SELECT * FROM OTIdentity WHERE Version = @version", new {version})).ToArray();
         }
 
-        public static int GetCount(MySqlConnection connection, string identity)
+        public static async Task<int> GetCount(MySqlConnection connection, string identity)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTIdentity WHERE Identity = @Identity", new
+            var count = await connection.QueryFirstOrDefaultAsync<Int32>("SELECT COUNT(*) FROM OTIdentity WHERE Identity = @Identity", new
             {
                 Identity = identity
             });
             return count;
         }
 
-        public static void Insert(MySqlConnection connection, OTIdentity model)
+        public static async Task Insert(MySqlConnection connection, OTIdentity model)
         {
-            connection.Execute(
+            await connection.ExecuteAsync(
                 @"INSERT INTO OTIdentity(Identity, TransactionHash, Version, BlockchainID)
 VALUES(@Identity, @TransactionHash, @Version, @BlockchainID)",
                 new
@@ -75,9 +76,9 @@ VALUES(@Identity, @TransactionHash, @Version, @BlockchainID)",
                 });
         }
 
-        public static void UpdateFromProfileFunction(MySqlConnection connection, OTIdentity model)
+        public static async Task UpdateFromProfileFunction(MySqlConnection connection, OTIdentity model)
         {
-            connection.Execute(@"UPDATE OTIdentity
+            await connection.ExecuteAsync(@"UPDATE OTIdentity
 SET Stake = @Stake, StakeReserved = @StakeReserved, Reputation = @Reputation, WithdrawalPending = @WithdrawalPending, WithdrawalTimestamp = @WithdrawalTimestamp, WithdrawalAmount = @WithdrawalAmount, NodeId = @NodeId, LastSyncedTimestamp = @LastSyncedTimestamp
 WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
             {
@@ -94,9 +95,9 @@ WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
             });
         }
 
-        public static void UpdateFromPaidoutAndApprovedCalculation(MySqlConnection connection, OTIdentity model)
+        public static async Task UpdateFromPaidoutAndApprovedCalculation(MySqlConnection connection, OTIdentity model)
         {
-            connection.Execute(@"UPDATE OTIdentity
+            await connection.ExecuteAsync(@"UPDATE OTIdentity
 SET Paidout = @Paidout, Approved = @Approved, ActiveOffers = @ActiveOffers, OffersLast7Days = @OffersLast7Days, TotalOffers = @TotalOffers, ManagementWallet = @ManagementWallet
 WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
             {
@@ -111,9 +112,9 @@ WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
             });
         }
 
-        public static void UpdateLastSyncedTimestamp(MySqlConnection connection, OTIdentity model)
+        public static async Task UpdateLastSyncedTimestamp(MySqlConnection connection, OTIdentity model)
         {
-            connection.Execute(@"UPDATE OTIdentity
+            await connection.ExecuteAsync(@"UPDATE OTIdentity
 SET LastSyncedTimestamp = @LastSyncedTimestamp
 WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
             {

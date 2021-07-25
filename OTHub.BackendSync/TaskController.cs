@@ -39,7 +39,7 @@ namespace OTHub.BackendSync
 
                 using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
-                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName);
+                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName).GetAwaiter().GetResult();
                 }
 
                 task.BlockchainStartup(blockchainID, blockchain, network);
@@ -56,7 +56,7 @@ namespace OTHub.BackendSync
 
                 using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
-                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName);
+                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName).GetAwaiter().GetResult();
                 }
             }
 
@@ -86,26 +86,25 @@ namespace OTHub.BackendSync
                 {
                     Logger.WriteLine(_source, "Starting " + _task.Name + " on " + _blockchain + " " + _network);
 
-                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                    await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
-                        _systemStatus.InsertOrUpdate(connection, true, null, true, _task.ParentName);
+                        await _systemStatus.InsertOrUpdate(connection, true, null, true, _task.ParentName);
                     }
 
                     if (_task is TaskRunBlockchain taskB)
                     {
-                        await taskB.Execute(_source, _blockchain, _network);
+                        success = await taskB.Execute(_source, _blockchain, _network);
                     }
                     else if (_task is TaskRunGeneric taskG)
                     {
                         await taskG.Execute(_source);
+                        success = true;
                     }
                     else
                     {
                         throw new NotImplementedException("Task of type " + _task.GetType().FullName +
                                                           " is not supported.");
                     }
-
-                    success = true;
                 }
                 catch (Exception ex)
                 {
@@ -114,9 +113,9 @@ namespace OTHub.BackendSync
                 finally
                 {
                     _lastRunDateTime = DateTime.Now;
-                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                    await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
-                        _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false, _task.ParentName);
+                        await _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false, _task.ParentName);
                     }
                     Logger.WriteLine(_source, "Finished " + _task.Name + " in " + (DateTime.Now - startTime).TotalSeconds + " seconds on " + _blockchain + " " + _network);
                 }

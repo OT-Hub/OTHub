@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using OTHub.BackendSync;
 using Xunit;
@@ -39,7 +36,7 @@ namespace OTHub.Tests
 
             var type = typeof(Exception);
             await Assert.ThrowsAsync(type, () => lck.Lock(0));
-        }
+        } 
 
         [Fact]
         public async Task LockManager_ConfirmLockingIsSingleEntryOnNewObjects()
@@ -54,8 +51,7 @@ namespace OTHub.Tests
             LockRelease lck2 = LockManager.GetLock(LockType.OfferCreated);
             Assert.Equal(0, lck2.LockCurrentCount);
 
-
-            var type = typeof(Exception);
+            Type type = typeof(Exception);
             await Assert.ThrowsAsync(type, () => lck2.Lock(0));
         }
     }

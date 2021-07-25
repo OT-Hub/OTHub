@@ -12,20 +12,21 @@ using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
+using OTHub.Settings.Constants;
 
 namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 {
     public class GetLatestContractsTask : TaskRunBlockchain
     {
-        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = GetBlockchainID(connection, blockchain, network);
+                int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
-                string currentHubAddress = connection.ExecuteScalar<string>("select HubAddress from blockchains where id = @id", new
+                string currentHubAddress = await connection.ExecuteScalarAsync<string>("select HubAddress from blockchains where id = @id", new
                 {
                     id = blockchainID
                 });
@@ -45,11 +46,13 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
             }
 
             await SmartContractManager.Load();
+
+            return true;
         }
 
         private async Task PopulateSmartContracts(MySqlConnection connection, string hubAddress, bool isLatest, int blockchainID, BlockchainType blockchain, BlockchainNetwork network)
         {
-            var web3 = GetWeb3(connection, blockchainID);
+            var web3 = await GetWeb3(connection, blockchainID);
             EthApiService eth = new EthApiService(web3.Client);
 
             var hubContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.Hub, blockchain, network), hubAddress);
@@ -84,7 +87,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 
             if (blockchain == BlockchainType.Ethereum && network == BlockchainNetwork.Mainnet)
             {
-                OTContract.InsertOrUpdate(connection, new OTContract(fromBlockNumber, fromBlockNumber)
+                await OTContract.InsertOrUpdate(connection, new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = "0xefa914bd9ea22848df987d344eb75bc4dfd92b42",
                     Type = (int)ContractTypeEnum.Profile,
@@ -92,7 +95,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     BlockchainID = blockchainID
                 }, true);
 
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x407da012319e0d97c6f17ac72e8dd8a56c3e1556",
@@ -102,7 +105,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     }, true);
 
 
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0xcae2df21e532d92b05d55c9ec75d579ea24d8521",
@@ -110,7 +113,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Profile,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0xaa7a9ca87d3694b5755f213b5d04094b8d0f0a6f",
@@ -118,7 +121,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Token,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x2be3cf5bd3609fd63b77aa40d0971c778db77c8a",
@@ -135,7 +138,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                 //        Type = (int)ContractTypeEnum.Holding,
                 //        BlockchainID = blockchainID
                 //    }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x24d4ce2c8538290b9f283fad8ff423c601d1e114",
@@ -143,7 +146,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Approval,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x306d5e8af6aeb73359dcc5e22c894e2588f76ffb",
@@ -151,7 +154,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.ProfileStorage,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x1ea5cc419c6167ae8712d5bb1ba67120f37cbec8",
@@ -159,7 +162,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Profile,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x951a11842f8a81e8f1ab31d029e4f11cf80c697a",
@@ -167,7 +170,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Profile,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0xc3af0b170a02d108f55e224d6b2605fc3e93d68e",
@@ -175,7 +178,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Profile,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0xe7db7f713b2ea963d0dcb67514b50394f1295cc1",
@@ -183,7 +186,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Profile,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x6763c4c8293796b8726d9450a988d374a8e9f994",
@@ -191,7 +194,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Profile,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x2b29bcc72a7420f791722da79e255852f171b38d",
@@ -199,7 +202,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                         Type = (int)ContractTypeEnum.Holding,
                         BlockchainID = blockchainID
                     }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x283a70a58c65112da7ee377a21a1fd3286581ffb",
@@ -216,7 +219,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                 //        Type = (int)ContractTypeEnum.Holding,
                 //        BlockchainID = blockchainID
                 //    }, true);
-                OTContract.InsertOrUpdate(connection,
+                await OTContract.InsertOrUpdate(connection,
                     new OTContract(fromBlockNumber, fromBlockNumber)
                     {
                         Address = "0x87e04af76ecbb0114fc2d681c89a11eee457a268",
@@ -250,7 +253,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 
                 if (Enum.TryParse(typeof(ContractTypeEnum), contractName, true, out var result))
                 {
-                    OTContract.InsertOrUpdate(connection,
+                    await OTContract.InsertOrUpdate(connection,
                         new OTContract(fromBlockNumber, fromBlockNumber)
                         {
                             Address = newContractAddress,
@@ -262,7 +265,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
             }
 
 
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = approvalAddress,
@@ -271,7 +274,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     BlockchainID = blockchainID
                 },
                 true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = holdingAddress,
@@ -280,7 +283,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     BlockchainID = blockchainID
                 },
                 true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = holdingStorageAddress,
@@ -288,7 +291,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     Type = (int)ContractTypeEnum.HoldingStorage,
                     BlockchainID = blockchainID
                 }, true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = profileAddress,
@@ -297,7 +300,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     BlockchainID = blockchainID
                 },
                 true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = profileStorageAddress,
@@ -305,7 +308,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     Type = (int)ContractTypeEnum.ProfileStorage,
                     BlockchainID = blockchainID
                 }, true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = tokenAddress,
@@ -314,7 +317,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     BlockchainID = blockchainID
                 },
                 true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = readingAddress,
@@ -323,7 +326,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     BlockchainID = blockchainID
                 },
                 true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = readingStorageAddress,
@@ -331,7 +334,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     Type = (int)ContractTypeEnum.ReadingStorage,
                     BlockchainID = blockchainID
                 }, true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = litigationAddress,
@@ -339,7 +342,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     Type = (int)ContractTypeEnum.Litigation,
                     BlockchainID = blockchainID
                 }, true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = litigationStorageAddress,
@@ -347,7 +350,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                     Type = (int)ContractTypeEnum.LitigationStorage,
                     BlockchainID = blockchainID
                 }, true);
-            OTContract.InsertOrUpdate(connection,
+            await OTContract.InsertOrUpdate(connection,
                 new OTContract(fromBlockNumber, fromBlockNumber)
                 {
                     Address = replacementAddress,
@@ -357,7 +360,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                 }, true);
         }
 
-        public GetLatestContractsTask() : base("Get Latest Contracts")
+        public GetLatestContractsTask() : base(TaskNames.GetLatestContracts)
         {
         }
     }

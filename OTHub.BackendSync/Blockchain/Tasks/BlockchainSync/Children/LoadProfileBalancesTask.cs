@@ -14,6 +14,7 @@ using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
+using OTHub.Settings.Constants;
 
 namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 {
@@ -45,7 +46,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             public Int32 Count { get; set; }
         }
 
-        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
@@ -57,32 +58,32 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = GetBlockchainID(connection, blockchain, network);
+                int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
-                var cl = GetWeb3(connection, blockchainID);
+                var cl = await GetWeb3(connection, blockchainID);
 
                 await CreateMissingIdentities(connection, cl, blockchainID, blockchain, network);
 
-                var profileStorageContractAddress = OTContract
-                    .GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.ProfileStorage, blockchainID).Single(a => a.IsLatest);
+                var profileStorageContractAddress = (await OTContract
+                    .GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.ProfileStorage, blockchainID)).Single(a => a.IsLatest);
                 var profileStorageContract =
                     new Contract(new EthApiService(cl.Client),
                         AbiHelper.GetContractAbi(ContractTypeEnum.ProfileStorage, blockchain, network),
                         profileStorageContractAddress.Address);
                 var profileFunction = profileStorageContract.GetFunction("profile");
 
-                var currentIdentities = OTIdentity.GetAll(connection, blockchainID);
+                var currentIdentities = await OTIdentity.GetAll(connection, blockchainID);
 
-                Dictionary<string, decimal> paidOutBalances = connection
-                    .Query<PayoutGroupHolder>(
+                Dictionary<string, decimal> paidOutBalances = (await connection
+                    .QueryAsync<PayoutGroupHolder>(
                         @"SELECT Holder, SUM(Amount) Amount FROM OTContract_Holding_Paidout WHERE BlockchainID = @blockchainID GROUP BY Holder",
                         new
                         {
                             blockchainID = blockchainID
-                        })
+                        }))
                     .ToDictionary(k => k.Holder, k => k.Amount);
 
-                Dictionary<string, OfferGroupHolder> offerTotals = connection.Query<OfferGroupHolder>(
+                Dictionary<string, OfferGroupHolder> offerTotals = (await connection.QueryAsync<OfferGroupHolder>(
                     @"select i.Identity, COUNT(o.OfferID) as OffersTotal,
 (SELECT count(so.OfferID) FROM otoffer_holders sh join otoffer so on so.OfferID = sh.OfferID AND so.BlockchainID = sh.BlockchainID
     WHERE sh.blockchainid = @blockchainID and sh.Holder = i.Identity AND so.CreatedTimestamp >= Date_Add(NOW(), INTERVAL -7 DAY)) as OffersLast7Days
@@ -93,15 +94,15 @@ WHERE i.blockchainid = @blockchainID
 GROUP BY i.Identity", new
                     {
                         blockchainID
-                    }).ToDictionary(k => k.Identity, k => k);
-                NodeManagementWallet[] managementWallets = connection.Query<NodeManagementWallet>(
+                    })).ToDictionary(k => k.Identity, k => k);
+                NodeManagementWallet[] managementWallets = (await connection.QueryAsync<NodeManagementWallet>(
                     @"SELECT I.Identity, PC.ManagementWallet as CreateWallet, IT.ManagementWallet TransferWallet FROM OTIdentity I
 LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity AND PC.BlockchainID = I.BlockchainID
 LEFT JOIN OTContract_Profile_IdentityTransferred IT ON IT.NewIdentity = I.Identity AND IT.BlockchainID = I.BlockchainID
 WHERE I.Version > 0 AND I.BlockchainID = @blockchainID", new
                     {
                         blockchainID
-                    }).ToArray();
+                    })).ToArray();
 
 
                 foreach (OTIdentity currentIdentity in currentIdentities)
@@ -120,7 +121,7 @@ WHERE I.Version > 0 AND I.BlockchainID = @blockchainID", new
                     }
                     else if (currentIdentity.LastSyncedTimestamp.HasValue)
                     {
-                        var dates = connection.Query<DateTime?>(@"
+                        var dates = (await connection.QueryAsync<DateTime?>(@"
 select MAX(Timestamp) from otcontract_profile_identitycreated r
 join ethblock b on r.BlockNumber = b.BlockNumber AND r.BlockchainID = b.BlockchainID
 WHERE r.NewIdentity = @identity AND r.blockchainID = @blockchainID
@@ -174,7 +175,7 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
                         {
                             identity = currentIdentity.Identity,
                             blockchainID
-                        }).ToArray().Where(d => d.HasValue).Select(d => d.Value).ToArray();
+                        })).ToArray().Where(d => d.HasValue).Select(d => d.Value).ToArray();
 
 
 
@@ -250,12 +251,12 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
                             currentIdentity.Reputation = reputation;
                             currentIdentity.LastSyncedTimestamp = DateTime.Now;
 
-                            OTIdentity.UpdateFromProfileFunction(connection, currentIdentity);
+                            await OTIdentity.UpdateFromProfileFunction(connection, currentIdentity);
                         }
                         else
                         {
                             currentIdentity.LastSyncedTimestamp = DateTime.Now;
-                            OTIdentity.UpdateLastSyncedTimestamp(connection, currentIdentity);
+                            await OTIdentity.UpdateLastSyncedTimestamp(connection, currentIdentity);
                         }
                     }
 
@@ -277,10 +278,12 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
                         currentIdentity.OffersLast7Days = offerRow?.OffersLast7Days ?? 0;
                         currentIdentity.ActiveOffers = 0;
 
-                        OTIdentity.UpdateFromPaidoutAndApprovedCalculation(connection, currentIdentity);
+                        await OTIdentity.UpdateFromPaidoutAndApprovedCalculation(connection, currentIdentity);
                     }
                 }
             }
+
+            return true;
         }
 
 
@@ -305,7 +308,7 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
 
                 var value = await otVersionFunction.CallAsync<BigInteger>();
 
-                OTIdentity.Insert(connection, new OTIdentity
+                await OTIdentity.Insert(connection, new OTIdentity
                 {
                     TransactionHash = identity.TransactionHash,
                     Identity = identity.NewIdentity,
@@ -333,7 +336,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
 
                 var value = await otVersionFunction.CallAsync<BigInteger>();
 
-                OTIdentity.Insert(connection, new OTIdentity
+                await OTIdentity.Insert(connection, new OTIdentity
                 {
                     TransactionHash = hash,
                     Identity = identity,
@@ -343,7 +346,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
             }
         }
 
-        public LoadProfileBalancesTask() : base("Load Profile Balances")
+        public LoadProfileBalancesTask() : base(TaskNames.LoadProfileBalances)
         {
         }
     }

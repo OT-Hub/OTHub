@@ -15,24 +15,25 @@ using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
+using OTHub.Settings.Constants;
 
 namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 {
     public class SyncHoldingContractTask : TaskRunBlockchain
     {
-        public override async Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = GetBlockchainID(connection, blockchain, network);
+                int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
-                var cl = GetWeb3(connection, blockchainID);
+                var cl = await GetWeb3(connection, blockchainID);
                 var eth = new EthApiService(cl.Client);
 
-                foreach (var contract in OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Holding, blockchainID))
+                foreach (var contract in await OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Holding, blockchainID))
                 {
                     if (contract.IsArchived && contract.LastSyncedTimestamp.HasValue && (DateTime.Now - contract.LastSyncedTimestamp.Value).TotalDays <= 5)
                     {
@@ -104,6 +105,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     }
                 }
             }
+
+            return true;
         }
 
         private async Task Sync(MySqlConnection connection, OTContract contract, Event offerCreatedEvent,
@@ -218,20 +221,39 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
             foreach (EventLog<List<ParameterOutput>> eventLog in offerTaskEvents)
             {
+                await ProcessOfferTasks(connection, blockchainID, cl, contract.Address, eventLog, eth);
+            }
+
+            contract.LastSyncedTimestamp = DateTime.Now;
+            contract.SyncBlockNumber = end;
+
+            await OTContract.Update(connection, contract, false, false);
+        }
+
+        public static async Task ProcessOfferTasks(MySqlConnection connection, int blockchainID, Web3 cl,
+            string contractAddress, EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
+        {
+            using (await LockManager.GetLock(LockType.OfferTask).Lock())
+            {
+                var offerId =
+                    HexHelper.ByteArrayToString((byte[])eventLog.Event
+                        .First(e => e.Parameter.Name == "offerId").Result);
+
+                if (OTContract_Holding_OfferTask.Exists(connection, offerId, blockchainID))
+                    return;
+
                 var block = await BlockHelper.GetBlock(connection, eventLog.Log.BlockHash, eventLog.Log.BlockNumber,
                     cl, blockchainID);
 
                 var dataSetId =
-                    HexHelper.ByteArrayToString((byte[])eventLog.Event
+                    HexHelper.ByteArrayToString((byte[]) eventLog.Event
                         .First(e => e.Parameter.Name == "dataSetId").Result);
                 var dcNodeId =
-                    HexHelper.ByteArrayToString((byte[])eventLog.Event
+                    HexHelper.ByteArrayToString((byte[]) eventLog.Event
                         .First(e => e.Parameter.Name == "dcNodeId").Result);
-                var offerId =
-                    HexHelper.ByteArrayToString((byte[])eventLog.Event
-                        .First(e => e.Parameter.Name == "offerId").Result);
+
                 var task = HexHelper.ByteArrayToString(
-                    (byte[])eventLog.Event.First(e => e.Parameter.Name == "task").Result);
+                    (byte[]) eventLog.Event.First(e => e.Parameter.Name == "task").Result);
 
                 var transaction = eth.Transactions.GetTransactionByHash.SendRequestAsync(eventLog.Log.TransactionHash);
 
@@ -242,23 +264,18 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                 OTContract_Holding_OfferTask.InsertIfNotExist(connection, new OTContract_Holding_OfferTask
                 {
-                    BlockNumber = (UInt64)eventLog.Log.BlockNumber.Value,
+                    BlockNumber = (UInt64) eventLog.Log.BlockNumber.Value,
                     Task = task,
                     TransactionHash = eventLog.Log.TransactionHash,
-                    ContractAddress = contract.Address,
+                    ContractAddress = contractAddress,
                     DCNodeId = dcNodeId,
                     DataSetId = dataSetId,
                     OfferId = offerId,
-                    GasPrice = (UInt64)transaction.Result.GasPrice.Value,
-                    GasUsed = (UInt64)receipt.Result.GasUsed.Value,
+                    GasPrice = (UInt64) transaction.Result.GasPrice.Value,
+                    GasUsed = (UInt64) receipt.Result.GasUsed.Value,
                     BlockchainID = blockchainID
                 });
             }
-
-            contract.LastSyncedTimestamp = DateTime.Now;
-            contract.SyncBlockNumber = end;
-
-            OTContract.Update(connection, contract, false, false);
         }
 
         public static async Task ProcessOfferCreated(MySqlConnection connection, int blockchainID, Web3 cl,
@@ -409,7 +426,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             }
         }
 
-        public SyncHoldingContractTask() : base("Sync Holding Contract")
+        public SyncHoldingContractTask() : base(TaskNames.HoldingContractSync)
         {
         }
     }

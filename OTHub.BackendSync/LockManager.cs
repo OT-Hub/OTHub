@@ -65,6 +65,12 @@ namespace OTHub.BackendSync
         PayoutInsert,
         OfferCreated,
         OfferFinalised,
-        ProcessJobs
+        ProcessJobs,
+        OfferTask,
+        IdentityCreated,
+        ProfileCreated,
+        TokensDeposited,
+        TokensWithdrawn,
+        TokensReleased
     }
 }
