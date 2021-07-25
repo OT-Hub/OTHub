@@ -19,6 +19,7 @@ using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
+using OTHub.Settings.Constants;
 
 namespace OTHub.BackendSync.Blockchain
 {
@@ -85,7 +86,7 @@ namespace OTHub.BackendSync.Blockchain
                         var handler = new EthBlockNumberObservableHandler(client);
                         handler.GetResponseAsObservable().Subscribe(integer => { });
                         await handler.SendRequestAsync();
-                        SystemStatus status = new SystemStatus("WebSockets", blockchainID);
+                        SystemStatus status = new SystemStatus(TaskNames.WebSockets, blockchainID);
                         await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                         {
                             await status.InsertOrUpdate(connection, true, null, false, "Blockchain Sync");
@@ -408,7 +409,7 @@ namespace OTHub.BackendSync.Blockchain
             var found = _dictionary.FirstOrDefault(d => d.Value.Client == sender);
             if (found.Key > 0)
             {
-                SystemStatus status = new SystemStatus("WebSockets", found.Key);
+                SystemStatus status = new SystemStatus(TaskNames.WebSockets, found.Key);
                 await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
                     await status.InsertOrUpdate(connection, false, null, false, "Blockchain Sync");

@@ -19,5 +19,6 @@ namespace OTHub.Settings.Constants
         public const string Misc = "Misc";
         public const string GetMarketData = "Get Market Data";
         public const string UpdateStakedTokenReport = "Update Staked Token Report";
+        public const string WebSockets = "WebSockets";
     }
 }

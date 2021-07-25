@@ -91,6 +91,9 @@ ORDER BY s.ParentName, b.id, s.Name")).ToArray();
                                     case TaskNames.ProcessJobs:
                                         errors.Add($"New jobs on {statusModel.BlockchainName} may be delayed or missing due to an error.");
                                         break;
+                                    case TaskNames.WebSockets:
+                                        errors.Add($"Data on {statusModel.BlockchainName} may be delayed by up to 10 minutes as live websockets is unavailable.");
+                                        break;
                                 }
                                 break;
                             case TaskNames.BlockchainMaintenance:
