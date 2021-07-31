@@ -859,6 +859,12 @@ ENGINE=InnoDB
 ;
 ");
 
+                connection.Execute(@"ALTER TABLE mynodes
+DROP FOREIGN KEY IF EXISTS `FK_mynodes_otidentity`");
+
+                connection.Execute(@"ALTER TABLE mynodes 
+ADD CONSTRAINT `FK_mynodes_otidentity_cascade` FOREIGN KEY IF NOT EXISTS (`NodeID`) REFERENCES `otidentity` (`NodeId`) ON UPDATE CASCADE ON DELETE NO ACTION");
+
             }
         }
     }

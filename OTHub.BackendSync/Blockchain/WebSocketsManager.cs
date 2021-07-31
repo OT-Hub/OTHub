@@ -358,19 +358,6 @@ namespace OTHub.BackendSync.Blockchain
                         await ProcessJobsTask.Execute(connection, blockchainID, blockchainType, blockchainNetwork);
                     }
 
-                    if (offerTaskEvent.IsLogForEvent(transaction))
-                    {
-                        var events =
-                            offerTaskEvent.DecodeAllEventsDefaultForEvent(
-                                new[] { filterLog });
-
-                        foreach (EventLog<List<ParameterOutput>> eventLog in events)
-                        {
-                            await SyncHoldingContractTask.ProcessOfferTasks(connection, blockchainID, cl,
-                                filterLog.Address, eventLog, eth);
-                        }
-                    }
-
                     if (offerFinalizedEvent.IsLogForEvent(transaction))
                     {
                         var events =

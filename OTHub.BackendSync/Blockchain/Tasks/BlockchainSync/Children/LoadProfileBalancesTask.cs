@@ -50,11 +50,6 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
-            Random random = new Random();
-
-            var randomMinutes = random.Next(0, 2);
-
-
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -95,14 +90,14 @@ GROUP BY i.Identity", new
                     {
                         blockchainID
                     })).ToDictionary(k => k.Identity, k => k);
-                NodeManagementWallet[] managementWallets = (await connection.QueryAsync<NodeManagementWallet>(
-                    @"SELECT I.Identity, PC.ManagementWallet as CreateWallet, IT.ManagementWallet TransferWallet FROM OTIdentity I
-LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity AND PC.BlockchainID = I.BlockchainID
-LEFT JOIN OTContract_Profile_IdentityTransferred IT ON IT.NewIdentity = I.Identity AND IT.BlockchainID = I.BlockchainID
-WHERE I.Version > 0 AND I.BlockchainID = @blockchainID", new
-                    {
-                        blockchainID
-                    })).ToArray();
+//                NodeManagementWallet[] managementWallets = (await connection.QueryAsync<NodeManagementWallet>(
+//                    @"SELECT I.Identity, PC.ManagementWallet as CreateWallet, IT.ManagementWallet TransferWallet FROM OTIdentity I
+//LEFT JOIN OTContract_Profile_ProfileCreated PC ON PC.Profile = I.Identity AND PC.BlockchainID = I.BlockchainID
+//LEFT JOIN OTContract_Profile_IdentityTransferred IT ON IT.NewIdentity = I.Identity AND IT.BlockchainID = I.BlockchainID
+//WHERE I.Version > 0 AND I.BlockchainID = @blockchainID", new
+//                    {
+//                        blockchainID
+//                    })).ToArray();
 
 
                 foreach (OTIdentity currentIdentity in currentIdentities)
@@ -113,7 +108,7 @@ WHERE I.Version > 0 AND I.BlockchainID = @blockchainID", new
                     {
                         if (currentIdentity.LastSyncedTimestamp.HasValue)
                         {
-                            var adjustedNowTime = DateTime.Now.AddMinutes(randomMinutes);
+                            DateTime adjustedNowTime = DateTime.Now;
 
                             if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalDays <= 14)
                                 updateProfile = false;
@@ -179,7 +174,7 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
 
 
 
-                        var adjustedNowTime = DateTime.Now.AddMinutes(randomMinutes);
+                        var adjustedNowTime = DateTime.Now;
 
                         if (dates.Any())
                         {
@@ -198,25 +193,6 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
                             if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalHours <= 24)
                             {
                                 updateProfile = false;
-                            }
-                        }
-                    }
-
-                    bool updateManagementWallet = false;
-
-                    if (currentIdentity.Version > 0 && String.IsNullOrWhiteSpace(currentIdentity.ManagementWallet))
-                    {
-                        var wallet = managementWallets.FirstOrDefault(w => w.Identity == currentIdentity.Identity);
-                        if (wallet != null)
-                        {
-                            currentIdentity.ManagementWallet = wallet.TransferWallet ?? wallet.CreateWallet;
-                            if (!String.IsNullOrWhiteSpace(currentIdentity.ManagementWallet))
-                            {
-                                updateManagementWallet = true;
-                            }
-                            else
-                            {
-                                Console.WriteLine("Failed to find management wallet for " + currentIdentity.Identity);
                             }
                         }
                     }
@@ -270,8 +246,7 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
                     if (currentIdentity.Paidout != paidRow
                         || currentIdentity.TotalOffers != (offerRow?.OffersTotal ?? 0)
                         || currentIdentity.OffersLast7Days != (offerRow?.OffersLast7Days ?? 0)
-                        || currentIdentity.ActiveOffers != 0
-                        || updateManagementWallet)
+                        || currentIdentity.ActiveOffers != 0)
                     {
                         currentIdentity.Paidout = paidRow;
                         currentIdentity.TotalOffers = offerRow?.OffersTotal ?? 0;
