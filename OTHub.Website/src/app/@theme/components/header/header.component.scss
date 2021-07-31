@@ -70,3 +70,17 @@
     }
   }
 }
+
+.notifications .dropdown-list-image {
+  position: relative;
+  height: 30px;
+  width: 30px;
+}
+
+
+
+.notifications {
+  overflow-y: auto;
+  height:500px;
+  max-width: 450px;
+}

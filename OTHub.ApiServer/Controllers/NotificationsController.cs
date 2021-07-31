@@ -29,6 +29,30 @@ ORDER BY DATE DESC", new
                 return rows;
             }
         }
+
+        [HttpPost]
+        [Route("MarkAsRead")]
+        public async Task MarkAsRead([FromQuery] DateTime upToDate)
+        {
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                await connection.ExecuteAsync(@"UPDATE notifications 
+SET `Read` = 1
+WHERE UserID = @userID AND `Read` = 0 AND CreatedAt <= @date", new
+                {
+                    userID = User.Identity.Name,
+                    date = upToDate
+                });
+            }
+        }
+
+        [HttpPost]
+        [Route("Dismiss")]
+        public async Task Dismiss([FromQuery] DateTime upToDate)
+        {
+
+        }
     }
 
     public class NotificationModel
