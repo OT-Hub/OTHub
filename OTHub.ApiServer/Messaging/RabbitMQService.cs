@@ -99,7 +99,7 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                     }
                 }
 
-                //_channel.BasicAck(e.DeliveryTag, false);
+                _channel.BasicAck(e.DeliveryTag, false);
             }
             catch (Exception ex)
             {
