@@ -60,7 +60,7 @@
                             </span>
 
                         </div>
-                        <div *ngIf="notifications != null && notifications.length == 0" style="margin-top: 5px;">
+                        <div *ngIf="notifications != null && notifications.length == 0 && isConnected == true" style="margin-top: 5px;">
                           <div class="alert alert-success">
                             You have no new notifications!
                             </div>
