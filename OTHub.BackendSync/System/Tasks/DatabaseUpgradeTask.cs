@@ -865,6 +865,25 @@ DROP FOREIGN KEY IF EXISTS `FK_mynodes_otidentity`");
                 connection.Execute(@"ALTER TABLE mynodes 
 ADD CONSTRAINT `FK_mynodes_otidentity_cascade` FOREIGN KEY IF NOT EXISTS (`NodeID`) REFERENCES `otidentity` (`NodeId`) ON UPDATE CASCADE ON DELETE NO ACTION");
 
+                connection.Execute(@"CREATE TABLE if not exists `notifications` (
+	`Id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`UserID` VARCHAR(45) NOT NULL COLLATE 'latin1_swedish_ci',
+	`Read` BIT(1) NOT NULL,
+	`Dismissed` BIT(1) NOT NULL,
+	`CreatedAt` DATETIME NOT NULL,
+	`Title` VARCHAR(500) NOT NULL DEFAULT '' COLLATE 'latin1_swedish_ci',
+	`Description` TEXT(65535) NOT NULL COLLATE 'latin1_swedish_ci',
+	`RelativeUrl` TEXT(65535) NOT NULL COLLATE 'latin1_swedish_ci',
+	PRIMARY KEY (`Id`) USING BTREE,
+	INDEX `FK_notifications_users` (`UserID`) USING BTREE,
+	INDEX `Index 3` (`CreatedAt`, `UserID`, `Title`) USING BTREE,
+	CONSTRAINT `FK_notifications_users` FOREIGN KEY (`UserID`) REFERENCES `users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=36
+;
+");
             }
         }
     }

@@ -4,6 +4,8 @@ using System.Threading.Tasks;
 using MySqlConnector;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
+using OTHub.BackendSync.Messaging;
+using OTHub.Messaging;
 using OTHub.Settings;
 using OTHub.Settings.Constants;
 
@@ -70,13 +72,28 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     Console.WriteLine("Found " + offersToFinalize.Length + " unprocessed offer finalized events.");
                 }
 
-                foreach (var offerToFinalize in offersToFinalize)
+                foreach (OTContract_Holding_OfferFinalized offerToFinalize in offersToFinalize)
                 {
                     await OTOffer.FinalizeOffer(connection, offerToFinalize.OfferID, offerToFinalize.BlockNumber,
                         offerToFinalize.TransactionHash, offerToFinalize.Holder1, offerToFinalize.Holder2,
                         offerToFinalize.Holder3, offerToFinalize.Timestamp, blockchainID);
 
                     OTContract_Holding_OfferFinalized.SetProcessed(connection, offerToFinalize);
+
+                }
+
+                if (offersToFinalize.Any())
+                {
+                    RabbitMqService.OfferFinalized(offersToFinalize.Select(offerToFinalize =>
+                        new OfferFinalizedMessage
+                        {
+                            OfferID = offerToFinalize.OfferID,
+                            BlockchainID = blockchainID,
+                            Timestamp = offerToFinalize.Timestamp,
+                            Holder1 = offerToFinalize.Holder1,
+                            Holder2 = offerToFinalize.Holder2,
+                            Holder3 = offerToFinalize.Holder3
+                        }));
                 }
             }
         }

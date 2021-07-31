@@ -6,6 +6,7 @@ using Nethereum.JsonRpc.Client;
 using OTHub.BackendSync.Blockchain;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Markets.Tasks;
+using OTHub.BackendSync.Messaging;
 using OTHub.BackendSync.System.Tasks;
 using OTHub.Settings;
 
@@ -30,6 +31,8 @@ namespace OTHub.BackendSync
 
             //Add any new tables, indexes, columns etc to the database. This can only be used to upgrade somewhat recent databases.
             DatabaseUpgradeTask.Execute();
+
+            await RabbitMqService.Connect();
 
             await SmartContractManager.Load();
 
