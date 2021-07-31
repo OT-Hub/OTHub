@@ -270,6 +270,25 @@ export class HeaderComponent implements OnInit, OnDestroy {
     const promise = this.http.post(url, { headers: headers }).subscribe(d => {
      });
   }
+
+  dismissNotifications() {
+    let upToDate;
+    if (this.notifications != null && this.notifications.length > 0) {
+      const latest = this.notifications[0];
+      upToDate = latest.Date;
+    } else {
+      return;
+    }
+
+    this.notifications = [];
+
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + '/api/notifications/Dismiss' + '?upToDate=' + upToDate;
+  const promise = this.http.post(url, { headers: headers }).subscribe(d => {
+   });
+  }
 }
 
 export interface NotificationModel {

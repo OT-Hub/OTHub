@@ -39,7 +39,7 @@ ORDER BY DATE DESC", new
             {
                 await connection.ExecuteAsync(@"UPDATE notifications 
 SET `Read` = 1
-WHERE UserID = @userID AND `Read` = 0 AND CreatedAt <= @date", new
+WHERE UserID = @userID AND `Read` = 0 AND CreatedAt <= @date AND Dismissed = 0", new
                 {
                     userID = User.Identity.Name,
                     date = upToDate
@@ -51,7 +51,17 @@ WHERE UserID = @userID AND `Read` = 0 AND CreatedAt <= @date", new
         [Route("Dismiss")]
         public async Task Dismiss([FromQuery] DateTime upToDate)
         {
-
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                await connection.ExecuteAsync(@"UPDATE notifications 
+SET `Read` = 1, Dismissed = 1
+WHERE UserID = @userID AND `Dismissed` = 0 AND CreatedAt <= @date", new
+                {
+                    userID = User.Identity.Name,
+                    date = upToDate
+                });
+            }
         }
     }
 
