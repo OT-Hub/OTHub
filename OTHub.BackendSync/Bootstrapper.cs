@@ -1,19 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Nethereum.JsonRpc.WebSocketStreamingClient;
-using Nethereum.RPC.Eth.DTOs;
-using Nethereum.RPC.Reactive.Eth.Subscriptions;
-using Newtonsoft.Json;
-using OTHub.BackendSync.Blockchain;
-using OTHub.BackendSync.Blockchain.Tasks;
 using OTHub.BackendSync.Blockchain.Tasks.BlockchainMaintenance;
 using OTHub.BackendSync.Blockchain.Tasks.BlockchainSync;
 using OTHub.BackendSync.Blockchain.Tasks.Misc;
-using OTHub.BackendSync.Blockchain.Tasks.Misc.Children;
 using OTHub.BackendSync.Blockchain.Tasks.Tools;
 using OTHub.BackendSync.Logging;
-using OTHub.BackendSync.Markets.Tasks;
+using OTHub.BackendSync.System.Tasks;
 
 namespace OTHub.BackendSync
 {
@@ -48,6 +41,15 @@ namespace OTHub.BackendSync
                 TaskController controller = new TaskController(Source.Startup);
 
                 controller.Schedule(new ToolsTask(), true);
+
+                await controller.Start();
+            }));
+
+            tasks.Add(Task.Run(async () =>
+            {
+                TaskController controller = new TaskController(Source.Startup);
+
+                controller.Schedule(new RabbitMQMonitoringTask(), TimeSpan.FromMinutes(1), false);
 
                 await controller.Start();
             }));

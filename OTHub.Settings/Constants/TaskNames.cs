@@ -6,6 +6,7 @@ namespace OTHub.Settings.Constants
 {
     public static class TaskNames
     {
+        public const string Notifications = "Notifications";
         public const string BlockchainSync = "Blockchain Sync";
         public const string ProfileContractSync = "Sync Profile Contract";
         public const string HoldingContractSync = "Sync Holding Contract";
@@ -20,5 +21,6 @@ namespace OTHub.Settings.Constants
         public const string GetMarketData = "Get Market Data";
         public const string UpdateStakedTokenReport = "Update Staked Token Report";
         public const string WebSockets = "WebSockets";
+        public const string RabbitMQMonitoring = "Jobs Awarded Notifications";
     }
 }

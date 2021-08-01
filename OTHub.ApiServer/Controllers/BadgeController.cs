@@ -119,6 +119,14 @@ ORDER BY s.ParentName, b.id, s.Name")).ToArray();
                                         break;
                                 }
                                 break;
+                            case TaskNames.Notifications:
+                                switch (statusModel.Name)
+                                {
+                                    case TaskNames.RabbitMQMonitoring:
+                                        errors.Add("Live notifications for jobs awarded are not working.");
+                                        break;
+                                }
+                                break;
                         }
                     }
 

@@ -156,7 +156,7 @@ VALUES(@jobID, @identity)", new
 
         public override TimeSpan GetExecutingInterval(BlockchainType type)
         {
-            return TimeSpan.FromSeconds(20);
+            return TimeSpan.FromSeconds(45);
         }
     }
 }

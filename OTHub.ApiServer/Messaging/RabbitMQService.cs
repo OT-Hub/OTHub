@@ -42,6 +42,8 @@ namespace OTHub.APIServer.Messaging
             var consumer = new AsyncEventingBasicConsumer(_channel);
             consumer.Received += Consumer_Received;
 
+
+
             _channel.BasicConsume("OfferFinalized",
                 false,
                 consumer);
