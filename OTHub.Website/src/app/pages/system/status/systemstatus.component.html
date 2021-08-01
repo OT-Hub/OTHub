@@ -25,6 +25,17 @@
                     <nb-list>
                         <nb-list-item *ngFor="let data of group.Items" style="position: relative;">
 
+                            <div *ngIf="data.Children != null && data.Children.length == 0">
+                                <nb-icon icon="sync" title="Running now" status="warning" *ngIf="data.IsRunning == true"></nb-icon>
+                                <nb-icon icon="checkmark-circle" title="No known issues" status="success" *ngIf="data.Success == true"></nb-icon>
+                                <nb-icon icon="close-circle" title="An error occurred" status="danger"
+                                    *ngIf="data.Success == false && data.LastTriedDateTime != null"></nb-icon>
+                                <nb-icon icon="clock" status="info"
+                                    *ngIf="data.Success == false && data.LastTriedDateTime == null"></nb-icon>
+
+          
+                            </div>
+
                             <div style="margin-left:10px;">
                                 {{data.Name}}
                                 <br>
@@ -34,7 +45,18 @@
                                 </span>
                             </div>
 
-                            <nb-list>
+                       
+
+                            <nb-badge style="font-size: 12px; padding:6px; margin-right:10px;"
+                            text="Last successfully run at {{data.LastSuccessDateTime| amFromUtc | amLocal | amDateFormat:'DD/MM/YYYY HH:mm'}}"
+                            status="success" position="middle right"
+                            *ngIf="data.Success == true && data.LastSuccessDateTime != null && (data.Children == null || data.Children.length == 0)"></nb-badge>
+
+                        <nb-badge style="font-size: 12px; padding:6px; margin-right:10px;"
+                            text="There was an error during processing." status="danger" position="middle right"
+                            *ngIf="data.Success != true && data.LastTriedDateTime != null && (data.Children == null || data.Children.length == 0)"></nb-badge>
+
+                            <nb-list *ngIf="data.Children != null && data.Children.length > 0">
                                 <nb-list-item *ngFor="let child of data.Children">
                                     <nb-icon icon="sync" title="Running now" status="warning" *ngIf="child.IsRunning == true"></nb-icon>
                                     <nb-icon icon="checkmark-circle" title="No known issues" status="success" *ngIf="child.Success == true"></nb-icon>
