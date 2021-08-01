@@ -35,7 +35,7 @@
     "docs:serve": "compodoc -p src/tsconfig.app.json -d docs -s",
     "prepush": "npm run lint:ci",
     "release:changelog": "npm run conventional-changelog -- -p angular -i CHANGELOG.md -s",
-    "postinstall": "ngcc --properties es2015 es5 browser module main --first-only --create-ivy-entry-points --tsconfig \"./src/tsconfig.app.json\" && node web3-patch.js" 
+    "postinstall": "ngcc --properties es2015 es5 browser module main --first-only --create-ivy-entry-points --tsconfig \"./src/tsconfig.app.json\" && node web3-patch.js"
   },
   "dependencies": {
     "@amcharts/amcharts4": "^4.10.16",
@@ -54,7 +54,7 @@
     "@angular/router": "^11.2.4",
     "@asymmetrik/ngx-leaflet": "3.0.1",
     "@auth0/auth0-angular": "^1.4.1",
-    "@microsoft/signalr": "^5.0.5",
+    "@microsoft/signalr": "^5.0.8",
     "@nebular/auth": "7.0.0",
     "@nebular/eva-icons": "7.0.0",
     "@nebular/security": "7.0.0",
