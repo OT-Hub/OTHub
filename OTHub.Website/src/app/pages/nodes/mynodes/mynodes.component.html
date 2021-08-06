@@ -47,8 +47,8 @@
       </nb-card>
     </div>
   </div>  
-  <br *ngIf="isLoggedIn == true">
-  <div class="row clearfix" *ngIf="isLoggedIn == true">
+  <br>
+  <div class="row clearfix">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <nb-card>
         <nb-card-header>
@@ -60,7 +60,7 @@
             (load)="onTelegramLoad()"
             (loadError)="onTelegramLoadError()"
             (login)="onTelegramLogin($event)"
-botName="othub_bot" [configs]="telegramConfigs"></angular-telegram-login-widget>
+      botName="othub_bot"></angular-telegram-login-widget>
           </nb-list-item>
         </nb-list>
       </nb-card>

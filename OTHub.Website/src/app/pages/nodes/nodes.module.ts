@@ -28,6 +28,7 @@ import { NbAccordionModule } from '@nebular/theme';
 import { MynodesoverviewComponent } from './mynodesoverview/mynodesoverview.component';
 import { FormsModule } from '@angular/forms';
 import { MynodestaxexportComponent } from './mynodestaxexport/mynodestaxexport.component';
+import { AngularTelegramLoginWidgetModule } from 'angular-telegram-login-widget';
 @NgModule({
   declarations: [DataHoldersComponent, DataHolderComponent, DatacreatorsComponent,
      DatacreatorComponent, MynodesComponent, FindbymanagementwalletComponent, ManualPayoutPageComponent, SafePipe,
@@ -61,7 +62,8 @@ import { MynodestaxexportComponent } from './mynodestaxexport/mynodestaxexport.c
     NbCheckboxModule,
     NbDatepickerModule,
     NbCalendarRangeModule,
-    NbProgressBarModule
+    NbProgressBarModule,
+    AngularTelegramLoginWidgetModule
   ]
 })
 export class NodesModule { }

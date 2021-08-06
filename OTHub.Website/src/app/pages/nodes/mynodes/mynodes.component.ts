@@ -57,13 +57,17 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   }
 
   onTelegramLoad() {
+    console.log('tg load');
   }
 
   onTelegramLoadError() {
+    console.log('tg error');
   }
 
   onTelegramLogin(user: any) {
-    JSON.stringify(user, null, 4);
+    console.log('tg login');
+    console.log(user);
+    console.log(JSON.stringify(user, null, 4));
   }
 
 
