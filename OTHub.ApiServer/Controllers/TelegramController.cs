@@ -45,7 +45,7 @@ namespace OTHub.APIServer.Controllers
                     });
                 }
 
-                await _bot.SendFirstMessage();
+                await _bot.SendFirstMessage(account.id);
             }
         }
     }

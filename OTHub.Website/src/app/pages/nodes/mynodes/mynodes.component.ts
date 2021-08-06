@@ -24,13 +24,8 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService,  @Inject(DOCUMENT) private _document: Document) {
     this.isLoggedIn = false;
     this.isLoading = true;
-    this.telegramConfigs = {
-      accessToWriteMessages: false,
-      buttonStyle: 'large',
-      cornerRadius: 20,
-      showUserPhoto: true
-    };
   }
+
   isLoggedIn: boolean;
   isLoading: boolean
   showDataHolders: boolean;
@@ -57,21 +52,26 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   }
 
   onTelegramLoad() {
-    console.log('tg load');
+    
   }
 
   onTelegramLoadError() {
-    console.log('tg error');
+   
   }
 
   onTelegramLogin(user: any) {
-    console.log('tg login');
-    console.log(user);
-    console.log(JSON.stringify(user, null, 4));
+    this.sendTelegramLoginHash(JSON.stringify(user, null, 4));
   }
 
+  sendTelegramLoginHash(body: string) {
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + 'api/telegram/linkaccount';
+  this.http.post(url, body, { headers }).subscribe(data => {
+  });
+  }
 
-  telegramConfigs: WidgetConfiguration;
 
   onUsdAmountCalculationModeChange(value: string) {
     const headers = new HttpHeaders()
