@@ -67,7 +67,7 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
     const headers = new HttpHeaders()
     .set('Content-Type', 'application/json')
     .set('Accept', 'application/json');
-  const url = this.httpService.ApiUrl + 'api/telegram/linkaccount';
+  const url = this.httpService.ApiUrl + '/api/telegram/linkaccount';
   this.http.post(url, body, { headers }).subscribe(data => {
   });
   }
