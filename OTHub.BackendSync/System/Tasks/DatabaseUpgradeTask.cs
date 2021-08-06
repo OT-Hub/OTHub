@@ -881,9 +881,13 @@ ADD CONSTRAINT `FK_mynodes_otidentity_cascade` FOREIGN KEY IF NOT EXISTS (`NodeI
 )
 COLLATE='latin1_swedish_ci'
 ENGINE=InnoDB
-AUTO_INCREMENT=36
+AUTO_INCREMENT=1
 ;
 ");
+
+                connection.Execute(@"ALTER TABLE users
+ADD COLUMN IF NOT EXISTS `TelegramUserID` bigint null");
+
             }
         }
     }

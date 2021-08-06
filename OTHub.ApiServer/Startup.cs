@@ -130,6 +130,8 @@ namespace OTHub.APIServer
  
 
             services.AddSingleton<RabbitMQService>();
+
+            services.AddSingleton<TelegramBot>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -187,6 +189,7 @@ namespace OTHub.APIServer
 
             //Loads up the singleton
             app.ApplicationServices.GetService<RabbitMQService>();
+            app.ApplicationServices.GetService<TelegramBot>();
         }
     }
 }
