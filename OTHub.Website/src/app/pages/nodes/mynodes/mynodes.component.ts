@@ -9,6 +9,7 @@ import * as moment from 'moment';
 import { RecentActivityJobModel } from './mynodes-model';
 import { AuthService } from '@auth0/auth0-angular';
 import { DOCUMENT } from '@angular/common';
+import { WidgetConfiguration } from 'angular-telegram-login-widget/lib/types';
 declare const $: any;
 declare const swal: any;
 @Component({
@@ -23,6 +24,12 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService,  @Inject(DOCUMENT) private _document: Document) {
     this.isLoggedIn = false;
     this.isLoading = true;
+    this.telegramConfigs = {
+      accessToWriteMessages: false,
+      buttonStyle: 'large',
+      cornerRadius: 20,
+      showUserPhoto: true
+    };
   }
   isLoggedIn: boolean;
   isLoading: boolean
@@ -43,12 +50,24 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   }
 
   ngAfterViewInit() {
-
   }
 
   ngAfterViewChecked() {
 
   }
+
+  onTelegramLoad() {
+  }
+
+  onTelegramLoadError() {
+  }
+
+  onTelegramLogin(user: any) {
+    JSON.stringify(user, null, 4);
+  }
+
+
+  telegramConfigs: WidgetConfiguration;
 
   onUsdAmountCalculationModeChange(value: string) {
     const headers = new HttpHeaders()

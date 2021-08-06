@@ -52,6 +52,25 @@
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
       <nb-card>
         <nb-card-header>
+          Telegram
+        </nb-card-header>
+        <nb-list>
+          <nb-list-item>
+            <angular-telegram-login-widget 
+            (load)="onTelegramLoad()"
+            (loadError)="onTelegramLoadError()"
+            (login)="onTelegramLogin($event)"
+botName="othub_bot" [configs]="telegramConfigs"></angular-telegram-login-widget>
+          </nb-list-item>
+        </nb-list>
+      </nb-card>
+    </div>
+  </div>
+  <br *ngIf="isLoggedIn == true">
+  <div class="row clearfix" *ngIf="isLoggedIn == true">
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+      <nb-card>
+        <nb-card-header>
           Time Settings
         </nb-card-header>
         <nb-list>

@@ -59,6 +59,7 @@
     "@nebular/eva-icons": "7.0.0",
     "@nebular/security": "7.0.0",
     "@nebular/theme": "7.0.0",
+    "angular-telegram-login-widget": "^0.2.2",
     "angular2-chartjs": "0.4.1",
     "bootstrap": "4.3.1",
     "chart.js": "^2.9.4",
