@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using MySqlConnector;
 using OTHub.APIServer.Helpers;
 using OTHub.Settings;
@@ -16,10 +17,12 @@ namespace OTHub.APIServer.Controllers
     public class TelegramController : Controller
     {
         private readonly TelegramBot _bot;
+        private readonly IMemoryCache _cache;
 
-        public TelegramController(TelegramBot bot)
+        public TelegramController(TelegramBot bot, IMemoryCache cache)
         {
             _bot = bot;
+            _cache = cache;
         }
 
         [HttpPost]
@@ -81,6 +84,40 @@ WHERE UserID = @userID", new
                     value = value
                 });
             }
+        }
+
+        [Route("SendTestMessage")]
+        [HttpPost]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<IActionResult> SendTestMessage()
+        {
+            string userID = User.Identity.Name;
+
+            string cacheKey = $"Telegram/SendTestMessage/{userID}";
+            if (_cache.TryGetValue(cacheKey, out var value))
+            {
+                return BadRequest("You can only send a test message once every 30 seconds.");
+            }
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                long? telegramUserID = await connection.ExecuteScalarAsync<long?>("SELECT TelegramUserID FROM Users WHERE ID = @userID",
+                    new
+                    {
+                        userID = userID,
+                    });
+
+                if (telegramUserID.HasValue)
+                {
+                    _cache.Set(cacheKey, 1, TimeSpan.FromSeconds(30));
+                    await _bot.SendTestMessage(telegramUserID.Value);
+
+                    return Ok();
+                }
+            }
+
+            return BadRequest("You have not linked a telegram user to OT Hub.");
         }
 
         [HttpPost]

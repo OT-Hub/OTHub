@@ -73,7 +73,7 @@ namespace OTHub.APIServer.Helpers
             {
                 if (arg2.Message?.Text == "/start")
                 {
-                    await FirstUserLoadSetup(arg2, arg3);
+                    await FirstUserLoadSetup(arg2.Message.Chat.Id, arg3);
                 }
             }
             //else if (arg2.Type == UpdateType.CallbackQuery)
@@ -90,12 +90,12 @@ namespace OTHub.APIServer.Helpers
 
         }
 
-        private async Task FirstUserLoadSetup(Update arg2, CancellationToken arg3)
+        private async Task FirstUserLoadSetup(long chatID, CancellationToken arg3)
         {
-            await _botClient.SendTextMessageAsync(arg2.Message.Chat.Id, "Hello there!",
+            await _botClient.SendTextMessageAsync(chatID, "Hello there!",
                 cancellationToken: arg3);
 
-            await _botClient.SendTextMessageAsync(arg2.Message.Chat.Id,
+            await _botClient.SendTextMessageAsync(chatID,
                 "Give me a few seconds while I confirm your account is ready for notifications!",
                 cancellationToken: arg3);
 
@@ -108,7 +108,7 @@ namespace OTHub.APIServer.Helpers
                         @"SELECT ID FROM users WHERE TelegramUserID = @telegramID",
                         new
                         {
-                            telegramID = arg2.Message.Chat.Id
+                            telegramID = chatID
                         })
                     ).ToArray();
 
@@ -124,7 +124,7 @@ namespace OTHub.APIServer.Helpers
                             });
                     }
 
-                    await _botClient.SendTextMessageAsync(arg2.Message.Chat.Id,
+                    await _botClient.SendTextMessageAsync(chatID,
                         "Your OT Hub account is all setup for notifications!",
                         replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl(
                             "Change Notification Settings",
@@ -133,13 +133,13 @@ namespace OTHub.APIServer.Helpers
                 }
                 else
                 {
-                    await _botClient.SendTextMessageAsync(arg2.Message.Chat.Id,
+                    await _botClient.SendTextMessageAsync(chatID,
                         "I was unable to find any accounts on OT Hub that are linked to this Telegram user.",
                         cancellationToken: arg3);
 
                     await Task.Delay(2000, arg3);
 
-                    await _botClient.SendTextMessageAsync(arg2.Message.Chat.Id,
+                    await _botClient.SendTextMessageAsync(chatID,
                         "Please login to OT Hub, go to this link and then login to Telegram on OT Hub.",
                         replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl(
                             "Go to OT Hub Telegram Login",
@@ -180,6 +180,11 @@ namespace OTHub.APIServer.Helpers
 
             await _botClient.SendTextMessageAsync(telegramUserID, title + "\n" + description,
                 replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl("View Job", url)));
+        }
+
+        public async Task SendTestMessage(long telegramUserID)
+        {
+            await FirstUserLoadSetup(telegramUserID, CancellationToken.None);
         }
     }
 }
