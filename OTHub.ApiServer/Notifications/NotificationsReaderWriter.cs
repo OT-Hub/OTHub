@@ -12,7 +12,7 @@ namespace OTHub.APIServer.Notifications
 {
     public static class NotificationsReaderWriter
     {
-        public static async Task<string> InsertJobWonNotification(MySqlConnection connection, OfferFinalizedMessage message, string userID,
+        public static async Task<(string title, string url)> InsertJobWonNotification(MySqlConnection connection, OfferFinalizedMessage message, string userID,
             string nodeName, decimal tokenAmount, long holdingTimeInMinutes)
         {
             string title = $"Job awarded for {nodeName}";
@@ -26,7 +26,7 @@ namespace OTHub.APIServer.Notifications
                 });
 
             if (exitsingCount != 0)
-                return null;
+                return (null, null);
 
             var timeInText = TimeSpan.FromMinutes(holdingTimeInMinutes)
                 .Humanize(5, maxUnit: TimeUnit.Year, minUnit: TimeUnit.Minute);

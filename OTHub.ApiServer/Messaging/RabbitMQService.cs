@@ -8,6 +8,7 @@ using Dapper;
 using Microsoft.AspNetCore.SignalR;
 using MySqlConnector;
 using Newtonsoft.Json;
+using OTHub.APIServer.Helpers;
 using OTHub.APIServer.Notifications;
 using OTHub.APIServer.SignalR;
 using OTHub.Messaging;
@@ -20,13 +21,15 @@ namespace OTHub.APIServer.Messaging
     public class RabbitMQService
     {
         private readonly IHubContext<NotificationsHub> _hubContext;
-        private ConnectionFactory _factory;
+        private readonly TelegramBot _bot;
+        private readonly ConnectionFactory _factory;
         private IConnection _connection;
         private IModel _channel;
 
-        public RabbitMQService(IHubContext<NotificationsHub> hubContext)
+        public RabbitMQService(IHubContext<NotificationsHub> hubContext, TelegramBot bot)
         {
             _hubContext = hubContext;
+            _bot = bot;
             _factory = new ConnectionFactory
                 {HostName = "localhost", RequestedHeartbeat = TimeSpan.FromMinutes(4), DispatchConsumersAsync = true};
             Connect();
@@ -64,8 +67,9 @@ namespace OTHub.APIServer.Messaging
                     foreach (string holder in holders)
                     {
                         var users = (await connection.QueryAsync(
-                            @"SELECT DISTINCT mn.UserID, COALESCE(mn.DisplayName, i.NodeID) NodeName FROM mynodes mn
+                            @"SELECT DISTINCT mn.UserID, COALESCE(mn.DisplayName, i.NodeID) NodeName, U.TelegramUserID FROM mynodes mn
 JOIN otidentity I ON I.NodeID = mn.NodeID
+JOIN users U ON U.ID = mn.UserID
 WHERE I.Version > 0 AND I.Identity = @identity", new
                             {
                                 identity = holder
@@ -88,13 +92,31 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                             {
                                 string userID = user.UserID;
                                 string nodeName = user.NodeName;
+                                long telegramUserID = user.TelegramUserID;
 
-                                string title = await NotificationsReaderWriter.InsertJobWonNotification(connection, message, userID,
+                                (string title, string url) data = await NotificationsReaderWriter.InsertJobWonNotification(connection, message, userID,
                                     nodeName, tokenAmount, holdingTimeInMinutes);
 
-                                if (title != null)
+                                if (data.title != null)
                                 {
-                                    await _hubContext.Clients.User(userID).SendAsync("JobWon", title);
+                                    try
+                                    {
+                                        await _hubContext.Clients.User(userID).SendAsync("JobWon", data.title);
+                                    }
+                                    catch (Exception ex)
+                                    {
+
+                                    }
+
+                                    try
+                                    {
+                                        await _bot.JobWon(telegramUserID, data.title,
+                                            $"https://othub.origin-trail.network/{data.url}");
+                                    }
+                                    catch (Exception ex)
+                                    {
+                                      
+                                    }
                                 }
                             }
                         }

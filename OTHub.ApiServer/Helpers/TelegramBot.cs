@@ -10,6 +10,7 @@ using Telegram.Bot.Extensions.LoginWidget;
 using Telegram.Bot.Extensions.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace OTHub.APIServer.Helpers
 {
@@ -105,6 +106,12 @@ namespace OTHub.APIServer.Helpers
             await _botClient.SendTextMessageAsync(telegramUserID, "Hello!");
             await Task.Delay(1000);
             await _botClient.SendTextMessageAsync(telegramUserID, "You have successfully linked your OT Hub account with telegram.");
+        }
+
+        public async Task JobWon(long telegramUserID, string title, string url)
+        {
+            await _botClient.SendTextMessageAsync(telegramUserID, title,
+                replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl("View Job", url)));
         }
     }
 }
