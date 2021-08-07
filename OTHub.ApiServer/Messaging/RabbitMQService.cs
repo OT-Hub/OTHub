@@ -60,6 +60,12 @@ namespace OTHub.APIServer.Messaging
                 var text = Encoding.UTF8.GetString(body);
                 OfferFinalizedMessage message = JsonConvert.DeserializeObject<OfferFinalizedMessage>(text);
 
+                if (message == null)
+                {
+                    _channel.BasicAck(e.DeliveryTag, false);
+                    return;
+                }
+
                 string[] holders = {message.Holder1, message.Holder2, message.Holder3};
 
                 await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
@@ -92,7 +98,7 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                             {
                                 string userID = user.UserID;
                                 string nodeName = user.NodeName;
-                                long telegramUserID = user.TelegramUserID;
+                                long? telegramUserID = user.TelegramUserID;
 
                                 (string title, string url) data = await NotificationsReaderWriter.InsertJobWonNotification(connection, message, userID,
                                     nodeName, tokenAmount, holdingTimeInMinutes);
@@ -108,14 +114,16 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
 
                                     }
 
-                                    try
+                                    if (telegramUserID.HasValue)
                                     {
-                                        await _bot.JobWon(telegramUserID, data.title,
-                                            $"https://othub.origin-trail.network/{data.url}");
-                                    }
-                                    catch (Exception ex)
-                                    {
-                                      
+                                        try
+                                        {
+                                            await _bot.JobWon(telegramUserID.Value, data.title, $"https://othub.origin-trail.network/{data.url}");
+                                        }
+                                        catch (Exception ex)
+                                        {
+
+                                        }
                                     }
                                 }
                             }
