@@ -81,6 +81,9 @@
           <div style="margin: 10px 0px 4px 0px;font-weight:bold;" *ngIf="telegramSettings.NotificationsEnabled">Notifications</div>
           <nb-checkbox status="success" [checked]="telegramSettings.JobWonEnabled" *ngIf="telegramSettings.NotificationsEnabled"  (checkedChange)="onTelegramJobWonEnabledChange($event)">Job Won</nb-checkbox>
         </div>
+        <div *ngIf="isLoadingTelegram == false && telegramSettings != null && telegramSettings.TelegramID != null && telegramSettings.HasReceivedMessageFromUser == true">
+          <button nbButton status="success" (click)="sendTestTelegramMessage()" style="margin:10px;">Send Test Message</button>
+        </div>
       </nb-card>
     </div>
   </div>

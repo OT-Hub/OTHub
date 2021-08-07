@@ -10,6 +10,7 @@ import { RecentActivityJobModel, TelegramSettings } from './mynodes-model';
 import { AuthService } from '@auth0/auth0-angular';
 import { DOCUMENT } from '@angular/common';
 import { WidgetConfiguration } from 'angular-telegram-login-widget/lib/types';
+import { NbToastrConfig, NbToastrService } from '@nebular/theme';
 declare const $: any;
 declare const swal: any;
 @Component({
@@ -22,7 +23,8 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   telegramSettings: TelegramSettings;
 
 
-  constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService,  @Inject(DOCUMENT) private _document: Document) {
+  constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService,  @Inject(DOCUMENT) private _document: Document
+  , private toastrService: NbToastrService) {
     this.isLoggedIn = false;
     this.isLoading = true;
     this.isLoadingTelegram = true;
@@ -205,6 +207,26 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   }
 
   isLoadingTelegram: Boolean;
+
+  sendTestTelegramMessage() {
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/telegram/SendTestMessage';
+    this.http.post(url, { headers }).subscribe(data => {
+      let config = new NbToastrConfig({ duration: 8000 });
+      config.status = "success";
+      config.icon = 'info';
+      this.toastrService.show(
+        'Message has been sent! Check Telegram for a message from the username othub_bot.', 'Send Test Message', config);
+    }, err => {
+      let config = new NbToastrConfig({ duration: 8000 });
+      config.status = "warning";
+      config.icon = 'alert-triangle';
+      this.toastrService.show(
+        err.error ?? 'Unknown error', 'Send Test Message', config);
+    });
+  }
 
   ngOnInit() {
     const self = this;
