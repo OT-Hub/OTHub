@@ -28,7 +28,10 @@ namespace OTHub.APIServer.Helpers
         public async void Connect()
         {
             if (OTHubSettings.Instance.Telegram?.BotKey == null || _botClient != null)
+            {
+                Console.WriteLine("Bot key is null for Telegram.");
                 return;
+            }
 
             _botClient = new TelegramBotClient(OTHubSettings.Instance.Telegram.BotKey);
 
@@ -43,6 +46,8 @@ namespace OTHub.APIServer.Helpers
                 null, cts.Token);
 
             IsConnected = true;
+
+            Console.WriteLine("Telegram bot is connected.");
         }
 
         private async Task HandleErrorAsync(ITelegramBotClient arg1, Exception arg2, CancellationToken arg3)
@@ -54,9 +59,9 @@ namespace OTHub.APIServer.Helpers
         {
             if (arg2.Type == UpdateType.Message)
             {
-                if (arg2.Message.Text == "/start")
+                if (arg2.Message?.Text == "hello world")
                 {
-                    await _botClient.SendTextMessageAsync(arg2.Message.Chat.Id, "Response to /start.", cancellationToken: arg3);
+                    await _botClient.SendTextMessageAsync(arg2.Message.Chat.Id, "Response to hello world.", cancellationToken: arg3);
 
                     //await arg1.SetMyCommandsAsync(new List<BotCommand>()
                     //{
@@ -92,7 +97,10 @@ namespace OTHub.APIServer.Helpers
         public Authorization LinkAccount(TelegramAccount account)
         {
             if (!IsConnected)
+            {
+                Console.WriteLine("Not connected to Telegram.");
                 return Authorization.MissingFields;
+            }
 
             LoginWidget widget = new LoginWidget(OTHubSettings.Instance.Telegram.BotKey);
 

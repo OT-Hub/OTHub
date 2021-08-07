@@ -31,6 +31,8 @@ namespace OTHub.APIServer.Controllers
         {
             Authorization result = _bot.LinkAccount(account);
 
+            Console.WriteLine("LinkAccountResult: " + result);
+
             if (result == Authorization.Valid)
             {
                 string userID = User.Identity.Name;
