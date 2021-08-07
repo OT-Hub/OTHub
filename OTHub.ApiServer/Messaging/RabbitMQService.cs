@@ -141,7 +141,7 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
             }
             catch (Exception ex)
             {
-                Console.WriteLine("Failed to process offer finalized: " + ex.Message);
+                Console.WriteLine("Failed to process offer finalized: " + ex.ToString());
                 _channel.BasicNack(e.DeliveryTag, false, true);
             }
         }

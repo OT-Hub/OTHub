@@ -888,7 +888,7 @@ AUTO_INCREMENT=1
                 connection.Execute(@"ALTER TABLE users
 ADD COLUMN IF NOT EXISTS `TelegramUserID` bigint null");
 
-                connection.Execute(@"CREATE TABLE `telegramsettings` (
+                connection.Execute(@"CREATE TABLE if not exists `telegramsettings` (
 	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
 	`UserID` VARCHAR(45) NOT NULL DEFAULT '' COLLATE 'latin1_swedish_ci',
 	`NotificationsEnabled` BIT(1) NOT NULL,
