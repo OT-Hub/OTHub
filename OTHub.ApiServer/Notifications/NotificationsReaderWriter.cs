@@ -12,7 +12,7 @@ namespace OTHub.APIServer.Notifications
 {
     public static class NotificationsReaderWriter
     {
-        public static async Task<(string title, string url)> InsertJobWonNotification(MySqlConnection connection, OfferFinalizedMessage message, string userID,
+        public static async Task<(string title, string description, string url)> InsertJobWonNotification(MySqlConnection connection, OfferFinalizedMessage message, string userID,
             string nodeName, decimal tokenAmount, long holdingTimeInMinutes)
         {
             string title = $"Job awarded for {nodeName}";
@@ -26,7 +26,7 @@ namespace OTHub.APIServer.Notifications
                 });
 
             if (exitsingCount != 0)
-                return (null, null);
+                return (null, null, null);
 
             var timeInText = TimeSpan.FromMinutes(holdingTimeInMinutes)
                 .Humanize(5, maxUnit: TimeUnit.Year, minUnit: TimeUnit.Minute);
@@ -35,16 +35,18 @@ namespace OTHub.APIServer.Notifications
 
             string url = $"offers/{message.OfferID}";
 
+            string descripton = $"{timeInText} for {tokenAmount:N} TRAC";
+
             await connection.ExecuteAsync("INSERT INTO notifications(`UserID`, `Read`, `Dismissed`, `CreatedAt`, `Title`, `Description`, `RelativeUrl`) VALUES(@userID, 0, 0, @date, @title, @description, @url)", new
             {
                 userID = userID,
                 date = message.Timestamp,
                 title = title,
-                description = $"{timeInText} for {tokenAmount:N} TRAC",
+                description = descripton,
                 url = url
             });
 
-            return (title, url);
+            return (title, descripton, url);
         }
     }
 }

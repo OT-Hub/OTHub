@@ -6,7 +6,7 @@ import { DataHolderDetailedModel } from '../dataholder/dataholder-models';
 import { FormsModule } from '@angular/forms';
 import { HubHttpService } from '../../hub-http-service';
 import * as moment from 'moment';
-import { RecentActivityJobModel } from './mynodes-model';
+import { RecentActivityJobModel, TelegramSettings } from './mynodes-model';
 import { AuthService } from '@auth0/auth0-angular';
 import { DOCUMENT } from '@angular/common';
 import { WidgetConfiguration } from 'angular-telegram-login-widget/lib/types';
@@ -19,11 +19,13 @@ declare const swal: any;
 })
 export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   usdAmountCalculationMode: string;
+  telegramSettings: TelegramSettings;
 
 
   constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService,  @Inject(DOCUMENT) private _document: Document) {
     this.isLoggedIn = false;
     this.isLoading = true;
+    this.isLoadingTelegram = true;
   }
 
   isLoggedIn: boolean;
@@ -72,6 +74,25 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   });
   }
 
+  onTelegramNotificationsEnabledChange(value: boolean) {
+    this.telegramSettings.NotificationsEnabled = value;
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + '/api/telegram/UpdateNotificationsEnabled?value=' + value;
+  this.http.post(url, { headers }).subscribe(data => {
+  });
+  }
+
+  onTelegramJobWonEnabledChange(value: boolean) {
+    this.telegramSettings.JobWonEnabled  = value;
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + '/api/telegram/UpdateJobWonEnabled?value=' + value;
+  this.http.post(url, { headers }).subscribe(data => {
+  });
+  }
 
   onUsdAmountCalculationModeChange(value: string) {
     const headers = new HttpHeaders()
@@ -171,6 +192,20 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
     return split[0];
   }
 
+  loadTelegramSettings() {
+    this.isLoadingTelegram = true;
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/telegram/GetSettings';
+    this.http.get<TelegramSettings>(url, { headers }).subscribe(data => {
+     this.telegramSettings = data;
+     this.isLoadingTelegram = false;
+    });
+  }
+
+  isLoadingTelegram: Boolean;
+
   ngOnInit() {
     const self = this;
 
@@ -187,6 +222,8 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
       this.http.get<Number>(url, { headers }).subscribe(data => {
        this.usdAmountCalculationMode = data.toString();
       });
+
+      this.loadTelegramSettings();
       }
       this.isLoading = false;
     });

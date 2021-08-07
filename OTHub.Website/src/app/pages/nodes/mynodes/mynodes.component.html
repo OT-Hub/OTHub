@@ -55,21 +55,32 @@
           Telegram Notifications
         </nb-card-header>
         <nb-list>
-          <nb-list-item>
+          <nb-list-item *ngIf="isLoadingTelegram == false && telegramSettings == null">
             By linking your OT Hub account with Telegram you can automatically receive messages from our bot when certain events happen on the ODN.
-            <br>
-            <br>
-            In a future update to OT Hub you will be able to configure the notifications you want. Currently it will only send you job won notifications.
            </nb-list-item>
-   
-          <nb-list-item>
-            <angular-telegram-login-widget 
+          <nb-list-item [hidden]="isLoadingTelegram == true || (telegramSettings != null && telegramSettings.TelegramID != null)">
+            <angular-telegram-login-widget
             (load)="onTelegramLoad()"
             (loadError)="onTelegramLoadError()"
             (login)="onTelegramLogin($event)"
       botName="othub_bot"></angular-telegram-login-widget>
           </nb-list-item>
         </nb-list>
+        <div *ngIf="isLoadingTelegram == false && telegramSettings != null && telegramSettings.TelegramID != null && telegramSettings.HasReceivedMessageFromUser == false">
+          <div class="alert alert-warning">
+            <b>For notifications to work you must have sent at least one message to the OTHub bot. Otherwise it will be unable to message you.</b>
+            <br><br>
+           
+              Please add the bot on Telegram by searching for othub_bot and send it a message! When you have sent this message, refresh this page and you can continue configuring the options here.
+         
+            </div>
+        </div>
+        <div class="items-rows" *ngIf="isLoadingTelegram == false && telegramSettings != null && telegramSettings.TelegramID != null && telegramSettings.HasReceivedMessageFromUser == true">
+          <nb-checkbox status="primary" [checked]="telegramSettings.NotificationsEnabled" (checkedChange)="onTelegramNotificationsEnabledChange($event)">Telegram Bot Enabled</nb-checkbox>
+          <br *ngIf="telegramSettings.NotificationsEnabled">
+          <div style="margin: 10px 0px 4px 0px;font-weight:bold;" *ngIf="telegramSettings.NotificationsEnabled">Notifications</div>
+          <nb-checkbox status="success" [checked]="telegramSettings.JobWonEnabled" *ngIf="telegramSettings.NotificationsEnabled"  (checkedChange)="onTelegramJobWonEnabledChange($event)">Job Won</nb-checkbox>
+        </div>
       </nb-card>
     </div>
   </div>

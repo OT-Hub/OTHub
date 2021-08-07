@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Authorization;
@@ -31,8 +29,6 @@ namespace OTHub.APIServer.Controllers
         {
             Authorization result = _bot.LinkAccount(account);
 
-            Console.WriteLine("LinkAccountResult: " + result);
-
             if (result == Authorization.Valid)
             {
                 string userID = User.Identity.Name;
@@ -45,9 +41,90 @@ namespace OTHub.APIServer.Controllers
                         userID = userID,
                         telegramUserID = account.id
                     });
-                }
 
-                await _bot.SendFirstMessage(account.id);
+                    int count = await connection.ExecuteScalarAsync<int>(
+                        @"SELECT COUNT(*) FROM telegramsettings WHERE userid = @userID",
+                        new
+                        {
+                            userID = userID
+                        });
+
+                    if (count == 0)
+                    {
+                        await connection.ExecuteAsync(
+                            @"INSERT INTO telegramsettings (UserID, NotificationsEnabled, JobWonEnabled, HasReceivedMessageFromUser)
+VALUE (@userID, 1, 1, 0)", new
+                            {
+                                userID = userID
+                            });
+                    }
+                }
+            }
+        }
+
+        [HttpPost]
+        [Route("UpdateNotificationsEnabled")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task UpdateNotificationsEnabled([FromQuery]bool value)
+        {
+            string userID = User.Identity.Name;
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                await connection.ExecuteAsync(@"
+UPDATE telegramsettings
+SET NotificationsEnabled = @value
+WHERE UserID = @userID", new
+                {
+                    userID = userID,
+                    value = value
+                });
+            }
+        }
+
+        [HttpPost]
+        [Route("UpdateJobWonEnabled")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task UpdateJobWonEnabled([FromQuery] bool value)
+        {
+            string userID = User.Identity.Name;
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                await connection.ExecuteAsync(@"
+UPDATE telegramsettings
+SET JobWonEnabled = @value
+WHERE UserID = @userID", new
+                {
+                    userID = userID,
+                    value = value
+                });
+            }
+        }
+
+
+
+        [HttpGet]
+        [Route("GetSettings")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<TelegramSettings> GetSettings()
+        {
+            string userID = User.Identity.Name;
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var settings = await connection.QueryFirstOrDefaultAsync<TelegramSettings>(@"SELECT u.TelegramUserID AS TelegramID, 
+ts.NotificationsEnabled, ts.JobWonEnabled, ts.HasReceivedMessageFromUser FROM users u
+JOIN telegramsettings ts ON ts.UserID = u.ID
+WHERE u.ID = @userID", new
+                {
+                    userID = userID
+                });
+
+                return settings;
             }
         }
     }
@@ -61,5 +138,13 @@ namespace OTHub.APIServer.Controllers
         public string username { get; set; }
         public string photo_url { get; set; }
         public string hash { get; set; }
+    }
+
+    public class TelegramSettings
+    {
+        public long? TelegramID { get; set; }
+        public bool NotificationsEnabled { get; set; }
+        public bool JobWonEnabled { get; set; }
+        public bool HasReceivedMessageFromUser { get; set; }
     }
 }

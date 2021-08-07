@@ -2,3 +2,12 @@
 .list-group.mynodes a .material-icons {font-size:20px;vertical-align: middle;}
 .displayNodeName {color:gray;}
 .dark .displayNodeName {color:#bbb !important;}
+
+div.items-rows {
+    align-items: center;
+    margin:10px;
+  }
+  
+  nb-checkbox:not(:only-child) {
+    margin-right: 1.5rem;
+  }

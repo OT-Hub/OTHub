@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -100,7 +101,7 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                                 string nodeName = user.NodeName;
                                 long? telegramUserID = user.TelegramUserID;
 
-                                (string title, string url) data = await NotificationsReaderWriter.InsertJobWonNotification(connection, message, userID,
+                                (string title, string description, string url) data = await NotificationsReaderWriter.InsertJobWonNotification(connection, message, userID,
                                     nodeName, tokenAmount, holdingTimeInMinutes);
 
                                 if (data.title != null)
@@ -118,7 +119,7 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                                     {
                                         try
                                         {
-                                            await _bot.JobWon(telegramUserID.Value, data.title, $"https://othub.origin-trail.network/{data.url}");
+                                            await _bot.JobWon(telegramUserID.Value, data.title, data.description, $"https://othub.origin-trail.network/{data.url}");
                                         }
                                         catch (Exception ex)
                                         {

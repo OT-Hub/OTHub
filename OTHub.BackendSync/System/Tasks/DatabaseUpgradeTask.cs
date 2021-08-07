@@ -888,6 +888,28 @@ AUTO_INCREMENT=1
                 connection.Execute(@"ALTER TABLE users
 ADD COLUMN IF NOT EXISTS `TelegramUserID` bigint null");
 
+                connection.Execute(@"CREATE TABLE `telegramsettings` (
+	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`UserID` VARCHAR(45) NOT NULL DEFAULT '' COLLATE 'latin1_swedish_ci',
+	`NotificationsEnabled` BIT(1) NOT NULL,
+	`JobWonEnabled` BIT(1) NOT NULL,
+	`HasReceivedMessageFromUser` BIT(1) NOT NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_telegramsettings_users` (`UserID`) USING BTREE,
+	CONSTRAINT `FK_telegramsettings_users` FOREIGN KEY (`UserID`) REFERENCES `users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=3
+;
+
+
+");
+
+                connection.Execute(@"INSERT INTO telegramsettings (UserID, NotificationsEnabled, JobWonEnabled, HasReceivedMessageFromUser)
+SELECT u.ID, 1, 1, 0 FROM users u
+WHERE u.TelegramUserID IS NOT NULL AND (SELECT COUNT(*) FROM telegramsettings ss WHERE ss.UserID = u.ID) = 0");
+
             }
         }
     }
