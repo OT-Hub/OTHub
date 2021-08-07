@@ -32,17 +32,19 @@ namespace OTHub.APIServer.Notifications
                 .Humanize(5, maxUnit: TimeUnit.Year, minUnit: TimeUnit.Minute);
 
             tokenAmount = Math.Truncate(100 * tokenAmount) / 100;
-            
+
+            string url = $"offers/{message.OfferID}";
+
             await connection.ExecuteAsync("INSERT INTO notifications(`UserID`, `Read`, `Dismissed`, `CreatedAt`, `Title`, `Description`, `RelativeUrl`) VALUES(@userID, 0, 0, @date, @title, @description, @url)", new
             {
                 userID = userID,
                 date = message.Timestamp,
                 title = title,
                 description = $"{timeInText} for {tokenAmount:N} TRAC",
-                url = $"offers/{message.OfferID}"
+                url = url
             });
 
-            return title;
+            return (title, url);
         }
     }
 }
