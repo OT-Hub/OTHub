@@ -74,9 +74,11 @@ namespace OTHub.APIServer.Messaging
                     foreach (string holder in holders)
                     {
                         var users = (await connection.QueryAsync(
-                            @"SELECT DISTINCT mn.UserID, COALESCE(mn.DisplayName, i.NodeID) NodeName, U.TelegramUserID FROM mynodes mn
+                            @"SELECT DISTINCT mn.UserID, COALESCE(mn.DisplayName, i.NodeID) NodeName, U.TelegramUserID, 
+ts.NotificationsEnabled, ts.JobWonEnabled, ts.HasReceivedMessageFromUser FROM mynodes mn
 JOIN otidentity I ON I.NodeID = mn.NodeID
 JOIN users U ON U.ID = mn.UserID
+LEFT JOIN telegramsettings ts ON ts.UserID = U.ID
 WHERE I.Version > 0 AND I.Identity = @identity", new
                             {
                                 identity = holder
@@ -100,6 +102,9 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                                 string userID = user.UserID;
                                 string nodeName = user.NodeName;
                                 long? telegramUserID = user.TelegramUserID;
+                                bool? notificationsEnabled = user.NotificationsEnabled;
+                                bool? jobWonEnabled = user.JobWonEnabled;
+                                bool? hasReceivedMessageFromUser = user.HasReceivedMessageFromUser;
 
                                 (string title, string description, string url) data = await NotificationsReaderWriter.InsertJobWonNotification(connection, message, userID,
                                     nodeName, tokenAmount, holdingTimeInMinutes);
@@ -115,11 +120,11 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
 
                                     }
 
-                                    if (telegramUserID.HasValue)
+                                    if (telegramUserID.HasValue && notificationsEnabled == true && jobWonEnabled == true && hasReceivedMessageFromUser == true)
                                     {
                                         try
                                         {
-                                            await _bot.JobWon(telegramUserID.Value, data.title, data.description, $"https://othub.origin-trail.network/{data.url}");
+                                            await _bot.JobWon(userID, telegramUserID.Value, data.title, data.description, $"https://othub.origin-trail.network/{data.url}");
                                         }
                                         catch (Exception ex)
                                         {

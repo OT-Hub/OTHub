@@ -174,8 +174,10 @@ namespace OTHub.APIServer.Helpers
             return widget.CheckAuthorization(dict);
         }
 
-        public async Task JobWon(long telegramUserID, string title, string description, string url)
+        public async Task JobWon(string userID, long telegramUserID, string title, string description, string url)
         {
+
+
             await _botClient.SendTextMessageAsync(telegramUserID, title + "\n" + description,
                 replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl("View Job", url)));
         }
