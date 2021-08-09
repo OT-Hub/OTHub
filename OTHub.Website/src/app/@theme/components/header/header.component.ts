@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { NbMediaBreakpointsService, NbMenuService, NbPopoverDirective, NbSidebarService, NbThemeService } from '@nebular/theme';
+import { Component, ElementRef, OnDestroy, OnInit, Renderer2, ViewChild } from '@angular/core';
+import { NbMediaBreakpointsService, NbMenuService, NbPopoverDirective, NbSidebarService, NbThemeService, NbToastrConfig, NbToastrService } from '@nebular/theme';
 import * as signalR from "@microsoft/signalr";
 import { UserData } from '../../../@core/data/users';
 import { LayoutService } from '../../../@core/utils';
@@ -8,6 +8,8 @@ import { Subject } from 'rxjs';
 import { AuthService } from '@auth0/auth0-angular';
 import { HubHttpService } from 'app/pages/hub-http-service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+
+import * as confetti from 'canvas-confetti';
 
 @Component({
   selector: 'ngx-header',
@@ -60,7 +62,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private layoutService: LayoutService,
     private auth: AuthService,
     private httpService: HubHttpService,
-    private http: HttpClient) {
+    private http: HttpClient,
+    private toastrService: NbToastrService) {
     this.isDisconnected = true;
     this.isConnected = false;
     this.hasLoadingSignalrStarted = false;
@@ -70,6 +73,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
 
+  
+  randomInRange(min, max) {
+    return Math.random() * (max - min) + min;
+  }
 
   ngOnInit() {
     this.currentTheme = this.themeService.currentTheme;
@@ -100,9 +107,60 @@ export class HeaderComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe(themeName => this.currentTheme = themeName);
-
-
   }
+
+  fireConfetti() {
+    const that = this;
+
+    const canvas = document.getElementById('confettiCanvas');
+    canvas.style.display = 'block';
+
+    const myConfetti = confetti.create(canvas, {
+      resize: true
+    });
+
+    const duration = 8 * 1000;
+    const animationEnd = Date.now() + duration;
+    const defaults = { startVelocity: 35, spread: 360, ticks: 60, zIndex: 0 };
+
+    let interval = setInterval(function () {
+      let timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        canvas.style.display = 'none';
+        return clearInterval(interval);
+      }
+
+      let particleCount = 75 * (timeLeft / duration);
+      // since particles fall down, start a bit higher than random
+      myConfetti(Object.assign({}, defaults, { particleCount, origin: { x: that.randomInRange(0.1, 0.4), y: Math.random() - 0.2 } }));
+      myConfetti(Object.assign({}, defaults, { particleCount, origin: { x: that.randomInRange(0.6, 0.9), y: Math.random() - 0.2 } }));
+    }, 450);
+
+    const colors = ['#16b804', '#ffffff'];
+
+    (function frame() {
+      myConfetti({
+        particleCount: 2,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0 },
+        colors: colors
+      });
+      myConfetti({
+        particleCount: 2,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1 },
+        colors: colors
+      });
+    
+      if (Date.now() < animationEnd) {
+        requestAnimationFrame(frame);
+      }
+    }());
+  }
+
 
   ngOnDestroy() {
     this.destroy$.next();
@@ -186,16 +244,26 @@ export class HeaderComponent implements OnInit, OnDestroy {
             this.isConnected = true;
           });
 
-          this.connection.on('JobWon', (data) => {
-            this.getNotifications(false).subscribe(data => {
-              this.processNotifications(data);
-            });
+          this.connection.on('JobWon', (title, description) => {
+            this.jobWonFired(title, description);
           });
 
           this.tryConnect();
         });
       }
     });
+  }
+
+  jobWonFired(title, description) {
+    this.getNotifications(false).subscribe(data => {
+      this.processNotifications(data);
+    });
+    this.fireConfetti();
+    let config = new NbToastrConfig({ duration: 8000 });
+    config.status = "success";
+    config.icon = 'checkmark-circle-2-outline';
+    this.toastrService.show(
+      description, title, config);
   }
 
   tryConnect() {

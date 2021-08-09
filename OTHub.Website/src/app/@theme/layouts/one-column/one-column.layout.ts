@@ -1,7 +1,6 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { NbSidebarComponent, NbSidebarService } from '@nebular/theme';
 import { Router, NavigationStart } from '@angular/router';
-
 @Component({
   selector: 'ngx-one-column-layout',
   styleUrls: ['./one-column.layout.scss'],

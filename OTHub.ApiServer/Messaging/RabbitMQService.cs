@@ -113,7 +113,7 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                                 {
                                     try
                                     {
-                                        await _hubContext.Clients.User(userID).SendAsync("JobWon", data.title);
+                                        await _hubContext.Clients.User(userID).SendAsync("JobWon", data.title, data.description);
                                     }
                                     catch (Exception ex)
                                     {

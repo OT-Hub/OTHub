@@ -1,11 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, ElementRef, OnInit, Renderer2 } from '@angular/core';
 
 import { MENU_ITEMS } from './pages-menu';
 import { NbSidebarService } from '@nebular/theme';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { HubHttpService } from './hub-http-service';
 import { Router } from '@angular/router';
-
 @Component({
   selector: 'ngx-pages',
   styleUrls: ['pages.component.scss'],

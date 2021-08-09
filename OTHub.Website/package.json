@@ -62,6 +62,7 @@
     "angular-telegram-login-widget": "^0.2.2",
     "angular2-chartjs": "0.4.1",
     "bootstrap": "4.3.1",
+    "canvas-confetti": "^1.4.0",
     "chart.js": "^2.9.4",
     "ckeditor": "4.12.1",
     "classlist.js": "1.1.20150312",
