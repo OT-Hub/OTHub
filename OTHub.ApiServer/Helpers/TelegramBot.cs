@@ -30,7 +30,7 @@ namespace OTHub.APIServer.Helpers
 
         public async void Connect()
         {
-            if (OTHubSettings.Instance.Telegram?.BotKey == null || _botClient != null)
+            if (string.IsNullOrWhiteSpace(OTHubSettings.Instance.Telegram?.BotKey) || _botClient != null)
             {
                 Console.WriteLine("Bot key is null for Telegram.");
                 return;

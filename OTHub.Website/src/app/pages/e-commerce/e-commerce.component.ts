@@ -24,7 +24,6 @@ export class ECommerceComponent implements OnDestroy, OnInit {
   Data: HomeV3Model;
   failedLoading: boolean;
   isLoading: boolean;
-  noJobsIn24H: boolean;
 
 
   private chart: am4charts.XYChart;
@@ -52,32 +51,89 @@ export class ECommerceComponent implements OnDestroy, OnInit {
   }
 
 
+  loadJobOMeterChart() {
+
+  }
 
   loadJobBlockchainDistributionChart() {
+
     this.get24HJobBlockchainDistribution().subscribe(chartData => {
-      const endTime = new Date();
+
       this.failedLoading = false;
       this.isLoading = false;
 
-      let chart = am4core.create("JobBlockchainDistributionChart", am4charts.XYChart);
+      //let chart = am4core.create("JobBlockchainDistributionChart", am4charts.XYChart);
       //chart.paddingRight = 20;
 
       let data = [];
 
       let percent = 0;
-      chartData.forEach((v) => {
+      let jobs = 0;
+      chartData.Blockchains.forEach((v) => {
         data.push({
           "category": "",
           "from": percent,
           "to": percent + v.Percentage,
           "name": v.DisplayName,
-          "fill": am4core.color("#" + v.Color)
+          "fill": am4core.color("#" + v.Color),
+          "jobsFrom": jobs,
+          "jobsTo": jobs + v.Jobs
         });
         percent += v.Percentage;
+        jobs += v.Jobs;
       });
+      
+      let chart = am4core.create("JobOMeterChart", am4charts.GaugeChart);
+      chart.hiddenState.properties.opacity = 0; // this makes initial fade in effect
+      
+      chart.innerRadius = -25;
 
-      if (percent === 0) {
-        this.noJobsIn24H = true;
+      let max = chartData.MaxDailyJobs;
+
+      if (max < chartData.TotalJobs) {
+        max = chartData.TotalJobs;
+      }
+
+      let axis: am4charts.ValueAxis;
+      axis = chart.xAxes.push(new am4charts.ValueAxis());
+      axis.min = 0;
+      axis.max = max;
+      axis.strictMinMax = true;
+      axis.renderer.grid.template.stroke = new am4core.InterfaceColorSet().getFor("background");
+      axis.renderer.grid.template.strokeOpacity = 0.3;
+      
+      for (let index = 0; index < data.length; index++) {
+        const element = data[index];
+        
+        let range0 = axis.axisRanges.create();
+        range0.value = element["jobsFrom"];
+        range0.endValue = element["jobsTo"];
+        range0.axisFill.fillOpacity = 1;
+        range0.axisFill.fill = element["fill"];
+        range0.axisFill.zIndex = - 1;
+      }
+    
+      
+      let hand = chart.hands.push(new am4charts.ClockHand());
+      hand.value = chartData.TotalJobs;
+  
+      let title = chart.titles.create();
+      title.text = "24h Job-O-Meter";
+      title.fontSize = 18;
+      
+      title.marginBottom = 35;
+  
+      let legend = new am4charts.Legend();
+      legend.isMeasured = true;
+      legend.y = am4core.percent(100);
+      legend.parent = chart.chartContainer;
+      legend.data = data;
+  
+      if (this.themeService.currentTheme != 'light' && this.themeService.currentTheme != 'corporate' && this.themeService.currentTheme != 'default') {
+        title.fill = am4core.color('white');
+        axis.renderer.labels.template.fill = am4core.color('white');
+        hand.fill = am4core.color('white');
+        legend.labels.template.fill = am4core.color('white');
       }
 
       // let visits = 10;
@@ -89,63 +145,70 @@ export class ECommerceComponent implements OnDestroy, OnInit {
       //chart.data = data;
 
 
-      chart.data = data;
+//       chart.data = data;
 
+//       // Create axes
+//       var yAxis = chart.yAxes.push(new am4charts.CategoryAxis());
+//       yAxis.dataFields.category = "category";
+//       yAxis.renderer.grid.template.disabled = true;
+//       yAxis.renderer.labels.template.disabled = true;
 
-      // Create axes
-      var yAxis = chart.yAxes.push(new am4charts.CategoryAxis());
-      yAxis.dataFields.category = "category";
-      yAxis.renderer.grid.template.disabled = true;
-      yAxis.renderer.labels.template.disabled = true;
+//       var xAxis = chart.xAxes.push(new am4charts.ValueAxis());
+//       xAxis.renderer.grid.template.disabled = true;
+//       xAxis.renderer.grid.template.disabled = true;
+//       xAxis.renderer.labels.template.disabled = true;
+//       xAxis.min = 0;
+//       xAxis.max = 100;
 
-      var xAxis = chart.xAxes.push(new am4charts.ValueAxis());
-      xAxis.renderer.grid.template.disabled = true;
-      xAxis.renderer.grid.template.disabled = true;
-      xAxis.renderer.labels.template.disabled = true;
-      xAxis.min = 0;
-      xAxis.max = 100;
+// // Create series
+//       var series = chart.series.push(new am4charts.ColumnSeries());
+//       series.dataFields.valueX = "to";
+//       series.dataFields.openValueX = "from";
+//       series.dataFields.categoryY = "category";
+//       series.columns.template.propertyFields.fill = "fill";
+//       series.columns.template.strokeOpacity = 0;
+//       series.columns.template.height = am4core.percent(100);
 
-// Create series
-      var series = chart.series.push(new am4charts.ColumnSeries());
-      series.dataFields.valueX = "to";
-      series.dataFields.openValueX = "from";
-      series.dataFields.categoryY = "category";
-      series.columns.template.propertyFields.fill = "fill";
-      series.columns.template.strokeOpacity = 0;
-      series.columns.template.height = am4core.percent(100);
+// // Ranges/labels
+//       chart.events.on("beforedatavalidated", function(ev) {
+//         var data = chart.data;
+//         for(var i = 0; i < data.length; i++) {
+//           var range = xAxis.axisRanges.create();
+//           range.value = data[i].to;
+//           range.label.text = data[i].to - data[i].from + "%";
+//           range.label.horizontalCenter = "right";
+//           range.label.paddingLeft = 5;
+//           range.label.paddingTop = 5;
+//           range.label.fontSize = 10;
+//           range.grid.strokeOpacity = 0.2;
+//           range.tick.length = 18;
+//           range.tick.strokeOpacity = 0.2;
+//         }
+//       });
 
-// Ranges/labels
-      chart.events.on("beforedatavalidated", function(ev) {
-        var data = chart.data;
-        for(var i = 0; i < data.length; i++) {
-          var range = xAxis.axisRanges.create();
-          range.value = data[i].to;
-          range.label.text = data[i].to - data[i].from + "%";
-          range.label.horizontalCenter = "right";
-          range.label.paddingLeft = 5;
-          range.label.paddingTop = 5;
-          range.label.fontSize = 10;
-          range.grid.strokeOpacity = 0.2;
-          range.tick.length = 18;
-          range.tick.strokeOpacity = 0.2;
-        }
-      });
+// // Legend
+//       var legend = new am4charts.Legend();
+//       legend.parent = chart.chartContainer;
+//       legend.itemContainers.template.clickable = false;
+//       legend.itemContainers.template.focusable = false;
+//       legend.itemContainers.template.cursorOverStyle = am4core.MouseCursorStyle.default;
+//       legend.align = "right";
+//       legend.data = chart.data;
 
-// Legend
-      var legend = new am4charts.Legend();
-      legend.parent = chart.chartContainer;
-      legend.itemContainers.template.clickable = false;
-      legend.itemContainers.template.focusable = false;
-      legend.itemContainers.template.cursorOverStyle = am4core.MouseCursorStyle.default;
-      legend.align = "right";
-      legend.data = chart.data;
+//       let title = chart.titles.create();
+//       title.text = "24h Job Distribution";
+//       title.fontSize = 18;
+      
+//       title.marginBottom = 15;
 
-      let title = chart.titles.create();
-      title.text = "24h Job Distribution";
-      title.fontSize = 18;
-      title.marginBottom = 15;
+      // if (this.themeService.currentTheme != 'light' && this.themeService.currentTheme != 'corporate' && this.themeService.currentTheme != 'default') {
+      //   title.fill = am4core.color('white');
+      //   yAxis.renderer.labels.template.fill = am4core.color('white');
+      //   xAxis.renderer.labels.template.fill = am4core.color('white');
+      //   legend.labels.template.fill = am4core.color('white');
+      // }
 
-      this.chart = chart;
+      //this.chart = chart;
     }, err => {
       this.failedLoading = true;
       this.isLoading = false;
@@ -158,6 +221,7 @@ export class ECommerceComponent implements OnDestroy, OnInit {
     this.browserOnly(() => {
       am4core.useTheme(am4themes_animated);
       that.loadJobBlockchainDistributionChart();
+      that.loadJobOMeterChart();
     });
   }
 
@@ -194,7 +258,7 @@ export class ECommerceComponent implements OnDestroy, OnInit {
       .set('Content-Type', 'application/json')
       .set('Accept', 'application/json');
     const url = this.httpService.ApiUrl + '/api/home/24HJobBlockchainDistribution';
-    return this.http.get<HomeJobBlockchainDistributionModel[]>(url, { headers });
+    return this.http.get<HomeJobBlockchainDistributionSummaryModel>(url, { headers });
   }
 
   formatTime(time: number) {
@@ -293,6 +357,13 @@ export class HomeJobBlockchainDistributionModel {
   Color: string;
   Jobs: number;
   Percentage: number;
+}
+
+export class HomeJobBlockchainDistributionSummaryModel {
+
+  Blockchains: HomeJobBlockchainDistributionModel[];
+  TotalJobs: number;
+  MaxDailyJobs: number;
 }
 
 // export class HomeJobsModel {

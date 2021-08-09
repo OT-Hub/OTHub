@@ -68,4 +68,10 @@ namespace OTHub.APIServer.Sql.Models.Home
         public int Percentage { get; set; }
     }
 
+    public class HomeJobBlockchainDistributionSummaryModel
+    {
+        public HomeJobBlockchainDistributionModel[] Blockchains { get; set; }
+        public int TotalJobs => Blockchains.Sum(b => b.Jobs);
+        public int MaxDailyJobs { get; set; }
+    }
 }

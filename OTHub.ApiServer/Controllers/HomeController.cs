@@ -182,13 +182,15 @@ SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FR
             }
         }
 
+     
+
         [HttpGet]
         [Route("24HJobBlockchainDistribution")]
-        public async Task<HomeJobBlockchainDistributionModel[]> GetHome24HJobBlockchainDistributionModel()
+        public async Task<HomeJobBlockchainDistributionSummaryModel> GetHome24HJobBlockchainDistributionModel()
         {
-            if (_cache.TryGetValue("24HJobBlockchainDistribution", out object model))
+            if (_cache.TryGetValue("24HJobBlockchainDistribution", out object model) && model is HomeJobBlockchainDistributionSummaryModel)
             {
-                return (HomeJobBlockchainDistributionModel[])model;
+                return (HomeJobBlockchainDistributionSummaryModel)model;
             }
 
             await using (var connection =
@@ -206,9 +208,19 @@ LEFT JOIN otoffer o ON bc.ID = o.BlockchainID AND o.IsFinalized = 1 AND o.Finali
 GROUP BY bc.Id
 ORDER BY Percentage")).ToArray();
 
-                _cache.Set("24HJobBlockchainDistribution", data, TimeSpan.FromMinutes(5));
+                HomeJobBlockchainDistributionSummaryModel summary = new HomeJobBlockchainDistributionSummaryModel();
 
-                return data;
+                summary.Blockchains = data;
+                summary.MaxDailyJobs = await connection.ExecuteScalarAsync<int>(
+                    @"SELECT MAX(total) FROM (SELECT COUNT(*) AS total FROM otoffer oo WHERE oo.IsFinalized = 1 GROUP BY DATE(FinalizedTimestamp)) x");
+
+                int number = (int)(Math.Ceiling(summary.MaxDailyJobs / 50.0d) * 50);
+
+                summary.MaxDailyJobs = number;
+
+                _cache.Set("24HJobBlockchainDistribution", summary, TimeSpan.FromMinutes(3));
+
+                return summary;
             }
         }
       

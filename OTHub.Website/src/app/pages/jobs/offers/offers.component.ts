@@ -18,6 +18,7 @@ import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import {AxisDataItem, DateAxisDataItem} from "@amcharts/amcharts4/charts";
 import { isPlatformBrowser } from '@angular/common';
 import { HomeJobsChartDataModel } from 'app/pages/e-commerce/e-commerce.component';
+import { NbThemeService } from '@nebular/theme';
 
 @Component({
   selector: 'ngx-offers',
@@ -28,6 +29,7 @@ export class OffersComponent implements OnInit, OnDestroy {
 
   constructor(private http: HttpClient, private chRef: ChangeDetectorRef, private httpService: HubHttpService, private router: Router,
               private zone: NgZone, 
+              private themeService: NbThemeService,
               @Inject(PLATFORM_ID) private platformId) {
     this.isLoading = true;
     this.failedLoading = false;
@@ -340,7 +342,12 @@ delete: false
       let title = chart.titles.create();
 
 
-
+      if (this.themeService.currentTheme != 'light' && this.themeService.currentTheme != 'corporate' && this.themeService.currentTheme != 'default') {
+        title.fill = am4core.color('white');
+        dateAxis.renderer.labels.template.fill = am4core.color('white');
+        valueAxis.renderer.labels.template.fill = am4core.color('white');
+        chart.legend.labels.template.fill = am4core.color('white');
+      }
 
 
       title.text = "Jobs";

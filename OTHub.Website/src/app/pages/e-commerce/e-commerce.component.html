@@ -4,24 +4,6 @@
   </div>
 </div>
 
-<!-- <div class="row">
-  <div class="col-md-8 col-xxxl-8">
-    <nb-card class="homeCard">
-      <nb-card-header>
-        <img src="assets/images/2467.png" alt="OriginTrail" height="32" width="32" class="otLogo" />
-        OriginTrail
-        <small class="tokenSmall">TRAC</small>
-        <div style="display:inline-block;">
-          ${{Data?.PriceUsd | number: '1.2-4'}}
-          <small class="btn-sm" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0"
-            [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
-        </div>
-      </nb-card-header>
-      </nb-card>
-      </div>
-
-      
-</div> -->
 
 <div class="alert alert-danger"*ngIf="Data != null && Data?.PriceUsd == null">
   There is a problem with the websites live cryptocurrency market data. The website will have reduced functionality during this outage.
@@ -31,7 +13,6 @@
   <div class="col-md-8 col-xxxl-8">
     <nb-card class="homeCard">
       <nb-card-header class="blockchainHeader">
-        <!-- <nb-icon icon="globe-outline" class="blockchainLogo" pack="eva"></nb-icon> -->
         <img src="assets/images/2467.png" class="blockchainLogo" />
         <span>All Blockchains</span>
       </nb-card-header>
@@ -94,24 +75,7 @@
                 {{Data?.All.TokensPaidout24H | number:'1.0-3'}}  <small class="tokenSmall">TRAC</small>
               </span>
             </div>
-            <!-- <div class="homeField">
-              Average job reward:
-              <span class="homeData">
-                {{Data?.All.JobsReward24H != null ? (Data?.All.JobsReward24H | number:'1.0-2') : '?'}}  <small class="tokenSmall">{{Data?.All.TokenTicker}}</small>
-              </span>
-            </div>
-            <div class="homeField">
-              Average job duration:
-              <span class="homeData">
-                {{formatTime(Data?.All.JobsDuration24H)}}
-              </span>
-            </div>
-            <div class="homeField">
-              Average job data size:
-              <span class="homeData">
-                {{Data?.All.JobsSize24H != null ? ((Data?.All.JobsSize24H / 1000 | number:'1.2-2') + ' KB') : '?'}}
-              </span>
-            </div> -->
+
 
           </div>
 
@@ -148,28 +112,7 @@
             </div>
           </div>
 
-          <!-- <div class="col-md-4 col-sm-12  col-xs-12">
-            <div class="homeHeader">
-              24h Fee Stats
-            </div>
-            <div>
-              <div class="homeField">
-                Average job fee:
-                <span class="homeData">
-                  {{Data?.All.Fees.ShowCostInUSD ? "$" : ""}}{{Data?.All.Fees.JobCreationCost != null && Data?.All.Fees.JobFinalisedCost != null ?
-                  (Data?.All.Fees.JobCreationCost + Data?.All.Fees.JobFinalisedCost | number: '1.0-5') : '?'}}{{Data?.All.Fees.ShowCostInUSD ? "" : " ETH"}}
-                </span>
-              </div>
-              <div class="homeField">
-                Average payout fee:
-                <span class="homeData">
-                  {{Data?.All.Fees.ShowCostInUSD ? "$" : ""}}{{Data?.All.Fees.PayoutCost != null ? Data?.All.Fees.PayoutCost: '?'}}{{Data?.All.Fees.ShowCostInUSD ? "" :
-                  " ETH"}}
-                </span>
-              </div>
-            </div>
-
-          </div> -->
+  
 
         </div>
       </nb-card-body>
@@ -179,19 +122,13 @@
 
     <nb-card class="homeCard" status="basic">
       <nb-card-body>
-        <div id="JobBlockchainDistributionChart" style="width: 100%; height: 160px;" [hidden]="noJobsIn24H === true">
+        <div id="JobOMeterChart" style="width: 100%; height: 307px;">
+        </div>
+        <!-- <div id="JobBlockchainDistributionChart" style="width: 100%; height: 143px;" [hidden]="noJobsIn24H === true">
         </div>
         <div class="alert alert-warning" *ngIf="noJobsIn24H === true">
           Unable to show this chart as there have been no jobs started in 24 hours.
-        </div>
-        <!--<div class="row">-->
-        <!--  <div class="col-12 col-md-6">-->
-        <!--    <a href="https://coinmarketcap.com/currencies/origintrail/">CoinMarketCap</a>-->
-        <!--  </div>-->
-        <!--  <div class="col-12 col-md-6">-->
-        <!--    <a href="https://otnode.com/">OriginTrail Node Guide</a>-->
-        <!--  </div>-->
-        <!--</div>-->
+        </div> -->
       </nb-card-body>
     </nb-card>
   </div>
@@ -301,6 +238,7 @@
       </nb-card-body>
     </nb-card>
   </div>
+  
 </div>
 
 <!-- <div class="row">
