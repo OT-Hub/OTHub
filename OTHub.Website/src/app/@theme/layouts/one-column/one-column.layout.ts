@@ -15,9 +15,6 @@ import { Router, NavigationStart } from '@angular/router';
       </nb-sidebar>
 
       <nb-layout-column>
-      <div class="alert alert-warning">
-            <strong>Notice - 27/08/2021</strong> Polygon support has been removed due to inconsistencies getting historical data from the Polygon blockchain.
-        </div>
         <ng-content select="router-outlet"></ng-content>
       </nb-layout-column>
 
