@@ -30,7 +30,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             {
                 int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
-                var cl = await GetWeb3(connection, blockchainID);
+                var cl = await GetWeb3(connection, blockchainID, blockchain);
                 var eth = new EthApiService(cl.Client);
 
                 foreach (var contract in await OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Holding, blockchainID))
@@ -56,21 +56,26 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                     var diff = (ulong)LatestBlockNumber.Value - contract.SyncBlockNumber;
 
-                    ulong size = 500000;
+                    ulong size = (ulong)10000;
 
                 beforeSync:
-
                     if (diff > size)
                     {
-                        int batchesTotal = (int)Math.Ceiling((decimal)diff / size);
 
-                        var batches = Enumerable.Range(0, batchesTotal).ToArray();
 
-                        UInt64 currentStart = contract.SyncBlockNumber;
-                        UInt64 currentEnd = currentStart + size;
+                        ulong currentStart = contract.SyncBlockNumber;
+                        
+                        ulong currentEnd = currentStart + size;
 
-                        foreach (var batch in batches)
+                        if (currentEnd > LatestBlockNumber.Value)
                         {
+                            currentEnd = (ulong) LatestBlockNumber.Value;
+                        }
+
+                        bool canRetry = true;
+                        while (currentStart == 0 || currentStart < LatestBlockNumber.Value)
+                        {
+                            start:
                             try
                             {
                                 await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent,
@@ -84,6 +89,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                                 goto beforeSync;
                             }
+                            catch (RpcClientUnknownException ex) when (canRetry && ex.GetBaseException().Message.Contains("Gateway"))
+                            {
+                                canRetry = false;
+                                goto start;
+                            }
 
                             currentStart = currentEnd;
                             currentEnd = currentStart + size;
@@ -92,9 +102,6 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                             {
                                 currentEnd = (ulong)LatestBlockNumber.Value;
                             }
-
-                            if (currentStart == currentEnd)
-                                break;
                         }
                     }
                     else
@@ -103,6 +110,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                             ownershipTransferredEvent, offerTaskEvent, source, contract.SyncBlockNumber,
                             (ulong)LatestBlockNumber.Value, blockchainID, cl);
                     }
+
+
                 }
             }
 

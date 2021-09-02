@@ -52,7 +52,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 
         private async Task PopulateSmartContracts(MySqlConnection connection, string hubAddress, bool isLatest, int blockchainID, BlockchainType blockchain, BlockchainNetwork network)
         {
-            var web3 = await GetWeb3(connection, blockchainID);
+            var web3 = await GetWeb3(connection, blockchainID, blockchain);
             EthApiService eth = new EthApiService(web3.Client);
 
             var hubContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.Hub, blockchain, network), hubAddress);

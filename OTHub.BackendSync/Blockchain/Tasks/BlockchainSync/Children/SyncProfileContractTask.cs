@@ -30,7 +30,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             {
                 int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
-                var cl = await GetWeb3(connection, blockchainID);
+                var cl = await GetWeb3(connection, blockchainID, blockchain);
 
                 var eth = new EthApiService(cl.Client);
 
@@ -63,23 +63,27 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     Function createProfileFunction = profileContract.GetFunction("createProfile");
                     Function transferProfileFunction = profileContract.GetFunction("transferProfile");
 
-                    var diff = (ulong)LatestBlockNumber.Value - contract.SyncBlockNumber;
+                    ulong diff = (ulong)LatestBlockNumber.Value - contract.SyncBlockNumber;
 
-                    ulong size = 500000;
+                    ulong size = (ulong)10000;
 
                 beforeSync:
 
+
                     if (diff > size)
                     {
-                        int batchesTotal = (int)Math.Ceiling((decimal)diff / size);
+                        ulong currentStart = contract.SyncBlockNumber; 
+                        ulong currentEnd = currentStart + size;
 
-                        var batches = Enumerable.Range(0, batchesTotal).ToArray();
-
-                        UInt64 currentStart = contract.SyncBlockNumber;
-                        UInt64 currentEnd = currentStart + size;
-
-                        foreach (var batch in batches)
+                        if (currentEnd > LatestBlockNumber.Value)
                         {
+                            currentEnd = (ulong)LatestBlockNumber.Value;
+                        }
+
+                        bool canRetry = true;
+                        while (currentStart == 0 || currentStart < LatestBlockNumber.Value)
+                        {
+                            start:
                             try
                             {
                                 await Sync(connection, profileCreatedEvent, identityCreatedEvent,
@@ -98,6 +102,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                                 goto beforeSync;
                             }
+                            catch (RpcClientUnknownException ex) when (canRetry && ex.GetBaseException().Message.Contains("Gateway"))
+                            {
+                                canRetry = false;
+                                goto start;
+                            }
 
                             currentStart = currentEnd;
                             currentEnd = currentStart + size;
@@ -106,9 +115,6 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                             {
                                 currentEnd = (ulong)LatestBlockNumber.Value;
                             }
-
-                            if (currentStart == currentEnd)
-                                break;
                         }
                     }
                     else

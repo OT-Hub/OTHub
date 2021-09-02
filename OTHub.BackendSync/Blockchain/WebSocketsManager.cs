@@ -48,7 +48,7 @@ namespace OTHub.BackendSync.Blockchain
 
                 Web3 cl = new Web3(rpcUrl);
 
-                RequestInterceptor r = new LogRequestInterceptor();
+                RequestInterceptor r = new RPCInterceptor(blockchainType);
                 cl.Client.OverridingRequestInterceptor = r;
                 EthApiService eth = new EthApiService(cl.Client);
 

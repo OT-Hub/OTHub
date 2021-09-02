@@ -33,10 +33,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             {
                 int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
-                var cl = await GetWeb3(connection, blockchainID);
+                var cl = await GetWeb3(connection, blockchainID, blockchain);
                 var eth = new EthApiService(cl.Client);
 
-                foreach (var contract in await OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Litigation, blockchainID))
+                foreach (var contract in await OTContract.GetByTypeAndBlockchain(connection,
+                    (int) ContractTypeEnum.Litigation, blockchainID))
                 {
                     if (contract.IsArchived && contract.LastSyncedTimestamp.HasValue &&
                         (DateTime.Now - contract.LastSyncedTimestamp.Value).TotalDays <= 5)
@@ -49,7 +50,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                     Logger.WriteLine(source, "     Using contract: " + contract.Address);
 
-                    var holdingContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.Litigation, blockchain, network), contract.Address);
+                    var holdingContract = new Contract(eth,
+                        AbiHelper.GetContractAbi(ContractTypeEnum.Litigation, blockchain, network), contract.Address);
 
                     var litigationInitiatedEvent = holdingContract.GetEvent("LitigationInitiated");
                     var litigationAnsweredEvent = holdingContract.GetEvent("LitigationAnswered");
@@ -57,24 +59,27 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     var litigationCompletedEvent = holdingContract.GetEvent("LitigationCompleted");
                     var replacementStartedEvent = holdingContract.GetEvent("ReplacementStarted");
 
-                    var diff = (ulong)LatestBlockNumber.Value - contract.SyncBlockNumber;
+                    var diff = (ulong) LatestBlockNumber.Value - contract.SyncBlockNumber;
 
-                    ulong size = 500000;
+                    ulong size = (ulong)10000;
 
-                beforeSync:
+                    beforeSync:
 
 
                     if (diff > size)
                     {
-                        int batchesTotal = (int)Math.Ceiling((decimal)diff / size);
+                        ulong currentStart = contract.SyncBlockNumber;
+                        ulong currentEnd = currentStart + size;
 
-                        var batches = Enumerable.Range(0, batchesTotal).ToArray();
-
-                        UInt64 currentStart = contract.SyncBlockNumber;
-                        UInt64 currentEnd = currentStart + size;
-
-                        foreach (var batch in batches)
+                        if (currentEnd > LatestBlockNumber.Value)
                         {
+                            currentEnd = (ulong) LatestBlockNumber.Value;
+                        }
+
+                        bool canRetry = true;
+                        while (currentStart == 0 || currentStart < LatestBlockNumber.Value)
+                        {
+                            start:
                             try
                             {
                                 await Sync(connection, litigationInitiatedEvent, litigationAnsweredEvent,
@@ -92,17 +97,21 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
                                 goto beforeSync;
                             }
+                            catch (RpcClientUnknownException ex) when (canRetry &&
+                                                                       ex.GetBaseException().Message
+                                                                           .Contains("Gateway"))
+                            {
+                                canRetry = false;
+                                goto start;
+                            }
 
                             currentStart = currentEnd;
                             currentEnd = currentStart + size;
 
                             if (currentEnd > LatestBlockNumber.Value)
                             {
-                                currentEnd = (ulong)LatestBlockNumber.Value;
+                                currentEnd = (ulong) LatestBlockNumber.Value;
                             }
-
-                            if (currentStart == currentEnd)
-                                break;
                         }
                     }
                     else
@@ -111,7 +120,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                             litigationTimedOutEvent,
                             litigationCompletedEvent,
                             replacementStartedEvent,
-                            contract, source, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockchainID, cl);
+                            contract, source, contract.SyncBlockNumber, (ulong) LatestBlockNumber.Value, blockchainID,
+                            cl);
                     }
                 }
 

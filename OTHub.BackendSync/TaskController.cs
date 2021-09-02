@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -23,17 +24,19 @@ namespace OTHub.BackendSync
             private readonly Source _source;
             private readonly TaskRunBase _task;
             private readonly TimeSpan _runEveryTimeSpan;
+            private readonly bool _startChildrenConcurrently;
             private DateTime _lastRunDateTime;
             private SystemStatus _systemStatus;
 
             internal TaskControllerItem(BlockchainType blockchain, BlockchainNetwork network, Source source,
-                TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID)
+                TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID, bool startChildrenConcurrently)
             {
                 _blockchain = blockchain;
                 _network = network;
                 _source = source;
                 _task = task;
                 _runEveryTimeSpan = runEveryTimeSpan;
+                _startChildrenConcurrently = startChildrenConcurrently;
                 _lastRunDateTime = startNow ? DateTime.MinValue : DateTime.Now;
                 _systemStatus = new SystemStatus(task.Name, blockchainID);
 
@@ -59,6 +62,8 @@ namespace OTHub.BackendSync
                     _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName).GetAwaiter().GetResult();
                 }
             }
+
+            public bool StartChildrenConcurrently => _startChildrenConcurrently;
 
             public bool NeedsRunning
             {
@@ -131,7 +136,7 @@ namespace OTHub.BackendSync
             }
         }
 
-        public void Schedule(TaskRunBlockchain task, bool startNow)
+        public void Schedule(TaskRunBlockchain task, bool startNow, bool startChildrenConcurrently)
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -151,7 +156,7 @@ namespace OTHub.BackendSync
 
                     TimeSpan interval = task.GetExecutingInterval(blockchainEnum);
 
-                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, interval, startNow, id);
+                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, interval, startNow, id, startChildrenConcurrently);
                     _items.Add(item);
                 }
             }
@@ -176,9 +181,29 @@ namespace OTHub.BackendSync
 
                 var items = _items.Where(i => i.NeedsRunning).Reverse().ToArray();
 
-                foreach (var taskControllerItem in items)
+                TaskControllerItem[] concurrentItems = items.Where(i => i.StartChildrenConcurrently).ToArray();
+                TaskControllerItem[] sequentialItems = items.Except(concurrentItems).ToArray();
+
+                if (concurrentItems.Any())
                 {
-                    await taskControllerItem.Execute();
+                    List<Task> tasks = new List<Task>();
+                    foreach (var taskControllerItem in concurrentItems)
+                    {
+                        tasks.Add(Task.Run(async () =>
+                        {
+                            await taskControllerItem.Execute();
+                        }));
+                    }
+
+                    await Task.WhenAll(tasks);
+                }
+
+                if (sequentialItems.Any())
+                {
+                    foreach (var taskControllerItem in sequentialItems)
+                    {
+                        await taskControllerItem.Execute();
+                    }
                 }
 
                 if (!items.Any())

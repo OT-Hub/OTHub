@@ -59,6 +59,9 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync
                 });
             }
 
+            Console.WriteLine(blockchain +  " RPC: " + rpcUrl);
+            Console.WriteLine(blockchain + " WS: " + websocketsUrl);
+
             if (string.IsNullOrWhiteSpace(websocketsUrl))
                 return;
 

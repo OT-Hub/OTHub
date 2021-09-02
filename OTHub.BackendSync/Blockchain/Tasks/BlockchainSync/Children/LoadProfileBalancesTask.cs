@@ -55,7 +55,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             {
                 int blockchainID = await GetBlockchainID(connection, blockchain, network);
 
-                var cl = await GetWeb3(connection, blockchainID);
+                var cl = await GetWeb3(connection, blockchainID, blockchain);
 
                 await CreateMissingIdentities(connection, cl, blockchainID, blockchain, network);
 

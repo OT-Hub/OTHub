@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -71,34 +72,52 @@ namespace OTHub.BackendSync
 
         public override string ParentName => _childTasks.Any() ? null : "System";
 
-        public virtual bool ContinueRunningChildrenOnError { get; } = true;
+        public virtual bool ContinueRunningChildrenOnError { get; } = false;
 
         protected TaskRunBlockchain(string name) : base(name)
         {
         }
 
+        private static ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?> _blockchainIDDictionary = new ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?>();
         protected async Task<int> GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
         {
-            var id = await connection.ExecuteScalarAsync<int?>(
-                "select ID FROM blockchains where BlockchainName = @blockchainName AND NetworkName = @networkName", new
-                {
-                    blockchainName = blockchain.ToString(),
-                    networkName = network.ToString()
-                });
+            int? id;
+
+            if (!_blockchainIDDictionary.TryGetValue(new Tuple<BlockchainType, BlockchainNetwork>(blockchain, network), out id))
+            {
+                id = await connection.ExecuteScalarAsync<int?>(
+                    "select ID FROM blockchains where BlockchainName = @blockchainName AND NetworkName = @networkName", new
+                    {
+                        blockchainName = blockchain.ToString(),
+                        networkName = network.ToString()
+                    });
+
+                _blockchainIDDictionary[new Tuple<BlockchainType, BlockchainNetwork>(blockchain, network)] = id;
+            }
 
             return id.Value;
         }
 
-        protected async Task<Web3> GetWeb3(MySqlConnection connection, int blockchainID)
+
+        private static ConcurrentDictionary<int, String> _blockchainUrlDictionary = new ConcurrentDictionary<int, string>();
+        protected async Task<Web3> GetWeb3(MySqlConnection connection, int blockchainID, BlockchainType type)
         {
-            string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+            string nodeUrl;
+
+            if (!_blockchainUrlDictionary.TryGetValue(blockchainID, out nodeUrl))
             {
-                id = blockchainID
-            });
+                nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                {
+                    id = blockchainID
+                });
 
+                _blockchainUrlDictionary[blockchainID] = nodeUrl;
+            }
+            
             var cl = new Web3(nodeUrl);
+            
 
-            RequestInterceptor r = new LogRequestInterceptor();
+            RequestInterceptor r = new RPCInterceptor(type);
             cl.Client.OverridingRequestInterceptor = r;
 
             return cl;
@@ -113,7 +132,7 @@ namespace OTHub.BackendSync
 
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var cl = await GetWeb3(connection, await GetBlockchainID(connection, blockchain, network));
+                var cl = await GetWeb3(connection, await GetBlockchainID(connection, blockchain, network), blockchain);
 
                 int defaultBlocksToIgnore = 2;
 
