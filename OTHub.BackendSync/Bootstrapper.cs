@@ -30,7 +30,7 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.BlockchainSync);
 
-                controller.Schedule(new BlockchainMaintenanceTask(), true, false);
+                controller.Schedule(new BlockchainMaintenanceTask(), true, true);
 
                 await controller.Start();
             }));
