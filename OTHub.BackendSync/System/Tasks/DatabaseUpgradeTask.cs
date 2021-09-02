@@ -910,6 +910,23 @@ AUTO_INCREMENT=3
 SELECT u.ID, 1, 1, 0 FROM users u
 WHERE u.TelegramUserID IS NOT NULL AND (SELECT COUNT(*) FROM telegramsettings ss WHERE ss.UserID = u.ID) = 0");
 
+                connection.Execute(@"CREATE TABLE if not exists `hubaddresses` (
+	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`Address` VARCHAR(255) NOT NULL COLLATE 'latin1_swedish_ci',
+	`BlockchainID` INT(11) NOT NULL,
+	`DateAdded` DATETIME NOT NULL,
+	`DateReplaced` DATETIME NULL DEFAULT NULL,
+	`FromBlockNumber` BIGINT(20) UNSIGNED NOT NULL,
+	`SyncBlockNumber` BIGINT(20) UNSIGNED NOT NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_hubaddresses_blockchains` (`BlockchainID`) USING BTREE,
+	CONSTRAINT `FK_hubaddresses_blockchains` FOREIGN KEY (`BlockchainID`) REFERENCES `blockchains` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
             }
         }
     }

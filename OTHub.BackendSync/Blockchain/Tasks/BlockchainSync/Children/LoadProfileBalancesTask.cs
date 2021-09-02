@@ -60,7 +60,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                 await CreateMissingIdentities(connection, cl, blockchainID, blockchain, network);
 
                 var profileStorageContractAddress = (await OTContract
-                    .GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.ProfileStorage, blockchainID)).Single(a => a.IsLatest);
+                    .GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.ProfileStorage, blockchainID)).SingleOrDefault(a => a.IsLatest);
+
+                if (profileStorageContractAddress == null)
+                    return false;
+
                 var profileStorageContract =
                     new Contract(new EthApiService(cl.Client),
                         AbiHelper.GetContractAbi(ContractTypeEnum.ProfileStorage, blockchain, network),
