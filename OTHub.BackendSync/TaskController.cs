@@ -89,7 +89,14 @@ namespace OTHub.BackendSync
 
                 try
                 {
-                    Logger.WriteLine(_source, "Starting " + _task.Name + " on " + _blockchain + " " + _network);
+                    if (_systemStatus.BlockchainID.HasValue)
+                    {
+                        Logger.WriteLine(_source, "Starting " + _task.Name + " on " + _blockchain + " " + _network);
+                    }
+                    else
+                    {
+                        Logger.WriteLine(_source, "Starting " + _task.Name);
+                    }
 
                     await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
@@ -129,11 +136,8 @@ namespace OTHub.BackendSync
 
         public void Schedule(TaskRunGeneric task, TimeSpan runEveryTimeSpan, bool startNow)
         {
-            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-            {
-                var item = new TaskControllerItem(_source, task, runEveryTimeSpan, startNow);
-                _items.Add(item);
-            }
+            var item = new TaskControllerItem(_source, task, runEveryTimeSpan, startNow);
+            _items.Add(item);
         }
 
         public void Schedule(TaskRunBlockchain task, bool startNow, bool startChildrenConcurrently)
