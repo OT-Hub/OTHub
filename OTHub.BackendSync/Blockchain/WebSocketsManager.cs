@@ -260,6 +260,9 @@ namespace OTHub.BackendSync.Blockchain
                                 blockchainID, cl,
                                 eventLog, eth);
                         }
+
+                        await SyncProfileContractTask.CreateMissingIdentities(connection, cl, blockchainID,
+                            blockchainType, blockchainNetwork);
                     }
 
                     if (profileCreatedEvent.IsLogForEvent(transaction))
@@ -276,6 +279,9 @@ namespace OTHub.BackendSync.Blockchain
                                 blockchainID, cl,
                                 eventLog, eth);
                         }
+
+                        await SyncProfileContractTask.CreateMissingIdentities(connection, cl, blockchainID,
+                            blockchainType, blockchainNetwork);
                     }
 
                     if (tokensDepositedEvent.IsLogForEvent(transaction))

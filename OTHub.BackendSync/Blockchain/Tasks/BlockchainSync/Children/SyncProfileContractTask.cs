@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
 using System.Threading.Tasks;
+using Dapper;
 using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
@@ -125,6 +126,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                             contract, source, createProfileFunction, transferProfileFunction, contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockchainID, cl);
                     }
                 }
+
+                await CreateMissingIdentities(connection, cl, blockchainID, blockchain, network);
             }
 
             return true;
@@ -381,6 +384,65 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             contract.SyncBlockNumber = end;
 
             await OTContract.Update(connection, contract, false, false);
+        }
+
+        public static async Task CreateMissingIdentities(
+    MySqlConnection connection, Web3 cl, int blockchainId, BlockchainType blockchain, BlockchainNetwork network)
+        {
+            var eth = new EthApiService(cl.Client);
+
+            var allIdentitiesCreated = connection
+                .Query<OTContract_Profile_IdentityCreated>(@"select * from OTContract_Profile_IdentityCreated IC
+            WHERE IC.NewIdentity not in (SELECT OTIdentity.Identity FROM OTIdentity WHERE BlockchainID = @BlockchainID) AND IC.BlockchainID = @blockchainID", new
+                {
+                    blockchainId = blockchainId
+                })
+                .ToArray();
+
+            foreach (var identity in allIdentitiesCreated)
+            {
+                var ercContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.ERC725, blockchain, network), identity.NewIdentity);
+
+                var otVersionFunction = ercContract.GetFunction("otVersion");
+
+                var value = await otVersionFunction.CallAsync<BigInteger>();
+
+                await OTIdentity.Insert(connection, new OTIdentity
+                {
+                    TransactionHash = identity.TransactionHash,
+                    Identity = identity.NewIdentity,
+                    Version = (int)value,
+                    BlockchainID = blockchainId
+                });
+            }
+
+            //This only happens due to missing blockchain events (only happened in December 2018)
+            var profilesCreatedWithoutIdentities = connection.Query(
+                @"select TransactionHash, Profile from otcontract_profile_profilecreated
+WHERE Profile not in (select otidentity.Identity from otidentity WHERE BlockchainID = @blockchainID) AND BlockchainID = @blockchainID", new
+                {
+                    blockchainId = blockchainId
+                }).ToArray();
+
+            foreach (var profilesCreatedWithoutIdentity in profilesCreatedWithoutIdentities)
+            {
+                string hash = profilesCreatedWithoutIdentity.TransactionHash;
+                string identity = profilesCreatedWithoutIdentity.Profile;
+
+                var ercContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.ERC725, blockchain, network), identity);
+
+                var otVersionFunction = ercContract.GetFunction("otVersion");
+
+                var value = await otVersionFunction.CallAsync<BigInteger>();
+
+                await OTIdentity.Insert(connection, new OTIdentity
+                {
+                    TransactionHash = hash,
+                    Identity = identity,
+                    Version = (int)value,
+                    BlockchainID = blockchainId
+                });
+            }
         }
 
         public static async Task ProcessTokensWithdrawn(MySqlConnection connection, string contractAddress, int blockchainID,
