@@ -345,6 +345,12 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     HexHelper.ByteArrayToString((byte[]) eventLog.Event
                         .First(e => e.Parameter.Name == "offerId").Result);
 
+                if (!OTContract_Holding_OfferCreated.Exists(connection, offerId, blockchainID))
+                {
+                    //Lets get this via syncing later on as we've missed the creation of the job
+                    return;
+                }
+
                 if (OTContract_Holding_OfferFinalized.Exists(connection, offerId, blockchainID))
                     return;
 
