@@ -94,6 +94,11 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                                     offerID = message.OfferID
                                 });
 
+                            if (jobData == null)
+                            {
+                                continue;
+                            }
+
                             decimal tokenAmount = jobData.TokenAmountPerHolder;
                             long holdingTimeInMinutes = jobData.HoldingTimeInMinutes;
 

@@ -27,9 +27,10 @@ namespace OTHub.APIServer.Controllers
 
         [HttpGet]
         [Route("jobcreatedcountinperiod")]
-        public async Task<IActionResult> GetJobCreatedCountInTimePeriod([FromQuery] string timePeriod, [FromQuery] int time, [FromQuery] int? blockchainID)
+        public async Task<IActionResult> GetJobCreatedCountInTimePeriod([FromQuery] string timePeriod, [FromQuery] int time, 
+            [FromQuery] int? blockchainID, [FromQuery] bool onlyFinalizedJobs)
         {
-            string cacheKey = $@"JobsController-GetJobCreatedCountInTimePeriod-{blockchainID}-{timePeriod}-{time}";
+            string cacheKey = $@"JobsController-GetJobCreatedCountInTimePeriod-{blockchainID}-{timePeriod}-{time}-{onlyFinalizedJobs}";
             if (_cache.TryGetValue(cacheKey, out object value))
             {
                 if (value is long intVal)
@@ -69,14 +70,28 @@ namespace OTHub.APIServer.Controllers
                         return BadRequest("Invalid timePeriod parameter. Valid options: minutes, hours, days, months, years");
                 }
 
+                long count;
 
-                var count = await connection.ExecuteScalarAsync<long>(@"SELECT COUNT(o.OfferID)
+                if (onlyFinalizedJobs)
+                {
+                    count = await connection.ExecuteScalarAsync<long>(@"SELECT COUNT(o.OfferID)
+FROM otcontract_holding_offerfinalized o
+WHERE (@blockchainID is null OR o.BlockchainID = @blockchainID) AND o.Timestamp >= @laterThanDate", new
+                    {
+                        blockchainID = blockchainID,
+                        laterThanDate = date
+                    });
+                }
+                else
+                {
+                    count = await connection.ExecuteScalarAsync<long>(@"SELECT COUNT(o.OfferID)
 FROM otcontract_holding_offercreated o
 WHERE (@blockchainID is null OR o.BlockchainID = @blockchainID) AND o.Timestamp >= @laterThanDate", new
-                {
-                    blockchainID = blockchainID,
-                    laterThanDate = date
-                });
+                    {
+                        blockchainID = blockchainID,
+                        laterThanDate = date
+                    });
+                }
 
                 using (ICacheEntry cacheEntry = _cache.CreateEntry(cacheKey))
                 {
