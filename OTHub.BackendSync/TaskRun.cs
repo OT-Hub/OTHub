@@ -140,6 +140,14 @@ namespace OTHub.BackendSync
                 {
                     defaultBlocksToIgnore = 20;
                 }
+                else if (blockchain == BlockchainType.Polygon)
+                {
+                    defaultBlocksToIgnore = 30;
+                }
+                else if (blockchain == BlockchainType.Starfleet)
+                {
+                    defaultBlocksToIgnore = 20;
+                }
 
                 var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();
                 LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - defaultBlocksToIgnore);
