@@ -17,7 +17,7 @@ Testnet: https://othub-testnet.origin-trail.network
 
 ## Swagger API Documentation
 
-Mainnet: https://othub-api.origin-trail.network/docs
+Mainnet: https://v5api.othub.info/docs/index.html
 
 Testnet: https://testnet-api.othub.info/docs/index.html
 
