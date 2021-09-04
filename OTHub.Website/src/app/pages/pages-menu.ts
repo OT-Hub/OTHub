@@ -53,12 +53,16 @@ export const MENU_ITEMS: NbMenuItem[] = [
     icon: 'pie-chart-outline',
     children: [
       {
-        title: 'Staked Tokens',
-        link: '/reports/stakedtokens',
-      },
-      {
         title: 'Total Graph Size',
         link: '/reports/tgs',
+      },
+      {
+        title: 'Job Holding Times',
+        link: '/reports/holdingtime',
+      },
+      {
+        title: 'Staked Tokens',
+        link: '/reports/stakedtokens',
       },
     ],
   },
