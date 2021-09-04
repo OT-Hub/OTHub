@@ -6,6 +6,7 @@ import * as am4core from '@amcharts/amcharts4/core';
 import * as am4charts from '@amcharts/amcharts4/charts';
 import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import { Blockchain } from 'app/pages/tools/find-nodes-by-wallet/find-nodes-by-wallet.component';
+import { NbThemeService } from '@nebular/theme';
 
 @Component({
   selector: 'ngx-holding-time-per-month',
@@ -16,7 +17,8 @@ export class HoldingTimePerMonthComponent implements OnInit {
   blockchains: Blockchain[];
 
   constructor(private zone: NgZone,
-    @Inject(PLATFORM_ID) private platformId, private http: HttpClient, private httpService: HubHttpService) { 
+    @Inject(PLATFORM_ID) private platformId, private http: HttpClient, private httpService: HubHttpService,
+    private themeService: NbThemeService) { 
       this.selectedBlockchain = 'All Blockchains';
       this.getScreenSize();
     }
@@ -160,6 +162,13 @@ dateAxis: am4charts.DateAxis;
     chart.cursor.xAxis = dateAxis;
 
     chart.scrollbarX = new am4core.Scrollbar();
+
+    if (this.themeService.currentTheme != 'light' && this.themeService.currentTheme != 'corporate' && this.themeService.currentTheme != 'default') {
+      //title.fill = am4core.color('white');
+      dateAxis.renderer.labels.template.fill = am4core.color('white');
+      valueAxis.renderer.labels.template.fill = am4core.color('white');
+      chart.legend.labels.template.fill = am4core.color('white');
+    }
 
     chart.events.on('ready', () => {
       if (!this.hasSetZoomFirstTime) {
