@@ -26,7 +26,6 @@ namespace OTHub.APIServer.Controllers
     [Route("api/nodes/[controller]")]
     public class DataHolderController : Controller
     {
-
         [Route("{nodeId}/jobs")]
         [HttpGet]
         public async Task<IActionResult> GetJobs(string nodeId,

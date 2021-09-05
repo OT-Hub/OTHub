@@ -22,7 +22,14 @@ SUM(COALESCE(I.OffersLast7Days, 0)) WonOffersLast7Days,
 (SELECT COUNT(O.OfferID) FROM OTOffer O WHERE O.DCNodeId = I.NodeId) as DCOfferCount,
 bc.BlockchainName,
 bc.NetworkName,
-mn.DisplayName
+mn.DisplayName,
+(SELECT COUNT(DISTINCT  CASE WHEN O.IsFinalized = 1 
+	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN O.OfferId ELSE null END)
+	ELSE null
+END) FROM otoffer o 
+JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
+WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity) TotalActiveOffers,
+(SELECT COUNT(li.TransactionHash) FROM otcontract_litigation_litigationinitiated li WHERE li.HolderIdentity = I.Identity AND li.BlockchainID = I.BlockchainID) LitigationCount
 from OTIdentity I
 JOIN blockchains bc ON bc.ID = I.BlockchainID
 left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity AND ic.BlockchainID = I.BlockchainID
