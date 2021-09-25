@@ -386,18 +386,18 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
             return this.formatAmount(value);
           }
         },
-        AvailableJobTokens: {
-          sort: true,
-          title: 'Available Tokens',
-          type: 'number',
-          filter: false,
-          editable: false,
-          addable: false,
-          //width: '1%',
-          valuePrepareFunction: (value) => {
-            return this.formatAmount(value);
-          }
-        },
+        // AvailableJobTokens: {
+        //   sort: true,
+        //   title: 'Available Tokens',
+        //   type: 'number',
+        //   filter: false,
+        //   editable: false,
+        //   addable: false,
+        //   //width: '1%',
+        //   valuePrepareFunction: (value) => {
+        //     return this.formatAmount(value);
+        //   }
+        // },
         PaidTokens: {
           sort: true,
           title: 'Paidout Tokens',
