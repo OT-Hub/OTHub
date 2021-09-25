@@ -6,6 +6,7 @@ using MySqlConnector;
 using OTHub.APIServer.Sql.Models;
 using OTHub.APIServer.Sql.Models.Nodes.DataHolders;
 using OTHub.Settings;
+using OTHub.Settings.Constants;
 
 namespace OTHub.APIServer.Sql
 {
@@ -50,6 +51,15 @@ ORDER BY GasPrice";
                 case "StakeTokens":
                     orderBy = "ORDER BY StakeTokens";
                     break;
+                case "AvailableJobTokens":
+                    orderBy = "ORDER BY AvailableJobTokens";
+                    break;
+                case "DisplayName":
+                    if (userID != null)
+                    {
+                        orderBy = "ORDER BY DisplayName";
+                    }
+                    break;
             }
 
             if (!String.IsNullOrWhiteSpace(orderBy))
@@ -85,6 +95,7 @@ substring(I.NodeId, 1, 40) as NodeId,
 MAX(I.Version) Version, 
 SUM(COALESCE(I.Stake, 0))  as StakeTokens,
 SUM(COALESCE(I.StakeReserved, 0))  as StakeReservedTokens, 
+GREATEST(SUM(COALESCE(I.Stake, 0)) - SUM(COALESCE(I.StakeReserved, 0)) - @minimumStake, 0) AS AvailableJobTokens,
 SUM(COALESCE(I.Paidout, 0))  as PaidTokens,
 SUM(COALESCE(I.TotalOffers, 0))  as TotalWonOffers, 
 SUM(COALESCE(I.OffersLast7Days, 0))  WonOffersLast7Days,
@@ -103,7 +114,7 @@ GROUP BY I.NodeId
 {limitSql}";
 
                 NodeDataHolderSummaryModel[] summary = (await connection.QueryAsync<NodeDataHolderSummaryModel>(
-                    sql, new { userID = userID, NodeId_like })).ToArray();
+                    sql, new { userID = userID, NodeId_like, minimumStake = TracToken.MinimumStake })).ToArray();
 
                 var total = await connection.ExecuteScalarAsync<int>($@"select COUNT(DISTINCT I.NodeId)
 from OTIdentity I

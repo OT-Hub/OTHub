@@ -7,11 +7,12 @@ import { MomentModule } from 'ngx-moment';
 import { ReportsRoutingModule } from './reports-routing.module';
 import { TGSComponent } from './tgs/tgs.component';
 import { HoldingTimePerMonthComponent } from './holding-time-per-month/holding-time-per-month.component';
+import { JobHeatmapComponent } from './job-heatmap/job-heatmap.component';
 
 
 
 @NgModule({
-  declarations: [StakedTokensByDayComponent, TGSComponent, HoldingTimePerMonthComponent],
+  declarations: [StakedTokensByDayComponent, TGSComponent, HoldingTimePerMonthComponent, JobHeatmapComponent],
   imports: [
     CommonModule,
     NbCardModule,

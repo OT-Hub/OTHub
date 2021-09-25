@@ -3,6 +3,7 @@ import { NgModule } from '@angular/core';
 import { StakedTokensByDayComponent } from './staked-tokens-by-day/staked-tokens-by-day.component';
 import { TGSComponent } from './tgs/tgs.component';
 import { HoldingTimePerMonthComponent } from './holding-time-per-month/holding-time-per-month.component';
+import { JobHeatmapComponent } from './job-heatmap/job-heatmap.component';
 
 
 const routes: Routes = [
@@ -17,6 +18,10 @@ const routes: Routes = [
   {
     path: 'holdingtime',
     component: HoldingTimePerMonthComponent
+  },
+  {
+    path: 'jobheatmap',
+    component: JobHeatmapComponent
   }
 ];
 

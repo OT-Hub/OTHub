@@ -61,6 +61,10 @@ export const MENU_ITEMS: NbMenuItem[] = [
         link: '/reports/holdingtime',
       },
       {
+        title: 'Job Heatmap',
+        link: '/reports/jobheatmap',
+      },
+      {
         title: 'Staked Tokens',
         link: '/reports/stakedtokens',
       },

@@ -172,13 +172,52 @@ OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.Ho
             return rows;
         }
 
-            [HttpGet]
+        [HttpGet]
+        [Authorize]
+        [Route("GetHoldingTimeByMonth")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<GetHoldingTimeByMonthModel[]> GetHoldingTimeByMonth([FromQuery] string nodeID)
+        {
+            if (string.IsNullOrWhiteSpace(nodeID))
+                nodeID = null;
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                GetHoldingTimeByMonthModel[] rows = (await connection.QueryAsync<GetHoldingTimeByMonthModel>(@"WITH CTE AS (
+SELECT YEAR(o.FinalizedTimestamp) 'Year', MONTH(o.FinalizedTimestamp) 'Month', ROUND(o.HoldingTimeInMinutes / 43800) HoldingTimeInMonths, o.OfferID, b.BlockchainName
+FROM otoffer o
+JOIN blockchains b ON b.ID = o.BlockchainID
+JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
+JOIN otidentity i ON i.Identity = h.Holder AND i.BlockchainID = o.BlockchainID
+JOIN mynodes mn ON mn.UserID = @userID AND mn.NodeID = i.NodeId
+WHERE o.IsFinalized = 1 AND NOW() <= DATE_ADD(o.FinalizedTimeStamp, INTERVAL +o.HoldingTimeInMinutes MINUTE)
+AND (@nodeID IS NULL OR mn.NodeID = @nodeID) 
+)
+
+SELECT o.HoldingTimeInMonths, COUNT(o.OfferID) 'Count'
+FROM CTE o
+GROUP BY o.HoldingTimeInMonths
+ORDER BY o.HoldingTimeInMonths", new
+                {
+                    userID = User?.Identity?.Name,
+                    nodeID = nodeID
+                })).ToArray();
+
+                return rows;
+            }
+        }
+
+        [HttpGet]
         [Authorize]
         [Route("RecentJobs")]
-            [SwaggerOperation(Description = "Requires authentication to use.")]
-        public async Task<RecentJobsByDay[]> GetRecentJobs()
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<RecentJobsByDay[]> GetRecentJobs([FromQuery] string nodeID)
         {
-            if (_cache.TryGetValue("MyNodes-GetRecentJobs-" + User.Identity.Name, out var cached))
+            if (string.IsNullOrWhiteSpace(nodeID))
+                nodeID = null;
+
+            if (_cache.TryGetValue($"MyNodes-GetRecentJobs-{User.Identity.Name}-{nodeID}", out var cached))
             {
                 return (RecentJobsByDay[]) cached;
             }
@@ -189,20 +228,24 @@ OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.Ho
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var jobs = (await connection.QueryAsync<RecentJobs>(@"SELECT mn.NodeID, mn.DisplayName, o.OfferID, o.HoldingTimeInMinutes, o.TokenAmountPerHolder, o.FinalizedTimestamp,
-(CASE WHEN u.USDPriceCalculationMode = 0 THEN ticker.Price ELSE @overrideUSDPrice END) * o.TokenAmountPerHolder AS USDAmount FROM mynodes mn
+(CASE WHEN u.USDPriceCalculationMode = 0 THEN ticker.Price ELSE @overrideUSDPrice END) * o.TokenAmountPerHolder AS USDAmount,
+b.DisplayName Blockchain, b.LogoLocation BlockchainLogo
+FROM mynodes mn
 JOIN users u ON u.ID = mn.UserID
 JOIN otidentity i ON i.NodeId = mn.NodeID
 JOIN otoffer_holders h ON h.Holder = i.Identity AND h.BlockchainID = i.BlockchainID
 JOIN otoffer o ON o.OfferID = h.OfferID AND o.BlockchainID = i.BlockchainID
+JOIN blockchains b ON b.ID = o.BlockchainID
 LEFT JOIN ticker_trac ticker ON u.USDPriceCalculationMode = 0 AND ticker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= o.FinalizedTimestamp)
-WHERE o.FinalizedTimestamp >= DATE_Add(DATE(NOW()), INTERVAL -7 DAY) AND mn.UserID = @userID
+WHERE o.FinalizedTimestamp >= DATE_Add(DATE(NOW()), INTERVAL -7 DAY) AND mn.UserID = @userID AND (@nodeID IS NULL OR @nodeID = mn.NodeID)
 ORDER BY o.FinalizedTimestamp DESC", new
                 {
                     userID = User.Identity.Name,
-                    overrideUSDPrice = ticker?.PriceUsd ?? 0
+                    overrideUSDPrice = ticker?.PriceUsd ?? 0,
+                    nodeID = nodeID
                 })).ToArray();
 
                 List<RecentJobsByDay> days = new List<RecentJobsByDay>(7);
@@ -223,7 +266,7 @@ ORDER BY o.FinalizedTimestamp DESC", new
 
 
 
-                _cache.Set("MyNodes-GetRecentJobs-" + User.Identity.Name, data, TimeSpan.FromSeconds(15));
+                _cache.Set($"MyNodes-GetRecentJobs-{User.Identity.Name}-{nodeID}", data, TimeSpan.FromSeconds(15));
 
 
 
@@ -705,6 +748,8 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         public decimal TokenAmountPerHolder { get; set; }
         public DateTime FinalizedTimestamp { get; set; }
         public decimal USDAmount { get; set; }
+        public string Blockchain { get; set; }
+        public string BlockchainLogo { get; set; }
     }
 
     internal class NodeStatsModel1
@@ -745,5 +790,11 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
 
             public int? BetterThanActiveNodesPercentage { get; set; }
         }
+    }
+
+    public class GetHoldingTimeByMonthModel
+    {
+        public int HoldingTimeInMonths { get; set; }
+        public int Count { get; set; }
     }
 }

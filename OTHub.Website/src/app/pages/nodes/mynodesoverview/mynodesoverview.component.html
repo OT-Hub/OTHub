@@ -63,6 +63,10 @@
                         </nb-list-item>
                         <nb-list-item *ngFor="let job of day.Jobs" class="jobNode">
 
+                            <div style="margin-right: 5px;">
+                                <img src="assets/images/{{job.BlockchainLogo}}" height="32" width="32" [title]="job.Blockchain">
+                            </div>
+
                             <nb-user size="small" shape="semi-round"
                                 name="{{(job.DisplayName != null ? job.DisplayName : job.NodeId)}}">
                             </nb-user>
@@ -101,7 +105,7 @@
 </div>
 <br>
 <div class="row">
-    <div class="col-xxxl-4 col-xxl-4 col-lg-5 col-md-6">
+    <div class="col-xxxl-4 col-xxl-4 col-lg-6 col-md-6">
         <nb-card size="large" class="table-card">
             <nb-card-header>
                 Jobs by Month
@@ -130,7 +134,7 @@
             </nb-tabset>
         </nb-card>
     </div>
-    <div class="col-xxxl-4 col-xxl-4 col-lg-4 col-md-4">
+    <div class="col-xxxl-4 col-xxl-4 col-lg-6 col-md-6">
         <nb-card size="large">
             <nb-card-body>
                 <div *ngIf="nodeStats == null || data?.Nodes == null">
@@ -193,6 +197,16 @@
                       </div> -->
                 </div>
 
+            </nb-card-body>
+        </nb-card>
+    </div>
+    <div class="col-xxxl-4 col-xxl-4 col-lg-6 col-md-6">
+        <nb-card size="large">
+            <nb-card-body>
+                <div class="progress-info topmargin">
+                    <div class="subtitle">Holding Time on Active Jobs</div>
+                </div>
+                <div id="holdingTimeChart" style="margin-top: 10px;height:490px;"></div>
             </nb-card-body>
         </nb-card>
     </div>

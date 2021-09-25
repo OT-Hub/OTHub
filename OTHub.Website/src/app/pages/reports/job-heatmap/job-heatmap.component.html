@@ -1,0 +1,25 @@
+<div class="row">
+    <div class="col-md-12 col-xxxl-12">
+      <nb-card class="homeCard" status="basic">
+        <nb-card-header>
+           Job Heatmap
+    
+        </nb-card-header>
+        <nb-card-body>
+            <p>This chart shows jobs in the last 2 weeks. </p>
+            <nb-select [(ngModel)]="selectedBlockchain" (selectedChange)="changeBlockchainFilter($event)"
+            style="width:100%;margin-bottom:10px;max-width:none;">
+
+            <nb-option value="All Blockchains">All Blockchains</nb-option>
+            <nb-option *ngFor="let blockchain of blockchains" [value]="blockchain.BlockchainName">
+                {{blockchain.BlockchainName}}
+            </nb-option>
+        </nb-select>
+          <div id="Chart" style="width: 100%;" [ngStyle]="{'height': getHeight() + 'px'}" [hidden]="nothingToShow"></div>
+          <div class="alert alert-warning" *ngIf="nothingToShow === true">
+            Unable to show this chart as there have been no jobs in the last 2 weeks.
+          </div>
+        </nb-card-body>
+      </nb-card>
+    </div>
+  </div>

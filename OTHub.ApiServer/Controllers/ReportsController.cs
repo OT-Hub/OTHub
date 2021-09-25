@@ -32,6 +32,56 @@ namespace OTHub.APIServer.Controllers
         }
 
         [HttpGet]
+        [Route(("JobHeatmap"))]
+        public async Task<JobHeatmapModel[]> JobHeatmap([FromQuery] string blockchain)
+        {
+            if (string.IsNullOrWhiteSpace(blockchain))
+                blockchain = null;
+
+            await using (var connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var now = DateTime.Now.Date.AddDays(1);
+
+                JobHeatmapModel[] rows = (await connection.QueryAsync<JobHeatmapModel>(
+                        @"SELECT DAYNAME(o.CreatedTimestamp) `Day`, HOUR(o.CreatedTimestamp) Hour, COUNT(o.OfferID) Count 
+FROM otoffer o
+JOIN blockchains b on b.id = o.BlockchainID
+WHERE o.IsFinalized = 1 AND o.CreatedTimestamp >= @dateFrom AND o.CreatedTimestamp <= @dateTo AND (@blockchain is null OR b.DisplayName = @blockchain)
+GROUP BY DAYNAME(o.CreatedTimestamp), HOUR(o.FinalizedTimestamp)
+ORDER BY FIELD(DAYNAME(o.CreatedTimestamp) , 'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'), Hour",
+                        new
+                        {
+                            blockchain,
+                            dateFrom = now.AddDays(-15),
+                            dateTo = now
+                        })
+                    ).ToArray();
+
+                List<JobHeatmapModel> items = new List<JobHeatmapModel>();
+
+                string[] days = new[] {"Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"};
+
+                foreach (string day in days)
+                {
+                    foreach (var i in Enumerable.Range(0, 24))
+                    {
+                        JobHeatmapModel match = rows.FirstOrDefault(r => r.Day == day && r.Hour == i);
+
+                        if (match == null)
+                        {
+                            match = new JobHeatmapModel(){Day = day, Hour = i, Count = 0};
+                        }
+
+                        items.Add(match);
+                    }
+                }
+
+                return items.ToArray();
+            }
+        }
+
+        [HttpGet]
         [Route(("HoldingTimePerMonth"))]
         public async Task<HoldingTimePerMonthReportModel> HoldingTimePerMonth()
         {
@@ -119,6 +169,25 @@ ORDER BY `Year`, `Month`, o.HoldingTimeInMonths, o.BlockchainName")).ToArray();
     public class HoldingTimePerMonthBlockchainModel
     {
         public string BlockchainName { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class JobHeatmapModel
+    {
+        private int _hour;
+        public string Day { get; set; }
+
+        internal int Hour
+        {
+            get => _hour;
+            set
+            {
+                _hour = value;
+                HourText = value + ":00";
+            }
+        }
+
+        public string HourText { get; set; }
         public int Count { get; set; }
     }
 }

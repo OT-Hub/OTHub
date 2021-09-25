@@ -319,8 +319,9 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           title: 'Name',
           type: 'text',
           show: false,
-          filter: false,
-          sort: false,
+          filter: true,
+          sort: true,
+          sortDirection: this.showOnlyMyNodes === 'true' ? 'asc' : '',
           editable: true,
           addable: true,
         },
@@ -338,7 +339,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         },
         WonOffersLast7Days: {
           sort: true,
-          sortDirection: 'desc',
+          sortDirection: this.showOnlyMyNodes === 'true' ? '' : 'desc',
           title: 'Jobs (7 Days)',
           type: 'number',
           filter: false,
@@ -360,18 +361,6 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           addable: false,
           //width: '1%'
           // valuePrepareFunction: (value) => { return (value / 1000).toFixed(2).replace(/[.,]00$/, '') + ' KB';}
-        },
-        PaidTokens: {
-          sort: true,
-          title: 'Paidout Tokens',
-          type: 'number',
-          filter: false,
-          editable: false,
-          addable: false,
-          //width: '1%',
-          valuePrepareFunction: (value) => {
-            return this.formatAmount(value);
-          }
         },
         StakeTokens: {
           sort: true,
@@ -396,7 +385,31 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }
-        }
+        },
+        AvailableJobTokens: {
+          sort: true,
+          title: 'Available Tokens',
+          type: 'number',
+          filter: false,
+          editable: false,
+          addable: false,
+          //width: '1%',
+          valuePrepareFunction: (value) => {
+            return this.formatAmount(value);
+          }
+        },
+        PaidTokens: {
+          sort: true,
+          title: 'Paidout Tokens',
+          type: 'number',
+          filter: false,
+          editable: false,
+          addable: false,
+          //width: '1%',
+          valuePrepareFunction: (value) => {
+            return this.formatAmount(value);
+          }
+        },
       },
       pager: {
         display: true,

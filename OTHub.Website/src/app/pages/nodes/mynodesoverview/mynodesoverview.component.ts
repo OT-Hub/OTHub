@@ -3,6 +3,10 @@ import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { HubHttpService } from 'app/pages/hub-http-service';
+import * as am4core from '@amcharts/amcharts4/core';
+import * as am4charts from '@amcharts/amcharts4/charts';
+import am4themes_animated from '@amcharts/amcharts4/themes/animated';
+import { isPlatformBrowser } from '@angular/common';
 
 @Component({
   selector: 'ngx-mynodesoverview',
@@ -19,6 +23,7 @@ export class MynodesoverviewComponent implements OnInit {
   selectedNode: string;
   recentJobs: RecentJobsByDay[];
   nodeStats: NodeStats;
+  holdingTimeByMonth: GetHoldingTimeByMonthModel[];
 
   constructor(private httpService: HubHttpService,
     private http: HttpClient, private auth: AuthService, private router: Router) {
@@ -36,6 +41,8 @@ export class MynodesoverviewComponent implements OnInit {
   changeNode(nodeName: string) {
     this.nodeStats = null;
     this.selectedNode = nodeName;
+    this.loadJobs();
+    this.loadHoldingTimePerMonth();
     if (nodeName == 'All Nodes') {
       this.selectedData = this.data.AllNodes;
       this.loadNodeStats(null);
@@ -46,6 +53,46 @@ export class MynodesoverviewComponent implements OnInit {
         this.loadNodeStats(node.NodeId);
       }
     }
+  }
+
+  loadHoldingTimePerMonth() {
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+    let url = this.httpService.ApiUrl + '/api/mynodes/GetHoldingTimeByMonth?nodeID=' + (this.selectedNode == 'All Nodes' ? '' : this.selectedNode);
+    this.http.get<GetHoldingTimeByMonthModel[]>(url, { headers }).subscribe(data => {
+      this.holdingTimeByMonth = data;
+
+      let chart = am4core.create("holdingTimeChart", am4charts.PieChart);
+
+
+      let adjustedData = data.map(x => {
+        return {
+          HoldingTimeInMonths: x.HoldingTimeInMonths.toString() + ' Months',
+          Count: x.Count
+        };
+      });
+
+      chart.data = adjustedData;
+
+      let pieSeries = chart.series.push(new am4charts.PieSeries());
+      pieSeries.dataFields.value = "Count";
+      pieSeries.dataFields.category = "HoldingTimeInMonths";
+      pieSeries.slices.template.stroke = am4core.color("#fff");
+      pieSeries.slices.template.strokeOpacity = 1;
+
+      // This creates initial animation
+      pieSeries.hiddenState.properties.opacity = 1;
+      pieSeries.hiddenState.properties.endAngle = -90;
+      pieSeries.hiddenState.properties.startAngle = -90;
+
+      pieSeries.ticks.template.disabled = true;
+pieSeries.labels.template.disabled = true;
+
+chart.legend = new am4charts.Legend();
+
+      chart.hiddenState.properties.radius = am4core.percent(0);
+    });
   }
 
   ngOnInit(): void {
@@ -76,15 +123,21 @@ export class MynodesoverviewComponent implements OnInit {
           this.isJobsPerMonthLoading = false;
         });
 
-        url = this.httpService.ApiUrl + '/api/mynodes/RecentJobs';
-        this.http.get<RecentJobsByDay[]>(url, { headers }).subscribe(data => {
-          this.recentJobs = data;
-          this.isRecentJobsLoading = false;
-        });
+        this.loadJobs();
+        this.loadHoldingTimePerMonth();
       }
-
     });
+  }
 
+  loadJobs() {
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+    let url = this.httpService.ApiUrl + '/api/mynodes/RecentJobs?nodeID=' + (this.selectedNode == 'All Nodes' ? '' : this.selectedNode);
+    this.http.get<RecentJobsByDay[]>(url, { headers }).subscribe(data => {
+      this.recentJobs = data;
+      this.isRecentJobsLoading = false;
+    });
   }
 
   loadNodeStats(nodeIDFilter: string) {
@@ -164,6 +217,8 @@ export interface RecentJob {
   TokenAmountPerHolder: number;
   FinalizedTimestamp: Date;
   USDAmount: number;
+  Blockchain: string;
+  BlockchainLogo: string;
 }
 
 export interface NodeStats {
@@ -182,4 +237,9 @@ export interface NodeStatsToken {
   USDAmount: number;
   TokenAmount: number;
   BetterThanActiveNodesPercentage: number;
+}
+
+export interface GetHoldingTimeByMonthModel {
+  HoldingTimeInMonths: number;
+  Count: number;
 }
