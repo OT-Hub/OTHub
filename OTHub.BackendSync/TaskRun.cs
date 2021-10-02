@@ -78,7 +78,7 @@ namespace OTHub.BackendSync
         {
         }
 
-        private static ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?> _blockchainIDDictionary = new ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?>();
+        private static readonly ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?> _blockchainIDDictionary = new ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?>();
         protected async Task<int> GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
         {
             int? id;
@@ -99,7 +99,7 @@ namespace OTHub.BackendSync
         }
 
 
-        private static ConcurrentDictionary<int, String> _blockchainUrlDictionary = new ConcurrentDictionary<int, string>();
+        private static readonly ConcurrentDictionary<int, String> _blockchainUrlDictionary = new ConcurrentDictionary<int, string>();
         protected async Task<Web3> GetWeb3(MySqlConnection connection, int blockchainID, BlockchainType type)
         {
             string nodeUrl;

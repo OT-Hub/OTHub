@@ -25,33 +25,12 @@ namespace OTHub.BackendSync
                 await controller.Start();
             }));
 
+            tasks.AddRange(TaskController.Schedule<BlockchainMaintenanceTask>(Source.BlockchainSync, true, true));
 
-            tasks.Add(Task.Run(async () =>
-            {
-                TaskController controller = new TaskController(Source.BlockchainSync);
+            tasks.AddRange(TaskController.Schedule<BlockchainSyncTask>(Source.BlockchainSync, true, true));
 
-                controller.Schedule(new BlockchainMaintenanceTask(), true, true);
+            tasks.AddRange(TaskController.Schedule<ToolsTask>(Source.Tools, true, false));
 
-                await controller.Start();
-            }));
-
-            tasks.Add(Task.Run(async () =>
-            {
-                TaskController controller = new TaskController(Source.BlockchainSync);
-
-                controller.Schedule(new BlockchainSyncTask(), true, true);
-
-                await controller.Start();
-            }));
-
-            tasks.Add(Task.Run(async () =>
-            {
-                TaskController controller = new TaskController(Source.Tools);
-
-                controller.Schedule(new ToolsTask(), true, false);
-
-                await controller.Start();
-            }));
 
             tasks.Add(Task.Run(async () =>
             {

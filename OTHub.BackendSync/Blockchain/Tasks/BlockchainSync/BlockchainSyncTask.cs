@@ -23,12 +23,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync
 
         public override TimeSpan GetExecutingInterval(BlockchainType type)
         {
-            if (type == BlockchainType.xDai)
-            {
-                return TimeSpan.FromMinutes(10);
-            }
-
-            return TimeSpan.FromMinutes(10);
+            return TimeSpan.FromMinutes(6);
         }
 
         public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)

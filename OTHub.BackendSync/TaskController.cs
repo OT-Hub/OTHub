@@ -24,19 +24,17 @@ namespace OTHub.BackendSync
             private readonly Source _source;
             private readonly TaskRunBase _task;
             private readonly TimeSpan _runEveryTimeSpan;
-            private readonly bool _startChildrenConcurrently;
             private DateTime _lastRunDateTime;
             private SystemStatus _systemStatus;
 
             internal TaskControllerItem(BlockchainType blockchain, BlockchainNetwork network, Source source,
-                TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID, bool startChildrenConcurrently)
+                TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID)
             {
                 _blockchain = blockchain;
                 _network = network;
                 _source = source;
                 _task = task;
                 _runEveryTimeSpan = runEveryTimeSpan;
-                _startChildrenConcurrently = startChildrenConcurrently;
                 _lastRunDateTime = startNow ? DateTime.MinValue : DateTime.Now;
                 _systemStatus = new SystemStatus(task.Name, blockchainID);
 
@@ -63,7 +61,6 @@ namespace OTHub.BackendSync
                 }
             }
 
-            public bool StartChildrenConcurrently => _startChildrenConcurrently;
 
             public bool NeedsRunning
             {
@@ -140,14 +137,18 @@ namespace OTHub.BackendSync
             _items.Add(item);
         }
 
-        public void Schedule(TaskRunBlockchain task, bool startNow, bool startChildrenConcurrently)
+        public static Task[] Schedule<TTask>(Source source, bool startNow) where TTask : TaskRunBlockchain, new()
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var blockchains = connection.Query(@"SELECT * FROM blockchains WHERE enabled = 1").ToArray();
 
+                List<Task> tasks = new List<Task>();
+
                 foreach (var blockchain in blockchains)
                 {
+                    TTask task = new TTask();
+
                     int id = blockchain.ID;
                     string blockchainName = blockchain.BlockchainName;
                     string networkName = blockchain.NetworkName;
@@ -160,9 +161,19 @@ namespace OTHub.BackendSync
 
                     TimeSpan interval = task.GetExecutingInterval(blockchainEnum);
 
-                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, interval, startNow, id, startChildrenConcurrently);
-                    _items.Add(item);
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        TaskController controller = new TaskController(source);
+                        var item = new TaskControllerItem(blockchainEnum, networkNameEnum, controller._source, task, interval, startNow, id);
+                        controller._items.Add(item);
+
+                        await controller.Start();
+                    }));
+
+             
                 }
+
+                return tasks.ToArray();
             }
         }
 
@@ -185,22 +196,7 @@ namespace OTHub.BackendSync
 
                 var items = _items.Where(i => i.NeedsRunning).Reverse().ToArray();
 
-                TaskControllerItem[] concurrentItems = items.Where(i => i.StartChildrenConcurrently).ToArray();
-                TaskControllerItem[] sequentialItems = items.Except(concurrentItems).ToArray();
-
-                if (concurrentItems.Any())
-                {
-                    List<Task> tasks = new List<Task>();
-                    foreach (var taskControllerItem in concurrentItems)
-                    {
-                        tasks.Add(Task.Run(async () =>
-                        {
-                            await taskControllerItem.Execute();
-                        }));
-                    }
-
-                    await Task.WhenAll(tasks);
-                }
+                TaskControllerItem[] sequentialItems = items.ToArray();
 
                 if (sequentialItems.Any())
                 {

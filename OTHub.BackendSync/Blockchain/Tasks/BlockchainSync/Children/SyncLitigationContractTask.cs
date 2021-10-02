@@ -59,70 +59,20 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     var litigationCompletedEvent = holdingContract.GetEvent("LitigationCompleted");
                     var replacementStartedEvent = holdingContract.GetEvent("ReplacementStarted");
 
-                    var diff = (ulong) LatestBlockNumber.Value - contract.SyncBlockNumber;
-
                     ulong size = (ulong)10000;
 
-                    beforeSync:
-
-
-                    if (diff > size)
-                    {
-                        ulong currentStart = contract.SyncBlockNumber;
-                        ulong currentEnd = currentStart + size;
-
-                        if (currentEnd > LatestBlockNumber.Value)
+                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong) LatestBlockNumber.Value, size,
+                        async delegate(ulong start, ulong end)
                         {
-                            currentEnd = (ulong) LatestBlockNumber.Value;
-                        }
+                            await Sync(connection, litigationInitiatedEvent, litigationAnsweredEvent,
+                                litigationTimedOutEvent,
+                                litigationCompletedEvent,
+                                replacementStartedEvent,
+                                contract, source, start,
+                                end, blockchainID, cl);
+                        });
 
-                        bool canRetry = true;
-                        while (currentStart == 0 || currentStart < LatestBlockNumber.Value)
-                        {
-                            start:
-                            try
-                            {
-                                await Sync(connection, litigationInitiatedEvent, litigationAnsweredEvent,
-                                    litigationTimedOutEvent,
-                                    litigationCompletedEvent,
-                                    replacementStartedEvent,
-                                    contract, source, currentStart,
-                                    currentEnd, blockchainID, cl);
-                            }
-                            catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
-                            {
-                                size = size / 2;
-
-                                Logger.WriteLine(source, "Swapping to block sync size of " + size);
-
-                                goto beforeSync;
-                            }
-                            catch (RpcClientUnknownException ex) when (canRetry &&
-                                                                       ex.GetBaseException().Message
-                                                                           .Contains("Gateway"))
-                            {
-                                canRetry = false;
-                                goto start;
-                            }
-
-                            currentStart = currentEnd;
-                            currentEnd = currentStart + size;
-
-                            if (currentEnd > LatestBlockNumber.Value)
-                            {
-                                currentEnd = (ulong) LatestBlockNumber.Value;
-                            }
-                        }
-                    }
-                    else
-                    {
-                        await Sync(connection, litigationInitiatedEvent, litigationAnsweredEvent,
-                            litigationTimedOutEvent,
-                            litigationCompletedEvent,
-                            replacementStartedEvent,
-                            contract, source, contract.SyncBlockNumber, (ulong) LatestBlockNumber.Value, blockchainID,
-                            cl);
-                    }
+                    await batcher.Execute();
                 }
 
             }
