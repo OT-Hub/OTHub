@@ -9,6 +9,7 @@ namespace OTHub.APIServer.Sql.Models.Nodes.DataHolder
         public Int32 TotalActiveOffers { get; set; }
         public Int32 WonOffersLast7Days { get; set; }
         public int LitigationCount { get; set; }
+        public decimal? LiveTracUSDPrice { get; set; }
 
         //public NodeProfileDetailedModel_OfferSummary[] Offers { get; set; }
         //public NodeProfileDetailedModel_OfferPayout[] Payouts { get; set; }

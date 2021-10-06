@@ -11,6 +11,7 @@ export class DataHolderDetailedModel   {
     TotalWonOffers: number;
     WonOffersLast7Days: number;
     DisplayName: string;
+    LiveTracUSDPrice: number;
     // Approved: boolean;
     // OldIdentity: string;
     // NewIdentity: string;

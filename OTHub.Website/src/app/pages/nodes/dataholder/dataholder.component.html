@@ -53,11 +53,19 @@
         style="vertical-align:middle">
     </app-copyclipboardicon>
 </nb-list-item>
-                        <nb-list-item *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'" class="dont-break-out">
-                            Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
+                        <nb-list-item class="dont-break-out">
+                            <!-- Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}} -->
+                            Staked Tokens:&nbsp;<span class="results extraPadding">
+                                {{ formatAmount(NodeModel?.StakeTokens) }} <span class="caption">TRAC</span> / {{
+                                    (NodeModel?.StakeTokens * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                            </span>
                         </nb-list-item>
                         <nb-list-item class="dont-break-out">
-                            Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
+                            <!-- Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}} -->
+                            Locked Tokens:&nbsp;<span class="results extraPadding">
+                                {{ formatAmount(NodeModel?.StakeReservedTokens) }} <span class="caption">TRAC</span> / {{
+                                    (NodeModel?.StakeReservedTokens * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                            </span>
                         </nb-list-item>
 <!--                        <nb-list-item *ngIf="NodeModel?.ManagementWallet != null" class="dont-break-out">-->
 <!--                            Management Wallet: {{NodeModel?.ManagementWallet}}&nbsp;<app-copyclipboardicon-->

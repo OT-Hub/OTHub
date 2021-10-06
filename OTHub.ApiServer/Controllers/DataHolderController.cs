@@ -20,12 +20,22 @@ using OTHub.APIServer.Sql.Models.Nodes.DataCreator;
 using OTHub.APIServer.Sql.Models.Nodes.DataHolder;
 using OTHub.APIServer.Sql;
 using System.Diagnostics;
+using CoinpaprikaAPI.Entity;
+using Microsoft.Extensions.Caching.Memory;
+using OTHub.APIServer.Helpers;
 
 namespace OTHub.APIServer.Controllers
 {
     [Route("api/nodes/[controller]")]
     public class DataHolderController : Controller
     {
+        private readonly IMemoryCache _cache;
+
+        public DataHolderController(IMemoryCache cache)
+        {
+            _cache = cache;
+        }
+
         [Route("{nodeId}/jobs")]
         [HttpGet]
         public async Task<IActionResult> GetJobs(string nodeId,
@@ -404,6 +414,8 @@ Data Included:
         [SwaggerResponse(500, "Internal server error")]
         public async Task<NodeDataHolderDetailedModel> Get([SwaggerParameter("The ERC 725 identity for the node", Required = true)] string nodeId)
         {
+            TickerInfo tickerInfo = await TickerHelper.GetTickerInfo(_cache);
+
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -420,6 +432,8 @@ WHERE i.NodeId = @NodeId", new
                         {
                             nodeId = nodeId
                         })).ToArray();
+
+                    profile.LiveTracUSDPrice = tickerInfo?.PriceUsd;
                 }
 
                 return profile;
