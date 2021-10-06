@@ -48,10 +48,16 @@
 <nb-list-item class="dont-break-out" *ngIf="NodeModel?.DisplayName != null">
   Name: {{NodeModel?.DisplayName}}
 </nb-list-item>
+<nb-list-item *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'" class="dont-break-out">
+    Node Id: {{NodeModel?.NodeId}}&nbsp;<app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
+        style="vertical-align:middle">
+    </app-copyclipboardicon>
+</nb-list-item>
                         <nb-list-item *ngIf="NodeModel?.NodeId != '0000000000000000000000000000000000000000'" class="dont-break-out">
-                            Node Id: {{NodeModel?.NodeId}}&nbsp;<app-copyclipboardicon [textToCopy]="NodeModel?.NodeId"
-                                style="vertical-align:middle">
-                            </app-copyclipboardicon>
+                            Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
+                        </nb-list-item>
+                        <nb-list-item class="dont-break-out">
+                            Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
                         </nb-list-item>
 <!--                        <nb-list-item *ngIf="NodeModel?.ManagementWallet != null" class="dont-break-out">-->
 <!--                            Management Wallet: {{NodeModel?.ManagementWallet}}&nbsp;<app-copyclipboardicon-->
@@ -74,12 +80,7 @@
 <!--                            <button nbButton status="primary" outline (click)="AddToMyNodes()">Add to My Nodes</button>-->
 <!--                        </nb-list-item>-->
                     </nb-list>
-                    <div class="dataRow">
-                        Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
-                    </div>
-                    <div class="dataRow">
-                        Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
-                    </div>
+
                 </nb-card>
 
             </div>
