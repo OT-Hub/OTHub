@@ -43,7 +43,7 @@ export class PaidoutColumnComponent implements ViewCell, OnInit {
             return '0';
         }
         let tokenAmount = parseFloat(input);
-        let formatted = +tokenAmount.toFixed(4);
+        let formatted = +tokenAmount.toFixed(20);
         return formatted;
     }
 

@@ -87,7 +87,7 @@ delete: false
         filter: false,
         valuePrepareFunction: (value) => {
           const tokenAmount = parseFloat(value);
-          return +tokenAmount.toFixed(4).replace(/[.,]00$/, '');
+          return +tokenAmount.toFixed(20).replace(/[.,]00$/, '');
         }
       },
       GasUsed: {

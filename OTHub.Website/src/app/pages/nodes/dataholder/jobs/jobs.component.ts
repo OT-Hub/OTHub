@@ -174,7 +174,7 @@ delete: false
         filter: false,
         valuePrepareFunction: (value) => {
           let tokenAmount = parseFloat(value);
-          let formatted = +tokenAmount.toFixed(4);
+          let formatted = +tokenAmount.toFixed(20);
           return formatted;
         }
       },

@@ -5,13 +5,23 @@ export class DataHolderDetailedModel   {
     // Identity: string;
     NodeId: string;
     Version: number;
-    StakeTokens: string;
+    StakeTokens: number;
     StakeReservedTokens: number;
     PaidTokens: number;
     TotalWonOffers: number;
     WonOffersLast7Days: number;
     DisplayName: string;
     LiveTracUSDPrice: number;
+
+     
+    public get AvailableTokens() : number {
+        return this.StakeTokens - this.StakeReservedTokens - this.MinimumStake;
+    }
+
+    public get MinimumStake() : number {
+        return 3000;
+    }
+    
     // Approved: boolean;
     // OldIdentity: string;
     // NewIdentity: string;

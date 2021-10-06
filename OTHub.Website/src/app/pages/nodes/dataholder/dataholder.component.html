@@ -120,6 +120,13 @@
                                     (data?.StakeReserved * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
                             </span>
                         </div>
+                        <div class="dataRow">
+                            <!-- Locked Tokens: {{formatAmount(data?.StakeReserv    ed)}} -->
+                            Available Tokens:&nbsp;<span class="results extraPadding">
+                                {{ formatAmount(data?.StakeReserved) }} <span class="caption">TRAC</span> / {{
+                                    (data?.StakeReserved * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                            </span>
+                        </div>
                      </div>
                  </nb-accordion-item-body>
                 </nb-accordion-item>
