@@ -2,10 +2,13 @@
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CoinpaprikaAPI.Entity;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using MySqlConnector;
 using Newtonsoft.Json;
+using OTHub.APIServer.Helpers;
 using OTHub.APIServer.Sql;
 using OTHub.APIServer.Sql.Models.Jobs;
 using OTHub.APIServer.Sql.Models.Nodes;
@@ -19,6 +22,13 @@ namespace OTHub.APIServer.Controllers
     [Route("api/nodes/[controller]")]
     public class DataCreatorController : Controller
     {
+        private readonly IMemoryCache _cache;
+
+        public DataCreatorController(IMemoryCache cache)
+        {
+            _cache = cache;
+        }
+
         [Route("{nodeId}")]
         [HttpGet]
         [SwaggerOperation(
@@ -36,6 +46,8 @@ Data Included:
         [SwaggerResponse(500, "Internal server error")]
         public async Task<NodeDataCreatorDetailedModel> Get([SwaggerParameter("The ERC 725 identity for the data creator.", Required = true)] string nodeId)
         {
+            TickerInfo tickerInfo = await TickerHelper.GetTickerInfo(_cache);
+
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
@@ -51,6 +63,8 @@ WHERE i.NodeId = @NodeId", new
                         {
                             nodeId = nodeId
                         })).ToArray();
+
+                    profile.LiveTracUSDPrice = tickerInfo?.PriceUsd;
                 }
 
                 return profile;

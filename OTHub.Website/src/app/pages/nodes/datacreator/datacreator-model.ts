@@ -15,6 +15,7 @@ export class DataCreatedDetailedModel   {
     CreateGasPrice: number;
     CreateGasUsed: number;
 
+    LiveTracUSDPrice: number;
     Offers: OTOfferSummaryModel[];
     ProfileTransfers: DataHolderDetailedProfileTransfer[];
     Litigations: DataCreatorLitigation[];

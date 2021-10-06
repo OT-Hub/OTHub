@@ -69,12 +69,20 @@
                             Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
                         </nb-list-item> -->
                         </nb-list>
-                        <div class="dataRow">
-                            Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}}
-                        </div>
-                        <div class="dataRow">
-                            Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}}
-                        </div>
+                        <nb-list-item class="dont-break-out">
+                            <!-- Staked Tokens: {{formatAmount(NodeModel?.StakeTokens)}} -->
+                            Staked Tokens:&nbsp;<span class="results extraPadding">
+                                {{ formatAmount(NodeModel?.StakeTokens) }} <span class="caption">TRAC</span> / {{
+                                    (NodeModel?.StakeTokens * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                            </span>
+                        </nb-list-item>
+                        <nb-list-item class="dont-break-out">
+                            <!-- Locked Tokens: {{formatAmount(NodeModel?.StakeReservedTokens)}} -->
+                            Locked Tokens:&nbsp;<span class="results extraPadding">
+                                {{ formatAmount(NodeModel?.StakeReservedTokens) }} <span class="caption">TRAC</span> / {{
+                                    (NodeModel?.StakeReservedTokens * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                            </span>
+                        </nb-list-item>
                 </nb-card>
 
             </div>
@@ -84,18 +92,34 @@
                 <nb-card-header>Identities
                 </nb-card-header>
                 <nb-accordion>
-                    <nb-accordion-item *ngFor="let data of NodeModel?.Identities; let i = index">
+                    <nb-accordion-item *ngFor="let data of NodeModel?.Identities; let i = index" [expanded]="NodeModel?.Identities.length <= 2">
                      <nb-accordion-item-header>
                         <span>{{data.Identity}}</span>
                         <span class="tokenSmall">{{data.BlockchainName}} {{data.NetworkName}}</span>
                      </nb-accordion-item-header>
                      <nb-accordion-item-body>
-                         <div class="accordionBody">
+                        <div class="accordionBody">
                             <div class="dataRow">
-                                Staked Tokens: {{formatAmount(data?.Stake)}}
+                                <!-- Staked Tokens: {{formatAmount(data?.Stake)}} -->
+                                Staked Tokens:&nbsp;<span class="results extraPadding">
+                                    {{ formatAmount(data?.Stake) }} <span class="caption">TRAC</span> / {{
+                                        (data?.Stake * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                                </span>
                             </div>
                             <div class="dataRow">
-                                Locked Tokens: {{formatAmount(data?.StakeReserved)}}
+                                <!-- Locked Tokens: {{formatAmount(data?.StakeReserv    ed)}} -->
+                                Locked Tokens:&nbsp;<span class="results extraPadding">
+                                    {{ formatAmount(data?.StakeReserved) }} <span class="caption">TRAC</span> / {{
+                                        (data?.StakeReserved * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                                </span>
+                            </div>
+                            <div class="dataRow">
+                                   Available Tokens:&nbsp;<span class="results extraPadding">
+                                
+                                     <!-- {{data?.AvailableTokens()}} -->
+                                    {{ formatAmount(AvailableTokens(data?.Stake, data?.StakeReserved)) }} <span class="caption">TRAC</span> / {{
+                                        (formatAmount(AvailableTokens(data?.Stake, data?.StakeReserved)) * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                                </span>
                             </div>
                          </div>
                      </nb-accordion-item-body>

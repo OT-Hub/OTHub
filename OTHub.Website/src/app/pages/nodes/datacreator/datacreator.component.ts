@@ -54,6 +54,19 @@ export class DatacreatorComponent implements OnInit, OnDestroy {
     return split[0];
   }
 
+  public AvailableTokens(stake: number, locked: number): number {
+    let amount = stake - locked - this.MinimumStake;
+
+    if (amount < 0)
+      amount = 0;
+
+    return amount;
+  }
+
+  public get MinimumStake(): number {
+    return 3000;
+  }
+
   getNode() {
     const headers = new HttpHeaders()
       .set('Content-Type', 'application/json')
