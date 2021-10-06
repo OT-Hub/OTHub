@@ -55,6 +55,10 @@ export class DatacreatorComponent implements OnInit, OnDestroy {
     return split[0];
   }
 
+  launchNodeProfileWebsite() {
+    window.open('https://node-profile.origintrail.io/ ', "_blank");
+  }
+
   public AvailableTokens(stake: number, locked: number): number {
     let amount = stake - locked - this.MinimumStake;
 

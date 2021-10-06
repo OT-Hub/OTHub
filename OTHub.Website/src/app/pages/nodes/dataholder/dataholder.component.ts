@@ -76,7 +76,9 @@ export class DataHolderComponent implements OnInit, OnDestroy {
     return split[0];
   }
 
-
+  launchNodeProfileWebsite() {
+    window.open('https://node-profile.origintrail.io/ ', "_blank");
+  }
 
 
 

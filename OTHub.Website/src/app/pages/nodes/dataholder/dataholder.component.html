@@ -67,6 +67,10 @@
                                     (NodeModel?.StakeReservedTokens * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
                             </span>
                         </nb-list-item>
+                        <nb-list-item class="dont-break-out">
+                            <button nbButton status="primary" (click)="launchNodeProfileWebsite()">Deposit/Withdraw Tokens</button>
+
+                        </nb-list-item>
 <!--                        <nb-list-item *ngIf="NodeModel?.ManagementWallet != null" class="dont-break-out">-->
 <!--                            Management Wallet: {{NodeModel?.ManagementWallet}}&nbsp;<app-copyclipboardicon-->
 <!--                                [textToCopy]="NodeModel?.ManagementWallet" style="vertical-align:middle">-->
