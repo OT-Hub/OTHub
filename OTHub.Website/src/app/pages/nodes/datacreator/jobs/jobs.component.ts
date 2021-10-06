@@ -137,6 +137,50 @@ delete: false
           }
         }
       },
+      RemainingTime: {
+        sort: false,
+        title: 'Remaining Time',
+        type: 'string',
+        filter: false,
+        valuePrepareFunction: (value, row) => {
+
+
+          if (row.EndTimestamp == null)
+          return '';
+
+          let endDate = row.EndTimestamp;
+
+          const stillUtc = moment.utc(endDate);
+          const nowUtc = moment.utc();
+
+          let daysRemaining = stillUtc.diff(nowUtc, 'days');
+
+          if (daysRemaining > 365) {
+            if (daysRemaining > 730) {
+              let yearsRemaining = stillUtc.diff(nowUtc, 'years', true);
+              return +yearsRemaining.toFixed(1) + ' years';
+            } else {
+            let monthsRemaining = stillUtc.diff(nowUtc, 'months');
+            return monthsRemaining + ' months';
+            }
+          }
+          else if (daysRemaining >= 1) {
+            return daysRemaining + ' days';
+          } else if (daysRemaining < 0) {
+            return 'None';
+          } else {
+            let hoursRemaining = stillUtc.diff(nowUtc, 'hours');
+            if (hoursRemaining < 0) {
+              return 'None';
+            }
+            if (hoursRemaining < 2) {
+              let minutesRemaining = stillUtc.diff(nowUtc, 'minutes');
+              return minutesRemaining + ' minutes';
+            }
+            return hoursRemaining + ' hours';
+          }
+        }
+      },
       TokenAmountPerHolder: {
         sort: true,
         title: 'Token Amount',
