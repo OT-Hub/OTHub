@@ -63,6 +63,12 @@ delete: false
         //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
         // }
       },
+      BlockchainName: {
+        title: 'Blockchain',
+        type: 'string',
+        sort: false,
+        filter: false
+      },
       FinalizedTimestamp: {
         sort: true,
         sortDirection: 'desc',

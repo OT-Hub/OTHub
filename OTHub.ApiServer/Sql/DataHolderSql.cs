@@ -70,13 +70,15 @@ GROUP BY I.NodeId";
                 (CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then true else false end) as Paidout,
                 SUM(po.Amount) as PaidoutAmount,
                 CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then 0 ELSE 1 END  as CanPayout,
-                mn.ID IS NOT NULL AS IsMyNode
+                mn.ID IS NOT NULL AS IsMyNode,
+                b.DisplayName as BlockchainName
                 FROM otoffer_holders h
-                join otoffer o on o.offerid = h.offerid
-                JOIN otidentity i ON i.Identity = h.Holder
+                join otoffer o on o.offerid = h.offerid and o.blockchainid = h.blockchainid
+                JOIN otidentity i ON i.Identity = h.Holder and i.blockchainid = o.blockchainid
+                JOIN blockchains b on b.id = h.blockchainid
                 LEFT JOIN mynodes mn ON mn.NodeID = i.NodeId AND mn.UserID = @userID
-                left join otcontract_holding_paidout po on po.OfferID = h.OfferID and po.Holder = h.Holder
-                left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
+                left join otcontract_holding_paidout po on po.OfferID = h.OfferID and po.Holder = h.Holder and po.blockchainid = h.blockchainid
+                left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0 and lc.blockchainid = h.blockchainid
                 WHERE i.nodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)
                 GROUP BY h.OfferID, h.Holder";
 

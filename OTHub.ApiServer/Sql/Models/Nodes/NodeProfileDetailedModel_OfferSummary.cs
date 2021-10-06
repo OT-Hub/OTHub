@@ -18,5 +18,6 @@ namespace OTHub.APIServer.Sql.Models.Nodes
         public bool IsOriginalHolder { get; set; }
         public bool IsMyNode { get; set; }
         public int BlockchainID { get; set; }
+        public string BlockchainName { get; set; }
     }
 }
