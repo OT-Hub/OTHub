@@ -139,72 +139,7 @@
                     </nb-card-body> -->
                 </nb-card>
             </div>
-            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
-                <nb-card>
-                    <nb-card-header>Timeline</nb-card-header>
-                    <nb-card-body>
-                      <div id="TimelineChart" style="width: 100%;height:600px;"></div>
-<!--                        <div class="row">-->
-<!--                            <div class="col-md-12">-->
-
-
-
-<!--                                <mgl-timeline alternate="false" toggle="false">-->
-<!--                                    <mgl-timeline-entry *ngFor="let timeline of OfferModel?.Timeline">-->
-<!--                                        <mgl-timeline-entry-header>{{timeline.Name}}-->
-
-<!--                                        </mgl-timeline-entry-header>-->
-<!--                                        <mgl-timeline-entry-content>-->
-
-<!--                                            <nb-list>-->
-<!--                                                <nb-list-item *ngIf="timeline.TransactionHash != null">-->
-<!--                                                    <a target="_blank"-->
-<!--                                                    href="https://www.etherscan.io/tx/{{timeline.TransactionHash}}">View-->
-<!--                                                    on Etherscan</a>-->
-<!--                                                </nb-list-item>-->
-<!--                                                <nb-list-item *ngIf="timeline.RelatedTo != null">-->
-<!--                                                    <a routerLink="/nodes/dataholders/{{timeline.RelatedTo}}"-->
-<!--                                                    style="float:right;" [title]="timeline.RelatedTo"-->
-<!--                                                    onClick="return false;">-->
-<!--                                                    <img style="width:16px;height:16px;"-->
-<!--                                                        [src]="getIdentityIcon(timeline.RelatedTo)">-->
-<!--                                                    {{myNodeService.GetName(timeline.RelatedTo)}}</a>-->
-<!--                                                </nb-list-item>-->
-<!--                                            </nb-list>-->
-<!--                                        </mgl-timeline-entry-content>-->
-<!--                                        <mgl-timeline-entry-dot class="btn-primary">-->
-<!--                                            <i [ngClass]="getTimelineItemIcon(timeline)"-->
-<!--                                             [style.color]="getTimelineItemColour(timeline)"></i>-->
-<!--                                        </mgl-timeline-entry-dot>-->
-<!--                                        <mgl-timeline-entry-side>-->
-<!--                                            {{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'LL'}}-->
-<!--                                            {{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'h:mm A'}}-->
-<!--                                        </mgl-timeline-entry-side>-->
-<!--                                    </mgl-timeline-entry>-->
-<!--                                </mgl-timeline>-->
-
-                                <!-- <ul class="left-timeline">
-                                            <li *ngFor="let timeline of OfferModel?.Timeline">
-                                                <time class="left-time"><span
-                                                        class="hidden">{{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'LL'}}</span>
-                                                    <span class="large">{{timeline.Timestamp | amFromUtc | amLocal | amDateFormat:'h:mm A'}}</span></time>
-                                                <div class="left-icon">
-                                                     <i [ngClass]="getTimelineItemIcon(timeline)" [style.color]="getTimelineItemColour(timeline)"></i>
-                                                </div>
-                                                <div class="left-label empty"> <span><a target="_blank" href="https://www.etherscan.io/tx/{{timeline.TransactionHash}}" title="View on Etherscan">{{timeline.Name}}</a></span>
-                                                    <a routerLink="/nodes/dataholders/{{timeline.RelatedTo}}" style="float:right;"
-                                                    [title]="timeline.RelatedTo"
-                                                    onClick="return false;">
-                                                    <img style="width:16px;height:16px;" [src]="getIdentityIcon(timeline.RelatedTo)">
-                                                    {{myNodeService.GetName(timeline.RelatedTo)}}</a>
-                                                </div>
-                                            </li>
-                                        </ul> -->
-<!--                            </div>-->
-<!--                        </div>-->
-                    </nb-card-body>
-                </nb-card>
-            </div>
+ 
             <div class="col-lg-12 col-md-12 col-sm-12">
                 <nb-card>
                     <nb-card-header>Blockchain</nb-card-header>

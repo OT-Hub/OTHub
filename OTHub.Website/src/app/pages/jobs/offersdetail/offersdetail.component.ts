@@ -125,20 +125,20 @@ export class OffersDetailComponent implements OnInit {
     return 'fas fa-terminal';
   }
 
-  @ViewChildren("TimelineChart") TimelineChart: QueryList<ElementRef>;
+  //@ViewChildren("TimelineChart") TimelineChart: QueryList<ElementRef>;
 
   ngAfterViewInit() {
     const that = this;
 
-    this.TimelineChart.changes.subscribe(({ first: elm }) => {
+    // this.TimelineChart.changes.subscribe(({ first: elm }) => {
 
-      // Chart code goes in here
-      this.browserOnly(() => {
-        am4core.useTheme(am4themes_animated);
-        that.loadTimelineChart();
-      });
+    //   // Chart code goes in here
+    //   // this.browserOnly(() => {
+    //   //   am4core.useTheme(am4themes_animated);
+    //   //   that.loadTimelineChart();
+    //   // });
 
-    });
+    // });
 
 
   }
