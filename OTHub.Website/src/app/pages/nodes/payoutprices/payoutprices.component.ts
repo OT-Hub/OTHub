@@ -215,8 +215,10 @@ export class PayoutPricesComponent implements OnInit, OnDestroy {
         let lastSplit = '';
         if (split.length === 2) {
             lastSplit = split[1];
-            if (lastSplit.length > 3) {
-                lastSplit = lastSplit.substring(0, 3);
+            if (lastSplit.length > 2 && lastSplit[0] != '0') {
+              while(lastSplit[lastSplit.length - 1] == '0') {
+                lastSplit = lastSplit.substr(0, lastSplit.length - 1);
+              }
             }
             return split[0] + '.' + lastSplit;
         }
