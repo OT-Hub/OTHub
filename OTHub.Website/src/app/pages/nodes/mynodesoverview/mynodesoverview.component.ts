@@ -7,6 +7,7 @@ import * as am4core from '@amcharts/amcharts4/core';
 import * as am4charts from '@amcharts/amcharts4/charts';
 import am4themes_animated from '@amcharts/amcharts4/themes/animated';
 import { isPlatformBrowser } from '@angular/common';
+import { NbThemeService } from '@nebular/theme';
 
 @Component({
   selector: 'ngx-mynodesoverview',
@@ -26,7 +27,7 @@ export class MynodesoverviewComponent implements OnInit {
   holdingTimeByMonth: GetHoldingTimeByMonthModel[];
 
   constructor(private httpService: HubHttpService,
-    private http: HttpClient, private auth: AuthService, private router: Router) {
+    private http: HttpClient, private auth: AuthService, private router: Router, private themeService: NbThemeService) {
     this.selectedNode = 'All Nodes';
     this.isLoggedIn = false;
     this.isLoading = true;
@@ -87,11 +88,19 @@ export class MynodesoverviewComponent implements OnInit {
       pieSeries.hiddenState.properties.startAngle = -90;
 
       pieSeries.ticks.template.disabled = true;
-pieSeries.labels.template.disabled = true;
+      pieSeries.labels.template.disabled = true;
 
-chart.legend = new am4charts.Legend();
+      chart.legend = new am4charts.Legend();
 
       chart.hiddenState.properties.radius = am4core.percent(0);
+
+      if (this.themeService.currentTheme != 'light' && this.themeService.currentTheme != 'corporate' && this.themeService.currentTheme != 'default') {
+        //title.fill = am4core.color('white');
+        //dateAxis.renderer.labels.template.fill = am4core.color('white');
+        //valueAxis.renderer.labels.template.fill = am4core.color('white');
+        chart.legend.labels.template.fill = am4core.color('white');
+        chart.legend.valueLabels.template.fill = am4core.color('white');
+      }
     });
   }
 
