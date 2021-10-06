@@ -72,7 +72,7 @@
                             </nb-user>
 
                             <span>&nbsp;chosen for job at {{job.FinalizedTimestamp | amFromUtc | amLocal |
-                                amDateFormat:'HH:mmA'}} ({{formatTime(job.HoldingTimeInMinutes)}})</span>
+                                amDateFormat:'HH:mmA'}} <span [title]="formatTimeAsDate(job.FinalizedTimestamp, job.HoldingTimeInMinutes)  | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">({{formatTime(job.HoldingTimeInMinutes)}})</span></span>
                             <a nbButton routerLink="/offers/{{job.OfferID}}" size="small" style="margin-left:5px;">
                                 <!-- <button nbButton size="small" tooltip="Launch Data Holder Page" (click)="launchDataHolderPage()" style="margin-left:5px;">
                       

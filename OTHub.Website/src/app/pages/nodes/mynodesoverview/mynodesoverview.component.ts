@@ -174,6 +174,13 @@ export class MynodesoverviewComponent implements OnInit {
     return value + ' minute' + (value == 1 ? '' : 's');
   }
 
+  formatTimeAsDate(timestamp: string, value: number) {
+    let d = new Date(timestamp); 
+    d.setMinutes(d.getMinutes() + value);
+
+    return d;
+  }
+
   formatAmount(value) {
     let tokenAmount = parseFloat(value);
     let formatted = +tokenAmount.toFixed(4);
