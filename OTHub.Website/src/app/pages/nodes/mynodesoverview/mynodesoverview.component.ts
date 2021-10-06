@@ -39,6 +39,18 @@ export class MynodesoverviewComponent implements OnInit {
     this.router.navigateByUrl('nodes/dataholders/' + this.selectedData.NodeId);
   }
 
+  launchNodeProfileWebsite() {
+    window.open('https://node-profile.origintrail.io/ ', "_blank");
+  }
+
+  launchOTDocHubWebsite() {
+    window.open('https://docs.origintrail.io/ ', "_blank");
+  }
+
+  launchOTNodeWebsite() {
+    window.open('https://www.otnode.com/ ', "_blank");
+  }
+
   changeNode(nodeName: string) {
     this.nodeStats = null;
     this.selectedNode = nodeName;

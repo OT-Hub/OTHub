@@ -64,7 +64,8 @@
                         <nb-list-item *ngFor="let job of day.Jobs" class="jobNode">
 
                             <div style="margin-right: 5px;">
-                                <img src="assets/images/{{job.BlockchainLogo}}" height="32" width="32" [title]="job.Blockchain">
+                                <img src="assets/images/{{job.BlockchainLogo}}" height="32" width="32"
+                                    [title]="job.Blockchain">
                             </div>
 
                             <nb-user size="small" shape="semi-round"
@@ -72,7 +73,8 @@
                             </nb-user>
 
                             <span>&nbsp;chosen for job at {{job.FinalizedTimestamp | amFromUtc | amLocal |
-                                amDateFormat:'HH:mmA'}} <span [title]="formatTimeAsDate(job.FinalizedTimestamp, job.HoldingTimeInMinutes)  | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">({{formatTime(job.HoldingTimeInMinutes)}})</span></span>
+                                amDateFormat:'HH:mmA'}} <span
+                                    [title]="formatTimeAsDate(job.FinalizedTimestamp, job.HoldingTimeInMinutes)  | amFromUtc | amLocal | amDateFormat:'LL h:mm A'">({{formatTime(job.HoldingTimeInMinutes)}})</span></span>
                             <a nbButton routerLink="/offers/{{job.OfferID}}" size="small" style="margin-left:5px;">
                                 <!-- <button nbButton size="small" tooltip="Launch Data Holder Page" (click)="launchDataHolderPage()" style="margin-left:5px;">
                       
@@ -144,10 +146,12 @@
                     <div class="progress-info topmargin">
                         <div class="subtitle">Total Jobs</div>
                         <div class="statValue">{{nodeStats.TotalJobs.Value}}</div>
-                        <nb-progress-bar [value]="nodeStats.TotalJobs.BetterThanActiveNodesPercentage" *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
+                        <nb-progress-bar [value]="nodeStats.TotalJobs.BetterThanActiveNodesPercentage"
+                            *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
                         <nb-progress-bar value="0" *ngIf="selectedNode == 'All Nodes'"></nb-progress-bar>
                         <div class="caption description">
-                            <bdi *ngIf="selectedNode != 'All Nodes'">Won more jobs than {{nodeStats.TotalJobs.BetterThanActiveNodesPercentage}}% of nodes</bdi>
+                            <bdi *ngIf="selectedNode != 'All Nodes'">Won more jobs than
+                                {{nodeStats.TotalJobs.BetterThanActiveNodesPercentage}}% of nodes</bdi>
                             <bdi *ngIf="selectedNode == 'All Nodes'">On {{data?.Nodes?.length}} nodes</bdi>
                         </div>
                     </div>
@@ -155,11 +159,14 @@
                         <div class="subtitle">Total Rewards</div>
                         <div class="statValue">{{formatAmountConstrained(nodeStats.TotalRewards.TokenAmount)}} <span
                                 class="caption">TRAC</span> / {{nodeStats.TotalRewards.USDAmount | number:'1.0-2'}}
-                            <span class="caption">USD</span> </div>
-                        <nb-progress-bar [value]="nodeStats.TotalRewards.BetterThanActiveNodesPercentage" *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
+                            <span class="caption">USD</span>
+                        </div>
+                        <nb-progress-bar [value]="nodeStats.TotalRewards.BetterThanActiveNodesPercentage"
+                            *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
                         <nb-progress-bar value="0" *ngIf="selectedNode == 'All Nodes'"></nb-progress-bar>
                         <div class="caption description">
-                            <bdi *ngIf="selectedNode != 'All Nodes'">Earned more tokens than {{nodeStats.TotalRewards.BetterThanActiveNodesPercentage}}% of nodes</bdi>
+                            <bdi *ngIf="selectedNode != 'All Nodes'">Earned more tokens than
+                                {{nodeStats.TotalRewards.BetterThanActiveNodesPercentage}}% of nodes</bdi>
                             <bdi *ngIf="selectedNode == 'All Nodes'">On {{data?.Nodes?.length}} nodes</bdi>
                         </div>
                     </div>
@@ -168,10 +175,12 @@
                         <div class="statValue">{{formatAmountConstrained(nodeStats.TotalStaked.TokenAmount)}} <span
                                 class="caption">TRAC</span> / {{nodeStats.TotalStaked.USDAmount | number:'1.0-2'}} <span
                                 class="caption">USD</span> </div>
-                        <nb-progress-bar [value]="nodeStats.TotalStaked.BetterThanActiveNodesPercentage" *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
+                        <nb-progress-bar [value]="nodeStats.TotalStaked.BetterThanActiveNodesPercentage"
+                            *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
                         <nb-progress-bar value="0" *ngIf="selectedNode == 'All Nodes'"></nb-progress-bar>
                         <div class="caption description">
-                            <bdi *ngIf="selectedNode != 'All Nodes'">Staked more tokens than {{nodeStats.TotalStaked.BetterThanActiveNodesPercentage}}% of nodes</bdi>
+                            <bdi *ngIf="selectedNode != 'All Nodes'">Staked more tokens than
+                                {{nodeStats.TotalStaked.BetterThanActiveNodesPercentage}}% of nodes</bdi>
                             <bdi *ngIf="selectedNode == 'All Nodes'">On {{data?.Nodes?.length}} nodes</bdi>
                         </div>
                     </div>
@@ -180,10 +189,12 @@
                         <div class="statValue">{{formatAmountConstrained(nodeStats.TotalLocked.TokenAmount)}} <span
                                 class="caption">TRAC</span> / {{nodeStats.TotalLocked.USDAmount | number:'1.0-2'}} <span
                                 class="caption">USD</span> </div>
-                        <nb-progress-bar [value]="nodeStats.TotalLocked.BetterThanActiveNodesPercentage" *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
+                        <nb-progress-bar [value]="nodeStats.TotalLocked.BetterThanActiveNodesPercentage"
+                            *ngIf="selectedNode != 'All Nodes'"></nb-progress-bar>
                         <nb-progress-bar value="0" *ngIf="selectedNode == 'All Nodes'"></nb-progress-bar>
                         <div class="caption description">
-                            <bdi *ngIf="selectedNode != 'All Nodes'">Locked more tokens in jobs than {{nodeStats.TotalLocked.BetterThanActiveNodesPercentage}}% of nodes</bdi>
+                            <bdi *ngIf="selectedNode != 'All Nodes'">Locked more tokens in jobs than
+                                {{nodeStats.TotalLocked.BetterThanActiveNodesPercentage}}% of nodes</bdi>
                             <bdi *ngIf="selectedNode == 'All Nodes'">On {{data?.Nodes?.length}} nodes</bdi>
                         </div>
                     </div>
@@ -215,7 +226,20 @@
 
 
 <br>
-
+<div class="row">
+    <div class="col-xxxl-12 col-xxl-12 col-lg-12 col-md-12">
+        <nb-card>
+            <nb-card-header>
+                Quick Links
+            </nb-card-header>
+            <nb-card-body>
+                <button nbButton status="primary" (click)="launchNodeProfileWebsite()" style="margin-top: 2px;">Deposit/Withdraw Tokens</button>&nbsp;
+                <button nbButton status="primary" outline (click)="launchOTDocHubWebsite()" style="margin-top: 2px;">OriginTrail Documentation Hub</button>&nbsp;
+                <button nbButton status="primary" outline (click)="launchOTNodeWebsite()" style="margin-top: 2px;">Community OTNode.com</button>
+            </nb-card-body>
+        </nb-card>
+    </div>
+</div>
 <!-- <div class="row" *ngIf="isLoggedIn == true">
     
     <div class="col-xxxl-12">
