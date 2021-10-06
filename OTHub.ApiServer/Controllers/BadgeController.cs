@@ -63,79 +63,77 @@ WHERE s.Success = 0
 ORDER BY s.ParentName, b.id, s.Name")).ToArray();
 
                     List<string> errors = new List<string>();
-                    
-                    errors.Add("There are multiple problems with Polygon and xDai on the website. Data may be missing or incomplete.");
 
-                    //foreach (StatusModel statusModel in status)
-                    //{
-                    //    switch (statusModel.ParentName)
-                    //    {
-                    //        case TaskNames.BlockchainSync:
-                    //            switch (statusModel.Name)
-                    //            {
-                    //                case TaskNames.HoldingContractSync:
-                    //                    errors.Add($"New jobs on {statusModel.BlockchainName} may be delayed or missing due to an error.");
-                    //                    errors.Add($"New payouts on {statusModel.BlockchainName} may be delayed or missing due to an error.");
-                    //                    break;
-                    //                case TaskNames.LitigationContractSync:
-                    //                    errors.Add($"New litigations on {statusModel.BlockchainName} may be delayed or missing due to an error.");
-                    //                    break;
-                    //                case TaskNames.ProfileContractSync:
-                    //                    errors.Add($"New nodes that have been created on {statusModel.BlockchainName} may be delayed or missing due to an error.");
-                    //                    errors.Add($"New token deposits on {statusModel.BlockchainName} may be delayed or missing due to an error.");
-                    //                    errors.Add($"New token withdrawals on {statusModel.BlockchainName} may be delayed or missing due to an error.");
-                    //                    break;
-                    //                case TaskNames.LoadProfileBalances:
-                    //                    errors.Add($"Node staked tokens on {statusModel.BlockchainName} may be out of date due to an error.");
-                    //                    errors.Add($"Node locked tokens on {statusModel.BlockchainName} may be out of date due to an error.");
-                    //                    errors.Add($"Node statistics for Data Holders, Data Creators and My Nodes on {statusModel.BlockchainName} may be out of date due to an error.");
-                    //                    break;
-                    //                case TaskNames.ProcessJobs:
-                    //                    errors.Add($"New jobs on {statusModel.BlockchainName} may be delayed or missing due to an error.");
-                    //                    break;
-                    //                case TaskNames.WebSockets:
-                    //                    errors.Add($"Data on {statusModel.BlockchainName} may be delayed by up to 10 minutes as live websockets is unavailable.");
-                    //                    break;
-                    //            }
-                    //            break;
-                    //        case TaskNames.BlockchainMaintenance:
-                    //            switch (statusModel.Name)
-                    //            {
-                    //                case TaskNames.GetLatestContracts:
-                    //                    errors.Add($"New smart contract changes on {statusModel.BlockchainName} may be delayed or missing due to an error.");
-                    //                    break;
-                    //            }
+                    foreach (StatusModel statusModel in status)
+                    {
+                        switch (statusModel.ParentName)
+                        {
+                            case TaskNames.BlockchainSync:
+                                switch (statusModel.Name)
+                                {
+                                    case TaskNames.HoldingContractSync:
+                                        errors.Add($"New jobs on {statusModel.BlockchainName} may be delayed or missing due to an error.");
+                                        errors.Add($"New payouts on {statusModel.BlockchainName} may be delayed or missing due to an error.");
+                                        break;
+                                    case TaskNames.LitigationContractSync:
+                                        errors.Add($"New litigations on {statusModel.BlockchainName} may be delayed or missing due to an error.");
+                                        break;
+                                    case TaskNames.ProfileContractSync:
+                                        errors.Add($"New nodes that have been created on {statusModel.BlockchainName} may be delayed or missing due to an error.");
+                                        errors.Add($"New token deposits on {statusModel.BlockchainName} may be delayed or missing due to an error.");
+                                        errors.Add($"New token withdrawals on {statusModel.BlockchainName} may be delayed or missing due to an error.");
+                                        break;
+                                    case TaskNames.LoadProfileBalances:
+                                        errors.Add($"Node staked tokens on {statusModel.BlockchainName} may be out of date due to an error.");
+                                        errors.Add($"Node locked tokens on {statusModel.BlockchainName} may be out of date due to an error.");
+                                        errors.Add($"Node statistics for Data Holders, Data Creators and My Nodes on {statusModel.BlockchainName} may be out of date due to an error.");
+                                        break;
+                                    case TaskNames.ProcessJobs:
+                                        errors.Add($"New jobs on {statusModel.BlockchainName} may be delayed or missing due to an error.");
+                                        break;
+                                    case TaskNames.WebSockets:
+                                        //errors.Add($"Data on {statusModel.BlockchainName} may be delayed by up to 10 minutes as live websockets is unavailable.");
+                                        break;
+                                }
+                                break;
+                            case TaskNames.BlockchainMaintenance:
+                                switch (statusModel.Name)
+                                {
+                                    case TaskNames.GetLatestContracts:
+                                        errors.Add($"New smart contract changes on {statusModel.BlockchainName} may be delayed or missing due to an error.");
+                                        break;
+                                }
 
-                    //            break;
-                    //        case TaskNames.Misc:
-                    //            switch (statusModel.Name)
-                    //            {
-                    //                case TaskNames.UpdateJobHistoryChartData:
-                    //                    errors.Add($"New jobs may be missing from the jobs page charts due to an error.");
-                    //                    break;
-                    //                case TaskNames.GetMarketData:
-                    //                    errors.Add($"Market ticker prices for ETH, USD and TRAC may be out of date due to an error.");
-                    //                    break;
-                    //                case TaskNames.UpdateStakedTokenReport:
-                    //                    errors.Add($"The staked tokens report may be out of date due to an error.");
-                    //                    break;
-                    //            }
-                    //            break;
-                    //        case TaskNames.Notifications:
-                    //            switch (statusModel.Name)
-                    //            {
-                    //                case TaskNames.RabbitMQMonitoring:
-                    //                    errors.Add("Live notifications for jobs awarded are not working.");
-                    //                    break;
-                    //            }
-                    //            break;
-                    //    }
-                    //}
+                                break;
+                            case TaskNames.Misc:
+                                switch (statusModel.Name)
+                                {
+                                    case TaskNames.UpdateJobHistoryChartData:
+                                        errors.Add($"New jobs may be missing from the jobs page charts due to an error.");
+                                        break;
+                                    case TaskNames.GetMarketData:
+                                        errors.Add($"Market ticker prices for ETH, USD and TRAC may be out of date due to an error.");
+                                        break;
+                                    case TaskNames.UpdateStakedTokenReport:
+                                        errors.Add($"The staked tokens report may be out of date due to an error.");
+                                        break;
+                                }
+                                break;
+                            case TaskNames.Notifications:
+                                switch (statusModel.Name)
+                                {
+                                    case TaskNames.RabbitMQMonitoring:
+                                        errors.Add("Live notifications for jobs awarded are not working.");
+                                        break;
+                                }
+                                break;
+                        }
+                    }
 
                     badges.LiveOutages = errors.ToArray();
 
 #if !DEBUG
-                    _cache.Set(key, badges, TimeSpan.FromMinutes(1));
+                    _cache.Set(key, badges, TimeSpan.FromSeconds(20));
 #endif
 
                     return badges;
