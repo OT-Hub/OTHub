@@ -14,13 +14,7 @@ export class DataHolderDetailedModel   {
     LiveTracUSDPrice: number;
 
      
-    public get AvailableTokens() : number {
-        return this.StakeTokens - this.StakeReservedTokens - this.MinimumStake;
-    }
 
-    public get MinimumStake() : number {
-        return 3000;
-    }
     
     // Approved: boolean;
     // OldIdentity: string;
@@ -40,10 +34,12 @@ export class DataHolderDetailedModel   {
 }
 
 export class DataholderIdentityModel {
-  Identity: string;
-  BlockchainName: string;
-  Stake: string;
-  StakeReservedTokens: string;
+    Identity: string;
+    BlockchainName: string;
+    Stake: number;
+    StakeReservedTokens: number;
+
+
 }
 
 export class DataHolderDetailedOfferModel {

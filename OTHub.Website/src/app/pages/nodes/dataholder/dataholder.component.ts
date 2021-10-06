@@ -58,7 +58,7 @@ export class DataHolderComponent implements OnInit, OnDestroy {
   }
 
   formatAmount(amount) {
-    if (amount === null) {
+    if (amount == null) {
       return null;
     }
     const split = amount.toString().split('.');
@@ -97,6 +97,19 @@ export class DataHolderComponent implements OnInit, OnDestroy {
       this.failedLoading = true;
       this.isLoading = false;
     });
+  }
+
+  public AvailableTokens(stake: number, locked: number): number {
+    let amount = stake - locked - this.MinimumStake;
+
+    if (amount < 0)
+      amount = 0;
+
+    return amount;
+  }
+
+  public get MinimumStake(): number {
+    return 3000;
   }
 
   ngOnInit() {
