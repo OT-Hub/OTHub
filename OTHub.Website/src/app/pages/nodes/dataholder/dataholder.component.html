@@ -99,7 +99,7 @@
               <nb-card-header>Identities
               </nb-card-header>
               <nb-accordion>
-                <nb-accordion-item *ngFor="let data of NodeModel?.Identities; let i = index">
+                <nb-accordion-item *ngFor="let data of NodeModel?.Identities; let i = index" [expanded]="NodeModel?.Identities.length <= 2">
                  <nb-accordion-item-header>
                     <span>{{data.Identity}}</span>
                     <span class="tokenSmall">{{data.BlockchainName}} {{data.NetworkName}}</span>
@@ -107,10 +107,18 @@
                  <nb-accordion-item-body>
                      <div class="accordionBody">
                         <div class="dataRow">
-                            Staked Tokens: {{formatAmount(data?.Stake)}}
+                            <!-- Staked Tokens: {{formatAmount(data?.Stake)}} -->
+                            Staked Tokens:&nbsp;<span class="results extraPadding">
+                                {{ formatAmount(data?.Stake) }} <span class="caption">TRAC</span> / {{
+                                    (data?.Stake * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                            </span>
                         </div>
                         <div class="dataRow">
-                            Locked Tokens: {{formatAmount(data?.StakeReserved)}}
+                            <!-- Locked Tokens: {{formatAmount(data?.StakeReserv    ed)}} -->
+                            Locked Tokens:&nbsp;<span class="results extraPadding">
+                                {{ formatAmount(data?.StakeReserved) }} <span class="caption">TRAC</span> / {{
+                                    (data?.StakeReserved * NodeModel?.LiveTracUSDPrice) | number:'1.0-2' }} <span class="caption">USD</span>
+                            </span>
                         </div>
                      </div>
                  </nb-accordion-item-body>
