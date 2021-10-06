@@ -58,17 +58,18 @@ export class DataHolderComponent implements OnInit, OnDestroy {
   }
 
   formatAmount(amount) {
-    if (amount == null) {
+    if (amount === null) {
       return null;
     }
     const split = amount.toString().split('.');
     let lastSplit = '';
     if (split.length === 2) {
       lastSplit = split[1];
-      if (lastSplit.length > 2 && lastSplit[0] != '0') {
-        while(lastSplit[lastSplit.length - 1] == '0') {
-          lastSplit = lastSplit.substr(0, lastSplit.length - 1);
-        }
+      while(lastSplit[lastSplit.length - 1] == '0') {
+        lastSplit = lastSplit.substr(0, lastSplit.length - 1);
+      }
+      if (lastSplit == '') {
+        return split[0];
       }
       return split[0] + '.' + lastSplit;
     }

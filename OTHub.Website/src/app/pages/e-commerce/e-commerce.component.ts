@@ -288,10 +288,11 @@ export class ECommerceComponent implements OnDestroy, OnInit {
     let lastSplit = '';
     if (split.length === 2) {
       lastSplit = split[1];
-      if (lastSplit.length > 2 && lastSplit[0] != '0') {
-        while(lastSplit[lastSplit.length - 1] == '0') {
-          lastSplit = lastSplit.substr(0, lastSplit.length - 1);
-        }
+      while(lastSplit[lastSplit.length - 1] == '0') {
+        lastSplit = lastSplit.substr(0, lastSplit.length - 1);
+      }
+      if (lastSplit == '') {
+        return split[0];
       }
       return split[0] + '.' + lastSplit;
     }
