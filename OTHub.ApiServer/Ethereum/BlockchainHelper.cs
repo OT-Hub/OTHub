@@ -184,7 +184,7 @@ namespace OTHub.APIServer.Ethereum
 
                 if (amountToTransfer + holderPaidAmount >= holderStakedAmount)
                 {
-
+                    amountToTransfer = holderStakedAmount;
                 }
 
                 decimal friendlyEstimatedPayout = Web3.Convert.FromWei(amountToTransfer);
