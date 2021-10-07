@@ -12,12 +12,14 @@ using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using Newtonsoft.Json.Converters;
 using Org.BouncyCastle.Crypto.Digests;
 using OTHub.APIServer.Sql;
 using OTHub.APIServer.Sql.Models.Contracts;
 using OTHub.APIServer.Sql.Models.Nodes;
 using OTHub.Settings;
 using OTHub.Settings.Abis;
+using OTHub.Settings.Helpers;
 
 namespace OTHub.APIServer.Ethereum
 {
@@ -177,15 +179,28 @@ namespace OTHub.APIServer.Ethereum
 
                 var block = await cl.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(latestBlockParam);
 
+                DateTime blockDate = TimestampHelper.UnixTimeStampToDateTime((double) block.Timestamp.Value);
+
+                DateTime jobStartDate = await connection.ExecuteScalarAsync<DateTime>(@"SELECT Timestamp FROM otcontract_holding_offerfinalized where OfferID = @offerID and BlockchainID = @blockchainID",
+                    new
+                    {
+                        offerID = offerId,
+                        blockchainID
+                    });
+
+                DateTime jobEndDate = jobStartDate.AddMinutes((int)offerHoldingTimeInMinutes);
+
+                if (blockDate > jobEndDate)
+                {
+                    blockDate = jobEndDate;
+                }
+
+                BigInteger blockTimestamp = new BigInteger(TimestampHelper.DateTimeToUnixTimeStamp(blockDate));
+
 
                 var amountToTransfer = holderStakedAmount;
-                amountToTransfer = amountToTransfer * (block.Timestamp - holderPaymentTimestamp);
+                amountToTransfer = amountToTransfer * (blockTimestamp - holderPaymentTimestamp);
                 amountToTransfer = amountToTransfer / (offerHoldingTimeInMinutes * 60);
-
-                if (amountToTransfer + holderPaidAmount >= holderStakedAmount)
-                {
-                    amountToTransfer = holderStakedAmount;
-                }
 
                 decimal friendlyEstimatedPayout = Web3.Convert.FromWei(amountToTransfer);
 

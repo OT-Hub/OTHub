@@ -1,0 +1,44 @@
+.payoutRow {
+    padding:3px;
+    margin-bottom:8px;
+}
+
+.payoutRow .offer {
+    vertical-align: top;
+    margin-left:8px;
+}
+
+hr.divider {
+    margin-top:0.5rem;
+    margin-bottom:0rem;
+}
+
+.paidout, .paidout .caption {
+    // color: slateblue;
+    // font-weight: bold;
+}
+
+.total, .total .caption {
+    color: green;
+    font-weight: bold;
+}
+
+.LastPayoutDate {
+    margin-top: 4px;
+}
+
+.EstimatedPayout {
+    margin-top:4px;
+}
+
+.Verification {
+    margin-top:4px;
+}
+
+.Verification .pass {
+    color:green; font-size: 14px;
+}
+
+.Verification .fail {
+    color:red; font-size: 14px;
+}

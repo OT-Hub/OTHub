@@ -29,6 +29,7 @@ import { MynodesoverviewComponent } from './mynodesoverview/mynodesoverview.comp
 import { FormsModule } from '@angular/forms';
 import { MynodestaxexportComponent } from './mynodestaxexport/mynodestaxexport.component';
 import { AngularTelegramLoginWidgetModule } from 'angular-telegram-login-widget';
+import { MyNodesPayoutsComponent } from './my-nodes-payouts/my-nodes-payouts.component';
 @NgModule({
   declarations: [DataHoldersComponent, DataHolderComponent, DatacreatorsComponent,
      DatacreatorComponent, MynodesComponent, FindbymanagementwalletComponent, ManualPayoutPageComponent, SafePipe,
@@ -36,7 +37,7 @@ import { AngularTelegramLoginWidgetModule } from 'angular-telegram-login-widget'
      JobsComponent,
      LitigationsComponent,
      PayoutsComponent,
-     TransfersComponent, OnlineIndicatorRenderComponent, DCTransfersComponent, DCLitigationsComponent, DCJobsComponent, PaidoutColumnComponent, MynodesoverviewComponent, MynodestaxexportComponent ],
+     TransfersComponent, OnlineIndicatorRenderComponent, DCTransfersComponent, DCLitigationsComponent, DCJobsComponent, PaidoutColumnComponent, MynodesoverviewComponent, MynodestaxexportComponent, MyNodesPayoutsComponent ],
   imports: [
     CommonModule,
     NodesRoutingModule,

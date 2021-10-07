@@ -9,6 +9,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using MySqlConnector;
+using Nethereum.RPC;
+using Nethereum.RPC.Eth.DTOs;
+using Nethereum.Web3;
 using OTHub.APIServer.Helpers;
 using OTHub.APIServer.Sql.Models.Nodes;
 using OTHub.Settings;
@@ -271,6 +274,79 @@ ORDER BY o.FinalizedTimestamp DESC", new
 
 
                 return data;
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("PossibleJobPayouts")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<PossiblePayoutModel[]> GetPossibleJobPayouts([FromQuery] bool includeActiveJobs, [FromQuery] bool includeCompletedJobs,
+            [FromQuery] int blockchainID, [FromQuery] DateTime? dateFrom, [FromQuery] DateTime? dateTo)
+        {
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+
+                string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                {
+                    id = blockchainID
+                });
+
+                var cl = new Web3(nodeUrl);
+
+                var eth = new EthApiService(cl.Client);
+
+                var latestBlockParam = BlockParameter.CreateLatest();
+
+                var block = await cl.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(latestBlockParam);
+
+                var rows = (await connection.QueryAsync<PossiblePayoutModel>(@"WITH CTEJobs AS (
+SELECT 
+b.ID BlockchainID, b.DisplayName BlockchainName, o.OfferID, MN.NodeID, i.Identity, o.TokenAmountPerHolder TokenAmount,
+DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) as JobEndTimestamp, of.Timestamp FinalizedTimestamp,
+o.TokenAmountPerHolder * 1000000000000000000 TokenAmountInWei, o.HoldingTimeInMinutes
+FROM
+mynodes MN
+JOIN otidentity i ON i.NodeId = MN.NodeID
+JOIN otoffer_holders h ON h.Holder = i.Identity AND h.BlockchainID = i.BlockchainID
+JOIN otoffer o ON o.OfferID = h.OfferID AND o.BlockchainID = h.BlockchainID
+JOIN blockchains b ON b.id = o.BlockchainID
+JOIN otcontract_holding_offerfinalized of ON of.OfferID = o.OfferID AND of.BlockchainID = o.BlockchainID
+WHERE o.IsFinalized = 1 AND MN.UserID = @userID AND (@blockchainID IS NULL OR i.BlockchainID = @blockchainID)
+AND ((@includeActiveJobs = 1 AND DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) >= NOW())
+OR (@includeCompletedJobs = 1 AND DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) <= NOW()))
+AND (@dateFrom IS NULL OR DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) >= @dateFrom)
+AND (@dateTo IS NULL OR DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) <= @dateTo)
+),
+
+CTEPayouts AS (
+SELECT MN.NodeID, po.OfferID, SUM(po.Amount) PaidAmount, COUNT(po.OfferId) PayoutCount, MAX(po.Timestamp) LastPayout
+FROM otcontract_holding_paidout po
+JOIN otidentity i ON i.Identity = po.Holder AND i.BlockchainID = po.BlockchainID
+JOIN mynodes MN ON MN.NodeID = i.NodeId
+WHERE MN.UserID = @userID AND (@blockchainID IS NULL OR po.BlockchainID = @blockchainID)
+GROUP BY MN.NodeID, po.OfferID
+)
+
+SELECT 
+J.BlockchainID, J.BlockchainName, J.OfferID, J.NodeID, J.Identity, J.TokenAmount, COALESCE(P.PaidAmount, 0) PaidAmount, 
+COALESCE(P.PayoutCount, 0) PayoutCount, P.LastPayout, J.JobEndTimestamp,
+((J.TokenAmountInWei * (LEAST(UNIX_TIMESTAMP(J.JobEndTimestamp), @currentBlockUnixTimestamp) - UNIX_TIMESTAMP(GREATEST(COALESCE(P.LastPayout, 0), J.FinalizedTimestamp)))) / (J.HoldingTimeInMinutes * 60)) / 1000000000000000000 EstimatedPayout
+FROM CTEJobs J
+LEFT JOIN CTEPayouts P ON P.OfferID = J.OfferID
+WHERE J.TokenAmount != COALESCE(P.PaidAmount, 0)", new
+                {
+                    userID = User.Identity.Name,
+                    includeActiveJobs = includeActiveJobs,
+                    includeCompletedJobs = includeCompletedJobs,
+                    blockchainID = blockchainID,
+                    dateFrom = dateFrom,
+                    dateTo = dateTo,
+                    currentBlockUnixTimestamp = (ulong)block.Timestamp.Value
+                })).ToArray();
+
+                return rows;
             }
         }
 
@@ -796,5 +872,20 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
     {
         public int HoldingTimeInMonths { get; set; }
         public int Count { get; set; }
+    }
+
+    public class PossiblePayoutModel
+    {
+        public int BlockchainID { get; set; }
+        public string BlockchainName { get; set; }
+        public string OfferID { get; set; }
+        public string NodeID { get; set; }
+        public string Identity { get; set; }
+        public decimal TokenAmount { get; set; }
+        public decimal PaidAmount { get; set; }
+        public DateTime? LastPayout { get; set; }
+        public DateTime JobEndTimestamp { get; set; }
+        public decimal EstimatedPayout { get; set; }
+
     }
 }

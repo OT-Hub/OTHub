@@ -10,6 +10,7 @@ import { DatacreatorsComponent } from './datacreators/datacreators.component';
 import { ManualPayoutPageComponent } from './manual-payout-page/manual-payout-page.component';
 import { MynodesoverviewComponent } from './mynodesoverview/mynodesoverview.component';
 import { MynodestaxexportComponent } from './mynodestaxexport/mynodestaxexport.component';
+import { MyNodesPayoutsComponent } from './my-nodes-payouts/my-nodes-payouts.component';
 
 const routes: Routes = [
   {
@@ -25,11 +26,13 @@ const routes: Routes = [
     path: 'dataholders/managementwallet/:address',
     component: FindbymanagementwalletComponent
   },
-  { path: 'dataholders/:identity',
-  component: DataHolderComponent
+  {
+    path: 'dataholders/:identity',
+    component: DataHolderComponent
   },
-  { path: 'dataholders/:nodeID/payout/:blockchainID/:identity/:offerId',
-  component: ManualPayoutPageComponent
+  {
+    path: 'dataholders/:nodeID/payout/:blockchainID/:identity/:offerId',
+    component: ManualPayoutPageComponent
   },
   {
     path: 'datacreators',
@@ -55,8 +58,13 @@ const routes: Routes = [
     path: 'mynodes',
     component: MynodesoverviewComponent
   },
-  { path: 'dataholders/:identity/report/usd',
-  component: PayoutPricesComponent
+  {
+    path: 'dataholders/:identity/report/usd',
+    component: PayoutPricesComponent
+  },
+  {
+    path: 'mynodes/payouts',
+    component: MyNodesPayoutsComponent
   },
 ];
 

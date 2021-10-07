@@ -134,17 +134,8 @@
                 You have the wrong network selected in MetaMask. You need {{requiredChainID}} to be selected. See <a href="https://chainid.network/" target="_blank">here</a> to translate the network ID numbers into something more useful.
               </div>
  
-            <!--<div *ngIf="selectedAddress != managementWallet">-->
-            <!-- <div>
-              <div class="alert alert-warning">
-                <strong>In MetaMask you have selected {{selectedAddress}} as your management wallet.</strong>
-                <br>
-<strong>Please change MetaMask to this management wallet to continue: </strong>
-              </div>
-            </div> -->
-            <!--*ngIf="selectedAddress == managementWallet"-->
+
             <h6 *ngIf="selectedChainID == requiredChainID">Gas Price</h6>
-            <!--*ngIf="selectedAddress == managementWallet"-->
             <div class="form-group" *ngIf="selectedChainID == requiredChainID">
               <div class="form-line">
                 <input type="text" id="gasPriceInput" class="form-control" name="gasPriceInput"
@@ -156,22 +147,8 @@
             <div *ngIf="canPayoutResult != null && sentTransactionHash == null && canPayoutResult.CanTryPayout == true && selectedChainID == requiredChainID">
                 {{canPayoutResult?.EstimatedPayout}}
             </div>
-            <!-- && selectedAddress == managementWallet-->
-            <!-- <div class="alert alert-warning" *ngIf="1 > gasPrice">
-              Warning! You have entered a low gas price.
-            </div> -->
-            <!-- *ngIf="selectedAddress == managementWallet"-->
-            <!-- <h6>Estimated Cost (Real data from the last 7 days)</h6> -->
-            <!-- *ngIf="selectedAddress == managementWallet" -->
-            <!-- <ul class="list-group" >
-                <li class="list-group-item" *ngFor="let recentGasPrice of recentGasPrices">
-                    {{recentGasPrice.GasPrice / 1000000000 | number:'1.0-8'}} Gwei
-                    (Average: {{recentGasPrice.GasUsed * (recentGasPrice.GasPrice / 1000000000000000000) | number:'1.0-8'}} ETH) <span style="margin-left:10px;color: gray;">{{recentGasPrice.TotalCount | number:'1.0'}} Transactions</span>
-                </li>
-            </ul> -->
-            <!-- *ngIf="selectedAddress == managementWallet"-->
+
             <br>
-            <!-- *ngIf="selectedAddress == managementWallet" -->
             <div>
               <button class="btn btn-primary" (click)="sendTransaction()" *ngIf="isBusySending == false && selectedChainID == requiredChainID">Send Transaction (Opens in
                 MetaMask)</button>
