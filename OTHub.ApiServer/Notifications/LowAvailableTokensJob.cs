@@ -46,10 +46,11 @@ WHERE ts.LowAvailableTokensEnabled = 1 AND ts.NotificationsEnabled = 1 AND ts.Ha
 FROM otidentity i
 JOIN blockchains b ON b.ID = i.BlockchainID
 JOIN mynodes mn ON mn.NodeID = i.NodeId
-WHERE mn.UserID = @userID AND i.LastActivityTimestamp > DATE_Add(NOW(), INTERVAL -30 DAY)",
+WHERE mn.UserID = @userID AND i.LastActivityTimestamp > DATE_Add(NOW(), INTERVAL -30 DAY) AND i.Stake > @minimumStake",
                             new
                             {
-                                userID = user.UserID
+                                userID = user.UserID,
+                                minimumStake = minimumStake
                             })).ToArray();
 
                         foreach (LowAvailableTokenNode lowAvailableTokenNode in nodes)
