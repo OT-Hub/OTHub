@@ -141,6 +141,62 @@ WHERE UserID = @userID", new
             }
         }
 
+        
+
+        [HttpPost]
+        [Route("UpdateLowAvailableTokensAmount")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<int> UpdateLowAvailableTokensAmount([FromQuery] long value)
+        {
+            if (value <= 0)
+            {
+                value = 50;
+            }
+
+            if (value > 99999)
+            {
+                value = 99999;
+            }
+
+            string userID = User.Identity.Name;
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                await connection.ExecuteAsync(@"
+UPDATE telegramsettings
+SET LowAvailableTokensAmount = @value
+WHERE UserID = @userID", new
+                {
+                    userID = userID,
+                    value = value
+                });
+            }
+
+            return (int)value;
+        }
+
+        [HttpPost]
+        [Route("UpdateLowAvailableTokensEnabled")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task UpdateLowAvailableTokensEnabled([FromQuery] bool value)
+        {
+            string userID = User.Identity.Name;
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                await connection.ExecuteAsync(@"
+UPDATE telegramsettings
+SET LowAvailableTokensEnabled = @value
+WHERE UserID = @userID", new
+                {
+                    userID = userID,
+                    value = value
+                });
+            }
+        }
+
 
 
         [HttpGet]
@@ -154,7 +210,7 @@ WHERE UserID = @userID", new
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var settings = await connection.QueryFirstOrDefaultAsync<TelegramSettings>(@"SELECT u.TelegramUserID AS TelegramID, 
-ts.NotificationsEnabled, ts.JobWonEnabled, ts.HasReceivedMessageFromUser FROM users u
+ts.NotificationsEnabled, ts.JobWonEnabled, ts.HasReceivedMessageFromUser, ts.LowAvailableTokensEnabled, ts.LowAvailableTokensAmount FROM users u
 JOIN telegramsettings ts ON ts.UserID = u.ID
 WHERE u.ID = @userID", new
                 {
@@ -183,5 +239,7 @@ WHERE u.ID = @userID", new
         public bool NotificationsEnabled { get; set; }
         public bool JobWonEnabled { get; set; }
         public bool HasReceivedMessageFromUser { get; set; }
+        public bool LowAvailableTokensEnabled { get; set; }
+        public int LowAvailableTokensAmount { get; set; }
     }
 }

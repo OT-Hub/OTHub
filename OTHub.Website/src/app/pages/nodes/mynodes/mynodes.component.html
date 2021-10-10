@@ -79,7 +79,17 @@
           <nb-checkbox status="primary" [checked]="telegramSettings.NotificationsEnabled" (checkedChange)="onTelegramNotificationsEnabledChange($event)">Telegram Bot Enabled</nb-checkbox>
           <br *ngIf="telegramSettings.NotificationsEnabled">
           <div style="margin: 10px 0px 4px 0px;font-weight:bold;" *ngIf="telegramSettings.NotificationsEnabled">Notifications</div>
-          <nb-checkbox status="success" [checked]="telegramSettings.JobWonEnabled" *ngIf="telegramSettings.NotificationsEnabled"  (checkedChange)="onTelegramJobWonEnabledChange($event)">Job Won</nb-checkbox>
+          <div>
+            <nb-checkbox status="success" [checked]="telegramSettings.JobWonEnabled" *ngIf="telegramSettings.NotificationsEnabled"  (checkedChange)="onTelegramJobWonEnabledChange($event)">Job Won</nb-checkbox>
+          </div>
+          <p>This notification will appear when one of your nodes has been selected for a job.</p>
+          <div>
+            <nb-checkbox class="lowAvailableText" status="success" [checked]="telegramSettings.LowAvailableTokensEnabled" *ngIf="telegramSettings.NotificationsEnabled"  (checkedChange)="onTelegramLowAvailableTokensEnabledChange($event)">Low Available Tokens for New Jobs</nb-checkbox>
+            <span class="lowAvailableText" *ngIf="telegramSettings.LowAvailableTokensEnabled"> Check daily at 00:00 UTC if available tokens less than  <input style="width:60px;" type="text" 
+              (input)="onLowAvailableTokensAmountChanged($event.target.value)" [(ngModel)]="telegramSettings.LowAvailableTokensAmount"
+              nbInput fieldSize="small" placeholder="50">&nbsp;TRAC</span> 
+          </div>
+          <p>This notification will appear to warn you that you need to add more staked tokens to win additional jobs. Only nodes detected as active by OT Hub in the last 30 days will be included.</p>
         </div>
         <div *ngIf="isLoadingTelegram == false && telegramSettings != null && telegramSettings.TelegramID != null && telegramSettings.HasReceivedMessageFromUser == true">
           <button nbButton status="success" (click)="sendTestTelegramMessage()" style="margin:10px;">Send Test Message</button>

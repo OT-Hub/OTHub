@@ -14,8 +14,10 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
 using OTHub.APIServer.Helpers;
 using OTHub.APIServer.Messaging;
+using OTHub.APIServer.Notifications;
 using OTHub.APIServer.SignalR;
 using OTHub.Settings;
+using Quartz;
 using Swashbuckle.AspNetCore.Filters;
 using Swashbuckle.AspNetCore.Swagger;
 
@@ -132,6 +134,21 @@ namespace OTHub.APIServer
             services.AddSingleton<RabbitMQService>();
 
             services.AddSingleton<TelegramBot>();
+
+            services.AddQuartz(q =>
+            {
+                q.UseMicrosoftDependencyInjectionScopedJobFactory();
+
+                q.ScheduleJob<LowAvailableTokensJob>(trigger => trigger
+                        .WithSchedule(CronScheduleBuilder
+                            .DailyAtHourAndMinute(0, 0)));
+            });
+
+            services.AddQuartzServer(options =>
+            {
+                // when shutting down we want jobs to complete gracefully
+                options.WaitForJobsToComplete = true;
+            });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -96,6 +96,38 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   });
   }
 
+  isNumeric(value): boolean {
+    return /^-?\d+$/.test(value);
+}
+
+  onLowAvailableTokensAmountChanged(value: string): void {  
+    if (this.isNumeric) {
+      this.isAvailableTokenAmountValid = true;
+      const headers = new HttpHeaders()
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json');
+      const url = this.httpService.ApiUrl + '/api/telegram/UpdateLowAvailableTokensAmount?value=' + value;
+      this.http.post<Number>(url, { headers }).subscribe(data => {
+        this.telegramSettings.LowAvailableTokensAmount = data;
+      });
+    } else {
+      this.isAvailableTokenAmountValid = false;
+    }
+  }
+
+  isAvailableTokenAmountValid: boolean;
+
+  
+  onTelegramLowAvailableTokensEnabledChange(value: boolean) {
+    this.telegramSettings.LowAvailableTokensEnabled  = value;
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + '/api/telegram/UpdateLowAvailableTokensEnabled?value=' + value;
+  this.http.post(url, { headers }).subscribe(data => {
+  });
+  }
+
   onUsdAmountCalculationModeChange(value: string) {
     const headers = new HttpHeaders()
     .set('Content-Type', 'application/json')

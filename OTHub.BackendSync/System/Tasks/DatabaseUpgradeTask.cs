@@ -927,6 +927,15 @@ ENGINE=InnoDB
 ;
 ");
 
+                connection.Execute(@"ALTER TABLE telegramsettings
+ADD COLUMN IF NOT EXISTS `LowAvailableTokensEnabled` bit NOT NULL DEFAULT 0");
+
+                connection.Execute(@"ALTER TABLE telegramsettings
+ADD COLUMN IF NOT EXISTS `LowAvailableTokensAmount` int NOT NULL DEFAULT 50");
+
+                connection.Execute(@"ALTER TABLE otidentity
+ADD COLUMN IF NOT EXISTS `LastActivityTimestamp` datetime NULL");
+
             }
         }
     }

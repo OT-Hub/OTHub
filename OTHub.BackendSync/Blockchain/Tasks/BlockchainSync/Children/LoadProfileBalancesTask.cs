@@ -105,6 +105,7 @@ GROUP BY i.Identity", new
                 foreach (OTIdentity currentIdentity in currentIdentities)
                 {
                     bool updateProfile = true;
+                    DateTime? lastActivityDate = null;
 
                     if (currentIdentity.Version != Constants.CurrentERCVersion)
                     {
@@ -178,11 +179,13 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
 
                         var adjustedNowTime = DateTime.Now;
 
+                  
+
                         if (dates.Any())
                         {
-                            var maxDate = dates.Max();
+                            lastActivityDate = dates.Max();
 
-                            if (maxDate <= currentIdentity.LastSyncedTimestamp)
+                            if (lastActivityDate.Value <= currentIdentity.LastSyncedTimestamp)
                             {
                                 if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalHours <= 16)
                                 {
@@ -248,12 +251,14 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
                     if (currentIdentity.Paidout != paidRow
                         || currentIdentity.TotalOffers != (offerRow?.OffersTotal ?? 0)
                         || currentIdentity.OffersLast7Days != (offerRow?.OffersLast7Days ?? 0)
-                        || currentIdentity.ActiveOffers != 0)
+                        || currentIdentity.ActiveOffers != 0
+                        || (currentIdentity.LastActivityTimestamp != lastActivityDate && lastActivityDate.HasValue))
                     {
                         currentIdentity.Paidout = paidRow;
                         currentIdentity.TotalOffers = offerRow?.OffersTotal ?? 0;
                         currentIdentity.OffersLast7Days = offerRow?.OffersLast7Days ?? 0;
                         currentIdentity.ActiveOffers = 0;
+                        currentIdentity.LastActivityTimestamp = lastActivityDate;
 
                         await OTIdentity.UpdateFromPaidoutAndApprovedCalculation(connection, currentIdentity);
                     }

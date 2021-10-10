@@ -29,6 +29,7 @@ namespace OTHub.BackendSync.Database.Models
         public DateTime? LastSeenTimestamp { get; set; }
         public String ManagementWallet { get; set; }
         public int BlockchainID { get; set; }
+        public DateTime? LastActivityTimestamp { get; set; }
 
         public static async Task InsertIfNotExist(MySqlConnection connection, OTIdentity model)
         {
@@ -98,7 +99,7 @@ WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
         public static async Task UpdateFromPaidoutAndApprovedCalculation(MySqlConnection connection, OTIdentity model)
         {
             await connection.ExecuteAsync(@"UPDATE OTIdentity
-SET Paidout = @Paidout, Approved = @Approved, ActiveOffers = @ActiveOffers, OffersLast7Days = @OffersLast7Days, TotalOffers = @TotalOffers, ManagementWallet = @ManagementWallet
+SET Paidout = @Paidout, Approved = @Approved, ActiveOffers = @ActiveOffers, OffersLast7Days = @OffersLast7Days, TotalOffers = @TotalOffers, ManagementWallet = @ManagementWallet, LastActivityTimestamp = @LastActivityTimestamp
 WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
             {
                 model.Identity,
@@ -108,7 +109,8 @@ WHERE Identity = @Identity AND BlockchainID = @BlockchainID", new
                 OffersLast7Days = model.OffersLast7Days ?? 0,
                 TotalOffers = model.TotalOffers ?? 0,
                 ManagementWallet = model.ManagementWallet,
-                model.BlockchainID
+                model.BlockchainID,
+                model.LastActivityTimestamp
             });
         }
 

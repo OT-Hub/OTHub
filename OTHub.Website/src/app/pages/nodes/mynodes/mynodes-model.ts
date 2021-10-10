@@ -10,5 +10,7 @@ export interface TelegramSettings {
     TelegramID: Number;
     NotificationsEnabled: Boolean;
     JobWonEnabled: Boolean;
+    LowAvailableTokensEnabled: Boolean;
     HasReceivedMessageFromUser: Boolean;
+    LowAvailableTokensAmount: Number;
 }

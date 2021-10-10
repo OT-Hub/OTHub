@@ -11,3 +11,12 @@ div.items-rows {
   nb-checkbox:not(:only-child) {
     margin-right: 1.5rem;
   }
+
+  .lowAvailableText {
+    font-family: Open Sans, sans-serif;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    line-height: 1.5rem;
+    display: inline-block;
+    vertical-align: middle;
+  }

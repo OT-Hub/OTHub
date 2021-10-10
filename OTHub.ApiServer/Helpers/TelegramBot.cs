@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 using OTHub.APIServer.Controllers;
+using OTHub.APIServer.Notifications;
 using OTHub.Settings;
 using ServiceStack.Text;
 using Telegram.Bot;
@@ -187,6 +188,13 @@ namespace OTHub.APIServer.Helpers
         public async Task SendTestMessage(long telegramUserID)
         {
             await FirstUserLoadSetup(telegramUserID, CancellationToken.None);
+        }
+
+        public async Task LowAvailableTokensOnNode(LowAvailableTokenUsers user, LowAvailableTokenNode node,
+            decimal available)
+        {
+            await _botClient.SendTextMessageAsync(user.TelegramUserID,
+                $"Low Available Tokens for New Jobs on {node.NodeName}.\nStaked: {node.Stake} TRAC\nLocked: {node.StakeReserved} TRAC\nAvailable: {available} TRAC\nDeposit more tokens or payout existing jobs to free up tokens.");
         }
     }
 }
