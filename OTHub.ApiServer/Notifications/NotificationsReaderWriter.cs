@@ -13,9 +13,9 @@ namespace OTHub.APIServer.Notifications
     public static class NotificationsReaderWriter
     {
         public static async Task<(string title, string description, string url)> InsertJobWonNotification(MySqlConnection connection, OfferFinalizedMessage message, string userID,
-            string nodeName, decimal tokenAmount, long holdingTimeInMinutes)
+            string nodeName, decimal tokenAmount, long holdingTimeInMinutes, string blockchain)
         {
-            string title = $"Job awarded for {nodeName}";
+            string title = $"Job awarded for {nodeName} on {blockchain}";
 
             var exitsingCount = await connection.ExecuteScalarAsync<int>(@"SELECT COUNT(*) FROM notifications where UserID = @userID AND CreatedAt = @date AND Title = @title", 
                 new

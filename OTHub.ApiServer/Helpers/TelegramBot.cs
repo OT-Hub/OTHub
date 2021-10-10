@@ -180,6 +180,8 @@ namespace OTHub.APIServer.Helpers
 
             await _botClient.SendTextMessageAsync(telegramUserID, title + "\n" + description,
                 replyMarkup: new InlineKeyboardMarkup(InlineKeyboardButton.WithUrl("View Job", url)));
+
+            Console.WriteLine("Sent telegram notification for " + userID + ". Title: " + title);
         }
 
         public async Task SendTestMessage(long telegramUserID)

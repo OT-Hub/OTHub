@@ -87,7 +87,10 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                         if (users.Any())
                         {
                             var jobData = await connection.QueryFirstOrDefaultAsync(
-                                "SELECT TokenAmountPerHolder, HoldingTimeInMinutes FROM OTOffer o where o.BlockchainID = @blockchainID AND o.OfferID = @offerID",
+                                @"SELECT o.TokenAmountPerHolder, o.HoldingTimeInMinutes, b.DisplayName AS BlockchainName 
+FROM OTOffer o
+JOIN blockchains b ON b.id = o.BlockchainID
+where o.BlockchainID = @blockchainID AND o.OfferID = @offerID",
                                 new
                                 {
                                     blockchainID = message.BlockchainID,
@@ -99,6 +102,7 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                                 continue;
                             }
 
+                            string blockchain = jobData.BlockchainName;
                             decimal tokenAmount = jobData.TokenAmountPerHolder;
                             long holdingTimeInMinutes = jobData.HoldingTimeInMinutes;
 
@@ -112,7 +116,7 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                                 bool? hasReceivedMessageFromUser = user.HasReceivedMessageFromUser == 1;
 
                                 (string title, string description, string url) data = await NotificationsReaderWriter.InsertJobWonNotification(connection, message, userID,
-                                    nodeName, tokenAmount, holdingTimeInMinutes);
+                                    nodeName, tokenAmount, holdingTimeInMinutes, blockchain);
 
                                 if (data.title != null)
                                 {
@@ -133,7 +137,7 @@ WHERE I.Version > 0 AND I.Identity = @identity", new
                                         }
                                         catch (Exception ex)
                                         {
-
+                                            Console.WriteLine("Failed send telegram notification: " + ex.Message);
                                         }
                                     }
                                 }
