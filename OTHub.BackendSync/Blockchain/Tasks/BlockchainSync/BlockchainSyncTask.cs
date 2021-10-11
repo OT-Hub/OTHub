@@ -13,11 +13,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync
     {
         public BlockchainSyncTask() : base(TaskNames.BlockchainSync)
         {
-            //Add(new SyncProfileContractTask());
-            //Add(new SyncHoldingContractTask());
-            //Add(new ProcessJobsTask());
-            //Add(new SyncLitigationContractTask());
-            //Add(new SyncReplacementContractTask());
+            Add(new SyncProfileContractTask());
+            Add(new SyncHoldingContractTask());
+            Add(new ProcessJobsTask());
+            Add(new SyncLitigationContractTask());
+            Add(new SyncReplacementContractTask());
             Add(new LoadProfileBalancesTask());
         }
 
