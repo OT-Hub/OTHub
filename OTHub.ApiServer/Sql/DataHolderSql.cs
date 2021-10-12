@@ -71,7 +71,9 @@ GROUP BY I.NodeId";
                 SUM(po.Amount) as PaidoutAmount,
                 CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then 0 ELSE 1 END  as CanPayout,
                 mn.ID IS NOT NULL AS IsMyNode,
-                b.DisplayName as BlockchainName
+                b.DisplayName as BlockchainName,
+                o.EstimatedLambda,
+                o.EstimatedLambdaConfidence
                 FROM otoffer_holders h
                 join otoffer o on o.offerid = h.offerid and o.blockchainid = h.blockchainid
                 JOIN otidentity i ON i.Identity = h.Holder and i.blockchainid = o.blockchainid

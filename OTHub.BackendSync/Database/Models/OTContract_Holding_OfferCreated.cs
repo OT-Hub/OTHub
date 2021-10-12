@@ -78,6 +78,17 @@ Timestamp, BlockNumber, TransactionHash, DataSetSizeInBytes, TokenAmountPerHolde
             }
         }
 
+        public static OTContract_Holding_OfferCreated[] GetWithoutEstimatedPriceFactor(MySqlConnection connection, int blockchainID)
+        {
+            return connection.Query<OTContract_Holding_OfferCreated>(@"SELECT oc.* 
+FROM OTContract_Holding_OfferCreated oc
+JOIN otoffer o on o.blockchainid = oc.blockchainid and o.offerid = oc.offerid
+WHERE oc.BlockchainID = @blockchainID AND o.EstimatedLambda IS NULL", new
+            {
+                blockchainID = blockchainID
+            }).ToArray();
+        }
+
         public static OTContract_Holding_OfferCreated[] GetUnprocessed(MySqlConnection connection, int blockchainID)
         {
             return connection.Query<OTContract_Holding_OfferCreated>("SELECT * FROM OTContract_Holding_OfferCreated WHERE Processed = 0 AND BlockchainID = @blockchainID", new

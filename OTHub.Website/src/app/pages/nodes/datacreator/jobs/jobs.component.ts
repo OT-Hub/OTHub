@@ -63,6 +63,12 @@ delete: false
         //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
         // }
       },
+      BlockchainDisplayName: {
+        title: 'Blockchain',
+        type: 'string',
+        sort: false,
+        filter: false
+      },
       CreatedTimestamp: {
         sort: true,
         sortDirection: 'desc',
@@ -181,6 +187,14 @@ delete: false
           }
         }
       },
+      DataSetSizeInBytes: {
+        sort: true,
+        //width: '5%',
+        title: 'Data Set Size',
+        type: 'string',
+        filter: false,
+        valuePrepareFunction: (value) => { return (value / 1000).toFixed(2).replace(/[.,]00$/, '') + ' KB';}
+      },
       TokenAmountPerHolder: {
         sort: true,
         title: 'Token Amount',
@@ -190,6 +204,18 @@ delete: false
           let tokenAmount = parseFloat(value);
           let formatted = +tokenAmount.toFixed(4);
           return formatted;
+        }
+      },
+      EstimatedLambda: {
+        title: 'Price Factor',
+        sort: false,
+        type: 'number',
+        filter: false,
+        valuePrepareFunction: (value, row) => {
+          if (value == null) {
+            return 'N/A';
+          }
+          return value + ' (' + row.EstimatedLambdaConfidence + '% match)';
         }
       },
       Status: {

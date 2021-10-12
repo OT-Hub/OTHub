@@ -11,6 +11,7 @@ export class OTOfferDetailModel {
     EndTimestamp: Date;
     LitigationIntervalInMinutes: number;
     EstimatedLambda: number;
+    EstimatedLambdaConfidence: number;
 
     CreatedBlockNumber: number;
     CreatedTransactionHash: string;

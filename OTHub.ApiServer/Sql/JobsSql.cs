@@ -69,7 +69,9 @@ namespace OTHub.APIServer.Sql
 	END)
 END) as Status,
 (CASE WHEN O.IsFinalized = 1  THEN DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp,
-bc.DisplayName BlockchainDisplayName
+bc.DisplayName BlockchainDisplayName,
+O.EstimatedLambda,
+O.EstimatedLambdaConfidence
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID

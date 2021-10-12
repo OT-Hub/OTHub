@@ -16,5 +16,7 @@ namespace OTHub.APIServer.Sql.Models.Jobs
         public String Status { get; set; }
         public DateTime? EndTimestamp { get; set; }
         public string BlockchainDisplayName { get; set; }
+        public decimal? EstimatedLambda { get; set; }
+        public int? EstimatedLambdaConfidence { get; set; }
     }
 }

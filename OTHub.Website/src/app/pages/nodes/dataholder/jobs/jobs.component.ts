@@ -178,6 +178,18 @@ delete: false
           return formatted;
         }
       },
+      EstimatedLambda: {
+        title: 'Price Factor',
+        sort: false,
+        type: 'number',
+        filter: false,
+        valuePrepareFunction: (value, row) => {
+          if (value == null) {
+            return 'N/A';
+          }
+          return value + ' (' + row.EstimatedLambdaConfidence + '% match)';
+        }
+      },
       Status: {
         sort: true,
         title: 'Status',

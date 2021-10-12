@@ -304,6 +304,9 @@ ADD COLUMN IF NOT EXISTS `NetworkId` TEXT NULL DEFAULT NULL");
                 connection.Execute(@"ALTER TABLE otoffer
 ADD COLUMN IF NOT EXISTS `EstimatedLambda` DECIMAL(10,2) NULL DEFAULT NULL");
 
+                connection.Execute(@"ALTER TABLE otoffer
+ADD COLUMN IF NOT EXISTS `EstimatedLambdaConfidence` INT NULL DEFAULT NULL");
+
 
 
                 connection.Execute(

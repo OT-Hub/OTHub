@@ -48,6 +48,9 @@
                                 {{formatAmount(3 * OfferModel?.TokenAmountPerHolder)}} from DC,
                                 {{formatAmount(OfferModel?.TokenAmountPerHolder)}} from each DH)</span> -->
                                 </nb-list-item>
+                                <nb-list-item>
+                                    Price Factor: {{OfferModel?.EstimatedLambda}} ({{OfferModel?.EstimatedLambdaConfidence}}% match)
+                                </nb-list-item>
                                 </nb-list>
                                 </nb-card>
                                 <nb-card>

@@ -31,7 +31,9 @@ OF.GasUsed FinalizedGasUsed,
 OC.GasPrice CreatedGasPrice,
 OF.GasPrice FinalizedGasPrice,
 bc.DisplayName BlockchainDisplayName,
-bc.GasTicker
+bc.GasTicker,
+O.EstimatedLambda,
+O.EstimatedLambdaConfidence
  FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
  JOIN OTContract_Holding_OfferCreated OC ON OC.OfferID = O.OfferID

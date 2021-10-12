@@ -19,5 +19,7 @@ namespace OTHub.APIServer.Sql.Models.Nodes
         public bool IsMyNode { get; set; }
         public int BlockchainID { get; set; }
         public string BlockchainName { get; set; }
+        public decimal? EstimatedLambda { get; set; }
+        public int? EstimatedLambdaConfidence { get; set; }
     }
 }

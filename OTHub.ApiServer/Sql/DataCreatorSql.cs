@@ -27,8 +27,12 @@ GROUP BY I.NodeId";
                     		ELSE 'Not Started'
                     	END)
                     END) as Status,
-                    (CASE WHEN o.IsFinalized = 1  THEN DATE_Add(o.FinalizedTimeStamp, INTERVAL +o.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp
+                    (CASE WHEN o.IsFinalized = 1  THEN DATE_Add(o.FinalizedTimeStamp, INTERVAL +o.HoldingTimeInMinutes MINUTE) ELSE NULL END) as EndTimestamp,
+                    o.EstimatedLambda,
+                    o.EstimatedLambdaConfidence,
+                    b.DisplayName BlockchainDisplayName
                     FROM OTOffer o
+                    join blockchains b on b.id = o.blockchainid
                     join otidentity i on i.NodeId = o.DCNodeId
                     join otcontract_holding_offercreated oc on oc.OfferID = o.OfferID
                     left join otcontract_holding_offerfinalized of on of.OfferID = o.OfferID
