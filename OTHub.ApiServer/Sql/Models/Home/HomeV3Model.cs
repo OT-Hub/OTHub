@@ -38,6 +38,9 @@ namespace OTHub.APIServer.Sql.Models.Home
         public HomeFeesModel Fees { get; set; }
         public int BlockchainID { get; set; }
         public int? HoursTillFirstJob { get; set; }
+
+        public decimal? PriceFactorLow24H { get; set; }
+        public decimal? PriceFactorHigh24H { get; set; }
     }
 
     public class HomeFeesModel

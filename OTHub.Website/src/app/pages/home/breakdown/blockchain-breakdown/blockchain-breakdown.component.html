@@ -66,6 +66,15 @@
                   {{Data?.All.Jobs24H}}
                 </span>
               </div>
+              <div class="homeField priceFactor">
+                Price factor:
+                <span class="homeData">
+                  <span *ngIf="Data?.All.PriceFactorLow24H == null && Data?.All.PriceFactorHigh24H == null">?</span>
+                  <span>{{Data?.All.PriceFactorLow24H}}</span> 
+                  <span class="to" *ngIf="Data?.All.PriceFactorLow24H != Data?.All.PriceFactorHigh24H">to</span>
+                  <span>{{Data?.All.PriceFactorHigh24H}}</span>
+                </span>
+              </div>
               <div class="homeField">
                 Locked tokens:
                 <span class="homeData">
@@ -88,12 +97,12 @@
               </div>
               <div class="homeField" *ngIf="Data?.PriceUsd != null">
           
-              <div style="display:inline-block;">
-                ${{Data?.PriceUsd | number: '1.2-4'}}
-                <small class="btn-sm btnPricePercent" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0"
-                  [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
-                  <span class="btcPrice">{{Data?.PriceBtc  | number:'1.0-8'}} BTC</span>
-              </div>
+                <div style="display:inline-block;">
+                  ${{Data?.PriceUsd | number: '1.2-4'}}
+                  <small class="btn-sm btnPricePercent" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0"
+                    [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
+                    <div class="btcPrice">{{Data?.PriceBtc  | number:'1.0-8'}} BTC</div>
+                </div>
               </div>
               <div class="homeField" *ngIf="Data?.CirculatingSupply != null">
                 Circulating Supply: 
@@ -176,6 +185,15 @@
                 Jobs:
                 <span class="homeData">
                   {{bc.Jobs24H}}
+                </span>
+              </div>
+              <div class="homeField priceFactor">
+                Price factor:
+                <span class="homeData">
+                  <span *ngIf="bc.PriceFactorLow24H == null && bc.PriceFactorHigh24H == null">?</span>
+                  <span>{{bc.PriceFactorLow24H}}</span> 
+                  <span class="to" *ngIf="bc.PriceFactorLow24H != bc.PriceFactorHigh24H">to</span>
+                  <span *ngIf="bc.PriceFactorLow24H != bc.PriceFactorHigh24H">{{bc.PriceFactorHigh24H}}</span>
                 </span>
               </div>
               <div class="homeField">

@@ -74,7 +74,9 @@ FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
 (SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
 (SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H,
 (SELECT SUM(otoffer.TokenAmountPerHolder * 6) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensLocked24H,
-(SELECT SUM(otcontract_holding_paidout.Amount) FROM otcontract_holding_paidout WHERE blockchainid = b.id and Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensPaidout24H
+(SELECT SUM(otcontract_holding_paidout.Amount) FROM otcontract_holding_paidout WHERE blockchainid = b.id and Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensPaidout24H,
+(SELECT MIN(otoffer.EstimatedLambda) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorLow24H,
+(SELECT MAX(otoffer.EstimatedLambda) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorHigh24H
 FROM blockchains b
 order by b.id desc")).ToArray();
 
@@ -174,7 +176,9 @@ SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FR
                     TotalJobs = model.Blockchains.Sum(b => b.TotalJobs),
                     TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b),
                     TokensLocked24H = model.Blockchains.Select(b => b.TokensLocked24H).DefaultIfEmpty(null).Sum(),
-                    TokensPaidout24H = model.Blockchains.Select(b => b.TokensPaidout24H).DefaultIfEmpty(null).Sum()
+                    TokensPaidout24H = model.Blockchains.Select(b => b.TokensPaidout24H).DefaultIfEmpty(null).Sum(),
+                    PriceFactorLow24H = model.Blockchains.Select(b => b.PriceFactorLow24H).DefaultIfEmpty(null).Min(),
+                    PriceFactorHigh24H = model.Blockchains.Select(b => b.PriceFactorHigh24H).DefaultIfEmpty(null).Max(),
                 };
 
                 if (excludeBreakdown)

@@ -359,6 +359,8 @@ export class HomeV3BlockchainModel {
   TokenTicker: string;
   Fees: HomeFeesByBlockchainModel;
   HoursTillFirstJob: number;
+  PriceFactorLow24H: number;
+  PriceFactorHigh24H: number;
 }
 
 export class HomeFeesByBlockchainModel {

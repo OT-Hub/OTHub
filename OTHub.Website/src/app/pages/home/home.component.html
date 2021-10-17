@@ -67,6 +67,16 @@
                 {{Data?.All.Jobs24H}}
               </span>
             </div>
+            <div class="homeField priceFactor">
+              Price factor:
+              <span class="homeData">
+                <span *ngIf="Data?.All.PriceFactorLow24H == null && Data?.All.PriceFactorHigh24H == null">?</span>
+                <span>{{Data?.All.PriceFactorLow24H}}</span> 
+                <span class="to" *ngIf="Data?.All.PriceFactorLow24H != Data?.All.PriceFactorHigh24H">to</span>
+                <span *ngIf="Data?.All.PriceFactorLow24H != Data?.All.PriceFactorHigh24H">{{Data?.All.PriceFactorHigh24H}}</span>
+              </span>
+            </div>
+
             <div class="homeField">
               Locked tokens:
               <span class="homeData">
@@ -79,8 +89,7 @@
                 {{Data?.All.TokensPaidout24H | number:'1.0-3'}}  <small class="tokenSmall" *ngIf="Data?.All.TokensLocked24H != null">TRAC</small>
               </span>
             </div>
-
-
+      
           </div>
 
           <div class="col-md-4 col-sm-12  col-xs-12">
@@ -93,7 +102,7 @@
               ${{Data?.PriceUsd | number: '1.2-4'}}
               <small class="btn-sm btnPricePercent" title="24 hour change" [class.btn-success]="Data?.PercentChange24H > 0"
                 [class.btn-danger]="Data?.PercentChange24H < 0">{{Data?.PercentChange24H}}%</small>
-                <span class="btcPrice">{{Data?.PriceBtc  | number:'1.0-8'}} BTC</span>
+                <div class="btcPrice">{{Data?.PriceBtc  | number:'1.0-8'}} BTC</div>
             </div>
             </div>
             <div class="homeField" *ngIf="Data?.CirculatingSupply != null">

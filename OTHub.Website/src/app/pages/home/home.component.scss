@@ -69,7 +69,8 @@
 
 .btcPrice {
   color: #808a9d;
-  margin-left:5px;
+  // margin-left:5px;
+  font-size:0.8rem;
 }
 
 .btnPricePercent {
@@ -96,4 +97,8 @@
 
 .blockchainHeader .divider {
   margin: 0px 6px;
+}
+
+.homeField.priceFactor .to {
+margin: 0px 4px;
 }
