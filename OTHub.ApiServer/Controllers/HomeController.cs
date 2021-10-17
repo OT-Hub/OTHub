@@ -31,9 +31,11 @@ namespace OTHub.APIServer.Controllers
 
         [HttpGet]
         [Route(("HomeV3"))]
-        public async Task<HomeV3Model> HomeV3()
+        public async Task<HomeV3Model> HomeV3([FromQuery] bool excludeBreakdown)
         {
-            if (_cache.TryGetValue("HomeV3", out object homeModel))
+            string key = $"HomeV3-{excludeBreakdown}";
+
+            if (_cache.TryGetValue(key, out object homeModel))
             {
                 return (HomeV3Model) homeModel;
             }
@@ -175,7 +177,12 @@ SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FR
                     TokensPaidout24H = model.Blockchains.Select(b => b.TokensPaidout24H).DefaultIfEmpty(null).Sum()
                 };
 
-                _cache.Set("HomeV3", model, TimeSpan.FromSeconds(30));
+                if (excludeBreakdown)
+                {
+                    model.Blockchains = null;
+                }
+
+                _cache.Set(key, model, TimeSpan.FromSeconds(45));
 
 
                 return model;

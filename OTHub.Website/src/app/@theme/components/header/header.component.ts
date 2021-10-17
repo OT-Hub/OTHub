@@ -3,8 +3,8 @@ import { NbMediaBreakpointsService, NbMenuService, NbPopoverDirective, NbSidebar
 import * as signalR from "@microsoft/signalr";
 import { UserData } from '../../../@core/data/users';
 import { LayoutService } from '../../../@core/utils';
-import { filter, map, takeUntil } from 'rxjs/operators';
-import { Subject } from 'rxjs';
+
+
 import { AuthService } from '@auth0/auth0-angular';
 import { HubHttpService } from 'app/pages/hub-http-service';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
@@ -16,30 +16,15 @@ import * as confetti from 'canvas-confetti';
   styleUrls: ['./header.component.scss'],
   templateUrl: './header.component.html',
 })
-export class HeaderComponent implements OnInit, OnDestroy {
+export class HeaderComponent implements OnInit {
 
-  private destroy$: Subject<void> = new Subject<void>();
+
 
   connection: signalR.HubConnection;
 
-  themes = [
-    {
-      value: 'default',
-      name: 'Light',
-    },
-    {
-      value: 'dark',
-      name: 'Dark',
-    },
-    {
-      value: 'cosmic',
-      name: 'Cosmic',
-    },
-    {
-      value: 'corporate',
-      name: 'Corporate',
-    },
-  ];
+
+
+  currentNetwork = 'Mainnet';
 
   networks = [
     {
@@ -52,13 +37,11 @@ export class HeaderComponent implements OnInit, OnDestroy {
     }
   ];
 
-  currentNetwork = 'Mainnet';
-  currentTheme = 'default';
   notifications: NotificationModel[];
 
   constructor(private sidebarService: NbSidebarService,
     private menuService: NbMenuService,
-    private themeService: NbThemeService,
+    
     private layoutService: LayoutService,
     private auth: AuthService,
     private httpService: HubHttpService,
@@ -79,8 +62,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.currentTheme = this.themeService.currentTheme;
-
     if (location.hostname === "localhost") {
       const url = 'http://' + location.host;
       this.networks.push({
@@ -99,14 +80,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
         }
       }
     }
-
-
-    this.themeService.onThemeChange()
-      .pipe(
-        map(({ name }) => name),
-        takeUntil(this.destroy$),
-      )
-      .subscribe(themeName => this.currentTheme = themeName);
   }
 
   fireConfetti() {
@@ -162,14 +135,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
 
-  ngOnDestroy() {
-    this.destroy$.next();
-    this.destroy$.complete();
-  }
 
-  changeTheme(themeName: string) {
-    this.themeService.changeTheme(themeName);
-  }
 
   changeNetwork(networkName: string) {
     if (!window.location.href.includes(networkName)) {
@@ -201,14 +167,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   ngAfterViewInit() {
 
-    this.popover.nbPopoverShowStateChange.subscribe(popoverState => {
-      this.isNotificationsAreaOpen = popoverState.isShown;
-      if (popoverState.isShown) {
-        this.getNotifications(true).subscribe(data => {
-          this.processNotifications(data);
-        });
-      }
-    });
+    if (this.popover != null) {
+      this.popover.nbPopoverShowStateChange.subscribe(popoverState => {
+        this.isNotificationsAreaOpen = popoverState.isShown;
+        if (popoverState.isShown) {
+          this.getNotifications(true).subscribe(data => {
+            this.processNotifications(data);
+          });
+        }
+      });
+    }
 
 
     this.auth.user$.subscribe(usr => {

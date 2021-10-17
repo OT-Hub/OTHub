@@ -94,8 +94,8 @@ export class ThemeModule {
     switch (thm) {
       case "default":
       case "dark":
-      case "cosmic":
-      case "corporate":
+      // case "cosmic":
+      // case "corporate":
         break;
       default:
         thm = 'default';
@@ -108,7 +108,7 @@ export class ThemeModule {
           {
             name: thm
           },
-          [DEFAULT_THEME, COSMIC_THEME, CORPORATE_THEME, DARK_THEME],
+          [DEFAULT_THEME, DARK_THEME],
         ).providers,
       ],
     };

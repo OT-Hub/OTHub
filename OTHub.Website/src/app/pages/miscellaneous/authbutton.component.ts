@@ -26,7 +26,7 @@ import { HubHttpService } from '../hub-http-service';
     </ng-container>
 
     <ng-template #loggedOut>
-      <button nbButton status="primary" outline (click)="auth.loginWithRedirect()">Log in</button>
+      <button nbButton status="primary" outline (click)="auth.loginWithRedirect()">Sign In</button>
     </ng-template>`
 })
 export class AuthButtonComponent implements OnInit, OnDestroy {

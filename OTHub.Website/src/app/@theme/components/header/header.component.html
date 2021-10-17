@@ -5,18 +5,16 @@
     </a>
     <a class="logo" href="#" (click)="navigateHome()">OT Hub</a>
   </div>
-  <nb-select [selected]="currentTheme" (selectedChange)="changeTheme($event)">
-    <nb-option *ngFor="let theme of themes" [value]="theme.value"> {{ theme.name }}</nb-option>
-  </nb-select>
 
-  <nb-select [selected]="currentNetwork" (selectedChange)="changeNetwork($event)" style="margin-left:10px;">
+
+  <!-- <nb-select [selected]="currentNetwork" (selectedChange)="changeNetwork($event)" style="margin-left:10px;">
     <nb-option *ngFor="let network of networks" [value]="network.url"> {{ network.name }}</nb-option>
-  </nb-select>
+  </nb-select> -->
 </div>
 
 <div class="header-container">
 
-  <nb-actions size="small">
+  <nb-actions size="small" *ngIf="hasLoadingSignalrStarted == true">
   <nb-action icon="bell" [nbPopover]="templateRef" nbPopoverPlacement="bottom"
   [badgeDot]="hasNewNotifications"
                  badgePosition="bottom middle"
