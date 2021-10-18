@@ -2,6 +2,8 @@ export class BeforePayoutResult {
     CanTryPayout: boolean;
     Header: string;
     Message: string;
+    BlockchainExplorerUrlFormat: string;
+    EstimatedPayout: number;
 }
 
 export class ContractAddress {

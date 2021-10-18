@@ -6,9 +6,11 @@ import { DataHolderDetailedModel } from '../dataholder/dataholder-models';
 import { FormsModule } from '@angular/forms';
 import { HubHttpService } from '../../hub-http-service';
 import * as moment from 'moment';
-import { RecentActivityJobModel } from './mynodes-model';
+import { RecentActivityJobModel, TelegramSettings } from './mynodes-model';
 import { AuthService } from '@auth0/auth0-angular';
 import { DOCUMENT } from '@angular/common';
+import { WidgetConfiguration } from 'angular-telegram-login-widget/lib/types';
+import { NbToastrConfig, NbToastrService } from '@nebular/theme';
 declare const $: any;
 declare const swal: any;
 @Component({
@@ -18,12 +20,16 @@ declare const swal: any;
 })
 export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, AfterViewChecked {
   usdAmountCalculationMode: string;
+  telegramSettings: TelegramSettings;
 
 
-  constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService,  @Inject(DOCUMENT) private _document: Document) {
+  constructor(private http: HttpClient, private httpService: HubHttpService, private auth: AuthService,  @Inject(DOCUMENT) private _document: Document
+  , private toastrService: NbToastrService) {
     this.isLoggedIn = false;
     this.isLoading = true;
+    this.isLoadingTelegram = true;
   }
+
   isLoggedIn: boolean;
   isLoading: boolean
   showDataHolders: boolean;
@@ -43,11 +49,83 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
   }
 
   ngAfterViewInit() {
-
   }
 
   ngAfterViewChecked() {
 
+  }
+
+  onTelegramLoad() {
+    
+  }
+
+  onTelegramLoadError() {
+   
+  }
+
+  onTelegramLogin(user: any) {
+    this.sendTelegramLoginHash(JSON.stringify(user, null, 4));
+  }
+
+  sendTelegramLoginHash(body: string) {
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + '/api/telegram/linkaccount';
+  this.http.post(url, body, { headers }).subscribe(data => {
+  });
+  }
+
+  onTelegramNotificationsEnabledChange(value: boolean) {
+    this.telegramSettings.NotificationsEnabled = value;
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + '/api/telegram/UpdateNotificationsEnabled?value=' + value;
+  this.http.post(url, { headers }).subscribe(data => {
+  });
+  }
+
+  onTelegramJobWonEnabledChange(value: boolean) {
+    this.telegramSettings.JobWonEnabled  = value;
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + '/api/telegram/UpdateJobWonEnabled?value=' + value;
+  this.http.post(url, { headers }).subscribe(data => {
+  });
+  }
+
+  isNumeric(value): boolean {
+    return /^-?\d+$/.test(value);
+}
+
+  onLowAvailableTokensAmountChanged(value: string): void {  
+    if (this.isNumeric) {
+      this.isAvailableTokenAmountValid = true;
+      const headers = new HttpHeaders()
+        .set('Content-Type', 'application/json')
+        .set('Accept', 'application/json');
+      const url = this.httpService.ApiUrl + '/api/telegram/UpdateLowAvailableTokensAmount?value=' + value;
+      this.http.post<Number>(url, { headers }).subscribe(data => {
+        this.telegramSettings.LowAvailableTokensAmount = data;
+      });
+    } else {
+      this.isAvailableTokenAmountValid = false;
+    }
+  }
+
+  isAvailableTokenAmountValid: boolean;
+
+  
+  onTelegramLowAvailableTokensEnabledChange(value: boolean) {
+    this.telegramSettings.LowAvailableTokensEnabled  = value;
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+  const url = this.httpService.ApiUrl + '/api/telegram/UpdateLowAvailableTokensEnabled?value=' + value;
+  this.http.post(url, { headers }).subscribe(data => {
+  });
   }
 
   onUsdAmountCalculationModeChange(value: string) {
@@ -140,12 +218,49 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
     let lastSplit = '';
     if (split.length === 2) {
       lastSplit = split[1];
-      if (lastSplit.length > 3) {
-        lastSplit = lastSplit.substring(0, 3);
+      while(lastSplit[lastSplit.length - 1] == '0') {
+        lastSplit = lastSplit.substr(0, lastSplit.length - 1);
+      }
+      if (lastSplit == '') {
+        return split[0];
       }
       return split[0] + '.' + lastSplit;
     }
     return split[0];
+  }
+
+  loadTelegramSettings() {
+    this.isLoadingTelegram = true;
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/telegram/GetSettings';
+    this.http.get<TelegramSettings>(url, { headers }).subscribe(data => {
+     this.telegramSettings = data;
+     this.isLoadingTelegram = false;
+    });
+  }
+
+  isLoadingTelegram: Boolean;
+
+  sendTestTelegramMessage() {
+    const headers = new HttpHeaders()
+    .set('Content-Type', 'application/json')
+    .set('Accept', 'application/json');
+    const url = this.httpService.ApiUrl + '/api/telegram/SendTestMessage';
+    this.http.post(url, { headers }).subscribe(data => {
+      let config = new NbToastrConfig({ duration: 8000 });
+      config.status = "success";
+      config.icon = 'info';
+      this.toastrService.show(
+        'Message has been sent! Check Telegram for a message from the username othub_bot.', 'Send Test Message', config);
+    }, err => {
+      let config = new NbToastrConfig({ duration: 8000 });
+      config.status = "warning";
+      config.icon = 'alert-triangle';
+      this.toastrService.show(
+        err.error ?? 'Unknown error', 'Send Test Message', config);
+    });
   }
 
   ngOnInit() {
@@ -164,6 +279,8 @@ export class MynodesComponent implements OnInit, OnDestroy, AfterViewInit, After
       this.http.get<Number>(url, { headers }).subscribe(data => {
        this.usdAmountCalculationMode = data.toString();
       });
+
+      this.loadTelegramSettings();
       }
       this.isLoading = false;
     });

@@ -2,7 +2,7 @@
 {
     public enum Source
     {
-        Startup,
+        Tools,
         BlockchainSync,
         Misc,
     }

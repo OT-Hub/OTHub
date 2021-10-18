@@ -48,10 +48,11 @@ If you want to get more information about a specific data holder you should use 
                 NodeId_like = null;
             }
 
-            string userID = restrictToMyNodes ? User?.Identity?.Name : null;
+            string userID = User?.Identity?.Name;
+            bool filterByMyNodes = restrictToMyNodes;
 
             var result = await DataHoldersSql.Get(userID, _limit,
-                _page, NodeId_like, _sort, _order);
+                _page, NodeId_like, _sort, _order, filterByMyNodes);
 
             HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";
             HttpContext.Response.Headers["X-Total-Count"] = result.total.ToString();
@@ -73,25 +74,6 @@ If you want to get more information about a specific data holder you should use 
 
             return new OkObjectResult(result.results);
         }
-
-        [Route("GetNodeIDForIdentity")]
-        [HttpGet]
-        public async Task<string> GetNodeIDForIdentity([FromQuery] string identity)
-        {
-            await using (var connection =
-                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-            {
-                var data = await connection.ExecuteScalarAsync<string>("SELECT NodeID FROM OTIdentity WHERE Identity = @identity ORDER BY NodeID DESC LIMIT 1", new
-                {
-                    identity = identity
-                });
-
-                return data;
-            }
-        }
-
-
-
 
         [Route("GetNodeIDForIdentity")]
         [HttpGet]

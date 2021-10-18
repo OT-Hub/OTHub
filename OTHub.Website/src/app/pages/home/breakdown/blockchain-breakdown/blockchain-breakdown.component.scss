@@ -1,0 +1,105 @@
+.homeData {
+    display:block;
+    font-weight: 400;
+    line-height: 1.5;
+    font-size:14px;
+    min-height: 21px;
+  }
+  
+  .homeField {
+    padding: 4px 0;
+    font-weight: 600;
+    line-height: 1.5;
+    font-size:14px;
+  }
+  
+  .homeHeader {
+    font-size: 18px;
+    font-weight: 700;
+    padding-bottom: 8px;
+  }
+  
+  .homeSubHeader {
+    font-size: 14px;
+    //font-weight: 600;
+    padding-bottom: 8px;
+    padding-top:4px;
+  }
+  
+  .tokenSmall {
+    background-color: #eff2f5;
+    color: #58667e;
+    border-radius: 4px;
+    padding: 2px 6px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    margin-right: 6px;
+  }
+  
+  .blockchainSmall {
+    background-color: #eff2f5;
+    color: #58667e;
+    border-radius: 4px;
+    padding: 2px 4px;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 18px;
+    margin-right: 6px;
+  }
+  
+  .otLogo {margin-right:2px;}
+  
+  .homeCard {
+  
+  }
+  
+  .blockchainLogo {
+    height: 30px;
+    width: 30px;
+    border-radius: 23px;
+    margin-right: 7px;
+  }
+  
+  .blockchainHeader {
+    font-size:18px;
+    display: flex;
+    align-items: center;
+  }
+  
+  .btcPrice {
+    color: #808a9d;
+    // margin-left:5px;
+    font-size:0.8rem;
+  }
+  
+  .btnPricePercent {
+    font-size: 14px;
+    padding: 0.1rem 0.1rem;
+  }
+  
+  .showSplitQuestion {
+    margin: 0px 0px;
+  }
+  
+  .showSplitQuestion .link {
+  
+  }
+  
+  .mainBlockchainBody {
+    min-height: 276px;
+  }
+  
+  .blockchainHeader a, .blockchainHeader a:hover {
+    font-size:0.8rem;
+    text-decoration: none;
+  }
+  
+  .blockchainHeader .divider {
+    margin: 0px 6px;
+  }
+
+  
+  .homeField.twoPoints .to {
+    margin: 0px 4px;
+    }

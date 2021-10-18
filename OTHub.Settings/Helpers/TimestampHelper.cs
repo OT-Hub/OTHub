@@ -13,5 +13,12 @@ namespace OTHub.Settings.Helpers
             dtDateTime = dtDateTime.AddSeconds(unixTimeStamp).ToLocalTime();
             return dtDateTime;
         }
+
+        public static double DateTimeToUnixTimeStamp(DateTime date)
+        {
+            long unixTime = ((DateTimeOffset)date).ToUnixTimeSeconds();
+
+            return unixTime;
+        }
     }
 }

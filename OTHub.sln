@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTHub.ApiServer", "OTHub.ApiServer\OTHub.APIServer.csproj", "{4D982814-60F3-405A-B3E1-747202F83A9F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTHub.APIServer", "OTHub.ApiServer\OTHub.APIServer.csproj", "{4D982814-60F3-405A-B3E1-747202F83A9F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTHub.BackendSync", "OTHub.BackendSync\OTHub.BackendSync.csproj", "{8786FB30-CF30-491D-B4BC-EF82C2432F45}"
 EndProject
@@ -15,7 +15,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTHub.Settings", "OTHub.Set
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{225F5B2A-1586-475D-A8F9-7CEC454D2BD3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTHub.Tests", "OTHub.Tests\OTHub.Tests.csproj", "{0D5C8F55-87DB-4B29-97CC-744F6A945EBD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OTHub.Tests", "OTHub.Tests\OTHub.Tests.csproj", "{0D5C8F55-87DB-4B29-97CC-744F6A945EBD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OTHub.Messaging", "OTHub.Messaging\OTHub.Messaging.csproj", "{8F057012-CCE6-4B6C-B479-C9D6885C1D09}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{0D5C8F55-87DB-4B29-97CC-744F6A945EBD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0D5C8F55-87DB-4B29-97CC-744F6A945EBD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0D5C8F55-87DB-4B29-97CC-744F6A945EBD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F057012-CCE6-4B6C-B479-C9D6885C1D09}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F057012-CCE6-4B6C-B479-C9D6885C1D09}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F057012-CCE6-4B6C-B479-C9D6885C1D09}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F057012-CCE6-4B6C-B479-C9D6885C1D09}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

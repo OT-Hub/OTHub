@@ -6,6 +6,7 @@ using MySqlConnector;
 using OTHub.APIServer.Sql.Models;
 using OTHub.APIServer.Sql.Models.Nodes.DataHolders;
 using OTHub.Settings;
+using OTHub.Settings.Constants;
 
 namespace OTHub.APIServer.Sql
 {
@@ -16,7 +17,7 @@ where identity = @identity";
 
         public const String GetRecentPayoutGasPricesSql = @"
 SELECT GasPrice, AVG(GasUsed) GasUsed, COUNT(*) TotalCount FROM otcontract_holding_paidout
-WHERE Timestamp >= DATE_Add(NOW(), INTERVAL -3 DAY)
+WHERE Timestamp >= DATE_Add(NOW(), INTERVAL -60 DAY)
 GROUP BY GasPrice
 ORDER BY GasPrice";
 
@@ -25,7 +26,8 @@ ORDER BY GasPrice";
             int limit, int page,
             string NodeId_like,
             string sort,
-            string order)
+            string order,
+            bool filterByMyNodes)
         {
             string orderBy = String.Empty;
 
@@ -48,6 +50,15 @@ ORDER BY GasPrice";
                     break;
                 case "StakeTokens":
                     orderBy = "ORDER BY StakeTokens";
+                    break;
+                case "AvailableJobTokens":
+                    orderBy = "ORDER BY AvailableJobTokens";
+                    break;
+                case "DisplayName":
+                    if (userID != null)
+                    {
+                        orderBy = "ORDER BY DisplayName";
+                    }
                     break;
             }
 
@@ -84,6 +95,7 @@ substring(I.NodeId, 1, 40) as NodeId,
 MAX(I.Version) Version, 
 SUM(COALESCE(I.Stake, 0))  as StakeTokens,
 SUM(COALESCE(I.StakeReserved, 0))  as StakeReservedTokens, 
+GREATEST(SUM(COALESCE(I.Stake, 0)) - SUM(COALESCE(I.StakeReserved, 0)) - @minimumStake, 0) AS AvailableJobTokens,
 SUM(COALESCE(I.Paidout, 0))  as PaidTokens,
 SUM(COALESCE(I.TotalOffers, 0))  as TotalWonOffers, 
 SUM(COALESCE(I.OffersLast7Days, 0))  WonOffersLast7Days,
@@ -94,7 +106,7 @@ END) FROM otoffer o
 JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
 WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity) ActiveJobs
 from OTIdentity I
-{(userID != null ? "JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
+{(userID != null ? $"{(filterByMyNodes ? "INNER" : "LEFT")} JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
 WHERE (@NodeId_like IS NULL OR (I.NodeId = @NodeId_like OR I.Identity = @NodeId_like))
 AND I.Version = 1
 GROUP BY I.NodeId
@@ -102,11 +114,11 @@ GROUP BY I.NodeId
 {limitSql}";
 
                 NodeDataHolderSummaryModel[] summary = (await connection.QueryAsync<NodeDataHolderSummaryModel>(
-                    sql, new { userID = userID, NodeId_like })).ToArray();
+                    sql, new { userID = userID, NodeId_like, minimumStake = TracToken.MinimumStake })).ToArray();
 
                 var total = await connection.ExecuteScalarAsync<int>($@"select COUNT(DISTINCT I.NodeId)
 from OTIdentity I
-{(userID != null ? "JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
+{(userID != null ? $"{(filterByMyNodes ? "INNER" : "LEFT")} JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
 WHERE (@NodeId_like IS NULL OR I.NodeId = @NodeId_like) AND I.Version = 1",
                     new { userID = userID, NodeId_like });
 

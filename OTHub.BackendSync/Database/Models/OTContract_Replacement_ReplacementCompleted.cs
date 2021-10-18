@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 
@@ -16,9 +17,9 @@ namespace OTHub.BackendSync.Database.Models
         public ulong GasUsed { get; set; }
         public int BlockchainID { get; set; }
 
-        public static void InsertIfNotExist(MySqlConnection connection, OTContract_Replacement_ReplacementCompleted model)
+        public static async Task InsertIfNotExist(MySqlConnection connection, OTContract_Replacement_ReplacementCompleted model)
         {
-            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Replacement_ReplacementCompleted WHERE TransactionHash = @hash AND BlockchainID = @blockchainID", new
+            var count = await connection.QueryFirstOrDefaultAsync<Int32>("SELECT COUNT(*) FROM OTContract_Replacement_ReplacementCompleted WHERE TransactionHash = @hash AND BlockchainID = @blockchainID", new
             {
                 hash = model.TransactionHash,
                 blockchainID = model.BlockchainID
@@ -26,7 +27,7 @@ namespace OTHub.BackendSync.Database.Models
 
             if (count == 0)
             {
-                connection.Execute(
+                await connection.ExecuteAsync(
                     @"INSERT INTO OTContract_Replacement_ReplacementCompleted
 (TransactionHash, BlockNumber, Timestamp, ChallengerIdentity, OfferId, ChosenHolder, GasPrice, GasUsed, BlockchainID)
 VALUES(@TransactionHash, @BlockNumber, @Timestamp, @ChallengerIdentity, @OfferId, @ChosenHolder, @GasPrice, @GasUsed, @BlockchainID)",

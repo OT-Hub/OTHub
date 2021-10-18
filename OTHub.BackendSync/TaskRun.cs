@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -71,49 +72,79 @@ namespace OTHub.BackendSync
 
         public override string ParentName => _childTasks.Any() ? null : "System";
 
+        public virtual bool ContinueRunningChildrenOnError { get; } = false;
+
         protected TaskRunBlockchain(string name) : base(name)
         {
         }
 
-        protected int GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
+        private static readonly ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?> _blockchainIDDictionary = new ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?>();
+        protected async Task<int> GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
         {
-            var id = connection.ExecuteScalar<int?>(
-                "select ID FROM blockchains where BlockchainName = @blockchainName AND NetworkName = @networkName", new
-                {
-                    blockchainName = blockchain.ToString(),
-                    networkName = network.ToString()
-                });
+            int? id;
+
+            if (!_blockchainIDDictionary.TryGetValue(new Tuple<BlockchainType, BlockchainNetwork>(blockchain, network), out id))
+            {
+                id = await connection.ExecuteScalarAsync<int?>(
+                    "select ID FROM blockchains where BlockchainName = @blockchainName AND NetworkName = @networkName", new
+                    {
+                        blockchainName = blockchain.ToString(),
+                        networkName = network.ToString()
+                    });
+
+                _blockchainIDDictionary[new Tuple<BlockchainType, BlockchainNetwork>(blockchain, network)] = id;
+            }
 
             return id.Value;
         }
 
-        protected Web3 GetWeb3(MySqlConnection connection, int blockchainID)
+
+        private static readonly ConcurrentDictionary<int, String> _blockchainUrlDictionary = new ConcurrentDictionary<int, string>();
+        protected async Task<Web3> GetWeb3(MySqlConnection connection, int blockchainID, BlockchainType type)
         {
-            string nodeUrl = connection.ExecuteScalar<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+            string nodeUrl;
+
+            if (!_blockchainUrlDictionary.TryGetValue(blockchainID, out nodeUrl))
             {
-                id = blockchainID
-            });
+                nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                {
+                    id = blockchainID
+                });
 
+                _blockchainUrlDictionary[blockchainID] = nodeUrl;
+            }
+            
             var cl = new Web3(nodeUrl);
+            
 
-            RequestInterceptor r = new LogRequestInterceptor();
+            RequestInterceptor r = new RPCInterceptor(type);
             cl.Client.OverridingRequestInterceptor = r;
 
             return cl;
         }
 
-        public abstract Task Execute(Source source, BlockchainType blockchain, BlockchainNetwork network);
+        public abstract Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network);
 
-        protected async Task RunChildren(Source source, BlockchainType blockchain, BlockchainNetwork network,
+        protected async Task<bool> RunChildren(Source source, BlockchainType blockchain, BlockchainNetwork network,
             int blockchainId)
         {
+            bool anyChildFailed = false;
+
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var cl = GetWeb3(connection, GetBlockchainID(connection, blockchain, network));
+                var cl = await GetWeb3(connection, await GetBlockchainID(connection, blockchain, network), blockchain);
 
                 int defaultBlocksToIgnore = 2;
 
                 if (blockchain == BlockchainType.xDai)
+                {
+                    defaultBlocksToIgnore = 20;
+                }
+                else if (blockchain == BlockchainType.Polygon)
+                {
+                    defaultBlocksToIgnore = 30;
+                }
+                else if (blockchain == BlockchainType.Starfleet)
                 {
                     defaultBlocksToIgnore = 20;
                 }
@@ -129,17 +160,18 @@ namespace OTHub.BackendSync
                     try
                     {
 
-                        status.InsertOrUpdate(connection, true, null, true, Name);
+                        await status.InsertOrUpdate(connection, true, null, true, Name);
 
 
                         await childTask.Execute(source, blockchain, network);
                     }
-                    catch
+                    catch (Exception ex)
                     {
+                        anyChildFailed = true;
                         try
                         {
 
-                            status.InsertOrUpdate(connection, false, null, false, Name);
+                            await status.InsertOrUpdate(connection, false, null, false, Name);
 
                         }
                         catch
@@ -147,13 +179,22 @@ namespace OTHub.BackendSync
 
                         }
 
-                        throw;
+                        if (ContinueRunningChildrenOnError)
+                        {
+                            Logger.WriteLine(source, ex.ToString());
+                            Logger.WriteLine(source, "Continuing to next child task.");
+                            continue;
+                        }
+                        else
+                        {
+                            throw;
+                        }
                     }
 
                     try
                     {
 
-                        status.InsertOrUpdate(connection, true, null, false, Name);
+                        await status.InsertOrUpdate(connection, true, null, false, Name);
 
                     }
                     catch
@@ -162,6 +203,8 @@ namespace OTHub.BackendSync
                     }
                 }
             }
+
+            return !anyChildFailed;
         }
 
 
@@ -189,7 +232,7 @@ namespace OTHub.BackendSync
                     try
                     {
 
-                        status.InsertOrUpdate(connection, true, null, true, Name);
+                        await status.InsertOrUpdate(connection, true, null, true, Name);
 
 
                         await childTask.Execute(source);
@@ -199,7 +242,7 @@ namespace OTHub.BackendSync
                         try
                         {
 
-                            status.InsertOrUpdate(connection, false, null, false, Name);
+                            await status.InsertOrUpdate(connection, false, null, false, Name);
 
                         }
                         catch
@@ -213,7 +256,7 @@ namespace OTHub.BackendSync
                     try
                     {
 
-                        status.InsertOrUpdate(connection, true, null, false, Name);
+                        await status.InsertOrUpdate(connection, true, null, false, Name);
 
                     }
                     catch

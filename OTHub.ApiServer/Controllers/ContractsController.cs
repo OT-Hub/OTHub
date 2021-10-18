@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using Microsoft.AspNetCore.Mvc;
@@ -6,6 +7,7 @@ using MySqlConnector;
 using OTHub.APIServer.Sql.Models;
 using OTHub.APIServer.Sql.Models.Contracts;
 using OTHub.Settings;
+using OTHub.Settings.Abis;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace OTHub.APIServer.Controllers
@@ -41,12 +43,15 @@ This holding smart contract is responsible for the movement and storage of reser
         )]
         [SwaggerResponse(200, type: typeof(ContractAddress))]
         [SwaggerResponse(500, "Internal server error")]
-        public ContractAddress GetHoldingAddress()
+        public ContractAddress GetHoldingAddress([FromQuery]int blockchainID)
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 return connection.QuerySingle<ContractAddress>(@"select Address, IsLatest from otcontract
-where Type = 6 AND IsLatest = 1 AND IsArchived = 0");
+where Type = 6 AND IsLatest = 1 AND IsArchived = 0 AND BlockchainID = @blockchainID", new
+                {
+                    blockchainID
+                });
             }
         }
 
@@ -54,12 +59,16 @@ where Type = 6 AND IsLatest = 1 AND IsArchived = 0");
         [HttpGet]
         [SwaggerResponse(200, type: typeof(ContractAddress[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public ContractAddress[] GetHoldingAddresses()
+        public ContractAddress[] GetHoldingAddresses([FromQuery] int blockchainID)
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 return connection.Query<ContractAddress>(@"select Address, IsLatest from otcontract
-where Type = 6").ToArray();
+where Type = 6 AND BlockchainID = @blockchainID",
+                    new
+                    {
+                        blockchainID
+                    }).ToArray();
             }
         }
 
@@ -67,12 +76,16 @@ where Type = 6").ToArray();
         [HttpGet]
         [SwaggerResponse(200, type: typeof(ContractAddress[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public ContractAddress[] GetHoldingStorageAddresses()
+        public ContractAddress[] GetHoldingStorageAddresses([FromQuery] int blockchainID)
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 return connection.Query<ContractAddress>(@"select Address, IsLatest from otcontract
-where Type = 5").ToArray();
+where Type = 5 AND BlockchainID = @blockchainID",
+                    new
+                    {
+                        blockchainID
+                    }).ToArray();
             }
         }
 
@@ -80,12 +93,35 @@ where Type = 5").ToArray();
         [HttpGet]
         [SwaggerResponse(200, type: typeof(ContractAddress[]))]
         [SwaggerResponse(500, "Internal server error")]
-        public ContractAddress[] GetLitigationStorageAddresses()
+        public ContractAddress[] GetLitigationStorageAddresses([FromQuery] int blockchainID)
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 return connection.Query<ContractAddress>(@"select Address, IsLatest from otcontract
-where Type = 9").ToArray();
+where Type = 9 AND BlockchainID = @blockchainID",
+                    new
+                    {
+                        blockchainID
+                    }).ToArray();
+            }
+        }
+
+        [Route("GetLatestABIForContract")]
+        [HttpGet]
+        [SwaggerResponse(200, type: typeof(string))]
+        [SwaggerResponse(500, "Internal server error")]
+        public async Task<string> GetLatestABIForContract([FromQuery]int blockchainID, [FromQuery] int contractType)
+        {
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                var blockchainRow = await connection.QueryFirstAsync("SELECT * FROM blockchains where id = @id", new {id = blockchainID});
+                string blockchainName = blockchainRow.BlockchainName;
+                string networkName = blockchainRow.NetworkName;
+
+                BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
+                BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
+
+                return AbiHelper.GetContractAbi((ContractTypeEnum) contractType, blockchainEnum, networkNameEnum);
             }
         }
     }

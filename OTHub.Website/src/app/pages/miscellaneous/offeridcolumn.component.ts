@@ -8,8 +8,8 @@ import { HubHttpService } from '../hub-http-service';
 @Component({
     selector: 'offeridcolumn',
     template: `
-    <a [routerLink]="[link]">
-    {{value}}
+    <a [routerLink]="[link]" [title]="value">
+    {{value | slice:0:6}}...{{value | slice:-6}}
     </a>
   `,
 })

@@ -26,7 +26,9 @@ namespace OTHub.APIServer.Helpers
 
             if (!cache.TryGetValue("HomeV3Ticker", out object tickerModel))
             {
-                await _lock.WaitAsync(TimeSpan.FromSeconds(5));
+                bool success = await _lock.WaitAsync(TimeSpan.FromSeconds(1));
+                if (!success)
+                    return null;
                 try
                 {
                     if (!cache.TryGetValue("HomeV3Ticker", out tickerModel))

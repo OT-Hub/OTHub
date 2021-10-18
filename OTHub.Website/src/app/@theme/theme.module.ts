@@ -12,6 +12,7 @@ import {
   NbSelectModule,
   NbIconModule,
   NbThemeModule,
+  NbPopoverModule,
 } from '@nebular/theme';
 import { NbEvaIconsModule } from '@nebular/eva-icons';
 import { NbSecurityModule } from '@nebular/security';
@@ -40,6 +41,7 @@ import { CORPORATE_THEME } from './styles/theme.corporate';
 import { DARK_THEME } from './styles/theme.dark';
 import { MiscellaneousModule } from 'app/pages/miscellaneous/miscellaneous.module';
 import { AuthButtonComponent } from 'app/pages/miscellaneous/authbutton.component';
+import { MomentModule } from 'ngx-moment';
 
 const NB_MODULES = [
   NbLayoutModule,
@@ -53,7 +55,9 @@ const NB_MODULES = [
   NbButtonModule,
   NbSelectModule,
   NbIconModule,
-  NbEvaIconsModule
+  NbEvaIconsModule,
+  NbPopoverModule,
+  MomentModule
 ];
 const COMPONENTS = [
   HeaderComponent,
@@ -90,8 +94,8 @@ export class ThemeModule {
     switch (thm) {
       case "default":
       case "dark":
-      case "cosmic":
-      case "corporate":
+      // case "cosmic":
+      // case "corporate":
         break;
       default:
         thm = 'default';
@@ -104,7 +108,7 @@ export class ThemeModule {
           {
             name: thm
           },
-          [DEFAULT_THEME, COSMIC_THEME, CORPORATE_THEME, DARK_THEME],
+          [DEFAULT_THEME, DARK_THEME],
         ).providers,
       ],
     };

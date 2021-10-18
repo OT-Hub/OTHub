@@ -22,7 +22,14 @@ SUM(COALESCE(I.OffersLast7Days, 0)) WonOffersLast7Days,
 (SELECT COUNT(O.OfferID) FROM OTOffer O WHERE O.DCNodeId = I.NodeId) as DCOfferCount,
 bc.BlockchainName,
 bc.NetworkName,
-mn.DisplayName
+mn.DisplayName,
+(SELECT COUNT(DISTINCT  CASE WHEN O.IsFinalized = 1 
+	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN O.OfferId ELSE null END)
+	ELSE null
+END) FROM otoffer o 
+JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
+WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity) TotalActiveOffers,
+(SELECT COUNT(li.TransactionHash) FROM otcontract_litigation_litigationinitiated li WHERE li.HolderIdentity = I.Identity AND li.BlockchainID = I.BlockchainID) LitigationCount
 from OTIdentity I
 JOIN blockchains bc ON bc.ID = I.BlockchainID
 left JOIN otcontract_profile_identitycreated ic on ic.NewIdentity = I.Identity AND ic.BlockchainID = I.BlockchainID
@@ -31,11 +38,12 @@ left join mynodes mn on mn.UserID = @userID and mn.NodeID = I.NodeID
 WHERE I.NodeID = @nodeId
 GROUP BY I.NodeId";
 
-        public const String GetJobs = @"SELECT h.Holder Identity, h.OfferId, 
+        public const String GetJobs = @"SELECT h.Holder Identity, i.NodeId, h.OfferId, 
                 h.IsOriginalHolder,
                 o.FinalizedTimestamp, 
                 o.HoldingTimeInMinutes, 
                 o.TokenAmountPerHolder,
+                o.BlockchainID,
                 DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) as EndTimestamp,
                 (CASE WHEN IsFinalized = 1 
                 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN
@@ -60,15 +68,19 @@ GROUP BY I.NodeId";
                 	ELSE ''
                 END) as Status,
                 (CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then true else false end) as Paidout,
-                (CASE WHEN po.ID is null THEN 
-                	(CASE WHEN (h.LitigationStatus is null OR h.LitigationStatus = 0 OR h.LitigationStatus = 1 OR h.LitigationStatus = 2)
-                		 THEN true else false END) 
-                ELSE false END) as CanPayout
+                SUM(po.Amount) as PaidoutAmount,
+                CASE WHEN COALESCE(SUM(po.Amount), 0) = O.TokenAmountPerHolder then 0 ELSE 1 END  as CanPayout,
+                mn.ID IS NOT NULL AS IsMyNode,
+                b.DisplayName as BlockchainName,
+                o.EstimatedLambda,
+                o.EstimatedLambdaConfidence
                 FROM otoffer_holders h
-                join otoffer o on o.offerid = h.offerid
-                JOIN otidentity i ON i.Identity = h.Holder
-                left join otcontract_holding_paidout po on po.OfferID = h.OfferID and po.Holder = h.Holder
-                left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
+                join otoffer o on o.offerid = h.offerid and o.blockchainid = h.blockchainid
+                JOIN otidentity i ON i.Identity = h.Holder and i.blockchainid = o.blockchainid
+                JOIN blockchains b on b.id = h.blockchainid
+                LEFT JOIN mynodes mn ON mn.NodeID = i.NodeId AND mn.UserID = @userID
+                left join otcontract_holding_paidout po on po.OfferID = h.OfferID and po.Holder = h.Holder and po.blockchainid = h.blockchainid
+                left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0 and lc.blockchainid = h.blockchainid
                 WHERE i.nodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)
                 GROUP BY h.OfferID, h.Holder";
 
@@ -80,9 +92,10 @@ GROUP BY I.NodeId";
                 left join otcontract_litigation_litigationcompleted lc on lc.OfferId = h.OfferId and lc.HolderIdentity = h.Holder and lc.BlockNumber = h.LitigationStatusBlockNumber and h.LitigationStatus = 0
                 WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR o.OfferId = @OfferId_like)";
 
-        public const String GetPayouts = @"SELECT po.OfferID, po.Amount, po.Timestamp, po.TransactionHash, po.GasUsed, po.GasPrice
+        public const String GetPayouts = @"SELECT po.OfferID, po.Amount, po.Timestamp, po.TransactionHash, po.GasUsed, po.GasPrice, bc.GasTicker
 FROM otcontract_holding_paidout po
 JOIN otidentity i ON i.Identity = po.Holder
+JOIN blockchains bc on bc.ID = po.BlockchainID
 WHERE i.NodeId = @nodeId AND (@OfferId_like is null OR po.OfferId = @OfferId_like) AND (@TransactionHash_like is null OR po.TransactionHash = @TransactionHash_like)";
 
 

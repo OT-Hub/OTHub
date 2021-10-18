@@ -64,5 +64,16 @@ ContractAddress = @contractAddress, BlockchainID = @BlockchainID WHERE Transacti
                 Update(connection, model);
             }
         }
+
+        public static bool Exists(MySqlConnection connection, string identity, int blockchainID)
+        {
+            var count = connection.QueryFirstOrDefault<Int32>("SELECT COUNT(*) FROM OTContract_Profile_IdentityCreated WHERE NewIdentity = @identity AND BlockchainID = @blockchainID", new
+            {
+                identity = identity,
+                blockchainID = blockchainID
+            });
+
+            return count > 0;
+        }
     }
 }

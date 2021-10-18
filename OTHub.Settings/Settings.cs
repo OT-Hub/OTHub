@@ -9,6 +9,7 @@ namespace OTHub.Settings
         public MariaDBSettings MariaDB { get; set; }
         public WebServerSettings WebServer { get; set; }
         public MarketSettings Market { get; set; }
+        public TelegramSettings Telegram { get; set; }
 
         public static OTHubSettings Instance { get; private set; }
     
@@ -39,5 +40,10 @@ namespace OTHub.Settings
     public class MarketSettings
     {
         public string CoinMarketCapAPIKey { get; set; }
+    }
+
+    public class TelegramSettings
+    {
+        public string BotKey { get; set; }
     }
 }

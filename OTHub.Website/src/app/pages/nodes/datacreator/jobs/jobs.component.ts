@@ -63,6 +63,12 @@ delete: false
         //   return '<a class="navigateJqueryToAngular" href="/offers/' + value + '" onclick="return false;" title="' + value + '" >' + value.substring(0, 40) + '...</a>';
         // }
       },
+      BlockchainDisplayName: {
+        title: 'Blockchain',
+        type: 'string',
+        sort: false,
+        filter: false
+      },
       CreatedTimestamp: {
         sort: true,
         sortDirection: 'desc',
@@ -109,15 +115,85 @@ delete: false
         type: 'string',
         filter: false,
         valuePrepareFunction: (value) => {
-          if (value > 1440) {
-            const days = (value / 1440);
-            if ((days / 365) % 1 == 0) {
-              return (days / 365).toString() + ' years';
+          const nowUtc = moment.utc();
+          const endDate = moment.utc().add(value, 'minutes');
+       
+          let daysRemaining = endDate.diff(nowUtc, 'days');
+
+          if (daysRemaining > 365) {
+            if (daysRemaining > 730) {
+              let yearsRemaining = endDate.diff(nowUtc, 'years', true);
+              return +yearsRemaining.toFixed(1) + ' years';
+            } else {
+            let monthsRemaining = endDate.diff(nowUtc, 'months');
+            return monthsRemaining + ' months';
             }
-            return +days.toFixed(1).replace(/[.,]00$/, '') + (days === 1 ? ' day' : ' days');
           }
-          return value + ' minute(s)';
+          else if (daysRemaining >= 1) {
+            return daysRemaining + ' days';
+          } else if (daysRemaining < 0) {
+            return 'None';
+          } else {
+            let hoursRemaining = endDate.diff(nowUtc, 'hours');
+            if (hoursRemaining < 2) {
+              let minutesRemaining = endDate.diff(nowUtc, 'minutes');
+              return minutesRemaining + ' minutes';
+            }
+            return hoursRemaining + ' hours';
+          }
         }
+      },
+      RemainingTime: {
+        sort: false,
+        title: 'Remaining Time',
+        type: 'string',
+        filter: false,
+        valuePrepareFunction: (value, row) => {
+
+
+          if (row.EndTimestamp == null)
+          return '';
+
+          let endDate = row.EndTimestamp;
+
+          const stillUtc = moment.utc(endDate);
+          const nowUtc = moment.utc();
+
+          let daysRemaining = stillUtc.diff(nowUtc, 'days');
+
+          if (daysRemaining > 365) {
+            if (daysRemaining > 730) {
+              let yearsRemaining = stillUtc.diff(nowUtc, 'years', true);
+              return +yearsRemaining.toFixed(1) + ' years';
+            } else {
+            let monthsRemaining = stillUtc.diff(nowUtc, 'months');
+            return monthsRemaining + ' months';
+            }
+          }
+          else if (daysRemaining >= 1) {
+            return daysRemaining + ' days';
+          } else if (daysRemaining < 0) {
+            return 'None';
+          } else {
+            let hoursRemaining = stillUtc.diff(nowUtc, 'hours');
+            if (hoursRemaining < 0) {
+              return 'None';
+            }
+            if (hoursRemaining < 2) {
+              let minutesRemaining = stillUtc.diff(nowUtc, 'minutes');
+              return minutesRemaining + ' minutes';
+            }
+            return hoursRemaining + ' hours';
+          }
+        }
+      },
+      DataSetSizeInBytes: {
+        sort: true,
+        //width: '5%',
+        title: 'Data Set Size',
+        type: 'string',
+        filter: false,
+        valuePrepareFunction: (value) => { return (value / 1000).toFixed(2).replace(/[.,]00$/, '') + ' KB';}
       },
       TokenAmountPerHolder: {
         sort: true,
@@ -128,6 +204,18 @@ delete: false
           let tokenAmount = parseFloat(value);
           let formatted = +tokenAmount.toFixed(4);
           return formatted;
+        }
+      },
+      EstimatedLambda: {
+        title: 'Price Factor',
+        sort: false,
+        type: 'number',
+        filter: false,
+        valuePrepareFunction: (value, row) => {
+          if (value == null) {
+            return 'N/A';
+          }
+          return value + ' (' + row.EstimatedLambdaConfidence + '% match)';
         }
       },
       Status: {

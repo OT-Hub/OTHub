@@ -93,18 +93,19 @@ If you want to get more information about a specific data creator you should use
                 limit = $"LIMIT {_page * _limit},{_limit}";
             }
 
-            string userID = restrictToMyNodes ? User?.Identity?.Name : null;
+            string userID = User?.Identity?.Name;
+            bool filterByMyNodes = restrictToMyNodes;
 
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 NodeDataCreatorSummaryModel[] summary = (await connection.QueryAsync<NodeDataCreatorSummaryModel>(
-                    DataCreatorsSql.GetDataCreatorsSql(userID) +
+                    DataCreatorsSql.GetDataCreatorsSql(userID, filterByMyNodes) +
                     $@"
 {orderBy}
 {limit}", new { userID = userID, NodeId_like }, commandTimeout: 120)).ToArray();
 
-                var total = await connection.ExecuteScalarAsync<int>(DataCreatorsSql.GetDataCreatorsCountSql(userID),
+                var total = await connection.ExecuteScalarAsync<int>(DataCreatorsSql.GetDataCreatorsCountSql(userID, filterByMyNodes),
 new { userID = userID, NodeId_like });
 
                 HttpContext.Response.Headers["access-control-expose-headers"] = "X-Total-Count";

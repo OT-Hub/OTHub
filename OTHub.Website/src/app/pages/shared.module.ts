@@ -6,6 +6,7 @@ import { NbIconModule, NbPopoverModule } from '@nebular/theme';
 import { OfferIdColumnComponent } from './miscellaneous/offeridcolumn.component';
 import { RouterModule } from '@angular/router';
 import { DataHolderIdentityColumnComponent, DataCreatorIdentityColumnComponent } from './miscellaneous/identitycolumn.component';
+import { AngularTelegramLoginWidgetModule } from 'angular-telegram-login-widget';
 
 
 
@@ -14,7 +15,8 @@ import { DataHolderIdentityColumnComponent, DataCreatorIdentityColumnComponent }
     NbIconModule,
     NbPopoverModule,
     RouterModule,
-    CommonModule
+    CommonModule,
+    AngularTelegramLoginWidgetModule 
   ],
   declarations: [
     CopyclipboardiconComponent,

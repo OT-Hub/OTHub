@@ -65,15 +65,20 @@ export class DataHolderComponent implements OnInit, OnDestroy {
     let lastSplit = '';
     if (split.length === 2) {
       lastSplit = split[1];
-      if (lastSplit.length > 3) {
-        lastSplit = lastSplit.substring(0, 3);
+      while(lastSplit[lastSplit.length - 1] == '0') {
+        lastSplit = lastSplit.substr(0, lastSplit.length - 1);
+      }
+      if (lastSplit == '') {
+        return split[0];
       }
       return split[0] + '.' + lastSplit;
     }
     return split[0];
   }
 
-
+  launchNodeProfileWebsite() {
+    window.open('https://node-profile.origintrail.io/ ', "_blank");
+  }
 
 
 
@@ -95,6 +100,19 @@ export class DataHolderComponent implements OnInit, OnDestroy {
       this.failedLoading = true;
       this.isLoading = false;
     });
+  }
+
+  public AvailableTokens(stake: number, locked: number): number {
+    let amount = stake - locked - this.MinimumStake;
+
+    if (amount < 0)
+      amount = 0;
+
+    return amount;
+  }
+
+  public get MinimumStake(): number {
+    return 3000;
   }
 
   ngOnInit() {

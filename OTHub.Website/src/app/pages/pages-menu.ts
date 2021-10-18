@@ -40,7 +40,47 @@ export const MENU_ITEMS: NbMenuItem[] = [
       },
       {
         title: 'Settings',
-        link: '/nodes/mynodes/settings',
+        link: '/nodes/mynodes/manage',
+      },
+      {
+        title: 'Payouts',
+        link: '/nodes/mynodes/payouts',
+      },
+      {
+        title: 'Tax Report',
+        link: '/nodes/mynodes/taxreport',
+      },
+    ],
+  },
+  {
+    title: 'Reports',
+    icon: 'pie-chart-outline',
+    children: [
+      {
+        title: 'Total Graph Size',
+        link: '/reports/tgs',
+      },
+      {
+        title: 'Job Holding Times',
+        link: '/reports/holdingtime',
+      },
+      {
+        title: 'Job Heatmap',
+        link: '/reports/jobheatmap',
+      },
+      {
+        title: 'Staked Tokens',
+        link: '/reports/stakedtokens',
+      },
+    ],
+  },
+  {
+    title: 'Tools',
+    icon: 'award-outline',
+    children: [
+      {
+        title: 'Find Nodes by Wallet',
+        link: '/tools/findnodesbywallet',
       },
       {
         title: 'Tax Report',
@@ -68,9 +108,9 @@ export const MENU_ITEMS: NbMenuItem[] = [
   //   icon: 'activity-outline',
   //   link: '/system/status'
   // },
-  {
-    title: 'xDai Bounty',
-    icon: 'flash-outline',
-    link: '/misc/xdaibounty',
-  },
+  // {
+  //   title: 'xDai Bounty',
+  //   icon: 'flash-outline',
+  //   link: '/misc/xdaibounty',
+  // },
 ];

@@ -1,5 +1,134 @@
 <h4>Recent Updates</h4>
-<br>3
+<br>
+
+<nb-card>
+    <nb-card-header>
+        September 2021
+
+    </nb-card-header>
+
+
+    <nb-list>
+        <nb-list-item>
+            <h6>25th</h6>
+            <ul>
+                <li>Added new report for job heatmap.</li>
+                <li>The blockchain is now shown for won jobs on the my nodes dashboard</li>
+                <li>Added a pie chart to the my nodes dashboard to show the holding duration for your active jobs</li>
+                <li>Added available tokens as a column for data holders & my nodes manage pages</li>
+                <li>Added ability to sort by node name in the my nodes manage page</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>4th</h6>
+            <ul>
+                <li>Added new report for job holding time.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>2nd</h6>
+            <ul>
+                <li>Added support for Polygon blockchain.</li>
+                <li>Each blockchain supported on OT Hub will now sync concurrently so that the website is more up-to-date.</li>
+            </ul>
+        </nb-list-item>
+    </nb-list>
+
+</nb-card>
+
+<nb-card>
+    <nb-card-header>
+        August 2021
+
+    </nb-card-header>
+
+
+    <nb-list>
+        <nb-list-item>
+            <h6>27th</h6>
+            <ul>
+                <li>Removed support for Polygon blockchain due to unreliable RPC endpoints.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>26th</h6>
+            <ul>
+                <li>Support for Polygon blockchain added.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>9th</h6>
+            <ul>
+                <li>Added Job-O-Meter to homepage.</li>
+                <li>Fixed Dark & Cosmic themes not showing the right font colors for charts across the site.</li>
+                <li>Improved job won notifications.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>7th</h6>
+            <ul>
+                <li>Work continued on telegram notifications.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>6th</h6>
+            <ul>
+                <li>Start of work to enable telegram notifications.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>1st</h6>
+            <ul>
+                <li>New notification system which supports telling you when you get a new job via the notification icon.</li>
+                <li>Further update to notification system to be monitored automatically and any outages are reported live on the website.</li>
+            </ul>
+        </nb-list-item>
+    </nb-list>
+
+</nb-card>
+
+<nb-card>
+    <nb-card-header>
+        July 2021
+
+    </nb-card-header>
+
+
+    <nb-list>
+        <nb-list-item>
+            <h6>31st</h6>
+            <ul>
+                <li>Fixed an error with node profile balances not updating.</li>
+                <li>Fixed an error in websockets processing around offer tasks.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>25th</h6>
+            <ul>
+                <li>Fixed an error during job sync processing.</li>
+                <li>Removed estimated lambda from the website as it's now nearly impossible to calculate.</li>
+                <li>Added live websocket updates for: Litigation Initiated, Litigation Answered, Litigation Timed Out, Litigation Completed, Litigation Replacement Started, Identity Created, Profile Created, Tokens Deposited, Tokens Released, Tokens Withdrawn, Offer Task.</li>
+                <li>Improvements to the stability of the websockets code to handle service unavailability on RPC and recover automatically.</li>
+                <li>Errors during the blockchain sync no longer stop the website from updating other areas which are successfully completing.</li>
+                <li>Website outages are reported at the top of the page to make users aware of problems.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>4th</h6>
+            <ul>
+                <li>Added a new report for viewing the total graph size.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>2nd</h6>
+            <ul>
+                <li>Added a new report for viewing staked tokens.</li>
+            </ul>
+        </nb-list-item>
+    </nb-list>
+
+</nb-card>
+
 
 <nb-card>
     <nb-card-header>
@@ -7,18 +136,80 @@
 
     </nb-card-header>
 
-    <nb-card-body>
 
+    <nb-list>
+        <nb-list-item>
+            <h6>26th</h6>
+            <ul>
+                <li>Added a new find wallets by address page to recover lost nodes.</li>
+                <li>Added 24h locked tokens stat to the homepage.</li>
+                <li>Added 24h paidout tokens stat to the homepage.</li>
+                <li>Improved styling on Staked tokens shown on the home page.</li>
+                <li>Updated domain names for website (renamed v5 website and removed legacy website).</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>25th</h6>
+            <ul>
+                <li>Manual job payouts on OT Hub now check you have the correct wallet selected in MetaMask (either
+                    Management or Operational wallet) and block you from trying if you have it wrong.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>24th</h6>
+            <ul>
+                <li>Fixed a bug where jobs on the data holder page sometimes did not load properly due to a javascript
+                    error calculating time remaining.</li>
+                <li>Fixed payouts table on data holder page not showing any data.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>19th</h6>
+            <ul>
+                <li>
+                    Re-enabled the ability to do payouts for jobs on either xDai or Ethereum.
+                </li>
+                <li>The My Nodes Dashboard now automatically selects a node if you only have one.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>18th</h6>
+            <ul>
+                <li>Offer ID in most places now shows the first 6 chars and last 6 chars to try free up UI space across
+                    the website.</li>
+                <li>Holding time displayed across grids on the website now formats better with respects to showing in
+                    years, months, days, hours or mintues.</li>
+                <li>Added Remaining Time column to jobs on the data holder page.</li>
+                <li>Added Paidout column to jobs on the data holder page.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>17th</h6>
+            <ul>
+                <li>V2 design of the My Nodes Dashboard with total jobs, total rewards, total staked, total locked and
+                    comparisons to other nodes added.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>16th</h6>
+            <ul>
+                <li>Fixed warning on homepage about the CoinPaprika outage still showing when it was resolved.</li>
+                <li>Data holders page now shows your saved node names.</li>
+                <li>Data creators page now shows your saved node names.</li>
+                <li>Improved a few format issues on the home page.</li>
+                <li>Rename My Nodes Settings page to My Nodes Manage in the menu.</li>
+                <li>Updated the My Nodes Manage page to include more columns which users have requested.</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
 
-        <nb-list>
-            <nb-list-item>
-                <h6>2nd</h6>
-                <ul>
-                    <li>Fixed outage caused by CoinPaprika API being offline for an extended period of time.</li>
-                </ul>
-            </nb-list-item>
-        </nb-list>
-    </nb-card-body>
+            <h6>2nd</h6>
+            <ul>
+                <li>Fixed outage caused by CoinPaprika API being offline for an extended period of time.</li>
+            </ul>
+        </nb-list-item>
+    </nb-list>
+
 </nb-card>
 
 
@@ -28,18 +219,18 @@
 
     </nb-card-header>
 
-    <nb-card-body>
 
 
-        <nb-list>
-            <nb-list-item>
-                <h6>16th</h6>
-                <ul>
-                    <li>Early version of a Tax Report for My Nodes</li>
-                </ul>
-            </nb-list-item>
-        </nb-list>
-    </nb-card-body>
+
+    <nb-list>
+        <nb-list-item>
+            <h6>16th</h6>
+            <ul>
+                <li>Early version of a Tax Report for My Nodes</li>
+            </ul>
+        </nb-list-item>
+    </nb-list>
+
 </nb-card>
 
 
@@ -49,55 +240,55 @@
 
     </nb-card-header>
 
-    <nb-card-body>
 
 
-        <nb-list>
-            <nb-list-item>
-                <h6>29th</h6>
-                <ul>
-                    <li>Jobs page now zooms into jobs for last few weeks on load</li>
-                </ul>
-            </nb-list-item>
-            <nb-list-item>
-                <h6>28th</h6>
-                <ul>
-                    <li>Fixed misc multichain bugs not found in testing</li>
-                    <li>Improved error handling on websockets</li>
-                    <li>Removed some data from the home page causing confusion</li>
-                </ul>
-            </nb-list-item>
-            <nb-list-item>
-                <h6>27th</h6>
-                <ul>
-                    <li>Fixed homepage showing jobs in last 24h based on created date instead of finalized date</li>
-                </ul>
-            </nb-list-item>
-            <nb-list-item>
-                <h6>25th</h6>
-                <ul>
-                    <li>Added new API call to get jobs in the last 24 hours</li>
-                </ul>
-            </nb-list-item>
-            <nb-list-item>
-                <h6>24th</h6>
-                <ul>
-                    <li>Websocket RPC support</li>
-                </ul>
-            </nb-list-item>
-            <nb-list-item>
-                <h6>23rd</h6>
-                <ul>
-                    <li>Global Activity page now shows your node names instead of always the node ID</li>
-                </ul>
-            </nb-list-item>
-            <nb-list-item>
-                <h6>22nd</h6>
-                <ul>
-                    <li>Added ordering of nodes to the My Nodes page</li>
-                    <li>Added setting for My Nodes to pick between live TRAC price of historical TRAC price</li>
-                </ul>
-            </nb-list-item>
-        </nb-list>
-    </nb-card-body>
+
+    <nb-list>
+        <nb-list-item>
+            <h6>29th</h6>
+            <ul>
+                <li>Jobs page now zooms into jobs for last few weeks on load</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>28th</h6>
+            <ul>
+                <li>Fixed misc multichain bugs not found in testing</li>
+                <li>Improved error handling on websockets</li>
+                <li>Removed some data from the home page causing confusion</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>27th</h6>
+            <ul>
+                <li>Fixed homepage showing jobs in last 24h based on created date instead of finalized date</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>25th</h6>
+            <ul>
+                <li>Added new API call to get jobs in the last 24 hours</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>24th</h6>
+            <ul>
+                <li>Websocket RPC support</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>23rd</h6>
+            <ul>
+                <li>Global Activity page now shows your node names instead of always the node ID</li>
+            </ul>
+        </nb-list-item>
+        <nb-list-item>
+            <h6>22nd</h6>
+            <ul>
+                <li>Added ordering of nodes to the My Nodes page</li>
+                <li>Added setting for My Nodes to pick between live TRAC price of historical TRAC price</li>
+            </ul>
+        </nb-list-item>
+    </nb-list>
+
 </nb-card>

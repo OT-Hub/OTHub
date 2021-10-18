@@ -13,6 +13,7 @@ namespace OTHub.Settings
     {
         Ethereum,
         Starfleet,
-        xDai
+        xDai,
+        Polygon
     }
 }

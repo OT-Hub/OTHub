@@ -4,9 +4,9 @@
 
 @include nb-install-component() {
   width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  //display: flex;
+  //justify-content: space-between;
+  //align-items: center;
 
   .socials {
     font-size: 2rem;
@@ -26,5 +26,50 @@
     .socials {
       font-size: 1.5rem;
     }
+  }
+}
+
+.footer {
+  margin: 0px 20px;
+}
+
+.footer .title {
+  font-size: 1.5rem;
+  line-height: 20px;
+}
+
+.footer .title span {
+  vertical-align: middle;
+}
+
+.footer .desc {
+  font-size:0.8rem;
+}
+
+.footer .descCont {
+  margin-top: 16px;
+  margin-left:1px;
+}
+
+.footer .link {
+  font-size:0.9rem;
+  margin: 8px 0px;
+}
+
+.footer .link.donation {
+  font-size:0.8rem;
+  //margin-left:3px;
+}
+
+.footer .link a, .footer .link a:hover {
+  text-decoration: none;
+}
+
+@media (max-width: 575px) {
+  .links {
+      margin-top:20px;
+      margin-left:0;
+      margin-right:0;
+      padding:0px 10px;
   }
 }

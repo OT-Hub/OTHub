@@ -4,5 +4,6 @@
     {
         //public OfferSummaryModel[] Offers { get; set; }
         //public DataCreatorLitigationSummary[] Litigations { get; set; }
+        public decimal? LiveTracUSDPrice { get; set; }
     }
 }

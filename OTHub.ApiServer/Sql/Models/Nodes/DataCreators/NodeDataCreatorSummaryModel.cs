@@ -6,6 +6,7 @@ namespace OTHub.APIServer.Sql.Models.Nodes.DataCreators
     {
         //public String Identity { get; set; }
         public String NodeId { get; set; }
+        public String DisplayName { get; set; }
         public Int32 Version { get; set; }
         public String StakeTokens { get; set; }
         public String StakeReservedTokens { get; set; }

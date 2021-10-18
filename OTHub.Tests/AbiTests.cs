@@ -32,6 +32,11 @@ namespace OTHub.Tests
 
             Assert.NotNull(abi);
             Assert.NotEmpty(abi);
+
+            abi = AbiHelper.GetContractAbi(type, BlockchainType.xDai, BlockchainNetwork.Mainnet);
+
+            Assert.NotNull(abi);
+            Assert.NotEmpty(abi);
         }
     }
 }

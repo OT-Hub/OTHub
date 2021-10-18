@@ -5,12 +5,17 @@ export class DataHolderDetailedModel   {
     // Identity: string;
     NodeId: string;
     Version: number;
-    StakeTokens: string;
+    StakeTokens: number;
     StakeReservedTokens: number;
     PaidTokens: number;
     TotalWonOffers: number;
     WonOffersLast7Days: number;
     DisplayName: string;
+    LiveTracUSDPrice: number;
+
+     
+
+    
     // Approved: boolean;
     // OldIdentity: string;
     // NewIdentity: string;
@@ -29,10 +34,12 @@ export class DataHolderDetailedModel   {
 }
 
 export class DataholderIdentityModel {
-  Identity: string;
-  BlockchainName: string;
-  Stake: string;
-  StakeReservedTokens: string;
+    Identity: string;
+    BlockchainName: string;
+    Stake: number;
+    StakeReservedTokens: number;
+
+
 }
 
 export class DataHolderDetailedOfferModel {

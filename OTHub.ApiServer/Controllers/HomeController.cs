@@ -31,9 +31,11 @@ namespace OTHub.APIServer.Controllers
 
         [HttpGet]
         [Route(("HomeV3"))]
-        public async Task<HomeV3Model> HomeV3()
+        public async Task<HomeV3Model> HomeV3([FromQuery] bool excludeBreakdown)
         {
-            if (_cache.TryGetValue("HomeV3", out object homeModel))
+            string key = $"HomeV3-{excludeBreakdown}";
+
+            if (_cache.TryGetValue(key, out object homeModel))
             {
                 return (HomeV3Model) homeModel;
             }
@@ -66,11 +68,21 @@ WHERE otoffer.IsFinalized = 1 AND otoffer.BlockchainID = b.Id
 (
 SELECT COALESCE(SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_ADD(FinalizedTimeStamp, INTERVAL +HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END), 0)
 FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
-(select COALESCE(sum(Stake), 0) from otidentity WHERE blockchainid = b.id AND version = (select max(ii.version) from otidentity ii)) StakedTokens,
+(select COALESCE(sum(Stake), 0) from otidentity WHERE blockchainid = b.id) StakedTokens,
 (SELECT COUNT(*) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
 (SELECT AVG(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
 (SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
-(SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H
+(SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H,
+(SELECT SUM(otoffer.TokenAmountPerHolder * 6) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensLocked24H,
+(SELECT SUM(otcontract_holding_paidout.Amount) FROM otcontract_holding_paidout WHERE blockchainid = b.id and Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensPaidout24H,
+(SELECT MIN(otoffer.EstimatedLambda) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorLow24H,
+(SELECT MAX(otoffer.EstimatedLambda) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorHigh24H,
+(SELECT MIN(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsRewardLow24H,
+(SELECT MAX(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsRewardHigh24H,
+(SELECT MIN(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDurationLow24H,
+(SELECT MAX(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDurationHigh24H,
+(SELECT MIN(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSizeLow24H,
+(SELECT MAX(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSizeHigh24H
 FROM blockchains b
 order by b.id desc")).ToArray();
 
@@ -112,7 +124,7 @@ WHERE bc.ID = @blockchainID", new
 
                     blockchain.Fees.PayoutCost = payoutFee;
 
-                    if (blockchain.BlockchainName == "xDai")
+                    if (blockchain.BlockchainName != "Ethereum")
                     {
                         blockchain.HoursTillFirstJob = await connection.ExecuteScalarAsync<int?>(@"
 WITH CTE AS (
@@ -138,7 +150,7 @@ JOIN otoffer o ON o.OfferID = h.OfferID
 WHERE h.Holder = i.Identity 
 ORDER BY o.FinalizedTimestamp
 LIMIT 1
-) >= DATE_Add(NOW(), INTERVAL -1 DAY)
+) >= DATE_Add(NOW(), INTERVAL -7 DAY)
 ORDER BY FirstOfferDate DESC
 )
 
@@ -168,23 +180,34 @@ SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FR
                     JobsSize24H = (long?) model.Blockchains.Where(b => b.JobsSize24H.HasValue).Average(b => b.JobsSize24H),
                     StakedTokens = model.Blockchains.Sum(b => b.StakedTokens),
                     TotalJobs = model.Blockchains.Sum(b => b.TotalJobs),
-                    TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b)
+                    TokenTicker = model.Blockchains.Select(b => b.TokenTicker).Aggregate((a,b) => a + " | " + b),
+                    TokensLocked24H = model.Blockchains.Select(b => b.TokensLocked24H).DefaultIfEmpty(null).Sum(),
+                    TokensPaidout24H = model.Blockchains.Select(b => b.TokensPaidout24H).DefaultIfEmpty(null).Sum(),
+                    PriceFactorLow24H = model.Blockchains.Select(b => b.PriceFactorLow24H).DefaultIfEmpty(null).Min(),
+                    PriceFactorHigh24H = model.Blockchains.Select(b => b.PriceFactorHigh24H).DefaultIfEmpty(null).Max(),
                 };
 
-                _cache.Set("HomeV3", model, TimeSpan.FromSeconds(30));
+                if (excludeBreakdown)
+                {
+                    model.Blockchains = null;
+                }
+
+                _cache.Set(key, model, TimeSpan.FromSeconds(45));
 
 
                 return model;
             }
         }
 
+     
+
         [HttpGet]
         [Route("24HJobBlockchainDistribution")]
-        public async Task<HomeJobBlockchainDistributionModel[]> GetHome24HJobBlockchainDistributionModel()
+        public async Task<HomeJobBlockchainDistributionSummaryModel> GetHome24HJobBlockchainDistributionModel()
         {
-            if (_cache.TryGetValue("24HJobBlockchainDistribution", out object model))
+            if (_cache.TryGetValue("24HJobBlockchainDistribution", out object model) && model is HomeJobBlockchainDistributionSummaryModel)
             {
-                return (HomeJobBlockchainDistributionModel[])model;
+                return (HomeJobBlockchainDistributionSummaryModel)model;
             }
 
             await using (var connection =
@@ -202,9 +225,19 @@ LEFT JOIN otoffer o ON bc.ID = o.BlockchainID AND o.IsFinalized = 1 AND o.Finali
 GROUP BY bc.Id
 ORDER BY Percentage")).ToArray();
 
-                _cache.Set("24HJobBlockchainDistribution", data, TimeSpan.FromMinutes(5));
+                HomeJobBlockchainDistributionSummaryModel summary = new HomeJobBlockchainDistributionSummaryModel();
 
-                return data;
+                summary.Blockchains = data;
+                summary.MaxDailyJobs = await connection.ExecuteScalarAsync<int>(
+                    @"SELECT MAX(total) FROM (SELECT COUNT(*) AS total FROM otoffer oo WHERE oo.IsFinalized = 1 GROUP BY DATE(FinalizedTimestamp)) x");
+
+                int number = (int)(Math.Ceiling(summary.MaxDailyJobs / 50.0d) * 50);
+
+                summary.MaxDailyJobs = number;
+
+                _cache.Set("24HJobBlockchainDistribution", summary, TimeSpan.FromMinutes(3));
+
+                return summary;
             }
         }
       

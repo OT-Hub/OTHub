@@ -6,20 +6,21 @@ using Dapper;
 using MySqlConnector;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
+using OTHub.Settings.Constants;
 
 namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 {
     public class UpdateHomeJobHistoryChartDataTask : TaskRunGeneric
     {
-        public UpdateHomeJobHistoryChartDataTask() : base("Update Job History Chart Data")
+        public UpdateHomeJobHistoryChartDataTask() : base(TaskNames.UpdateJobHistoryChartData)
         {
         }
 
         public override async Task Execute(Source source)
         {
-            using (var con = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            await using (var con = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                con.Execute(@"INSERT INTO jobhistorybyday 
+                await con.ExecuteAsync(@"INSERT INTO jobhistorybyday 
 SELECT 
 x.Date,
 COUNT(O.OfferId) NewJobs,

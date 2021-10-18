@@ -25,7 +25,7 @@ namespace OTHub.BackendSync.Logging
                     {
                         Console.ForegroundColor = ConsoleColor.Blue;
                     }
-                    else if (line.Source == Source.Startup)
+                    else if (line.Source == Source.Tools)
                     {
                         Console.ForegroundColor = ConsoleColor.DarkGray;
                     }

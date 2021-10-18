@@ -1,0 +1,177 @@
+<nb-alert status="primary" *ngIf="isLoggedIn == false && isLoading == false">
+    Log in to use this feature!
+</nb-alert>
+
+
+<div class="row" *ngIf="isLoggedIn == true">
+    <div class="col-xxxl-12 col-xxl-12 col-lg-12 col-md-12">
+        <nb-card class="table-card">
+            <nb-card-header>
+                How to use this page?
+            </nb-card-header>
+            <div style="margin:10px;">
+                <div>
+                    This page allows you to payout jobs easier when you have many jobs or many nodes to manage.
+                </div>
+                <div>Currently you must have all your nodes on the same management wallet, while this page will semi work if you have multiple management wallets you'll experience more validation errors when using this.</div>
+                <div>
+                    When you have selected the nodes you wish to payout, OT Hub will check they will succeed and then prompt each transaction to open in MetaMask.
+                </div>
+                <div>Note that this does not reduce the amount of transactions you need to send to the blockchain, you still need one transaction per payout.</div>
+            </div>
+        </nb-card>
+    </div>
+</div>
+
+
+<div class="row" *ngIf="isLoggedIn == true">
+    <div class="col-xxxl-12 col-xxl-12 col-lg-12 col-md-12">
+        <nb-card class="table-card">
+            <nb-card-header>
+                Filters
+            </nb-card-header>
+            <div style="margin:10px;">
+                <div>
+                    <nb-checkbox [checked]="includeActiveJobs" (checkedChange)="toggleActiveJobs($event)">Include Active Jobs</nb-checkbox>
+                </div>
+                <div>
+                    <nb-checkbox [checked]="includeCompletedJobs" (checkedChange)="toggleCompletedJobs($event)">Include Completed Jobs</nb-checkbox>
+                </div>
+                <div style="margin-top: 8px;">
+                  <nb-select [(ngModel)]="selectedBlockchain" (selectedChange)="changeBlockchain($event)"
+                    style="width:100%;margin-bottom:10px;max-width:none;">
+        
+                    <nb-option *ngFor="let blockchain of blockchains" [value]="blockchain.BlockchainName">
+                        <nb-user size="medium" shape="semi-round"
+                            name="{{blockchain.BlockchainName}}">
+                        </nb-user>
+        
+                    </nb-option>
+                </nb-select>
+                </div>
+            </div>
+        </nb-card>
+    </div>
+</div>
+
+<div class="row" *ngIf="isLoggedIn == true && selectedBlockchain != ''">
+    <div class="col-xxxl-12 col-xxl-12 col-lg-12 col-md-12">
+        <nb-card class="table-card">
+            <nb-card-header>
+                Jobs to Payout
+            </nb-card-header>
+            <div style="margin:10px;">
+                <nb-checkbox (checkedChange)="tickAll($event)">Tick All Jobs</nb-checkbox>
+                <hr class="divider">
+            </div>
+            <div style="margin:10px;">
+                <div *ngFor="let payout of payouts" class="payoutRow">
+                    <div>
+                        <nb-checkbox [checked]="payout.Checked" (checkedChange)="toggleCheckbox(payout,$event)"></nb-checkbox>
+                        <span class="offer">{{payout.OfferID}}</span>
+                    </div>
+                    <div>
+                        You have paid out <span class="paidout">{{payout.PaidAmount}} <span
+                                class="caption">TRAC</span></span> of the total reward of <span
+                            class="reward">{{payout.TokenAmount}} <span class="caption">TRAC</span> </span>
+                    </div>
+                    <div *ngIf="payout.LastPayout != null" class="LastPayoutDate">
+                    Last payout was done: {{payout.LastPayout | amFromUtc | amLocal | amTimeAgo}}
+                    </div>
+                    <div class="EstimatedPayout">
+                        Estimated payout you can claim now is:  <span
+                        class="total">{{payout.EstimatedPayout}} <span class="caption">TRAC</span></span> 
+                    </div>
+                    <div class="Verification">
+                        <span *ngIf="payout.ValidationResult == true" class="pass">
+                            Passed verification and will be scheduled to be paid out.
+                        </span>
+                        <span *ngIf="payout.ValidationResult == false" class="fail">
+                            Failed verification and will be skipped.
+                        </span>
+                    </div>
+                    <hr class="divider">
+                </div>
+            </div>
+
+
+        </nb-card>
+    </div>
+</div>
+
+<div class="row processRow" *ngIf="isLoggedIn == true && selectedBlockchain != ''">
+    <div class="col-xxxl-12 col-xxl-12 col-lg-12 col-md-12">
+        <nb-card class="table-card">
+            <nb-card-header>
+                Process Payouts via MetaMask
+            </nb-card-header>
+            <div style="margin:10px;">
+                <button class="btn btn-primary" (click)="enableMetaMask()" *ngIf="isMetaMaskUnlocked === false">Login with MetaMask</button>
+                <div [hidden]="isMetaMaskUnlocked === false">
+                    Selected Wallet: {{selectedAddress}}
+                    <br>
+                    <br>
+                    <div class="alert alert-warning">
+                      This is your selected wallet in MetaMask. This must be your management wallet or operational wallet for the node. OT Hub will validate this is correct before payout.
+                                  </div>
+                 
+                      Selected Network ID: {{selectedChainID}}
+                      <br>
+                      <br>
+                      <div class="alert alert-danger" *ngIf="selectedChainID != requiredChainID">
+                        You have the wrong network selected in MetaMask. You need {{requiredChainID}} to be selected. See <a href="https://chainid.network/" target="_blank">here</a> to translate the network ID numbers into something more useful.
+                      </div>
+         
+        
+                    <h6 *ngIf="selectedChainID == requiredChainID">Gas Price</h6>
+                    <div class="form-group" *ngIf="selectedChainID == requiredChainID">
+                      <div class="form-line">
+                        <input type="text" id="gasPriceInput" class="form-control" name="gasPriceInput"
+                          placeholder="Gas Price (Gwei)*" required (keyup)="onGasPriceKeyUp($event)" (keypress)="onGasPriceKeyDown($event)">
+                      </div>
+                    </div>
+        
+               
+        
+                    <br>
+                    <div>
+                        <button class="btn btn-primary" (click)="validateSelection()" *ngIf="isBusySending == false && isValidated == false && isValidating == false && selectedChainID == requiredChainID">Validate Selected Payouts</button>
+
+                        <div class="progress" *ngIf="isValidating == true">
+                            <div class="indeterminate btn-primary"></div>
+                        </div>
+                        <p style="text-align: center;" *ngIf="isValidating == true">Please wait... checking your selected jobs will payout successfully before we continue.</p>
+
+                        <div *ngIf="isValidated == true" style="margin-bottom: 20px;font-size: 18px;">
+                            <div>
+                                {{validationText}}
+                            </div>
+                            <div>
+                                You can see which jobs passed or failed validation by looking at the ticked jobs.
+                            </div>
+                        </div>
+
+                      <button class="btn btn-primary" (click)="sendTransaction()" *ngIf="hasSentTransaction != true && isBusySending == false && isValidated == true && isValidating == false && selectedChainID == requiredChainID">Send Transaction (Opens in
+                        MetaMask)</button>
+                        <div class="progress" *ngIf="isBusySending == true">
+                            <div class="indeterminate btn-primary"></div>
+                        </div>
+                        <p style="text-align: center;" *ngIf="isBusySending == true">Please wait...</p>
+
+                        <p *ngIf="hasSentTransaction == true">Thanks for using this page to bulk payout! Check on your node page to see the payouts (you may need to wait 5 minutes).</p>
+                        <p *ngIf="hasSentTransaction == true">If you want to do more payouts, wait for your last payouts to appear on othub and then refresh this page and go again.</p>
+                      <!-- <br *ngIf="sendError != null">
+                      <br *ngIf="sendError != null">
+                      <div class="alert alert-danger" *ngIf="sendError != null">
+                        There was an error sending the transaction. Detailed error is shown below:
+                        <br>
+                        {{sendError}}
+                      </div> -->
+                    </div>
+                  </div>
+            </div>
+
+
+        </nb-card>
+    </div>
+</div>

@@ -1,9 +1,0 @@
-<nb-card size="large">
-  <div class="chart-container">
-
-    <ngx-chart-panel-header [type]="period" isjobschart="true"
-                            (periodChange)="setPeriodAndGetChartData($event)">
-    </ngx-chart-panel-header>
-    <ngx-orders-chart #ordersChart [ordersChartData]="ordersChartData"></ngx-orders-chart>
-  </div>
-</nb-card>

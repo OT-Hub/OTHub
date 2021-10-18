@@ -8,9 +8,9 @@ namespace OTHub.APIServer.Sql
     public class ContractsSql
     {
         public const String GetHoldingStorageAddressByAddress = @"select Address, BlockchainID from otcontract
-where Type = 5 AND Address = @holdingStorageAddress";
+where Type = 5 AND Address = @holdingStorageAddress and BlockchainID = @blockchainID";
 
         public const String GetHoldingAddressByAddress = @"select Address, BlockchainID from otcontract
-where Type = 6 AND Address = @holdingAddress";
+where Type = 6 AND Address = @holdingAddress and BlockchainID = @blockchainID";
     }
 }

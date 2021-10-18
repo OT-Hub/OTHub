@@ -95,9 +95,9 @@ WHERE CASE
             }, commandTimeout: (int)TimeSpan.FromMinutes(5).TotalSeconds);
         }
 
-        public static void UpdateLitigationStatusesForOffer(MySqlConnection connection, string offerId, int blockchainID)
+        public static async Task UpdateLitigationStatusesForOffer(MySqlConnection connection, string offerId, int blockchainID)
         {
-            connection.Execute(@"UPDATE OTOffer_Holders H
+            await connection.ExecuteAsync(@"UPDATE OTOffer_Holders H
 JOIN (
 SELECT x.OfferId, x.Holder, 
 CASE 
@@ -141,16 +141,16 @@ WHERE CASE
                 });
         }
 
-        public static bool Insert(MySqlConnection connection, string offerId, string holder, bool isOriginalHolder, int blockchainID)
+        public static async Task<bool> Insert(MySqlConnection connection, string offerId, string holder, bool isOriginalHolder, int blockchainID)
         {
             bool added = false;
 
-            if (connection.QuerySingle<Int32>(
+            if (await connection.QuerySingleAsync<Int32>(
                     "SELECT COUNT(*) FROM OtOffer_Holders WHERE OfferID = @OfferID AND Holder = @holder AND BlockchainID = @blockchainID",
                     new { OfferID = offerId, holder = holder, blockchainID = blockchainID }) == 0)
             {
                 added = true;
-                connection.Execute(
+                await connection.ExecuteAsync(
                     "INSERT INTO OtOffer_Holders(OfferID, Holder, IsOriginalHolder, BlockchainID) VALUES (@OfferID, @holder, @IsOriginalHolder, @BlockchainID)",
                     new {OfferID = offerId, holder = holder, IsOriginalHolder = isOriginalHolder, BlockchainID  = blockchainID});
             }

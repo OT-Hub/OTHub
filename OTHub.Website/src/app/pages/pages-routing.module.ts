@@ -2,10 +2,11 @@ import { RouterModule, Routes } from '@angular/router';
 import { NgModule } from '@angular/core';
 
 import { PagesComponent } from './pages.component';
-import { DashboardComponent } from './dashboard/dashboard.component';
-import { ECommerceComponent } from './e-commerce/e-commerce.component';
+import { HomeComponent } from './home/home.component';
 import { NotFoundComponent } from './miscellaneous/not-found/not-found.component';
 import { StarfleetboardingComponent } from './starfleetboarding/starfleetboarding.component';
+import { FindNodesByWalletComponent } from './tools/find-nodes-by-wallet/find-nodes-by-wallet.component';
+import { BlockchainBreakdownComponent } from './home/breakdown/blockchain-breakdown/blockchain-breakdown.component';
 
 const routes: Routes = [{
   path: '',
@@ -13,9 +14,12 @@ const routes: Routes = [{
   children: [
     {
       path: 'dashboard',
-      component: ECommerceComponent,
+      component: HomeComponent,
     },
-
+    {
+      path: 'dashboard/blockchain/breakdown',
+      component: BlockchainBreakdownComponent,
+    },
     // {
     //   path: 'iot-dashboard',
     //   component: DashboardComponent,
@@ -29,6 +33,16 @@ const routes: Routes = [{
       path: 'offers',
       loadChildren: () => import('./jobs/jobs.module')
         .then(m => m.JobsModule),
+    },
+    {
+      path: 'tools',
+      loadChildren: () => import('./tools/tools.module')
+        .then(m => m.ToolsModule),
+    },
+    {
+      path: 'reports',
+      loadChildren: () => import('./reports/reports.module')
+        .then(m => m.ReportsModule),
     },
     {
       path: 'globalactivity',

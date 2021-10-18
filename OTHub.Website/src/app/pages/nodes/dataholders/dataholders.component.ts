@@ -50,8 +50,6 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     window.location.href = url;
   }
 
-
-
   formatAmount(amount) {
     if (amount === null) {
       return null;
@@ -60,14 +58,12 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     let lastSplit = '';
     if (split.length === 2) {
       lastSplit = split[1];
-      if (lastSplit.length > 3) {
-        lastSplit = lastSplit.substring(0, 3);
+      while(lastSplit[lastSplit.length - 1] == '0') {
+        lastSplit = lastSplit.substr(0, lastSplit.length - 1);
       }
-
-      if (lastSplit == '000') {
+      if (lastSplit == '') {
         return split[0];
       }
-
       return split[0] + '.' + lastSplit;
     }
     return split[0];
@@ -319,8 +315,9 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           title: 'Name',
           type: 'text',
           show: false,
-          filter: false,
-          sort: false,
+          filter: true,
+          sort: true,
+          sortDirection: this.showOnlyMyNodes === 'true' ? 'asc' : '',
           editable: true,
           addable: true,
         },
@@ -338,7 +335,7 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
         },
         WonOffersLast7Days: {
           sort: true,
-          sortDirection: 'desc',
+          sortDirection: this.showOnlyMyNodes === 'true' ? '' : 'desc',
           title: 'Jobs (7 Days)',
           type: 'number',
           filter: false,
@@ -360,18 +357,6 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           addable: false,
           //width: '1%'
           // valuePrepareFunction: (value) => { return (value / 1000).toFixed(2).replace(/[.,]00$/, '') + ' KB';}
-        },
-        PaidTokens: {
-          sort: true,
-          title: 'Paidout Tokens',
-          type: 'number',
-          filter: false,
-          editable: false,
-          addable: false,
-          //width: '1%',
-          valuePrepareFunction: (value) => {
-            return this.formatAmount(value);
-          }
         },
         StakeTokens: {
           sort: true,
@@ -396,7 +381,31 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
           valuePrepareFunction: (value) => {
             return this.formatAmount(value);
           }
-        }
+        },
+        // AvailableJobTokens: {
+        //   sort: true,
+        //   title: 'Available Tokens',
+        //   type: 'number',
+        //   filter: false,
+        //   editable: false,
+        //   addable: false,
+        //   //width: '1%',
+        //   valuePrepareFunction: (value) => {
+        //     return this.formatAmount(value);
+        //   }
+        // },
+        PaidTokens: {
+          sort: true,
+          title: 'Paidout Tokens',
+          type: 'number',
+          filter: false,
+          editable: false,
+          addable: false,
+          //width: '1%',
+          valuePrepareFunction: (value) => {
+            return this.formatAmount(value);
+          }
+        },
       },
       pager: {
         display: true,
@@ -405,14 +414,14 @@ export class DataHoldersComponent implements OnInit, OnDestroy {
     };
 
     if (this.showOnlyMyNodes !== 'true') {
-      delete this.settings.columns.DisplayName;
+      //delete this.settings.columns.DisplayName;
     } else {
-      delete this.settings.columns.TotalWonOffers;
-      delete this.settings.columns.WonOffersLast7Days;
-      delete this.settings.columns.ActiveOffers;
-      delete this.settings.columns.PaidTokens;
-      delete this.settings.columns.StakeTokens;
-      delete this.settings.columns.StakeReservedTokens;
+      // delete this.settings.columns.TotalWonOffers;
+      // delete this.settings.columns.WonOffersLast7Days;
+      // delete this.settings.columns.ActiveOffers;
+      // delete this.settings.columns.PaidTokens;
+      // delete this.settings.columns.StakeTokens;
+      // delete this.settings.columns.StakeReservedTokens;
     }
 
     this.resetSource();

@@ -1,13 +1,19 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Numerics;
+using System.Text;
 using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
+using Nethereum.ABI;
 using Nethereum.Contracts;
 using Nethereum.Hex.HexConvertors.Extensions;
+using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using Newtonsoft.Json.Converters;
+using Org.BouncyCastle.Crypto.Digests;
 using OTHub.APIServer.Sql;
 using OTHub.APIServer.Sql.Models.Contracts;
 using OTHub.APIServer.Sql.Models.Nodes;
@@ -19,17 +25,50 @@ namespace OTHub.APIServer.Ethereum
 {
     public static class BlockchainHelper
     {
-        public static async Task<BeforePayoutResult> CanTryPayout(string identity, string offerId, string holdingAddress, string holdingStorageAddress, string litigationStorageAddress)
+        public static byte[] CalculateHash(string value)
         {
-            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            var input = Encoding.UTF8.GetBytes(value);
+            var output = CalculateHash(input);
+            return output;
+        }
+
+
+        public static byte[] CalculateHash(byte[] value)
+        {
+            var digest = new KeccakDigest(256);
+            var output = new byte[digest.GetDigestSize()];
+            digest.BlockUpdate(value, 0, value.Length);
+            digest.DoFinal(output, 0);
+            return output;
+        }
+
+
+        public static async Task<BeforePayoutResult> CanTryPayout(string nodeID, string offerId, string holdingAddress,
+            string holdingStorageAddress, string litigationStorageAddress, string identity, int? blockchainID,
+            string selectedAddress)
+        {
+            if (nodeID == null || offerId == null || holdingAddress == null || holdingStorageAddress == null || litigationStorageAddress == null || identity == null || blockchainID == null || selectedAddress == null)
             {
-                var holdingStorageAddressModel = connection.QueryFirstOrDefault<ContractAddress>(ContractsSql.GetHoldingStorageAddressByAddress, new
+                return new BeforePayoutResult
                 {
-                    holdingStorageAddress = holdingStorageAddress
+                    CanTryPayout = false,
+                    Header = "Stop!",
+                    Message = "Missing data in request."
+                };
+            }
+
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+
+
+
+                var holdingStorageAddressModel = await connection.QueryFirstOrDefaultAsync<ContractAddress>(ContractsSql.GetHoldingStorageAddressByAddress, new
+                {
+                    holdingStorageAddress = holdingStorageAddress,
+                    blockchainID
                 });
 
-                int blockchainID = holdingStorageAddressModel.BlockchainID;
-                holdingStorageAddress = holdingStorageAddressModel.Address;
+                holdingStorageAddress = holdingStorageAddressModel?.Address;
 
                 if (holdingStorageAddress == null)
                 {
@@ -37,30 +76,58 @@ namespace OTHub.APIServer.Ethereum
                     {
                         CanTryPayout = false,
                         Header = "Stop!",
-                        Message = "OT Hub is not familiar with this holding storage smart contract address. Unknown addresses can not be used."
+                        Message = "OT Hub is not familiar with this holding storage smart contract address for this blockchain id " + blockchainID
                     };
                 }
 
-                var blockchainRow = connection.QueryFirst("SELECT * FROM blockchains where id = @id", new {id = blockchainID});
+                var blockchainRow = await connection.QueryFirstAsync("SELECT * FROM blockchains where id = @id", new {id = blockchainID});
                 string blockchainName = blockchainRow.BlockchainName;
                 string networkName = blockchainRow.NetworkName;
+                string explorerTransactionUrl = blockchainRow.TransactionUrl;
 
                 BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
                 BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
 
-                string nodeUrl = connection.ExecuteScalar<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
                 {
                     id = blockchainID
                 });
 
                 var cl = new Web3(nodeUrl);
 
+                var eth = new EthApiService(cl.Client);
+
+
+                var ercContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.ERC725, blockchainEnum, networkNameEnum), identity);
+
+                Function keyHasPurposeFunction = ercContract.GetFunction("keyHasPurpose");
+
+
+                var abiEncode = new ABIEncode();
+                byte[] test = abiEncode.GetABIEncodedPacked(selectedAddress.HexToByteArray());
+
+                byte[] bytes = CalculateHash(test);
+
+                bool hasPermission = await keyHasPurposeFunction.CallAsync<bool>(bytes, 1) || await keyHasPurposeFunction.CallAsync<bool>(bytes, 2);
+
+                if (!hasPermission)
+                {
+                    return new BeforePayoutResult
+                    {
+                        CanTryPayout = false,
+                        Header = "Stop!",
+                        Message = "The address you have selected in MetaMask (" + selectedAddress + ") does not have permission to payout on the identity " + identity + ". You need to pick either your management wallet or operational wallet."
+                    };
+                }
+
+
                 var holdingStorageAbi = AbiHelper.GetContractAbi(ContractTypeEnum.HoldingStorage, blockchainEnum, networkNameEnum);
 
-                holdingAddress = connection.QueryFirstOrDefault<ContractAddress>(ContractsSql.GetHoldingAddressByAddress, new
+                holdingAddress = (await connection.QueryFirstOrDefaultAsync<ContractAddress>(ContractsSql.GetHoldingAddressByAddress, new
                 {
-                    holdingAddress = holdingAddress
-                })?.Address;
+                    holdingAddress = holdingAddress,
+                    blockchainID
+                }))?.Address;
 
                 if (holdingAddress == null)
                 {
@@ -68,7 +135,7 @@ namespace OTHub.APIServer.Ethereum
                     {
                         CanTryPayout = false,
                         Header = "Stop!",
-                        Message = "OT Hub is not familiar with this holding smart contract address. Unknown addresses can not be used."
+                        Message = "OT Hub is not familiar with this holding smart contract address for this blockchain id " + blockchainID
                     };
                 }
 
@@ -78,14 +145,18 @@ namespace OTHub.APIServer.Ethereum
                     new Contract(new EthApiService(cl.Client), holdingStorageAbi,
                         holdingStorageAddress);
                 var getHolderStakedAmountFunction = holdingStorageContract.GetFunction("getHolderStakedAmount");
-                //var getOfferStartTimeFunction = holdingStorageContract.GetFunction("getOfferStartTime");
-                var getOfferHoldingTimeInMinutesFunction =
-                    holdingStorageContract.GetFunction("getOfferHoldingTimeInMinutes");
+                var holderStakedAmount = await getHolderStakedAmountFunction.CallAsync<BigInteger>(offerIdArray, identity);
+
+                var getHolderPaymentTimestampFunction = holdingStorageContract.GetFunction("getHolderPaymentTimestamp");
+                var holderPaymentTimestamp = await getHolderPaymentTimestampFunction.CallAsync<BigInteger>(offerIdArray, identity);
+
+                var getOfferHoldingTimeInMinutesFunction = holdingStorageContract.GetFunction("getOfferHoldingTimeInMinutes");
+                var offerHoldingTimeInMinutes = await getOfferHoldingTimeInMinutesFunction.CallAsync<BigInteger>(offerIdArray);
+
                 var getHolderPaidAmountFunction = holdingStorageContract.GetFunction("getHolderPaidAmount");
+                var holderPaidAmount = await getHolderPaidAmountFunction.CallAsync<BigInteger>(offerIdArray, identity);
 
-                var amountToTransfer = await getHolderStakedAmountFunction.CallAsync<BigInteger>(offerIdArray, identity);
-
-                if (amountToTransfer <= 0)
+                if (holderStakedAmount <= 0)
                 {
                     return new BeforePayoutResult
                     {
@@ -95,51 +166,68 @@ namespace OTHub.APIServer.Ethereum
                     };
                 }
 
-                //var getOfferStartTime = await getOfferStartTimeFunction.CallAsync<BigInteger>(offerIdArray);
-                var getOfferHoldingTimeInMinutes = await getOfferHoldingTimeInMinutesFunction.CallAsync<BigInteger>(offerIdArray);
+
+                //long holdingTime = await connection.ExecuteScalarAsync<long>(
+                //    @"select HoldingTimeInMinutes from otoffer where OfferID = @offerID and blockchainID = @blockchainID",
+                //    new
+                //    {
+                //        offerId,
+                //        blockchainID
+                //    });
 
                 var latestBlockParam = BlockParameter.CreateLatest();
 
                 var block = await cl.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(latestBlockParam);
 
-                //DateTime blockTimestamp = UnixTimeStampToDateTime((double) block.Timestamp.Value);
-                //DateTime offerStartTime = UnixTimeStampToDateTime((UInt64)getOfferStartTime);
+                DateTime blockDate = TimestampHelper.UnixTimeStampToDateTime((double) block.Timestamp.Value);
 
-                //DateTime offerEndTime = offerStartTime.AddMinutes((UInt64)getOfferHoldingTimeInMinutes);
+                DateTime jobStartDate = await connection.ExecuteScalarAsync<DateTime>(@"SELECT Timestamp FROM otcontract_holding_offerfinalized where OfferID = @offerID and BlockchainID = @blockchainID",
+                    new
+                    {
+                        offerID = offerId,
+                        blockchainID
+                    });
 
-                //if (blockTimestamp < offerEndTime)
-                //{
-                //    return new BeforePayoutResult
-                //    {
-                //        CanTryPayout = false,
-                //        Header = "Stop!",
-                //        Message = "The smart contract says this job is still active. The transaction will likely fail if you try to send this manually."
-                //    };
-                //}
+                DateTime jobEndDate = jobStartDate.AddMinutes((int)offerHoldingTimeInMinutes);
 
-                var getHolderPaidAmount = await getHolderPaidAmountFunction.CallAsync<BigInteger>(offerIdArray, identity);
-
-                if (getHolderPaidAmount != 0)
+                if (blockDate > jobEndDate)
                 {
-                    var friendlyAmount = getHolderPaidAmount / 1000000000000000000;
+                    blockDate = jobEndDate;
+                }
+
+                BigInteger blockTimestamp = new BigInteger(TimestampHelper.DateTimeToUnixTimeStamp(blockDate));
+
+
+                var amountToTransfer = holderStakedAmount;
+                amountToTransfer = amountToTransfer * (blockTimestamp - holderPaymentTimestamp);
+                amountToTransfer = amountToTransfer / (offerHoldingTimeInMinutes * 60);
+
+                decimal friendlyEstimatedPayout = Web3.Convert.FromWei(amountToTransfer);
+
+
+
+                if (holderPaidAmount == holderStakedAmount)
+                {
+                    var friendlyAmount = Web3.Convert.FromWei(holderPaidAmount);
 
                     return new BeforePayoutResult
                     {
                         CanTryPayout = false,
                         Header = "Stop!",
-                        Message = "The smart contract says you have been paid " + friendlyAmount + " TRAC for this job. The transaction will likely fail if you try to send this manually."
+                        Message = "The smart contract says you have been paid " + friendlyAmount +
+                                  " TRAC for this job. The transaction will likely fail if you try to send this manually."
                     };
                 }
 
                 if (!String.IsNullOrWhiteSpace(litigationStorageAddress))
                 {
-                    //if (OTHubSettings.Instance.Blockchain.Network == BlockchainNetwork.Testnet)
-                    //{
-                    litigationStorageAddress = connection.QueryFirstOrDefault<ContractAddress>(@"select Address from otcontract
-where Type = 9 AND Address = @litigationStorageAddress", new
+
+                    litigationStorageAddress = (await connection.QueryFirstOrDefaultAsync<ContractAddress>(@"select Address from otcontract
+where Type = 9 AND Address = @litigationStorageAddress AND blockchainID = @blockchainID", new
                     {
-                        litigationStorageAddress = litigationStorageAddress
-                    })?.Address;
+                        litigationStorageAddress = litigationStorageAddress,
+                        blockchainID
+                    }))?.Address;
 
                     if (litigationStorageAddress == null)
                     {
@@ -147,11 +235,11 @@ where Type = 9 AND Address = @litigationStorageAddress", new
                         {
                             CanTryPayout = false,
                             Header = "Stop!",
-                            Message = "OT Hub is not familiar with this litigation storage smart contract address. Unknown addresses can not be used."
+                            Message = "OT Hub is not familiar with this litigation storage smart contract address for this blockchain id " + blockchainID
                         };
                     }
 
-                    Contract storageContract = new Contract((EthApiService) cl.Eth,
+                    Contract storageContract = new Contract((EthApiService)cl.Eth,
                         AbiHelper.GetContractAbi(ContractTypeEnum.LitigationStorage, blockchainEnum, networkNameEnum), litigationStorageAddress);
                     Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
 
@@ -159,7 +247,6 @@ where Type = 9 AND Address = @litigationStorageAddress", new
                     BigInteger litigationTimestampInt =
                         await getLitigationTimestampFunction.CallAsync<BigInteger>(latestBlockParam, offerIdArray,
                             identity);
-                    DateTime litigationTimestamp = TimestampHelper.UnixTimeStampToDateTime((UInt64) litigationTimestampInt);
 
                     Function getOfferLitigationIntervalInMinutesFunction =
                         holdingStorageContract.GetFunction("getOfferLitigationIntervalInMinutes");
@@ -213,11 +300,12 @@ where Type = 9 AND Address = @litigationStorageAddress", new
                         };
                     }
                 }
-                //}
 
                 return new BeforePayoutResult
                 {
-                    CanTryPayout = true
+                    CanTryPayout = true,
+                    BlockchainExplorerUrlFormat = explorerTransactionUrl,
+                    EstimatedPayout = friendlyEstimatedPayout
                 };
             }
         }

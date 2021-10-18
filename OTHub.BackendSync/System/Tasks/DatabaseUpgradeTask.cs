@@ -304,6 +304,9 @@ ADD COLUMN IF NOT EXISTS `NetworkId` TEXT NULL DEFAULT NULL");
                 connection.Execute(@"ALTER TABLE otoffer
 ADD COLUMN IF NOT EXISTS `EstimatedLambda` DECIMAL(10,2) NULL DEFAULT NULL");
 
+                connection.Execute(@"ALTER TABLE otoffer
+ADD COLUMN IF NOT EXISTS `EstimatedLambdaConfidence` INT NULL DEFAULT NULL");
+
 
 
                 connection.Execute(
@@ -810,6 +813,131 @@ ADD COLUMN IF NOT EXISTS `USDPriceCalculationMode` bit not null default 0");
                 connection.Execute(@"ALTER TABLE blockchains
 ADD COLUMN IF NOT EXISTS `BlockchainWebSocketsUrl` varchar(500) NULL");
 
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `NetworkID` int NULL");
+
+                connection.Execute(@"CREATE TABLE if not exists `findnodesbywalletjob` (
+	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`UserID` VARCHAR(45) NOT NULL COLLATE 'latin1_swedish_ci',
+	`BlockchainID` INT(11) NOT NULL,
+	`Address` VARCHAR(42) NOT NULL COLLATE 'latin1_swedish_ci',
+	`StartDate` DATETIME NOT NULL,
+	`EndDate` DATETIME NULL DEFAULT NULL,
+	`Progress` INT(11) NOT NULL,
+	`Failed` BIT(1) NULL DEFAULT NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_findnodesbywalletjob_users` (`UserID`) USING BTREE,
+	INDEX `FK_findnodesbywalletjob_blockchains` (`BlockchainID`) USING BTREE,
+	CONSTRAINT `FK_findnodesbywalletjob_blockchains` FOREIGN KEY (`BlockchainID`) REFERENCES `blockchains` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT,
+	CONSTRAINT `FK_findnodesbywalletjob_users` FOREIGN KEY (`UserID`) REFERENCES `users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"CREATE TABLE if not exists `findnodesbywalletresult` (
+	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`JobID` INT(10) UNSIGNED NOT NULL,
+	`Identity` VARCHAR(50) NOT NULL COLLATE 'latin1_swedish_ci',
+	`IsUnknownResult` BIT(1) NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_findnodesbywalletresult_findnodesbywalletjob` (`JobID`) USING BTREE,
+	CONSTRAINT `FK_findnodesbywalletresult_findnodesbywalletjob` FOREIGN KEY (`JobID`) REFERENCES `findnodesbywalletjob` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"CREATE TABLE if not exists `stakedtokensbyday` (
+	`Date` DATE NOT NULL,
+	`Deposited` DECIMAL(27,18) NOT NULL DEFAULT '0.000000000000000000',
+	`Withdrawn` DECIMAL(27,18) NOT NULL DEFAULT '0.000000000000000000',
+	`Staked` DECIMAL(27,18) NOT NULL DEFAULT '0.000000000000000000',
+	PRIMARY KEY (`Date`) USING BTREE
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"ALTER TABLE mynodes
+DROP FOREIGN KEY IF EXISTS `FK_mynodes_otidentity`");
+
+                connection.Execute(@"ALTER TABLE mynodes 
+ADD CONSTRAINT `FK_mynodes_otidentity_cascade` FOREIGN KEY IF NOT EXISTS (`NodeID`) REFERENCES `otidentity` (`NodeId`) ON UPDATE CASCADE ON DELETE NO ACTION");
+
+                connection.Execute(@"CREATE TABLE if not exists `notifications` (
+	`Id` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`UserID` VARCHAR(45) NOT NULL COLLATE 'latin1_swedish_ci',
+	`Read` BIT(1) NOT NULL,
+	`Dismissed` BIT(1) NOT NULL,
+	`CreatedAt` DATETIME NOT NULL,
+	`Title` VARCHAR(500) NOT NULL DEFAULT '' COLLATE 'latin1_swedish_ci',
+	`Description` TEXT(65535) NOT NULL COLLATE 'latin1_swedish_ci',
+	`RelativeUrl` TEXT(65535) NOT NULL COLLATE 'latin1_swedish_ci',
+	PRIMARY KEY (`Id`) USING BTREE,
+	INDEX `FK_notifications_users` (`UserID`) USING BTREE,
+	INDEX `Index 3` (`CreatedAt`, `UserID`, `Title`) USING BTREE,
+	CONSTRAINT `FK_notifications_users` FOREIGN KEY (`UserID`) REFERENCES `users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=1
+;
+");
+
+                connection.Execute(@"ALTER TABLE users
+ADD COLUMN IF NOT EXISTS `TelegramUserID` bigint null");
+
+                connection.Execute(@"CREATE TABLE if not exists `telegramsettings` (
+	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`UserID` VARCHAR(45) NOT NULL DEFAULT '' COLLATE 'latin1_swedish_ci',
+	`NotificationsEnabled` BIT(1) NOT NULL,
+	`JobWonEnabled` BIT(1) NOT NULL,
+	`HasReceivedMessageFromUser` BIT(1) NOT NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_telegramsettings_users` (`UserID`) USING BTREE,
+	CONSTRAINT `FK_telegramsettings_users` FOREIGN KEY (`UserID`) REFERENCES `users` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+AUTO_INCREMENT=3
+;
+
+
+");
+
+                connection.Execute(@"INSERT INTO telegramsettings (UserID, NotificationsEnabled, JobWonEnabled, HasReceivedMessageFromUser)
+SELECT u.ID, 1, 1, 0 FROM users u
+WHERE u.TelegramUserID IS NOT NULL AND (SELECT COUNT(*) FROM telegramsettings ss WHERE ss.UserID = u.ID) = 0");
+
+                connection.Execute(@"CREATE TABLE if not exists `hubaddresses` (
+	`ID` INT(10) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`Address` VARCHAR(255) NOT NULL COLLATE 'latin1_swedish_ci',
+	`BlockchainID` INT(11) NOT NULL,
+	`DateAdded` DATETIME NOT NULL,
+	`DateReplaced` DATETIME NULL DEFAULT NULL,
+	`FromBlockNumber` BIGINT(20) UNSIGNED NOT NULL,
+	`SyncBlockNumber` BIGINT(20) UNSIGNED NOT NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_hubaddresses_blockchains` (`BlockchainID`) USING BTREE,
+	CONSTRAINT `FK_hubaddresses_blockchains` FOREIGN KEY (`BlockchainID`) REFERENCES `blockchains` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"ALTER TABLE telegramsettings
+ADD COLUMN IF NOT EXISTS `LowAvailableTokensEnabled` bit NOT NULL DEFAULT 0");
+
+                connection.Execute(@"ALTER TABLE telegramsettings
+ADD COLUMN IF NOT EXISTS `LowAvailableTokensAmount` int NOT NULL DEFAULT 50");
+
+                connection.Execute(@"ALTER TABLE otidentity
+ADD COLUMN IF NOT EXISTS `LastActivityTimestamp` datetime NULL");
 
             }
         }

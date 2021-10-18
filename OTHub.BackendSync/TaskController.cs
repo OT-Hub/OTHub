@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,7 +40,7 @@ namespace OTHub.BackendSync
 
                 using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
-                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName);
+                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName).GetAwaiter().GetResult();
                 }
 
                 task.BlockchainStartup(blockchainID, blockchain, network);
@@ -56,9 +57,10 @@ namespace OTHub.BackendSync
 
                 using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
-                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName);
+                    _systemStatus.InsertOrUpdate(connection, null, NextRunDate, false, _task.ParentName).GetAwaiter().GetResult();
                 }
             }
+
 
             public bool NeedsRunning
             {
@@ -84,28 +86,34 @@ namespace OTHub.BackendSync
 
                 try
                 {
-                    Logger.WriteLine(_source, "Starting " + _task.Name + " on " + _blockchain + " " + _network);
-
-                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                    if (_systemStatus.BlockchainID.HasValue)
                     {
-                        _systemStatus.InsertOrUpdate(connection, true, null, true, _task.ParentName);
+                        Logger.WriteLine(_source, "Starting " + _task.Name + " on " + _blockchain + " " + _network);
+                    }
+                    else
+                    {
+                        Logger.WriteLine(_source, "Starting " + _task.Name);
+                    }
+
+                    await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                    {
+                        await _systemStatus.InsertOrUpdate(connection, true, null, true, _task.ParentName);
                     }
 
                     if (_task is TaskRunBlockchain taskB)
                     {
-                        await taskB.Execute(_source, _blockchain, _network);
+                        success = await taskB.Execute(_source, _blockchain, _network);
                     }
                     else if (_task is TaskRunGeneric taskG)
                     {
                         await taskG.Execute(_source);
+                        success = true;
                     }
                     else
                     {
                         throw new NotImplementedException("Task of type " + _task.GetType().FullName +
                                                           " is not supported.");
                     }
-
-                    success = true;
                 }
                 catch (Exception ex)
                 {
@@ -114,9 +122,9 @@ namespace OTHub.BackendSync
                 finally
                 {
                     _lastRunDateTime = DateTime.Now;
-                    using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                    await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                     {
-                        _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false, _task.ParentName);
+                        await _systemStatus.InsertOrUpdate(connection, success, NextRunDate, false, _task.ParentName);
                     }
                     Logger.WriteLine(_source, "Finished " + _task.Name + " in " + (DateTime.Now - startTime).TotalSeconds + " seconds on " + _blockchain + " " + _network);
                 }
@@ -125,21 +133,22 @@ namespace OTHub.BackendSync
 
         public void Schedule(TaskRunGeneric task, TimeSpan runEveryTimeSpan, bool startNow)
         {
-            using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-            {
-                var item = new TaskControllerItem(_source, task, runEveryTimeSpan, startNow);
-                _items.Add(item);
-            }
+            var item = new TaskControllerItem(_source, task, runEveryTimeSpan, startNow);
+            _items.Add(item);
         }
 
-        public void Schedule(TaskRunBlockchain task, bool startNow)
+        public static Task[] Schedule<TTask>(Source source, bool startNow) where TTask : TaskRunBlockchain, new()
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var blockchains = connection.Query(@"SELECT * FROM blockchains WHERE enabled = 1").ToArray();
 
+                List<Task> tasks = new List<Task>();
+
                 foreach (var blockchain in blockchains)
                 {
+                    TTask task = new TTask();
+
                     int id = blockchain.ID;
                     string blockchainName = blockchain.BlockchainName;
                     string networkName = blockchain.NetworkName;
@@ -152,9 +161,19 @@ namespace OTHub.BackendSync
 
                     TimeSpan interval = task.GetExecutingInterval(blockchainEnum);
 
-                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, _source, task, interval, startNow, id);
-                    _items.Add(item);
+                    tasks.Add(Task.Run(async () =>
+                    {
+                        TaskController controller = new TaskController(source);
+                        var item = new TaskControllerItem(blockchainEnum, networkNameEnum, controller._source, task, interval, startNow, id);
+                        controller._items.Add(item);
+
+                        await controller.Start();
+                    }));
+
+             
                 }
+
+                return tasks.ToArray();
             }
         }
 
@@ -177,9 +196,14 @@ namespace OTHub.BackendSync
 
                 var items = _items.Where(i => i.NeedsRunning).Reverse().ToArray();
 
-                foreach (var taskControllerItem in items)
+                TaskControllerItem[] sequentialItems = items.ToArray();
+
+                if (sequentialItems.Any())
                 {
-                    await taskControllerItem.Execute();
+                    foreach (var taskControllerItem in sequentialItems)
+                    {
+                        await taskControllerItem.Execute();
+                    }
                 }
 
                 if (!items.Any())

@@ -16,7 +16,7 @@ export class HubHttpService {
             } else if (window.location.hostname === 'othub-testnet.origin-trail.network') {
                 this.ApiUrl = 'https://testnet-api.othub.info';
                 this.IsTestNet = true;
-            } else if (window.location.hostname === 'v5.othub.info') {
+            } else if (window.location.hostname === 'v5.othub.info' || window.location.hostname == "othub.origin-trail.network") {
                 this.ApiUrl = 'https://v5api.othub.info';
                 this.IsTestNet = false;
             }

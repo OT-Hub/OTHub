@@ -26,6 +26,8 @@ namespace OTHub.APIServer.Sql.Models.Home
         public long TotalJobs { get; set; }
         public long ActiveJobs { get; set; }
         public decimal StakedTokens { get; set; }
+        public decimal? TokensLocked24H { get; set; }
+        public decimal? TokensPaidout24H { get; set; }
         public long Jobs24H { get; set; }
         public decimal? JobsReward24H { get; set; }
         public long? JobsDuration24H { get; set; }
@@ -36,6 +38,15 @@ namespace OTHub.APIServer.Sql.Models.Home
         public HomeFeesModel Fees { get; set; }
         public int BlockchainID { get; set; }
         public int? HoursTillFirstJob { get; set; }
+
+        public decimal? PriceFactorLow24H { get; set; }
+        public decimal? PriceFactorHigh24H { get; set; }
+        public decimal? JobsRewardLow24H { get; set; }
+        public decimal? JobsRewardHigh24H { get; set; }
+        public long? JobsDurationLow24H { get; set; }
+        public long? JobsDurationHigh24H { get; set; }
+        public long? JobsSizeLow24H { get; set; }
+        public long? JobsSizeHigh24H { get; set; }
     }
 
     public class HomeFeesModel
@@ -66,4 +77,10 @@ namespace OTHub.APIServer.Sql.Models.Home
         public int Percentage { get; set; }
     }
 
+    public class HomeJobBlockchainDistributionSummaryModel
+    {
+        public HomeJobBlockchainDistributionModel[] Blockchains { get; set; }
+        public int TotalJobs => Blockchains.Sum(b => b.Jobs);
+        public int MaxDailyJobs { get; set; }
+    }
 }

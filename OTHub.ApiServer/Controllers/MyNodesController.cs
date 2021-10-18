@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using CoinpaprikaAPI.Entity;
 using Dapper;
@@ -10,9 +9,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
 using MySqlConnector;
+using Nethereum.RPC;
+using Nethereum.RPC.Eth.DTOs;
+using Nethereum.Web3;
 using OTHub.APIServer.Helpers;
 using OTHub.APIServer.Sql.Models.Nodes;
 using OTHub.Settings;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace OTHub.APIServer.Controllers
 {
@@ -29,6 +32,7 @@ namespace OTHub.APIServer.Controllers
         [HttpPost]
         [Authorize]
         [Route("UpdateMyNodesPriceCalculationMode")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task UpdateMyNodesPriceCalculationMode([FromQuery]int mode)
         {
             if (mode != 0 && mode != 1)
@@ -41,8 +45,7 @@ namespace OTHub.APIServer.Controllers
             {
                 await connection.ExecuteAsync("UPDATE Users SET USDPriceCalculationMode = @mode WHERE ID = @userID", new
                 {
-                    userID = User?.Identity.Name,
-                    mode = mode
+                    userID = User?.Identity.Name, mode
                 });
             }
 
@@ -53,6 +56,7 @@ namespace OTHub.APIServer.Controllers
         [HttpGet]
         [Authorize]
         [Route("MyNodesPriceCalculationMode")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task<int> GetMyNodesPriceCalculationMode()
         {
             await using (MySqlConnection connection =
@@ -68,6 +72,7 @@ namespace OTHub.APIServer.Controllers
         [HttpGet]
         [Authorize]
         [Route("TaxReport")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task<TaxReportModel[]> TaxReport([FromQuery]int usdMode, [FromQuery] string nodeID,
             [FromQuery]DateTime startDate, [FromQuery]DateTime endDate,
             [FromQuery] bool includeActiveJobs, [FromQuery] bool includeCompletedJobs)
@@ -81,9 +86,9 @@ namespace OTHub.APIServer.Controllers
                 userID = User?.Identity?.Name,
                 startDate = startDate.Date,
                 endDate = endDate.Date,
-                nodeID = nodeID,
-                includeActiveJobs = includeActiveJobs,
-                includeCompletedJobs = includeCompletedJobs
+                nodeID,
+                includeActiveJobs,
+                includeCompletedJobs
             };
 
 
@@ -170,12 +175,52 @@ OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.Ho
             return rows;
         }
 
-            [HttpGet]
+        [HttpGet]
+        [Authorize]
+        [Route("GetHoldingTimeByMonth")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<GetHoldingTimeByMonthModel[]> GetHoldingTimeByMonth([FromQuery] string nodeID)
+        {
+            if (string.IsNullOrWhiteSpace(nodeID))
+                nodeID = null;
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                GetHoldingTimeByMonthModel[] rows = (await connection.QueryAsync<GetHoldingTimeByMonthModel>(@"WITH CTE AS (
+SELECT YEAR(o.FinalizedTimestamp) 'Year', MONTH(o.FinalizedTimestamp) 'Month', ROUND(o.HoldingTimeInMinutes / 43800) HoldingTimeInMonths, o.OfferID, b.BlockchainName
+FROM otoffer o
+JOIN blockchains b ON b.ID = o.BlockchainID
+JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
+JOIN otidentity i ON i.Identity = h.Holder AND i.BlockchainID = o.BlockchainID
+JOIN mynodes mn ON mn.UserID = @userID AND mn.NodeID = i.NodeId
+WHERE o.IsFinalized = 1 AND NOW() <= DATE_ADD(o.FinalizedTimeStamp, INTERVAL +o.HoldingTimeInMinutes MINUTE)
+AND (@nodeID IS NULL OR mn.NodeID = @nodeID) 
+)
+
+SELECT o.HoldingTimeInMonths, COUNT(o.OfferID) 'Count'
+FROM CTE o
+GROUP BY o.HoldingTimeInMonths
+ORDER BY o.HoldingTimeInMonths", new
+                {
+                    userID = User?.Identity?.Name,
+                    nodeID = nodeID
+                })).ToArray();
+
+                return rows;
+            }
+        }
+
+        [HttpGet]
         [Authorize]
         [Route("RecentJobs")]
-        public async Task<RecentJobsByDay[]> GetRecentJobs()
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<RecentJobsByDay[]> GetRecentJobs([FromQuery] string nodeID)
         {
-            if (_cache.TryGetValue("MyNodes-GetRecentJobs-" + User.Identity.Name, out var cached))
+            if (string.IsNullOrWhiteSpace(nodeID))
+                nodeID = null;
+
+            if (_cache.TryGetValue($"MyNodes-GetRecentJobs-{User.Identity.Name}-{nodeID}", out var cached))
             {
                 return (RecentJobsByDay[]) cached;
             }
@@ -186,20 +231,24 @@ OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.Ho
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var jobs = (await connection.QueryAsync<RecentJobs>(@"SELECT mn.NodeID, mn.DisplayName, o.OfferID, o.HoldingTimeInMinutes, o.TokenAmountPerHolder, o.FinalizedTimestamp,
-(CASE WHEN u.USDPriceCalculationMode = 0 THEN ticker.Price ELSE @overrideUSDPrice END) * o.TokenAmountPerHolder AS USDAmount FROM mynodes mn
+(CASE WHEN u.USDPriceCalculationMode = 0 THEN ticker.Price ELSE @overrideUSDPrice END) * o.TokenAmountPerHolder AS USDAmount,
+b.DisplayName Blockchain, b.LogoLocation BlockchainLogo
+FROM mynodes mn
 JOIN users u ON u.ID = mn.UserID
 JOIN otidentity i ON i.NodeId = mn.NodeID
 JOIN otoffer_holders h ON h.Holder = i.Identity AND h.BlockchainID = i.BlockchainID
 JOIN otoffer o ON o.OfferID = h.OfferID AND o.BlockchainID = i.BlockchainID
+JOIN blockchains b ON b.ID = o.BlockchainID
 LEFT JOIN ticker_trac ticker ON u.USDPriceCalculationMode = 0 AND ticker.Timestamp = (
 SELECT MAX(TIMESTAMP)
 FROM ticker_trac
 WHERE TIMESTAMP <= o.FinalizedTimestamp)
-WHERE o.FinalizedTimestamp >= DATE_Add(DATE(NOW()), INTERVAL -7 DAY) AND mn.UserID = @userID
+WHERE o.FinalizedTimestamp >= DATE_Add(DATE(NOW()), INTERVAL -7 DAY) AND mn.UserID = @userID AND (@nodeID IS NULL OR @nodeID = mn.NodeID)
 ORDER BY o.FinalizedTimestamp DESC", new
                 {
                     userID = User.Identity.Name,
-                    overrideUSDPrice = ticker?.PriceUsd ?? 0
+                    overrideUSDPrice = ticker?.PriceUsd ?? 0,
+                    nodeID = nodeID
                 })).ToArray();
 
                 List<RecentJobsByDay> days = new List<RecentJobsByDay>(7);
@@ -220,7 +269,7 @@ ORDER BY o.FinalizedTimestamp DESC", new
 
 
 
-                _cache.Set("MyNodes-GetRecentJobs-" + User.Identity.Name, data, TimeSpan.FromSeconds(15));
+                _cache.Set($"MyNodes-GetRecentJobs-{User.Identity.Name}-{nodeID}", data, TimeSpan.FromSeconds(15));
 
 
 
@@ -230,12 +279,223 @@ ORDER BY o.FinalizedTimestamp DESC", new
 
         [HttpGet]
         [Authorize]
+        [Route("PossibleJobPayouts")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<PossiblePayoutModel[]> GetPossibleJobPayouts([FromQuery] bool includeActiveJobs, [FromQuery] bool includeCompletedJobs,
+            [FromQuery] int blockchainID, [FromQuery] DateTime? dateFrom, [FromQuery] DateTime? dateTo)
+        {
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+
+                string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                {
+                    id = blockchainID
+                });
+
+                var cl = new Web3(nodeUrl);
+
+                var eth = new EthApiService(cl.Client);
+
+                var latestBlockParam = BlockParameter.CreateLatest();
+
+                var block = await cl.Eth.Blocks.GetBlockWithTransactionsByNumber.SendRequestAsync(latestBlockParam);
+
+                var rows = (await connection.QueryAsync<PossiblePayoutModel>(@"WITH CTEJobs AS (
+SELECT 
+b.ID BlockchainID, b.DisplayName BlockchainName, o.OfferID, MN.NodeID, i.Identity, o.TokenAmountPerHolder TokenAmount,
+DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) as JobEndTimestamp, of.Timestamp FinalizedTimestamp,
+o.TokenAmountPerHolder * 1000000000000000000 TokenAmountInWei, o.HoldingTimeInMinutes
+FROM
+mynodes MN
+JOIN otidentity i ON i.NodeId = MN.NodeID
+JOIN otoffer_holders h ON h.Holder = i.Identity AND h.BlockchainID = i.BlockchainID
+JOIN otoffer o ON o.OfferID = h.OfferID AND o.BlockchainID = h.BlockchainID
+JOIN blockchains b ON b.id = o.BlockchainID
+JOIN otcontract_holding_offerfinalized of ON of.OfferID = o.OfferID AND of.BlockchainID = o.BlockchainID
+WHERE o.IsFinalized = 1 AND MN.UserID = @userID AND (@blockchainID IS NULL OR i.BlockchainID = @blockchainID)
+AND ((@includeActiveJobs = 1 AND DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) >= NOW())
+OR (@includeCompletedJobs = 1 AND DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) <= NOW()))
+AND (@dateFrom IS NULL OR DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) >= @dateFrom)
+AND (@dateTo IS NULL OR DATE_Add(o.FinalizedTimeStamp, INTERVAL + o.HoldingTimeInMinutes MINUTE) <= @dateTo)
+),
+
+CTEPayouts AS (
+SELECT MN.NodeID, po.OfferID, SUM(po.Amount) PaidAmount, COUNT(po.OfferId) PayoutCount, MAX(po.Timestamp) LastPayout
+FROM otcontract_holding_paidout po
+JOIN otidentity i ON i.Identity = po.Holder AND i.BlockchainID = po.BlockchainID
+JOIN mynodes MN ON MN.NodeID = i.NodeId
+WHERE MN.UserID = @userID AND (@blockchainID IS NULL OR po.BlockchainID = @blockchainID)
+GROUP BY MN.NodeID, po.OfferID
+)
+
+SELECT 
+J.BlockchainID, J.BlockchainName, J.OfferID, J.NodeID, J.Identity, J.TokenAmount, COALESCE(P.PaidAmount, 0) PaidAmount, 
+COALESCE(P.PayoutCount, 0) PayoutCount, P.LastPayout, J.JobEndTimestamp,
+((J.TokenAmountInWei * (LEAST(UNIX_TIMESTAMP(J.JobEndTimestamp), @currentBlockUnixTimestamp) - UNIX_TIMESTAMP(GREATEST(COALESCE(P.LastPayout, 0), J.FinalizedTimestamp)))) / (J.HoldingTimeInMinutes * 60)) / 1000000000000000000 EstimatedPayout
+FROM CTEJobs J
+LEFT JOIN CTEPayouts P ON P.OfferID = J.OfferID
+WHERE J.TokenAmount != COALESCE(P.PaidAmount, 0)", new
+                {
+                    userID = User.Identity.Name,
+                    includeActiveJobs = includeActiveJobs,
+                    includeCompletedJobs = includeCompletedJobs,
+                    blockchainID = blockchainID,
+                    dateFrom = dateFrom,
+                    dateTo = dateTo,
+                    currentBlockUnixTimestamp = (ulong)block.Timestamp.Value
+                })).ToArray();
+
+                return rows;
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
+        [Route("GetNodeStats")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
+        public async Task<NodeStats> GetNodeStats([FromQuery]string nodeID)
+        {
+            TickerInfo ticker = await TickerHelper.GetTickerInfo(_cache);
+
+            await using (MySqlConnection connection =
+                new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                using (var multi = await connection.QueryMultipleAsync(@"
+SET @priceMode = (SELECT u.USDPriceCalculationMode FROM users u WHERE u.ID = @userID);
+
+CREATE TEMPORARY TABLE JobsCTELocal (SELECT 
+i.NodeId, 
+SUM(o.TokenAmountPerHolder) AS TokenAmount,
+SUM((CASE WHEN @priceMode = 0 THEN ticker.Price ELSE @overrideUSDPrice END) * o.TokenAmountPerHolder) AS USDAmount,
+COUNT(o.OfferID) AS JobCount,
+CASE WHEN mn.ID IS NOT NULL THEN 1 ELSE 0 END AS IsMyNode
+FROM otoffer o
+JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
+JOIN otidentity i ON i.Identity = h.Holder AND i.BlockchainID = o.BlockchainID
+LEFT JOIN mynodes mn ON mn.UserID = @userID AND mn.NodeID = i.NodeId
+LEFT JOIN ticker_trac ticker ON @priceMode = 0 AND (i.NodeId = @nodeID OR mn.ID IS NOT null) AND ticker.Timestamp = (
+SELECT MAX(TIMESTAMP)
+FROM ticker_trac
+WHERE TIMESTAMP <= o.FinalizedTimestamp)
+WHERE i.Version > 0 AND i.NodeId != '0000000000000000000000000000000000000000'
+GROUP BY i.NodeId);
+
+
+SELECT * FROM (
+SELECT l.NodeId
+, l.IsMyNode
+,SUM(l.TokenAmount) RewardTokenAmount
+,SUM(l.USDAmount) RewardUSDAmount
+,  ROUND(PERCENT_RANK() OVER (
+          ORDER BY SUM(l.TokenAmount)
+       ) * 100 ) RewardTokenAmountRank
+,SUM(l.JobCount) JobCount
+,  ROUND(PERCENT_RANK() OVER (
+          ORDER BY SUM(l.JobCount)
+       ) * 100)  JobCountRank
+FROM JobsCTELocal l
+GROUP BY l.NodeId) X
+WHERE (@nodeID IS NULL AND X.IsMyNode = 1) OR X.NodeId = @nodeID
+;
+
+SELECT * FROM (
+SELECT 
+i.NodeId
+,SUM(i.Stake) StakeTokenAmount
+,SUM(i.Stake) * @overrideUSDPrice StakeUSDAmount
+,  ROUND(PERCENT_RANK() OVER (
+          ORDER BY SUM(i.Stake)
+       ) * 100)  StakeTokenAmountRank
+,SUM(i.StakeReserved) StakeReservedTokenAmount
+,SUM(i.StakeReserved) * @overrideUSDPrice StakeReservedUSDAmount
+,  ROUND(PERCENT_RANK() OVER (
+          ORDER BY SUM(i.StakeReserved)
+       ) * 100) StakeReservedTokenAmountRank
+FROM otidentity i
+WHERE i.NodeId IN (SELECT j.NodeID FROM JobsCTELocal j) AND i.Version > 0 AND i.NodeId != '0000000000000000000000000000000000000000'
+GROUP BY i.NodeId) X
+WHERE (@nodeID IS NULL AND X.NodeId IN (SELECT j.NodeID FROM JobsCTELocal j WHERE j.IsMyNode = 1)) OR X.NodeId = @nodeID
+", new
+                {
+                    userID = User.Identity.Name,
+                    overrideUSDPrice = ticker?.PriceUsd ?? 0,
+                    nodeID
+                }))
+                {
+                    NodeStatsModel1 model1;
+                    NodeStatsModel2 model2;
+
+                    if (!String.IsNullOrWhiteSpace(nodeID))
+                    {
+                        model1 = multi.ReadFirstOrDefault<NodeStatsModel1>();
+                        model2 = multi.ReadFirstOrDefault<NodeStatsModel2>();
+
+                        if (model1 == null || model2 == null)
+                            return null;
+                    }
+                    else
+                    {
+                        var model1rows = multi.Read<NodeStatsModel1>().ToArray();
+                        model1 = new NodeStatsModel1
+                        {
+                            JobCount = model1rows.Sum(r => r.JobCount),
+                            RewardTokenAmount = model1rows.Sum(r => r.RewardTokenAmount),
+                            RewardUSDAmount = model1rows.Sum(r => r.RewardUSDAmount)
+                        };
+                        var model2rows = multi.Read<NodeStatsModel2>().ToArray();
+                        model2 = new NodeStatsModel2
+                        {
+                            StakeReservedTokenAmount = model2rows.Sum(r => r.StakeReservedTokenAmount),
+                            StakeReservedUSDAmount = model2rows.Sum(r => r.StakeReservedUSDAmount),
+                            StakeTokenAmount = model2rows.Sum(r => r.StakeTokenAmount),
+                            StakeUSDAmount = model2rows.Sum(r => r.StakeUSDAmount)
+                        };
+                    }
+
+
+                    NodeStats stats = new NodeStats
+                    {
+                        TotalJobs = new NodeStats.NodeStatsNumeric
+                        {
+                            Value = model1.JobCount,
+                            BetterThanActiveNodesPercentage = model1.JobCountRank
+                        },
+                        TotalLocked =
+                            new NodeStats.NodeStatsToken
+                            {
+                                TokenAmount = model2.StakeReservedTokenAmount,
+                                USDAmount = model2.StakeReservedUSDAmount,
+                                BetterThanActiveNodesPercentage = model2.StakeReservedTokenAmountRank
+                            },
+                        TotalRewards =
+                            new NodeStats.NodeStatsToken
+                            {
+                                TokenAmount = model1.RewardTokenAmount, 
+                                USDAmount = model1.RewardUSDAmount,
+                                BetterThanActiveNodesPercentage = model1.RewardTokenAmountRank
+                            },
+                        TotalStaked = new NodeStats.NodeStatsToken
+                        {
+                            TokenAmount = model2.StakeTokenAmount, 
+                            USDAmount = model2.StakeUSDAmount,
+                            BetterThanActiveNodesPercentage = model2.StakeTokenAmountRank
+                        }
+                    };
+                    return stats;
+                }
+            }
+        }
+
+        [HttpGet]
+        [Authorize]
         [Route("JobsPerMonth")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task<NodesPerYearMonthResponse> GetJobsPerMonth()
         {
             if (_cache.TryGetValue("MyNodes-JobsPerMonth-" + User.Identity.Name, out var cached))
             {
-                //return (NodesPerYearMonthResponse)cached;
+                return (NodesPerYearMonthResponse)cached;
             }
 
             TickerInfo ticker = await TickerHelper.GetTickerInfo(_cache);
@@ -291,7 +551,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                         Dictionary<int, JobsPerMonthModel> months = yearGroup
                             .ToDictionary(k => k.Month, v => v);
 
-                        JobsPerYear year = new JobsPerYear()
+                        JobsPerYear year = new JobsPerYear
                         {
                             Year = yearGroup.Key.ToString(),
                             Active = yearGroup.Key == DateTime.Now.Year
@@ -307,7 +567,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                             }
                             else
                             {
-                                month = new JobsPerMonth()
+                                month = new JobsPerMonth
                                 {
                                     Month = CultureInfo.CurrentCulture.DateTimeFormat.GetAbbreviatedMonthName(i)
                                 };
@@ -346,10 +606,10 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
 
             IEnumerable<IGrouping<string, JobsPerYear>> allGroupedByYear = allYears.GroupBy(a => a.Year);
 
-            response.AllNodes = new NodeJobsPerYear()
+            response.AllNodes = new NodeJobsPerYear
             {
                 DisplayName = "All Nodes",
-                Years = allGroupedByYear.Select(y => new JobsPerYear()
+                Years = allGroupedByYear.Select(y => new JobsPerYear
                 {
                     Year = y.Key,
                     Active = y.First().Active,
@@ -394,7 +654,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
 
 
 
-            _cache.Set("MyNodes-JobsPerMonth-" + User.Identity.Name, response, TimeSpan.FromSeconds(30));
+            _cache.Set("MyNodes-JobsPerMonth-" + User.Identity.Name, response, TimeSpan.FromSeconds(15));
 
 
 
@@ -404,6 +664,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         [HttpPost]
         [Authorize]
         [Route("ImportNodes")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task ImportNodes([FromQuery] string identities)
         {
             string[] split = identities.Split(";").Where(t => t.StartsWith("0x") && t.Length <= 100).ToArray();
@@ -429,6 +690,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         [HttpPost]
         [Authorize]
         [Route("AddEditNode")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task AddEditNode([FromQuery] string nodeID, [FromQuery] string name)
         {
             if (name != null && name.Length > 200)
@@ -441,8 +703,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
             {
                 bool exists = await connection.ExecuteScalarAsync<bool>(@"SELECT 1 FROM MyNodes WHERE UserID = @userID AND NodeID = @nodeID", new
                 {
-                    userID = User.Identity.Name,
-                    nodeID = nodeID
+                    userID = User.Identity.Name, nodeID
                 });
 
                 if (!exists)
@@ -450,8 +711,8 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                     await connection.ExecuteAsync("INSERT INTO MyNodes (UserID, NodeID, DisplayName) VALUES (@userID, @nodeID, @name)", new
                     {
                         userID = User.Identity.Name,
-                        nodeID = nodeID,
-                        name = name
+                        nodeID,
+                        name
                     });
                 }
                 else
@@ -459,8 +720,8 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                     await connection.ExecuteAsync("UPDATE MyNodes SET DisplayName = @name WHERE UserID = @userID AND NodeID = @nodeID", new
                     {
                         userID = User.Identity.Name,
-                        nodeID = nodeID,
-                        name = name
+                        nodeID,
+                        name
                     });
                 }
             }
@@ -469,6 +730,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         [HttpDelete]
         [Authorize]
         [Route("DeleteNode")]
+        [SwaggerOperation(Description = "Requires authentication to use.")]
         public async Task DeleteNode([FromQuery]string nodeID)
         {
             await using (MySqlConnection connection =
@@ -477,16 +739,14 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                 bool exists = await connection.ExecuteScalarAsync<bool>(
                     @"SELECT 1 FROM MyNodes WHERE UserID = @userID AND NodeID = @nodeID", new
                     {
-                        userID = User.Identity.Name,
-                        nodeID = nodeID
+                        userID = User.Identity.Name, nodeID
                     });
 
                 if (exists)
                 {
                     await connection.ExecuteAsync("DELETE FROM MyNodes WHERE UserID = @userID AND NodeID = @nodeID", new
                     {
-                        userID = User.Identity.Name,
-                        nodeID = nodeID
+                        userID = User.Identity.Name, nodeID
                     });
                 }
             }
@@ -564,5 +824,68 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
         public decimal TokenAmountPerHolder { get; set; }
         public DateTime FinalizedTimestamp { get; set; }
         public decimal USDAmount { get; set; }
+        public string Blockchain { get; set; }
+        public string BlockchainLogo { get; set; }
+    }
+
+    internal class NodeStatsModel1
+    {
+        public int JobCount { get; set; }
+        public int JobCountRank { get; set; }
+        public decimal RewardTokenAmount { get; set; }
+        public int RewardTokenAmountRank { get; set; }
+        public decimal RewardUSDAmount { get; set; }
+    }
+
+    internal class NodeStatsModel2
+    {
+        public decimal StakeTokenAmount { get; set; }
+        public int StakeTokenAmountRank { get; set; }
+        public decimal StakeUSDAmount { get; set; }
+        public decimal StakeReservedTokenAmount { get; set; }
+        public decimal StakeReservedUSDAmount { get; set; }
+        public int StakeReservedTokenAmountRank { get; set; }
+    }
+
+    public class NodeStats
+    {
+        public NodeStatsNumeric TotalJobs { get; set; }
+        public NodeStatsToken TotalRewards { get; set; }
+        public NodeStatsToken TotalStaked { get; set; }
+        public NodeStatsToken TotalLocked { get; set; }
+
+        public class NodeStatsToken
+        {
+            public decimal TokenAmount { get; set; }
+            public decimal USDAmount { get; set; }
+            public int? BetterThanActiveNodesPercentage { get; set; }
+        }
+        public class NodeStatsNumeric
+        {
+            public int Value { get; set; }
+
+            public int? BetterThanActiveNodesPercentage { get; set; }
+        }
+    }
+
+    public class GetHoldingTimeByMonthModel
+    {
+        public int HoldingTimeInMonths { get; set; }
+        public int Count { get; set; }
+    }
+
+    public class PossiblePayoutModel
+    {
+        public int BlockchainID { get; set; }
+        public string BlockchainName { get; set; }
+        public string OfferID { get; set; }
+        public string NodeID { get; set; }
+        public string Identity { get; set; }
+        public decimal TokenAmount { get; set; }
+        public decimal PaidAmount { get; set; }
+        public DateTime? LastPayout { get; set; }
+        public DateTime JobEndTimestamp { get; set; }
+        public decimal EstimatedPayout { get; set; }
+
     }
 }
