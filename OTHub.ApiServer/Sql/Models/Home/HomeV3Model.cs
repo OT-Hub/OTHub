@@ -41,6 +41,12 @@ namespace OTHub.APIServer.Sql.Models.Home
 
         public decimal? PriceFactorLow24H { get; set; }
         public decimal? PriceFactorHigh24H { get; set; }
+        public decimal? JobsRewardLow24H { get; set; }
+        public decimal? JobsRewardHigh24H { get; set; }
+        public long? JobsDurationLow24H { get; set; }
+        public long? JobsDurationHigh24H { get; set; }
+        public long? JobsSizeLow24H { get; set; }
+        public long? JobsSizeHigh24H { get; set; }
     }
 
     public class HomeFeesModel

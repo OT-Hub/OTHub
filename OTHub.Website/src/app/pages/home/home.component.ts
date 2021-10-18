@@ -361,6 +361,12 @@ export class HomeV3BlockchainModel {
   HoursTillFirstJob: number;
   PriceFactorLow24H: number;
   PriceFactorHigh24H: number;
+  JobsRewardLow24H: number;
+  JobsRewardHigh24H: number;
+  JobsDurationLow24H: number;
+  JobsDurationHigh24H: number;
+  JobsSizeLow24H: number;
+  JobsSizeHigh24H: number;
 }
 
 export class HomeFeesByBlockchainModel {

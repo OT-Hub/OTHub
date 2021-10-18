@@ -66,7 +66,7 @@
                   {{Data?.All.Jobs24H}}
                 </span>
               </div>
-              <div class="homeField priceFactor">
+              <div class="homeField twoPoints">
                 Price factor:
                 <span class="homeData">
                   <span *ngIf="Data?.All.PriceFactorLow24H == null && Data?.All.PriceFactorHigh24H == null">?</span>
@@ -175,6 +175,12 @@
                   </div>
                 </span>
               </div>
+              <div class="homeField">
+                Average time to win first job:
+                <span class="homeData">
+                  {{bc.HoursTillFirstJob != null ? bc.HoursTillFirstJob + ' hours' : '?'}}
+                </span>
+              </div>
             </div>
   
             <div class="col-md-4 col-sm-6 col-xs-6">
@@ -187,7 +193,7 @@
                   {{bc.Jobs24H}}
                 </span>
               </div>
-              <div class="homeField priceFactor">
+              <div class="homeField twoPoints">
                 Price factor:
                 <span class="homeData">
                   <span *ngIf="bc.PriceFactorLow24H == null && bc.PriceFactorHigh24H == null">?</span>
@@ -196,30 +202,53 @@
                   <span *ngIf="bc.PriceFactorLow24H != bc.PriceFactorHigh24H">{{bc.PriceFactorHigh24H}}</span>
                 </span>
               </div>
-              <div class="homeField">
+              <div class="homeField twoPoints">
+                Job rewards:
+                <span class="homeData">
+                  <span *ngIf="bc.JobsRewardLow24H == null && bc.JobsRewardHigh24H == null">?</span>
+                  <span>{{bc.JobsRewardLow24H | number:'1.0-3'}}</span> 
+                  <span class="to" *ngIf="bc.JobsRewardLow24H != bc.JobsRewardHigh24H">to</span>
+                  <span *ngIf="bc.JobsRewardLow24H != bc.JobsRewardHigh24H">{{bc.JobsRewardHigh24H | number:'1.0-3'}}</span>
+                  <small class="tokenSmall" style="margin-left:2px;">TRAC</small>
+                </span>
+              </div>
+              <!-- <div class="homeField">
                 Average job reward:
                 <span class="homeData">
                   {{bc.JobsReward24H != null ? (bc.JobsReward24H | number:'1.0-2') : '?'}}  <small class="tokenSmall">{{bc.TokenTicker}}</small>
                 </span>
+              </div> -->
+              <div class="homeField twoPoints">
+                Job duration:
+                <span class="homeData">
+                  <span *ngIf="bc.JobsDurationLow24H == null && bc.JobsDurationHigh24H == null">?</span>
+                  <span *ngIf="bc.JobsDurationLow24H != null">{{formatTime(bc.JobsDurationLow24H)}}</span> 
+                  <span class="to" *ngIf="bc.JobsDurationLow24H != bc.JobsDurationHigh24H">to</span>
+                  <span *ngIf="bc.JJobsDurationLow24H != bc.JobsDurationHigh24H && bc.JobsDurationHigh24H != null">{{formatTime(bc.JobsDurationHigh24H)}}</span>
+                </span>
               </div>
-              <div class="homeField">
+              <div class="homeField twoPoints">
+                Job size:
+                <span class="homeData">
+                  <span *ngIf="bc.JobsSizeLow24H == null && bc.JobsSizeHigh24H == null">?</span>
+                  <span *ngIf="bc.JobsSizeLow24H != null">{{bc.JobsSizeLow24H / 1000 | number:'1.2-2'}} KB</span> 
+                  <span class="to" *ngIf="bc.JobsSizeLow24H != bc.JobsSizeHigh24H">to</span>
+                  <span *ngIf="bc.JobsSizeLow24H != bc.JobsSizeHigh24H && bc.JobsSizeHigh24H != null">{{bc.JobsSizeHigh24H / 1000 | number:'1.2-2'}} KB</span>
+                </span>
+              </div>
+              <!-- <div class="homeField">
                 Average job duration:
                 <span class="homeData">
                   {{formatTime(bc.JobsDuration24H)}}
                 </span>
-              </div>
+              </div> -->
               <!-- <div class="homeField">
                 Average job data size:
                 <span class="homeData">
                   {{bc.JobsSize24H != null ? ((bc.JobsSize24H / 1000 | number:'1.2-2') + ' KB') : '?'}}
                 </span>
               </div> -->
-              <div class="homeField">
-                Average time to win first job:
-                <span class="homeData">
-                  {{bc.HoursTillFirstJob != null ? bc.HoursTillFirstJob + ' hours' : '?'}}
-                </span>
-              </div>
+        
   
             </div>
             <div class="col-md-4 col-sm-12  col-xs-12">

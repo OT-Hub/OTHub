@@ -76,7 +76,13 @@ FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
 (SELECT SUM(otoffer.TokenAmountPerHolder * 6) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensLocked24H,
 (SELECT SUM(otcontract_holding_paidout.Amount) FROM otcontract_holding_paidout WHERE blockchainid = b.id and Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensPaidout24H,
 (SELECT MIN(otoffer.EstimatedLambda) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorLow24H,
-(SELECT MAX(otoffer.EstimatedLambda) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorHigh24H
+(SELECT MAX(otoffer.EstimatedLambda) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorHigh24H,
+(SELECT MIN(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsRewardLow24H,
+(SELECT MAX(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsRewardHigh24H,
+(SELECT MIN(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDurationLow24H,
+(SELECT MAX(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDurationHigh24H,
+(SELECT MIN(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSizeLow24H,
+(SELECT MAX(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSizeHigh24H
 FROM blockchains b
 order by b.id desc")).ToArray();
 
@@ -118,7 +124,7 @@ WHERE bc.ID = @blockchainID", new
 
                     blockchain.Fees.PayoutCost = payoutFee;
 
-                    if (blockchain.BlockchainName == "xDai")
+                    if (blockchain.BlockchainName != "Ethereum")
                     {
                         blockchain.HoursTillFirstJob = await connection.ExecuteScalarAsync<int?>(@"
 WITH CTE AS (
@@ -144,7 +150,7 @@ JOIN otoffer o ON o.OfferID = h.OfferID
 WHERE h.Holder = i.Identity 
 ORDER BY o.FinalizedTimestamp
 LIMIT 1
-) >= DATE_Add(NOW(), INTERVAL -1 DAY)
+) >= DATE_Add(NOW(), INTERVAL -7 DAY)
 ORDER BY FirstOfferDate DESC
 )
 
