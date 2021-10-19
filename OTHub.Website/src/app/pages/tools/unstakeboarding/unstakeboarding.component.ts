@@ -103,6 +103,7 @@ export class UnstakeboardingComponent implements OnInit {
         if (err) {
           alert(err.message);
         } else if (res) {
+          window.open('https://etherscan.io/address/' + res,'_blank');
           // self.sentTransactionHash = res;
           // self.hasSentTransaction = true;
         }
