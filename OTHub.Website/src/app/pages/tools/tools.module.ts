@@ -5,11 +5,12 @@ import { NbCardModule, NbRadioModule } from '@nebular/theme';
 import { ToolsRoutingModule } from './tools-routing.module';
 import { FormsModule } from '@angular/forms';
 import { MomentModule } from 'ngx-moment';
+import { UnstakeboardingComponent } from './unstakeboarding/unstakeboarding.component';
 
 
 
 @NgModule({
-  declarations: [FindNodesByWalletComponent],
+  declarations: [FindNodesByWalletComponent, UnstakeboardingComponent],
   imports: [
     CommonModule,
     NbCardModule,

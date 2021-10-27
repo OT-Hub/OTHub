@@ -61,9 +61,15 @@
   //margin-left:3px;
 }
 
-.footer .link a, .footer .link a:hover {
+.footer .link a, .footer .link a:hover, .footer .maintainers a, .footer .maintainers a:hover {
   text-decoration: none;
 }
+
+.footer .maintainers a {
+  font-size:1rem;
+}
+
+
 
 @media (max-width: 575px) {
   .links {

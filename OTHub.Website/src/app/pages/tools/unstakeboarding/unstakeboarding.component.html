@@ -1,0 +1,18 @@
+<p>Unstake from boarding</p>
+
+<button class="btn btn-primary" (click)="enableMetaMask()" *ngIf="isMetaMaskUnlocked === false">Login with MetaMask</button>
+
+<div class="form-group" *ngIf="isMetaMaskUnlocked == true">
+    <div class="form-line">
+      <input type="text" id="gasPriceInput" class="form-control" name="gasPriceInput"
+        placeholder="Gas Price (Gwei)*" required (keyup)="onGasPriceKeyUp($event)" (keypress)="onGasPriceKeyDown($event)">
+    </div>
+  </div>
+
+
+<p  *ngIf="isMetaMaskUnlocked == true">  Selected Address in Metamask: {{this.selectedAddress}}</p>
+
+
+
+  <button class="btn btn-primary" (click)="sendTransaction()"  *ngIf="isMetaMaskUnlocked == true">Send Transaction (Opens in
+    MetaMask)</button>
