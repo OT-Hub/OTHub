@@ -1,3 +1,13 @@
+# Maintainers Wanted
+This project is looking for maintainers.
+
+I want to wind down my time spent on this project. I left the crypto scene about 2 years ago which took OT Hub offline and eventually I brought the website back online due to popular demand. 
+OriginTrail fund the hosting on the website since bringing the website back online but I don't have any passion to continue development of the website.
+
+If you're interested in working on OT Hub or taking over it, send me a message.
+
+The last feature I want to finish is the Tax Report which was voted by the community in October 2021.
+
 # OT Hub
 
 OT Hub is a community-made project for live insights into the OriginTrail Decentralized Network.
