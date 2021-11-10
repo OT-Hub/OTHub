@@ -65,7 +65,7 @@ namespace OTHub.APIServer.Controllers
                 return await connection.ExecuteScalarAsync<int>(@"SELECT USDPriceCalculationMode FROM Users where ID = @userID", new
                 {
                     userID = User?.Identity?.Name
-                });
+                }, commandTimeout: 120);
             }
         }
 
@@ -118,7 +118,7 @@ WHERE o.IsFinalized = 1
 AND o.FinalizedTimestamp >= @startDate 
 AND o.FinalizedTimestamp <= @endDate
 AND ((@includeActiveJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) > NOW()) 
-OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) < NOW()))", args)).ToArray();
+OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) < NOW()))", args, commandTimeout: 120)).ToArray();
                         break;
                     case 1:
                         rows = (await connection.QueryAsync<TaxReportModel>(@"CREATE TEMPORARY TABLE IF NOT EXISTS tmpIdentitiesForQuery AS (
@@ -141,7 +141,7 @@ WHERE o.IsFinalized = 1
 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) >= @startDate
 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) <= @endDate
 AND ((@includeActiveJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) > NOW()) 
-OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) < NOW()))", args)).ToArray();
+OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) < NOW()))", args, commandTimeout: 120)).ToArray();
                         break;
                     case 2:
                         rows = (await connection.QueryAsync<TaxReportModel>(@"CREATE TEMPORARY TABLE IF NOT EXISTS tmpIdentitiesForQuery AS (
@@ -165,7 +165,7 @@ WHERE po.Timestamp >= @startDate
 AND po.Timestamp <= @endDate 
 AND o.IsFinalized = 1
 AND ((@includeActiveJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) > NOW()) 
-OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) < NOW()))", args)).ToArray();
+OR (@includeCompletedJobs = 1 AND DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) < NOW()))", args, commandTimeout: 120)).ToArray();
                         break;
                 }
             }
@@ -205,7 +205,7 @@ ORDER BY o.HoldingTimeInMonths", new
                 {
                     userID = User?.Identity?.Name,
                     nodeID = nodeID
-                })).ToArray();
+                }, commandTimeout: 120)).ToArray();
 
                 return rows;
             }
@@ -249,7 +249,7 @@ ORDER BY o.FinalizedTimestamp DESC", new
                     userID = User.Identity.Name,
                     overrideUSDPrice = ticker?.PriceUsd ?? 0,
                     nodeID = nodeID
-                })).ToArray();
+                }, commandTimeout: 120)).ToArray();
 
                 List<RecentJobsByDay> days = new List<RecentJobsByDay>(7);
                 DateTime date = DateTime.Now.Date;
@@ -344,7 +344,7 @@ WHERE J.TokenAmount != COALESCE(P.PaidAmount, 0)", new
                     dateFrom = dateFrom,
                     dateTo = dateTo,
                     currentBlockUnixTimestamp = (ulong)block.Timestamp.Value
-                })).ToArray();
+                }, commandTimeout: 120)).ToArray();
 
                 return rows;
             }
@@ -421,7 +421,7 @@ WHERE (@nodeID IS NULL AND X.NodeId IN (SELECT j.NodeID FROM JobsCTELocal j WHER
                     userID = User.Identity.Name,
                     overrideUSDPrice = ticker?.PriceUsd ?? 0,
                     nodeID
-                }))
+                }, commandTimeout:120))
                 {
                     NodeStatsModel1 model1;
                     NodeStatsModel2 model2;
@@ -533,7 +533,7 @@ ORDER BY JobsCTE.DisplayName, JobsCTE.NodeID, JobsCTE.Year, JobsCTE.Month", new
                 {
                     userID = User.Identity.Name,
                     overrideUSDPrice = ticker?.PriceUsd ?? 0
-                })).ToArray();
+                }, commandTimeout: 120)).ToArray();
 
                 IEnumerable<IGrouping<string, JobsPerMonthModel>> groupedByNodes = data.GroupBy(m => m.NodeId);
 
