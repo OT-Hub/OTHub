@@ -27,7 +27,7 @@ SUM(CASE WHEN h.Success AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN
 SUM(CASE WHEN h.Success AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 MONTH) THEN 1 ELSE 0 END) MonthlySuccessTotal
 FROM rpcs r
 JOIN blockchains b ON b.ID = r.BlockchainID
-JOIN rpcshistory h ON h.RPCID = r.ID
+LEFT JOIN rpcshistory h ON h.RPCID = r.ID
 WHERE r.EnabledByUser = 1
 GROUP BY r.`Name`, r.LatestBlockNumber, r.Weight, b.DisplayName
 ORDER BY b.ID, r.ID");
