@@ -939,6 +939,9 @@ ADD COLUMN IF NOT EXISTS `LowAvailableTokensAmount` int NOT NULL DEFAULT 50");
                 connection.Execute(@"ALTER TABLE otidentity
 ADD COLUMN IF NOT EXISTS `LastActivityTimestamp` datetime NULL");
 
+                connection.Execute(@"ALTER TABLE blockchains
+ADD COLUMN IF NOT EXISTS `BlockSyncSize` MEDIUMINT NULL");
+
             }
         }
     }

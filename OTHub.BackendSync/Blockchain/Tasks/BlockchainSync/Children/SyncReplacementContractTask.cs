@@ -36,6 +36,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                 // Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
 
                 int blockchainID = await GetBlockchainID(connection, blockchain, network);
+                ulong blockSize = (ulong)await GetBlockchainSyncSize(connection, blockchain, network);
 
                 var cl = await GetWeb3(connection, blockchainID, blockchain);
                 var eth = new EthApiService(cl.Client);
@@ -56,10 +57,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     var holdingContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.Replacement, blockchain, network), contract.Address);
                     var replacementCompletedEvent = holdingContract.GetEvent("ReplacementCompleted");
 
-                    ulong size = (ulong)10000;
 
-
-                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, size,
+                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockSize,
                         async delegate (ulong start, ulong end)
                         {
                             await Sync(source, replacementCompletedEvent, contract, connection, cl, blockchainID, eth, start, end);

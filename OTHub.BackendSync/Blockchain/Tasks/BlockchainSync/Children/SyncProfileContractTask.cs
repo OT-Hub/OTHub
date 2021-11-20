@@ -30,6 +30,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int blockchainID = await GetBlockchainID(connection, blockchain, network);
+                ulong blockSize = (ulong)await GetBlockchainSyncSize(connection, blockchain, network);
 
                 var cl = await GetWeb3(connection, blockchainID, blockchain);
 
@@ -64,9 +65,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     Function createProfileFunction = profileContract.GetFunction("createProfile");
                     Function transferProfileFunction = profileContract.GetFunction("transferProfile");
 
-                    ulong size = (ulong)10000;
 
-                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, size,
+                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockSize,
                         async delegate (ulong start, ulong end)
                         {
                             await Sync(connection, profileCreatedEvent, identityCreatedEvent,

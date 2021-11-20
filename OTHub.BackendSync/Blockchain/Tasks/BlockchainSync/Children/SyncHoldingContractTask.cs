@@ -29,6 +29,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 int blockchainID = await GetBlockchainID(connection, blockchain, network);
+                ulong blockSize = (ulong)await GetBlockchainSyncSize(connection, blockchain, network);
 
                 var cl = await GetWeb3(connection, blockchainID, blockchain);
                 var eth = new EthApiService(cl.Client);
@@ -54,9 +55,8 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     var ownershipTransferredEvent = holdingContract.GetEvent("OwnershipTransferred");
                     var offerTaskEvent = holdingContract.GetEvent("OfferTask");
 
-                    ulong size = (ulong)10000;
 
-                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, size,
+                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockSize,
                         async delegate (ulong start, ulong end)
                         {
                             await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent,

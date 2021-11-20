@@ -78,6 +78,26 @@ namespace OTHub.BackendSync
         {
         }
 
+        private static readonly ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int> _blockchainSyncSizeDictionary = new ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int>();
+        protected async Task<int> GetBlockchainSyncSize(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
+        {
+            int size;
+
+            if (!_blockchainSyncSizeDictionary.TryGetValue(new Tuple<BlockchainType, BlockchainNetwork>(blockchain, network), out size))
+            {
+                size = await connection.ExecuteScalarAsync<int?>(
+                    "select BlockSyncSize FROM blockchains where BlockchainName = @blockchainName AND NetworkName = @networkName", new
+                    {
+                        blockchainName = blockchain.ToString(),
+                        networkName = network.ToString()
+                    }) ?? 10000;
+
+                _blockchainSyncSizeDictionary[new Tuple<BlockchainType, BlockchainNetwork>(blockchain, network)] = size;
+            }
+
+            return size;
+        }
+
         private static readonly ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?> _blockchainIDDictionary = new ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?>();
         protected async Task<int> GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
         {
