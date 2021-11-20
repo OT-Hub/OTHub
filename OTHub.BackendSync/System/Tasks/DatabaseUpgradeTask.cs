@@ -942,6 +942,43 @@ ADD COLUMN IF NOT EXISTS `LastActivityTimestamp` datetime NULL");
                 connection.Execute(@"ALTER TABLE blockchains
 ADD COLUMN IF NOT EXISTS `BlockSyncSize` MEDIUMINT NULL");
 
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS `rpcs` (
+	`ID` TINYINT(3) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`Name` VARCHAR(250) NOT NULL COLLATE 'latin1_swedish_ci',
+	`Url` VARCHAR(1000) NOT NULL COLLATE 'latin1_swedish_ci',
+	`BlockchainID` INT(11) NOT NULL,
+	`Weight` TINYINT(3) UNSIGNED NOT NULL DEFAULT '100',
+	`LatestBlockNumber` BIGINT(20) NULL DEFAULT NULL,
+	`OwnedByUserID` VARCHAR(45) NULL DEFAULT NULL COLLATE 'latin1_swedish_ci',
+	`EnabledByUser` BIT(1) NOT NULL,
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_rpcs_blockchains` (`BlockchainID`) USING BTREE,
+	CONSTRAINT `FK_rpcs_blockchains` FOREIGN KEY (`BlockchainID`) REFERENCES `blockchains` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS `rpcshistory` (
+	`ID` BIGINT(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+	`RPCID` TINYINT(4) UNSIGNED NOT NULL,
+	`Timestamp` DATETIME NOT NULL,
+	`Success` BIT(1) NOT NULL,
+	`Duration` INT(11) UNSIGNED NOT NULL DEFAULT '0',
+	`RedirectedRPCID` TINYINT(3) UNSIGNED NULL DEFAULT NULL,
+	`Method` VARCHAR(100) NOT NULL COLLATE 'latin1_swedish_ci',
+	PRIMARY KEY (`ID`) USING BTREE,
+	INDEX `FK_rpcshistory_rpcs` (`RPCID`) USING BTREE,
+	INDEX `FK_rpcshistory_rpcs_2` (`RedirectedRPCID`) USING BTREE,
+	CONSTRAINT `FK_rpcshistory_rpcs` FOREIGN KEY (`RPCID`) REFERENCES `rpcs` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT,
+	CONSTRAINT `FK_rpcshistory_rpcs_2` FOREIGN KEY (`RedirectedRPCID`) REFERENCES `rpcs` (`ID`) ON UPDATE RESTRICT ON DELETE RESTRICT
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
             }
         }
     }

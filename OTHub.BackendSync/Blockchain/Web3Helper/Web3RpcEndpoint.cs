@@ -15,10 +15,12 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
         {
             Url = new Uri(model.Url);
             Weight = model.Weight;
+            ID = model.ID;
         }
 
         public int Weight { get; }
         public int LoadBalancerStartIndex { get; set; }
         public int LoadBalancerEndndex { get; set; }
+        public int ID { get; set; }
     }
 }

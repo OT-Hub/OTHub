@@ -14,7 +14,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc
             Add(new UpdateHomeJobHistoryChartDataTask());
             Add(new UpdateStakedTokenReportTask());
             Add(new GetMarketDataTask());
-            //Add(new CalculateOfferLambdaTask());
+            Add(new ClearRPCHistoryTask());
         }
 
         public override async Task Execute(Source source)

@@ -8,9 +8,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Common.Logging;
+using MySqlConnector;
 using Nethereum.JsonRpc.Client;
 using Nethereum.JsonRpc.Client.RpcMessages;
 using Newtonsoft.Json;
+using OTHub.BackendSync.Database.Models;
+using OTHub.Settings;
 
 namespace OTHub.BackendSync.Blockchain.Web3Helper
 {
@@ -58,13 +61,23 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
             Web3RpcEndpoint endpoint = _getEndpointDelegate();
             endpointsTried.Add(endpoint);
 
+            int? previousRPCID = null;
+
             startOfHttpCall:
+
+            Rpcshistory history = new Rpcshistory
+            {
+                Timestamp = DateTime.Now,
+                RPCID = endpoint.ID,
+                Method = request.Method,
+                RedirectedRPCID = previousRPCID
+            };
 
             try
             {
                 RpcHttpClientManager httpClientManager = _httpManagerDictionary[endpoint];
                 HttpClient httpClient = httpClientManager.GetOrCreateHttpClient();
-                string str = JsonConvert.SerializeObject((object)request, this._jsonSerializerSettings);
+                string str = JsonConvert.SerializeObject((object) request, this._jsonSerializerSettings);
                 StringContent stringContent1 = new StringContent(str, Encoding.UTF8, "application/json");
                 CancellationTokenSource cancellationTokenSource = new CancellationTokenSource();
                 cancellationTokenSource.CancelAfter(ClientBase.ConnectionTimeout);
@@ -73,44 +86,74 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
                 StringContent stringContent2 = stringContent1;
                 CancellationToken token = cancellationTokenSource.Token;
 
-                HttpResponseMessage httpResponseMessage = await httpClient.PostAsync(requestUri, (HttpContent)stringContent2, token).ConfigureAwait(false);
+                HttpResponseMessage httpResponseMessage = await httpClient
+                    .PostAsync(requestUri, (HttpContent) stringContent2, token).ConfigureAwait(false);
 
 #if DEBUG
                 Console.WriteLine(httpResponseMessage.RequestMessage.RequestUri);
 #endif
 
                 httpResponseMessage.EnsureSuccessStatusCode();
-                using (StreamReader streamReader = new StreamReader(await httpResponseMessage.Content.ReadAsStreamAsync(token)))
+                using (StreamReader streamReader =
+                    new StreamReader(await httpResponseMessage.Content.ReadAsStreamAsync(token)))
                 {
-                    using (JsonTextReader jsonTextReader = new JsonTextReader((TextReader)streamReader))
+                    using (JsonTextReader jsonTextReader = new JsonTextReader((TextReader) streamReader))
                     {
-                        RpcResponseMessage responseMessage = JsonSerializer.Create(this._jsonSerializerSettings).Deserialize<RpcResponseMessage>((JsonReader)jsonTextReader);
+                        RpcResponseMessage responseMessage = JsonSerializer.Create(this._jsonSerializerSettings)
+                            .Deserialize<RpcResponseMessage>((JsonReader) jsonTextReader);
                         logger.LogResponse(responseMessage);
                         rpcResponseMessage = responseMessage;
                     }
                 }
+
+                history.Success = true;
+                history.Duration = (int)(DateTime.Now - history.Timestamp).TotalMilliseconds;
             }
             catch (TaskCanceledException ex)
             {
+                history.Success = false;
+                history.Duration = (int)(DateTime.Now - history.Timestamp).TotalMilliseconds;
+                await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                {
+                    await history.Insert(connection);
+                }
+
                 RpcClientTimeoutException timeoutException = new RpcClientTimeoutException(
-                    $"Rpc timeout after {(object)ClientBase.ConnectionTimeout.TotalMilliseconds} milliseconds", (Exception)ex);
-                logger.LogException((Exception)timeoutException);
+                    $"Rpc timeout after {(object) ClientBase.ConnectionTimeout.TotalMilliseconds} milliseconds",
+                    (Exception) ex);
+                logger.LogException((Exception) timeoutException);
                 throw timeoutException;
             }
             catch (Exception ex)
             {
-                RpcClientUnknownException unknownException = new RpcClientUnknownException("Error occurred when trying to send rpc requests(s)", ex);
-                logger.LogException((Exception)unknownException);
+                history.Success = false;
+                history.Duration = (int)(DateTime.Now - history.Timestamp).TotalMilliseconds;
+                await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                {
+                    await history.Insert(connection);
+                }
+
+                RpcClientUnknownException unknownException =
+                    new RpcClientUnknownException("Error occurred when trying to send rpc requests(s)", ex);
+                logger.LogException((Exception) unknownException);
+
+
 
                 Web3RpcEndpoint endpointToRetryOn = _getEndpointToTryOnFailureDelegate(endpointsTried);
                 if (endpointToRetryOn != null)
                 {
+                    previousRPCID = endpoint.ID;
                     endpoint = endpointToRetryOn;
                     endpointsTried.Add(endpoint);
                     goto startOfHttpCall;
                 }
 
                 throw unknownException;
+            }
+
+            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            {
+                await history.Insert(connection);
             }
 
             logger = (RpcLogger)null;
