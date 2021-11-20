@@ -91,63 +91,21 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                 await PopulateOriginalETHContracts(connection, blockchainID, hubAddressModel.FromBlockNumber);
             }
 
+            ulong blockSize = (ulong)await GetBlockchainSyncSize(connection, blockchain, network);
+
             Event contractsChangedEvent = hubContract.GetEvent("ContractsChanged");
 
-            ulong diff = (ulong) LatestBlockNumber.Value - hubAddressModel.SyncBlockNumber;
 
-            ulong size = (ulong) 10000;
 
-            beforeSync:
-            if (diff > size)
-            {
-                ulong currentStart = hubAddressModel.SyncBlockNumber;
-                ulong currentEnd = currentStart + size;
-
-                if (currentEnd > LatestBlockNumber.Value)
+            BlockBatcher batcher = BlockBatcher.Start(hubAddressModel.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockSize,
+                async delegate (ulong start, ulong end)
                 {
-                    currentEnd = (ulong) LatestBlockNumber.Value;
-                }
+                    await SyncContractsChanged(contractsChangedEvent,
+                        start, end,
+                        hubContract, web3, connection, blockchainID);
+                });
 
-                bool canRetry = true;
-                while (currentStart == 0 || currentStart < LatestBlockNumber.Value)
-                {
-                    start:
-                    try
-                    {
-                        await SyncContractsChanged(contractsChangedEvent,
-                            currentStart, currentEnd,
-                            hubContract, web3, connection, blockchainID);
-                    }
-                    catch (RpcResponseException ex) when (ex.Message.Contains("query returned more than"))
-                    {
-                        size = size / 2;
-
-                        Logger.WriteLine(Source.BlockchainSync, "Swapping to block sync size of " + size);
-
-                        goto beforeSync;
-                    }
-                    catch (RpcClientUnknownException ex) when (canRetry &&
-                                                               ex.GetBaseException().Message.Contains("Gateway"))
-                    {
-                        canRetry = false;
-                        goto start;
-                    }
-
-                    currentStart = currentEnd;
-                    currentEnd = currentStart + size;
-
-                    if (currentEnd > LatestBlockNumber.Value)
-                    {
-                        currentEnd = (ulong) LatestBlockNumber.Value;
-                    }
-                }
-            }
-            else
-            {
-                await SyncContractsChanged(contractsChangedEvent,
-                    hubAddressModel.SyncBlockNumber, (ulong) LatestBlockNumber.Value,
-                    hubContract, web3, connection, blockchainID);
-            }
+            await batcher.Execute();
 
             await SyncLatestContractsOnHub(hubAddressModel.FromBlockNumber, hubContract, connection, blockchainID, isLatest);
         }
