@@ -24,7 +24,8 @@ namespace OTHub.APIServer.Controllers
 SUM(CASE WHEN h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) DailyRequestsTotal,
 SUM(CASE WHEN h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 MONTH) THEN 1 ELSE 0 END) MonthlyRequestsTotal,
 SUM(CASE WHEN h.Success = 1 AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) DailySuccessTotal,
-SUM(CASE WHEN h.Success = 1 AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 MONTH) THEN 1 ELSE 0 END) MonthlySuccessTotal
+SUM(CASE WHEN h.Success = 1 AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 MONTH) THEN 1 ELSE 0 END) MonthlySuccessTotal,
+AVG(h.Duration) Performance
 FROM rpcs r
 JOIN blockchains b ON b.ID = r.BlockchainID
 LEFT JOIN rpcshistory h ON h.RPCID = r.ID
@@ -48,5 +49,6 @@ ORDER BY b.ID, r.ID");
         public long MonthlyRequestsTotal { get; set; }
         public int DailySuccessTotal { get; set; }
         public int MonthlySuccessTotal { get; set; }
+        public long Performance { get; set; }
     }
 }

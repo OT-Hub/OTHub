@@ -75,7 +75,7 @@ delete: false
             return '';
           }
 
-          return ((row.DailySuccessTotal / row.DailyRequestsTotal) * 100).toString() + '%';
+          return (Math.round(((row.DailySuccessTotal / row.DailyRequestsTotal) * 100) * 100) / 100).toString() + '%';
         }
       },
       MonthlyRequestsTotal: {
@@ -95,7 +95,27 @@ delete: false
             return '';
           }
 
-          return ((row.MonthlySuccessTotal / row.MonthlyRequestsTotal) * 100).toString() + '%';
+          return (Math.round(((row.MonthlySuccessTotal / row.MonthlyRequestsTotal) * 100) * 100) / 100).toString() + '%';
+        }
+      },
+      Performance: {
+        type: 'string',
+        sort: false,
+        filter: false,
+        title: 'Average Response',
+        valuePrepareFunction: (value, row) => {
+          if (value != null) {
+            if (value < 1000) {
+              return value + 'ms';
+            } else if (value <= 60000) {
+              return Math.round((value / 1000) * 100) / 100 + ' seconds';
+            }
+            else {
+              return Math.round(((value / 1000) / 60) * 100) / 100 + ' minutes';
+            }
+          }
+
+          return '';
         }
       },
     }
