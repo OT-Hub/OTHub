@@ -71,6 +71,7 @@ namespace OTHub.BackendSync
         ProfileCreated,
         TokensDeposited,
         TokensWithdrawn,
-        TokensReleased
+        TokensReleased,
+        MissingIdentities
     }
 }
