@@ -6,8 +6,10 @@ import { SystemRoutingModule } from './system-routing.module';
 import { SystemStatusComponent } from './status/systemstatus.component';
 import { NbCardModule, NbListModule, NbBadgeModule, NbIconModule, NbSpinnerModule } from '@nebular/theme';
 import { SmartcontractsComponent } from './smartcontracts/smartcontracts.component';
+import { RpcComponent } from './rpc/rpc.component';
+import { Ng2SmartTableModule } from 'ng2-smart-table';
 @NgModule({
-  declarations: [SystemStatusComponent, SmartcontractsComponent ],
+  declarations: [SystemStatusComponent, SmartcontractsComponent, RpcComponent ],
   imports: [
     CommonModule,
     SystemRoutingModule,
@@ -17,7 +19,8 @@ import { SmartcontractsComponent } from './smartcontracts/smartcontracts.compone
     NbListModule,
     NbBadgeModule,
     NbIconModule,
-    NbSpinnerModule
+    NbSpinnerModule,
+    Ng2SmartTableModule,
   ]
 })
 export class SystemModule { }

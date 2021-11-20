@@ -2,6 +2,7 @@ import { RouterModule, Routes } from '@angular/router';
 import { NgModule } from '@angular/core';
 import { SystemStatusComponent } from './status/systemstatus.component';
 import { SmartcontractsComponent } from './smartcontracts/smartcontracts.component';
+import { RpcComponent } from './rpc/rpc.component';
 
 
 const routes: Routes = [
@@ -12,6 +13,10 @@ const routes: Routes = [
   {
     path: 'smartcontracts',
     component: SmartcontractsComponent
+  },
+  {
+    path: 'rpc',
+    component: RpcComponent
   },
   {
     path: '',

@@ -67,7 +67,7 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
 
             Rpcshistory history = new Rpcshistory
             {
-                Timestamp = DateTime.Now,
+                Timestamp = DateTime.UtcNow,
                 RPCID = endpoint.ID,
                 Method = request.Method,
                 RedirectedRPCID = previousRPCID
@@ -107,12 +107,12 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
                 }
 
                 history.Success = true;
-                history.Duration = (int)(DateTime.Now - history.Timestamp).TotalMilliseconds;
+                history.Duration = (int)(DateTime.UtcNow - history.Timestamp).TotalMilliseconds;
             }
             catch (TaskCanceledException ex)
             {
                 history.Success = false;
-                history.Duration = (int)(DateTime.Now - history.Timestamp).TotalMilliseconds;
+                history.Duration = (int)(DateTime.UtcNow - history.Timestamp).TotalMilliseconds;
                 await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
                     await history.Insert(connection);
@@ -127,7 +127,7 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
             catch (Exception ex)
             {
                 history.Success = false;
-                history.Duration = (int)(DateTime.Now - history.Timestamp).TotalMilliseconds;
+                history.Duration = (int)(DateTime.UtcNow - history.Timestamp).TotalMilliseconds;
                 await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
                 {
                     await history.Insert(connection);
