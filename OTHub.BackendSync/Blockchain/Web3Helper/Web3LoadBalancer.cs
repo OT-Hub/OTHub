@@ -37,19 +37,31 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
             {
                 Web3 web3 = new Web3(rpc.Url);
 
-                HexBigInteger latestBlockNumber = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-                rpcsToBlockNumberDict[rpc] = latestBlockNumber;
+                try
+                {
+                    HexBigInteger latestBlockNumber = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+                    rpcsToBlockNumberDict[rpc] = latestBlockNumber;
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex);
+                    rpcsToBlockNumberDict[rpc] = new HexBigInteger(0);
+                }
             });
 
             await Task.WhenAll(tasks);
 
             foreach (var kvp in rpcsToBlockNumberDict)
             {
-                await connection.ExecuteAsync(@"UPDATE rpcs SET LatestBlockNumber = @blockNumber WHERE ID = @id", new
+                if (kvp.Value.Value != 0)
                 {
-                    id = kvp.Key.ID,
-                    blockNumber = (UInt64)kvp.Value.Value
-                });
+                    await connection.ExecuteAsync(@"UPDATE rpcs SET LatestBlockNumber = @blockNumber WHERE ID = @id",
+                        new
+                        {
+                            id = kvp.Key.ID,
+                            blockNumber = (UInt64) kvp.Value.Value
+                        });
+                }
             }
 
             KeyValuePair<Rpc, HexBigInteger>[] orderedByBlockNumberDesc = rpcsToBlockNumberDict.OrderByDescending(r => r.Value.Value).ToArray();

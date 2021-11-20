@@ -70,6 +70,11 @@ delete: false
         filter: false,
         title: 'Daily Score (Reliability)',
         valuePrepareFunction: (value, row) => {
+
+          if (row.DailyRequestsTotal == 0) {
+            return '';
+          }
+
           return ((row.DailySuccessTotal / row.DailyRequestsTotal) * 100).toString() + '%';
         }
       },
@@ -85,6 +90,11 @@ delete: false
         filter: false,
         title: 'Monthly Score (Reliability)',
         valuePrepareFunction: (value, row) => {
+
+          if (row.MonthlyRequestsTotal == 0) {
+            return '';
+          }
+
           return ((row.MonthlySuccessTotal / row.MonthlyRequestsTotal) * 100).toString() + '%';
         }
       },
