@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
+using Nethereum.Web3;
 using OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -26,43 +27,38 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync
             return TimeSpan.FromMinutes(6);
         }
 
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
-            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-            {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
-
-                return await RunChildren(source, blockchain, network, blockchainID);
-            }
+            return await RunChildren(source, blockchain, network, blockchainID, web3);
         }
 
         public override async void BlockchainStartup(int blockchainId, BlockchainType blockchain,
             BlockchainNetwork network)
         {
-            string websocketsUrl;
-            string rpcUrl;
+            //            string websocketsUrl;
+            //            string rpcUrl;
 
-            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-            {
-                rpcUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM Blockchains where id = @id", new
-                {
-                    id = blockchainId
-                });
-                websocketsUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainWebSocketsUrl FROM Blockchains where id = @id", new
-                {
-                    id = blockchainId
-                });
-            }
+            //            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            //            {
+            //                rpcUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM Blockchains where id = @id", new
+            //                {
+            //                    id = blockchainId
+            //                });
+            //                websocketsUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainWebSocketsUrl FROM Blockchains where id = @id", new
+            //                {
+            //                    id = blockchainId
+            //                });
+            //            }
 
-            Console.WriteLine(blockchain +  " RPC: " + rpcUrl);
-            Console.WriteLine(blockchain + " WS: " + websocketsUrl);
+            //            Console.WriteLine(blockchain +  " RPC: " + rpcUrl);
+            //            Console.WriteLine(blockchain + " WS: " + websocketsUrl);
 
-            if (string.IsNullOrWhiteSpace(websocketsUrl))
-                return;
+            //            if (string.IsNullOrWhiteSpace(websocketsUrl))
+            //                return;
 
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-            Task.Run(async () => await WebSocketsManager.Start(blockchainId, websocketsUrl, rpcUrl, blockchain, network));
-#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            //#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+            //            Task.Run(async () => await WebSocketsManager.Start(blockchainId, websocketsUrl, rpcUrl, blockchain, network));
+            //#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
         }
     }
 }

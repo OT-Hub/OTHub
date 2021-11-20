@@ -12,7 +12,7 @@ namespace OTHub.BackendSync.Blockchain
     public static class BlockHelper
     {
         private static SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1);
-        public static async Task<EthBlock> GetBlock(MySqlConnection connection, string blockHash, HexBigInteger blockNumber, Web3 cl, int blockchainID)
+        public static async Task<EthBlock> GetBlock(MySqlConnection connection, string blockHash, HexBigInteger blockNumber, IWeb3 cl, int blockchainID)
         {
             var block = await EthBlock.GetByNumber(connection, (UInt64)blockNumber.Value, blockchainID);
 

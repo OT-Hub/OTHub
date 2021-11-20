@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 using Nethereum.Contracts;
+using Nethereum.Hex.HexTypes;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using OTHub.BackendSync.Blockchain.Web3Helper;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -19,14 +21,12 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 {
     public class GetLatestContractsTask : TaskRunBlockchain
     {
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
-
                 string currentHubAddress = await connection.ExecuteScalarAsync<string>("select HubAddress from blockchains where id = @id", new
                 {
                     id = blockchainID
@@ -42,7 +42,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
                 foreach (var address in addresses)
                 {
                     await PopulateSmartContracts(connection, address,
-                        address == currentHubAddress, blockchainID, blockchain, network);
+                        address == currentHubAddress, blockchainID, blockchain, network, web3);
                 }
             }
 
@@ -76,10 +76,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
         }
 
         private async Task PopulateSmartContracts(MySqlConnection connection, string hubAddress, bool isLatest,
-            int blockchainID, BlockchainType blockchain, BlockchainNetwork network)
+            int blockchainID, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3)
         {
-            var web3 = await GetWeb3(connection, blockchainID, blockchain);
             EthApiService eth = new EthApiService(web3.Client);
+
+            HexBigInteger blockNumber = web3.GetLoadBalancedBlockNumber();
 
             var hubContract = new Contract(eth, AbiHelper.GetContractAbi(ContractTypeEnum.Hub, blockchain, network),
                 hubAddress);
@@ -97,7 +98,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
 
 
 
-            BlockBatcher batcher = BlockBatcher.Start(hubAddressModel.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockSize,
+            BlockBatcher batcher = BlockBatcher.Start(hubAddressModel.SyncBlockNumber, (ulong)blockNumber.Value, blockSize,
                 async delegate (ulong start, ulong end)
                 {
                     await SyncContractsChanged(contractsChangedEvent,
@@ -256,7 +257,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
         }
 
         private async Task SyncContractsChanged(Event contractsChangedEvent, ulong fromBlockNumber, ulong toBlockNumber,
-            Contract hubContract, Web3 web3, MySqlConnection connection, int blockchainID)
+            Contract hubContract, IWeb3 web3, MySqlConnection connection, int blockchainID)
         {
             var eventsOfChange = await contractsChangedEvent.GetAllChangesDefault(
                 contractsChangedEvent.CreateFilterInput(new BlockParameter(fromBlockNumber),

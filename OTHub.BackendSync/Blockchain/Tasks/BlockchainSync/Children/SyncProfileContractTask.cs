@@ -7,10 +7,12 @@ using Dapper;
 using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
+using Nethereum.Hex.HexTypes;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using OTHub.BackendSync.Blockchain.Web3Helper;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -21,7 +23,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 {
     public class SyncProfileContractTask : TaskRunBlockchain
     {
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
@@ -29,12 +31,10 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
                 ulong blockSize = (ulong)await GetBlockchainSyncSize(connection, blockchain, network);
+                HexBigInteger blockNumber = web3.GetLoadBalancedBlockNumber();
 
-                var cl = await GetWeb3(connection, blockchainID, blockchain);
-
-                var eth = new EthApiService(cl.Client);
+                var eth = new EthApiService(web3.Client);
 
                 foreach (var contract in await OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Profile, blockchainID))
                 {
@@ -66,7 +66,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     Function transferProfileFunction = profileContract.GetFunction("transferProfile");
 
 
-                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockSize,
+                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)blockNumber.Value, blockSize,
                         async delegate (ulong start, ulong end)
                         {
                             await Sync(connection, profileCreatedEvent, identityCreatedEvent,
@@ -75,13 +75,13 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                                 tokensReleasedEvent, tokensWithdrawnEvent, tokensTransferredEvent,
                                 tokensReservedEvent,
                                 contract, source, createProfileFunction, transferProfileFunction, start,
-                                end, blockchainID, cl);
+                                end, blockchainID, web3, blockchain);
                         });
 
                     await batcher.Execute();
                 }
 
-                await CreateMissingIdentities(connection, cl, blockchainID, blockchain, network);
+                await CreateMissingIdentities(connection, web3, blockchainID, blockchain, network);
             }
 
             return true;
@@ -91,9 +91,9 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             Event identityTransferredEvent, Event tokensDepositedEvent, Event tokensReleasedEvent,
             Event tokensWithdrawnEvent, Event tokensTransferredEvent, Event tokensReservedEvent, OTContract contract,
             Source source, Function createProfileFunction, Function transferProfileFunction, ulong start, ulong end,
-            int blockchainID, Web3 cl)
+            int blockchainID, IWeb3 cl, BlockchainType blockchainType)
         {
-            Logger.WriteLine(source, "Syncing profile " + start + " to " + end);
+            Logger.WriteLine(source, $"Syncing profile {start} to {end} on {blockchainType}");
 
             var toBlock = new BlockParameter(end);
 
@@ -341,7 +341,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         }
 
         public static async Task CreateMissingIdentities(
-    MySqlConnection connection, Web3 cl, int blockchainId, BlockchainType blockchain, BlockchainNetwork network)
+    MySqlConnection connection, IWeb3 cl, int blockchainId, BlockchainType blockchain, BlockchainNetwork network)
         {
             using (await LockManager.GetLock(LockType.MissingIdentities).Lock())
             {
@@ -407,7 +407,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         }
 
         public static async Task ProcessTokensWithdrawn(MySqlConnection connection, string contractAddress, int blockchainID,
-            Web3 cl, IGrouping<string, EventLog<List<ParameterOutput>>> @group, EthApiService eth)
+            IWeb3 cl, IGrouping<string, EventLog<List<ParameterOutput>>> @group, EthApiService eth)
         {
             using (await LockManager.GetLock(LockType.TokensWithdrawn).Lock())
             {
@@ -455,7 +455,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         }
 
         public static async Task ProcessTokensReleased(MySqlConnection connection, string contractAddress, int blockchainID,
-            Web3 cl, IGrouping<string, EventLog<List<ParameterOutput>>> @group, EthApiService eth)
+            IWeb3 cl, IGrouping<string, EventLog<List<ParameterOutput>>> @group, EthApiService eth)
         {
             using (await LockManager.GetLock(LockType.TokensReleased).Lock())
             {
@@ -500,7 +500,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         }
 
         public static async Task ProcessTokensDeposited(MySqlConnection connection, string contractAddress, int blockchainID,
-            Web3 cl, IGrouping<string, EventLog<List<ParameterOutput>>> @group, EthApiService eth)
+            IWeb3 cl, IGrouping<string, EventLog<List<ParameterOutput>>> @group, EthApiService eth)
         {
             using (await LockManager.GetLock(LockType.TokensDeposited).Lock())
             {
@@ -547,7 +547,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         }
 
         public static async Task ProcessProfileCreated(MySqlConnection connection, string contractAddress,
-            Function createProfileFunction, int blockchainID, Web3 cl, EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
+            Function createProfileFunction, int blockchainID, IWeb3 cl, EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
             using (await LockManager.GetLock(LockType.ProfileCreated).Lock())
             {
@@ -601,7 +601,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         }
 
         public static async Task ProcessIdentityCreated(MySqlConnection connection, string contractAddress, int blockchainID,
-            Web3 cl, EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
+            IWeb3 cl, EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
             using (await LockManager.GetLock(LockType.IdentityCreated).Lock())
             {

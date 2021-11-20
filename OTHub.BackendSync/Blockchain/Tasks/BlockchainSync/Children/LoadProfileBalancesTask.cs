@@ -10,6 +10,7 @@ using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.Web3;
 using OTHub.BackendSync.Blockchain.Models;
+using OTHub.BackendSync.Blockchain.Web3Helper;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -46,17 +47,13 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             public Int32 Count { get; set; }
         }
 
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
-
-                var cl = await GetWeb3(connection, blockchainID, blockchain);
-
                 var profileStorageContractAddress = (await OTContract
                     .GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.ProfileStorage, blockchainID)).SingleOrDefault(a => a.IsLatest);
 
@@ -64,7 +61,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     return false;
 
                 var profileStorageContract =
-                    new Contract(new EthApiService(cl.Client),
+                    new Contract(new EthApiService(web3.Client),
                         AbiHelper.GetContractAbi(ContractTypeEnum.ProfileStorage, blockchain, network),
                         profileStorageContractAddress.Address);
                 var profileFunction = profileStorageContract.GetFunction("profile");

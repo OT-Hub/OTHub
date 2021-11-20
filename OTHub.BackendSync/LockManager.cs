@@ -72,6 +72,7 @@ namespace OTHub.BackendSync
         TokensDeposited,
         TokensWithdrawn,
         TokensReleased,
-        MissingIdentities
+        MissingIdentities,
+        GetWeb3
     }
 }

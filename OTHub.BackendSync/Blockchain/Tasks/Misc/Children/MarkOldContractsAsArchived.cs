@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
+using Nethereum.Web3;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -16,18 +17,16 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Misc.Children
         {
         }
 
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
-
                 var profiles = await OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Profile, blockchainID);
 
                 foreach (var otContract in profiles)
                 {
-                    var dates = connection.Query<DateTime?>(
+                    var dates = (await connection.QueryAsync<DateTime?>(
                         @"select MAX(Timestamp) from otcontract_profile_identitycreated r
 join ethblock b on r.BlockNumber = b.BlockNumber AND b.BlockchainID = r.BlockchainID
 WHERE r.ContractAddress = @contract AND r.BlockchainID = @blockchainID
@@ -61,7 +60,7 @@ join ethblock b on r.BlockNumber = b.BlockNumber AND b.BlockchainID = r.Blockcha
 WHERE r.ContractAddress = @contract AND r.BlockchainID = @blockchainID", new
                         {
                             contract = otContract.Address, blockchainID = blockchainID
-                        }).Where(d => d.HasValue).Select(d => d.Value).ToArray();
+                        })).Where(d => d.HasValue).Select(d => d.Value).ToArray();
 
                     if (dates.Any())
                     {

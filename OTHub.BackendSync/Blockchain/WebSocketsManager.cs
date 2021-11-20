@@ -361,7 +361,7 @@ namespace OTHub.BackendSync.Blockchain
                                 filterLog.Address, eventLog);
                         }
 
-                        await ProcessJobsTask.Execute(connection, blockchainID, blockchainType, blockchainNetwork);
+                        await ProcessJobsTask.Execute(connection, blockchainID, blockchainType, blockchainNetwork, cl);
                     }
 
                     if (offerFinalizedEvent.IsLogForEvent(transaction))
@@ -376,7 +376,7 @@ namespace OTHub.BackendSync.Blockchain
                                 eventLog);
                         }
 
-                        await ProcessJobsTask.Execute(connection, blockchainID, blockchainType, blockchainNetwork);
+                        await ProcessJobsTask.Execute(connection, blockchainID, blockchainType, blockchainNetwork, cl);
                     }
                     if (paidOutEvent.IsLogForEvent(transaction))
                     {

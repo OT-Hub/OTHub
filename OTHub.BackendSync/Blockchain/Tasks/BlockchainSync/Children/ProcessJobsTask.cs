@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
+using Nethereum.Web3;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.BackendSync.Messaging;
@@ -20,12 +21,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         {
         }
 
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
-                await Execute(connection, blockchainID, blockchain, network);
+                await Execute(connection, blockchainID, blockchain, network, web3);
             }
 
             return true;
@@ -126,7 +126,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             return (Decimal.Parse(currentMatchedPriceFactorIndex.x + "." + currentMatchedPriceFactorIndex.y + (currentMatchedPriceFactorIndex.z + 1)), 100 - (int)match);
         }
 
-        public static async Task Execute(MySqlConnection connection, int blockchainID, BlockchainType blockchain, BlockchainNetwork network)
+        public static async Task Execute(MySqlConnection connection, int blockchainID, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3)
         {
             using (await LockManager.GetLock(LockType.ProcessJobs).Lock())
             {

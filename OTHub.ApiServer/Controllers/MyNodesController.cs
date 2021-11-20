@@ -288,9 +288,11 @@ ORDER BY o.FinalizedTimestamp DESC", new
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
 
-                string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT Url FROM rpcs WHERE EnabledByUser = 1 AND BlockchainID = @blockchainID
+ORDER BY Weight DESC
+LIMIT 1", new
                 {
-                    id = blockchainID
+                    blockchainID = blockchainID
                 });
 
                 var cl = new Web3(nodeUrl);

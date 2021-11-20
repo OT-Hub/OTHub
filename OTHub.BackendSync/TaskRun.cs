@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
 using Nethereum.Hex.HexTypes;
-using Nethereum.JsonRpc.Client;
 using Nethereum.Web3;
+using OTHub.BackendSync.Blockchain.Web3Helper;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -44,22 +44,6 @@ namespace OTHub.BackendSync
 
     public abstract class TaskRunBlockchain : TaskRunBase<TaskRunBlockchain>
     {
-        private HexBigInteger _latestBlockNumber;
-
-        public HexBigInteger LatestBlockNumber
-        {
-            get => _latestBlockNumber;
-            protected set
-            {
-                _latestBlockNumber = value;
-
-                foreach (TaskRunBlockchain childTask in _childTasks)
-                {
-                    childTask.LatestBlockNumber = value;
-                }
-            }
-        }
-
         public virtual void BlockchainStartup(int blockchainId, BlockchainType blockchain, BlockchainNetwork network)
         {
         }
@@ -99,7 +83,8 @@ namespace OTHub.BackendSync
         }
 
         private static readonly ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?> _blockchainIDDictionary = new ConcurrentDictionary<Tuple<BlockchainType, BlockchainNetwork>, int?>();
-        protected async Task<int> GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
+
+        public async Task<int> GetBlockchainID(MySqlConnection connection, BlockchainType blockchain, BlockchainNetwork network)
         {
             int? id;
 
@@ -119,59 +104,34 @@ namespace OTHub.BackendSync
         }
 
 
-        private static readonly ConcurrentDictionary<int, String> _blockchainUrlDictionary = new ConcurrentDictionary<int, string>();
-        protected async Task<Web3> GetWeb3(MySqlConnection connection, int blockchainID, BlockchainType type)
+        private static readonly ConcurrentDictionary<int, Web3Factory> _blockchainWeb3Dictionary = new ConcurrentDictionary<int, Web3Factory>();
+        public async Task<Web3Factory> GetWeb3(MySqlConnection connection, int blockchainID, BlockchainType type)
         {
-            string nodeUrl;
-
-            if (!_blockchainUrlDictionary.TryGetValue(blockchainID, out nodeUrl))
+            using (await LockManager.GetLock(LockType.GetWeb3).Lock())
             {
-                nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                if (!_blockchainWeb3Dictionary.TryGetValue(blockchainID, out Web3Factory loadBalancer))
                 {
-                    id = blockchainID
-                });
+                    Rpc[] rpcs = await Rpc.GetByBlockchainID(connection, blockchainID);
 
-                _blockchainUrlDictionary[blockchainID] = nodeUrl;
+                    loadBalancer = new Web3Factory(type, rpcs);
+
+
+                    _blockchainWeb3Dictionary[blockchainID] = loadBalancer;
+                }
+
+                return loadBalancer;
             }
-            
-            var cl = new Web3(nodeUrl);
-            
-
-            RequestInterceptor r = new RPCInterceptor(type);
-            cl.Client.OverridingRequestInterceptor = r;
-
-            return cl;
         }
 
-        public abstract Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network);
+        public abstract Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 cl, int blockchainID);
 
         protected async Task<bool> RunChildren(Source source, BlockchainType blockchain, BlockchainNetwork network,
-            int blockchainId)
+            int blockchainId, IWeb3 web3)
         {
             bool anyChildFailed = false;
 
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                var cl = await GetWeb3(connection, await GetBlockchainID(connection, blockchain, network), blockchain);
-
-                int defaultBlocksToIgnore = 2;
-
-                if (blockchain == BlockchainType.xDai)
-                {
-                    defaultBlocksToIgnore = 20;
-                }
-                else if (blockchain == BlockchainType.Polygon)
-                {
-                    defaultBlocksToIgnore = 30;
-                }
-                else if (blockchain == BlockchainType.Starfleet)
-                {
-                    defaultBlocksToIgnore = 20;
-                }
-
-                var latestBlockNumber = await cl.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-                LatestBlockNumber = new HexBigInteger(latestBlockNumber.Value - defaultBlocksToIgnore);
-
                 foreach (TaskRunBlockchain childTask in _childTasks)
                 {
                     var status = new SystemStatus(childTask.Name, blockchainId);
@@ -183,7 +143,7 @@ namespace OTHub.BackendSync
                         await status.InsertOrUpdate(connection, true, null, true, Name);
 
 
-                        await childTask.Execute(source, blockchain, network);
+                        await childTask.Execute(source, blockchain, network, web3, blockchainId);
                     }
                     catch (Exception ex)
                     {

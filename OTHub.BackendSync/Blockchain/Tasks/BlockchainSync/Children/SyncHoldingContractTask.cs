@@ -7,10 +7,12 @@ using System.Threading.Tasks;
 using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
+using Nethereum.Hex.HexTypes;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using OTHub.BackendSync.Blockchain.Web3Helper;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -21,18 +23,17 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 {
     public class SyncHoldingContractTask : TaskRunBlockchain
     {
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
                 ulong blockSize = (ulong)await GetBlockchainSyncSize(connection, blockchain, network);
+                HexBigInteger blockNumber = web3.GetLoadBalancedBlockNumber();
 
-                var cl = await GetWeb3(connection, blockchainID, blockchain);
-                var eth = new EthApiService(cl.Client);
+                var eth = new EthApiService(web3.Client);
 
                 foreach (var contract in await OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Holding, blockchainID))
                 {
@@ -56,11 +57,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     var offerTaskEvent = holdingContract.GetEvent("OfferTask");
 
 
-                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockSize,
+                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)blockNumber.Value, blockSize,
                         async delegate (ulong start, ulong end)
                         {
                             await Sync(connection, contract, offerCreatedEvent, offerFinalizedEvent, paidOutEvent,
-                                ownershipTransferredEvent, offerTaskEvent, source, start, end, blockchainID, cl);
+                                ownershipTransferredEvent, offerTaskEvent, source, start, end, blockchainID, web3);
                         });
 
                     await batcher.Execute();
@@ -72,7 +73,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
         private async Task Sync(MySqlConnection connection, OTContract contract, Event offerCreatedEvent,
             Event offerFinalizedEvent, Event paidOutEvent, Event ownershipTransferredEvent, Event offerTaskEvent,
-            Source source, ulong start, ulong end, int blockchainID, Web3 cl)
+            Source source, ulong start, ulong end, int blockchainID, IWeb3 cl)
         {
             Logger.WriteLine(source, "Syncing holding " + start + " to " + end);
 
@@ -191,7 +192,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             await OTContract.Update(connection, contract, false, false);
         }
 
-        public static async Task ProcessOfferTasks(MySqlConnection connection, int blockchainID, Web3 cl,
+        public static async Task ProcessOfferTasks(MySqlConnection connection, int blockchainID, IWeb3 cl,
             string contractAddress, EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
             using (await LockManager.GetLock(LockType.OfferTask).Lock())
@@ -239,7 +240,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             }
         }
 
-        public static async Task ProcessOfferCreated(MySqlConnection connection, int blockchainID, Web3 cl,
+        public static async Task ProcessOfferCreated(MySqlConnection connection, int blockchainID, IWeb3 cl,
             string contractAddress, EventLog<Models.Program.OfferCreated> eventLog)
         {
             using (await LockManager.GetLock(LockType.OfferCreated).Lock())
@@ -288,7 +289,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             }
         }
 
-        public static async Task ProcessOfferFinalised(MySqlConnection connection, int blockchainID, Web3 cl,
+        public static async Task ProcessOfferFinalised(MySqlConnection connection, int blockchainID, IWeb3 cl,
             string contractAddress, EventLog<List<ParameterOutput>> eventLog)
         {
             using (await LockManager.GetLock(LockType.OfferFinalised).Lock())
@@ -345,7 +346,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             }
         }
 
-        public static async Task ProcessPayout(MySqlConnection connection, int blockchainID, Web3 cl, string contractAddress, EventLog<List<ParameterOutput>> eventLog)
+        public static async Task ProcessPayout(MySqlConnection connection, int blockchainID, IWeb3 cl, string contractAddress, EventLog<List<ParameterOutput>> eventLog)
         {
             using (await LockManager.GetLock(LockType.PayoutInsert).Lock())
             {

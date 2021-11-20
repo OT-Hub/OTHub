@@ -6,10 +6,12 @@ using System.Threading.Tasks;
 using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
+using Nethereum.Hex.HexTypes;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using OTHub.BackendSync.Blockchain.Web3Helper;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -24,18 +26,17 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         {
         }
 
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
             await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
                 ulong blockSize = (ulong)await GetBlockchainSyncSize(connection, blockchain, network);
+                HexBigInteger blockNumber = web3.GetLoadBalancedBlockNumber();
 
-                var cl = await GetWeb3(connection, blockchainID, blockchain);
-                var eth = new EthApiService(cl.Client);
+                var eth = new EthApiService(web3.Client);
 
                 foreach (var contract in await OTContract.GetByTypeAndBlockchain(connection,
                     (int) ContractTypeEnum.Litigation, blockchainID))
@@ -61,7 +62,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     var replacementStartedEvent = holdingContract.GetEvent("ReplacementStarted");
 
 
-                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong) LatestBlockNumber.Value, blockSize,
+                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong) blockNumber.Value, blockSize,
                         async delegate(ulong start, ulong end)
                         {
                             await Sync(connection, litigationInitiatedEvent, litigationAnsweredEvent,
@@ -69,7 +70,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                                 litigationCompletedEvent,
                                 replacementStartedEvent,
                                 contract, source, start,
-                                end, blockchainID, cl);
+                                end, blockchainID, web3);
                         });
 
                     await batcher.Execute();
@@ -83,7 +84,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         private async Task Sync(MySqlConnection connection, Event litigationInitiatedEvent,
             Event litigationAnsweredEvent, Event litigationTimedOutEvent, Event litigationCompletedEvent,
             Event replacementStartedEvent, OTContract contract, Source source, ulong start, ulong end, int blockchainID,
-            Web3 cl)
+            IWeb3 cl)
         {
             Logger.WriteLine(source, "Syncing litigation " + start + " to " + end);
 
@@ -187,7 +188,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             //childTask.Wait();
         }
 
-        public static async Task ProcessReplacementStarted(MySqlConnection connection, int blockchainID, Web3 cl,
+        public static async Task ProcessReplacementStarted(MySqlConnection connection, int blockchainID, IWeb3 cl,
             EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
             if (OTContract_Litigation_ReplacementStarted.TransactionExists(connection, eventLog.Log.TransactionHash, blockchainID))
@@ -232,7 +233,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             await OTContract_Litigation_ReplacementStarted.InsertIfNotExist(connection, row);
         }
 
-        public static async Task ProcessLitigationCompleted(MySqlConnection connection, int blockchainID, Web3 cl,
+        public static async Task ProcessLitigationCompleted(MySqlConnection connection, int blockchainID, IWeb3 cl,
             EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
             if (OTContract_Litigation_LitigationCompleted.TransactionExists(connection, eventLog.Log.TransactionHash, blockchainID))
@@ -273,7 +274,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             await OTContract_Litigation_LitigationCompleted.InsertIfNotExist(connection, row);
         }
 
-        public static async Task ProcessLitigationTimedOut(MySqlConnection connection, int blockchainID, Web3 cl,
+        public static async Task ProcessLitigationTimedOut(MySqlConnection connection, int blockchainID, IWeb3 cl,
             EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
             if (OTContract_Litigation_LitigationTimedOut.TransactionExists(connection, eventLog.Log.TransactionHash, blockchainID))
@@ -310,7 +311,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             await OTContract_Litigation_LitigationTimedOut.InsertIfNotExist(connection, row);
         }
 
-        public static async Task ProcessLitigationAnswered(MySqlConnection connection, int blockchainID, Web3 cl,
+        public static async Task ProcessLitigationAnswered(MySqlConnection connection, int blockchainID, IWeb3 cl,
             EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
             if (OTContract_Litigation_LitigationAnswered.TransactionExists(connection, eventLog.Log.TransactionHash, blockchainID))
@@ -347,7 +348,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
             await OTContract_Litigation_LitigationAnswered.InsertIfNotExist(connection, row);
         }
 
-        public static async Task ProcessLitigationInitiated(MySqlConnection connection, int blockchainID, Web3 cl,
+        public static async Task ProcessLitigationInitiated(MySqlConnection connection, int blockchainID, IWeb3 cl,
             EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
             if (OTContract_Litigation_LitigationInitiated.TransactionExists(connection, eventLog.Log.TransactionHash, blockchainID))

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using MySqlConnector;
+using Nethereum.Web3;
 using OTHub.BackendSync.Blockchain.Tasks.Misc.Children;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -24,14 +25,9 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainMaintenance
             return TimeSpan.FromHours(3);
         }
 
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
-            await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
-            {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
-
-                return await RunChildren(source, blockchain, network, blockchainID);
-            }
+                return await RunChildren(source, blockchain, network, blockchainID, web3);
         }
     }
 }

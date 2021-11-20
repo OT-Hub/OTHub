@@ -31,12 +31,10 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Tools
             TimeConstraint = TimeLimiter.Compose(constraint, constraint2);
         }
 
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
             await using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
-
                 var pendingJobs = (await connection.QueryAsync(
                     @"SELECT * FROM findnodesbywalletjob WHERE EndDate is null AND BlockchainID = @blockchainID ORDER BY StartDate",
                     new
@@ -57,7 +55,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Tools
 
                     try
                     {
-                        await ProcessJob(connection, blockchainID, identities, address, blockchain, network, source, id);
+                        await ProcessJob(connection, blockchainID, identities, address, blockchain, network, source, id, web3);
                     }
                     catch (Exception ex)
                     {
@@ -78,18 +76,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.Tools
         private TimeLimiter TimeConstraint { get; }
 
         private async Task ProcessJob(MySqlConnection connection, int blockchainID, OTIdentity[] identities,
-            string address, BlockchainType blockchain, BlockchainNetwork network, Source source, uint id)
+            string address, BlockchainType blockchain, BlockchainNetwork network, Source source, uint id, IWeb3 web3)
         {
             string abi = AbiHelper.GetContractAbi(ContractTypeEnum.ERC725, blockchain, network);
 
-            string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
-            {
-                id = blockchainID
-            });
-
-            var cl = new Web3(nodeUrl);
-
-            var eth = new EthApiService(cl.Client);
+            var eth = new EthApiService(web3.Client);
 
             Int32 percentage = 0;
             int counter = 0;
@@ -156,7 +147,7 @@ VALUES(@jobID, @identity)", new
 
         public override TimeSpan GetExecutingInterval(BlockchainType type)
         {
-            return TimeSpan.FromSeconds(45);
+            return TimeSpan.FromMinutes(10);
         }
     }
 }

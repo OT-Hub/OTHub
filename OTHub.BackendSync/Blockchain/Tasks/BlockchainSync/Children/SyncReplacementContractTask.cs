@@ -5,10 +5,12 @@ using System.Threading.Tasks;
 using MySqlConnector;
 using Nethereum.ABI.FunctionEncoding;
 using Nethereum.Contracts;
+using Nethereum.Hex.HexTypes;
 using Nethereum.JsonRpc.Client;
 using Nethereum.RPC;
 using Nethereum.RPC.Eth.DTOs;
 using Nethereum.Web3;
+using OTHub.BackendSync.Blockchain.Web3Helper;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -23,23 +25,17 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         {
         }
 
-        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network)
+        public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)
         {
             ClientBase.ConnectionTimeout = new TimeSpan(0, 0, 5, 0);
 
-            using (var connection =
+            await using (var connection =
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
-                //OTContract litigationStorageContract = OTContract.GetByType(connection, (int) ContractType.LitigationStorage).FirstOrDefault(c => c.IsLatest);
-
-                //Contract storageContract = new Contract((EthApiService)cl.Eth, Constants.GetContractAbi(ContractType.LitigationStorage), litigationStorageContract.Address);
-                // Function getLitigationStatusFunction = storageContract.GetFunction("getLitigationStatus");
-
-                int blockchainID = await GetBlockchainID(connection, blockchain, network);
                 ulong blockSize = (ulong)await GetBlockchainSyncSize(connection, blockchain, network);
+                HexBigInteger blockNumber = web3.GetLoadBalancedBlockNumber();
 
-                var cl = await GetWeb3(connection, blockchainID, blockchain);
-                var eth = new EthApiService(cl.Client);
+                var eth = new EthApiService(web3.Client);
 
                 foreach (var contract in await OTContract.GetByTypeAndBlockchain(connection, (int)ContractTypeEnum.Replacement, blockchainID))
                 {
@@ -58,10 +54,10 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
                     var replacementCompletedEvent = holdingContract.GetEvent("ReplacementCompleted");
 
 
-                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)LatestBlockNumber.Value, blockSize,
+                    BlockBatcher batcher = BlockBatcher.Start(contract.SyncBlockNumber, (ulong)blockNumber.Value, blockSize,
                         async delegate (ulong start, ulong end)
                         {
-                            await Sync(source, replacementCompletedEvent, contract, connection, cl, blockchainID, eth, start, end);
+                            await Sync(source, replacementCompletedEvent, contract, connection, web3, blockchainID, eth, start, end);
 
                         });
 
@@ -73,7 +69,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         }
 
         private async Task Sync(Source source, Event replacementCompletedEvent, OTContract contract,
-            MySqlConnection connection, Web3 cl, int blockchainID, EthApiService eth, ulong currentStart, ulong currentEnd)
+            MySqlConnection connection, IWeb3 cl, int blockchainID, EthApiService eth, ulong currentStart, ulong currentEnd)
         {
             var toBlock = new BlockParameter(currentEnd);
 

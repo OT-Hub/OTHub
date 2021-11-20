@@ -69,7 +69,7 @@ namespace OTHub.BackendSync.Logging
             await State.TimeConstraint;
 
 #if DEBUG
-            Logger.WriteLine(Source.Misc, _type + ": " + request.Method);
+            Logger.WriteLine(Source.Misc, $"{_type}: {request.Method} on {_type} ");
 #endif
 
             await base.InterceptSendRequestAsync(interceptedSendRequestAsync, request, route);
@@ -134,7 +134,7 @@ namespace OTHub.BackendSync.Logging
             await State.TimeConstraint;
 
 #if DEBUG
-            Logger.WriteLine(Source.Misc, _type + ": " + method);
+            Logger.WriteLine(Source.Misc, $"{_type}: {method} on {_type}");
 #endif
 
             return await base.InterceptSendRequestAsync(interceptedSendRequestAsync, method, route, paramList);
@@ -146,7 +146,7 @@ namespace OTHub.BackendSync.Logging
             await State.TimeConstraint;
 
 #if DEBUG
-            Logger.WriteLine(Source.Misc, _type + ": " + method);
+            Logger.WriteLine(Source.Misc, $"{_type}: {method} on {_type}");
 #endif
 
             await base.InterceptSendRequestAsync(interceptedSendRequestAsync, method, route, paramList);

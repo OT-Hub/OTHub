@@ -6,6 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Dapper;
 using MySqlConnector;
+using Nethereum.Web3;
+using OTHub.BackendSync.Blockchain.Web3Helper;
 using OTHub.BackendSync.Database.Models;
 using OTHub.BackendSync.Logging;
 using OTHub.Settings;
@@ -102,7 +104,18 @@ namespace OTHub.BackendSync
 
                     if (_task is TaskRunBlockchain taskB)
                     {
-                        success = await taskB.Execute(_source, _blockchain, _network);
+                        IWeb3 web3;
+                        int blockchainID;
+
+                        await using (var connection =
+                            new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+                        {
+                            blockchainID = await taskB.GetBlockchainID(connection, _blockchain, _network);
+                            Web3Factory factory = await taskB.GetWeb3(connection, blockchainID, _blockchain);
+                            web3 = await factory.CreateInstance(connection);
+                        }
+
+                        success = await taskB.Execute(_source, _blockchain, _network, web3, blockchainID);
                     }
                     else if (_task is TaskRunGeneric taskG)
                     {

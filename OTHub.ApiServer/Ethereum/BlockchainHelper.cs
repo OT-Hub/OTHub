@@ -88,9 +88,11 @@ namespace OTHub.APIServer.Ethereum
                 BlockchainType blockchainEnum = Enum.Parse<BlockchainType>(blockchainName);
                 BlockchainNetwork networkNameEnum = Enum.Parse<BlockchainNetwork>(networkName);
 
-                string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT BlockchainNodeUrl FROM blockchains WHERE id = @id", new
+                string nodeUrl = await connection.ExecuteScalarAsync<string>(@"SELECT Url FROM rpcs WHERE EnabledByUser = 1 AND BlockchainID = @blockchainID
+ORDER BY Weight DESC
+LIMIT 1", new
                 {
-                    id = blockchainID
+                    blockchainID = blockchainID
                 });
 
                 var cl = new Web3(nodeUrl);
