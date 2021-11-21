@@ -1,0 +1,33 @@
+/deep/ .fail {
+    height: 12px;
+    width: 12px;
+    background-color: #f52c44;
+    border-radius: 50%;
+    display: inline-block;
+    margin-top: 4px;
+    margin-right: 5px;
+}
+
+/deep/ .pass {
+    height: 12px;
+    width: 12px;
+    background-color: #36b538;
+    border-radius: 50%;
+    display: inline-block;
+    margin-top: 4px;
+    margin-right: 5px;
+}
+
+/deep/ .amber {
+    height: 12px;
+    width: 12px;
+    background-color: #ffa238;
+    border-radius: 50%;
+    display: inline-block;
+    margin-top: 4px;
+    margin-right: 5px;
+}
+
+/deep/ .par {
+    display: inline-flex;
+}

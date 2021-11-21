@@ -1,8 +1,11 @@
+import { AUTO_STYLE } from '@angular/animations';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { NbComponentStatus } from '@nebular/theme';
 import { HubHttpService } from 'app/pages/hub-http-service';
-import { ServerDataSource } from 'ng2-smart-table';
+import { OfferIdColumnComponent } from 'app/pages/miscellaneous/offeridcolumn.component';
+import { ServerDataSource, ViewCell } from 'ng2-smart-table';
 
 @Component({
   selector: 'ngx-rpc',
@@ -11,6 +14,7 @@ import { ServerDataSource } from 'ng2-smart-table';
 })
 export class RpcComponent implements OnInit, OnDestroy {
   source: ServerDataSource;
+  rows: any[];
 
   constructor(private http: HttpClient, private route: ActivatedRoute, private router: Router,
     private httpService: HubHttpService) {
@@ -18,8 +22,17 @@ export class RpcComponent implements OnInit, OnDestroy {
     this.failedLoading = false;
     const url = this.httpService.ApiUrl + '/api/rpc';
 
+    const that = this;
+
     this.source = new ServerDataSource(http,
       { endPoint: url });
+
+    this.source.onChanged().subscribe(e => {
+
+      this.source.getAll().then(a => {
+        that.rows = a;
+      })
+    });
    }
   isLoading: boolean;
   failedLoading: boolean;
@@ -31,6 +44,42 @@ edit: false,
 delete: false
     },
     columns: {
+      // Custom: {
+      //   type: 'html',
+      //   //renderComponent: RPCHealthColumnComponent,
+      //   sort: false,
+      //   filter: false,
+      //   title: '',
+      //   valuePrepareFunction: (value, row) =>  {
+
+      //     const myBlockNumber = row.BlockNumber;
+
+      //     var blockchainRows = this.rows.filter(r => r.BlockchainName == row.BlockchainName && row.Name != r.Name);
+
+      //     let maxBlockNumber = myBlockNumber;
+
+      //     for (let index = 0; index < blockchainRows.length; index++) {
+      //       const blockchainRow = blockchainRows[index];
+      //       const rowBlockNumber = blockchainRow.BlockNumber;
+
+      //       if (rowBlockNumber > maxBlockNumber) {
+      //         maxBlockNumber = rowBlockNumber;
+      //       }
+      //     }
+
+      //     if (maxBlockNumber > myBlockNumber) {
+      //       const difference = maxBlockNumber - myBlockNumber;
+      //       if (difference == 1) {
+      //         return '<span class="pass"></span>';
+      //       } else if (difference <= 50) {
+      //       return '<span class="amber"></span>';
+      //       }
+      //       return '<span class="fail"></span>';
+      //     }
+
+      //     return '<span class="pass"></span>';
+      //   }
+      // },
       BlockchainName: {
         type: 'string',
         sort: false,
@@ -44,10 +93,39 @@ delete: false
         title: 'RPC Name'
       },
       BlockNumber: {
-        type: 'number',
+        type: 'html',
         sort: false,
         filter: false,
-        title: 'Height'
+        title: 'Height',
+        valuePrepareFunction: (value, row) =>  {
+
+          const myBlockNumber = row.BlockNumber;
+
+          var blockchainRows = this.rows.filter(r => r.BlockchainName == row.BlockchainName && row.Name != r.Name);
+
+          let maxBlockNumber = myBlockNumber;
+
+          for (let index = 0; index < blockchainRows.length; index++) {
+            const blockchainRow = blockchainRows[index];
+            const rowBlockNumber = blockchainRow.BlockNumber;
+
+            if (rowBlockNumber > maxBlockNumber) {
+              maxBlockNumber = rowBlockNumber;
+            }
+          }
+
+          if (maxBlockNumber > myBlockNumber) {
+            const difference = maxBlockNumber - myBlockNumber;
+            if (difference == 1) {
+              return '<div class="par"><span class="pass"></span>' + '<span>' + value + '</span></div>';
+            } else if (difference <= 50) {
+              return '<div class="par"><span class="amber"></span>' + '<span>' + value + '</span></div>';
+            }
+            return '<div class="par"><span class="fail"></span>' + '<span>' + value + '</span></div>';
+          }
+
+          return '<div class="par"><span class="pass"></span>' + '<span>' + value + '</span></div>';
+        }
       },
       Weight: {
         type: 'string',
@@ -65,7 +143,7 @@ delete: false
         title: 'Daily Requests'
       },
       DailySuccessTotal: {
-        type: 'string',
+        type: 'html',
         sort: false,
         filter: false,
         title: 'Daily Score (Reliability)',
@@ -75,7 +153,17 @@ delete: false
             return '';
           }
 
-          return (Math.round(((row.DailySuccessTotal / row.DailyRequestsTotal) * 100) * 100) / 100).toString() + '%';
+          const score = (Math.round(((row.DailySuccessTotal / row.DailyRequestsTotal) * 100) * 100) / 100);
+
+          if (score > 99.5) {
+            return '<div class="par"><span class="pass"></span>' + '<span>' + score.toString() + '%</span></div>';
+          }
+          if (score < 90) {
+            return '<div class="par"><span class="fail"></span>' + '<span>' + score.toString() + '%</span></div>';
+          }
+
+          return '<div class="par"><span class="amber"></span>' + '<span>' + score.toString() + '%</span></div>';
+
         }
       },
       MonthlyRequestsTotal: {
@@ -85,7 +173,7 @@ delete: false
         title: 'Monthly Requests'
       },
       MonthlySuccessTotal: {
-        type: 'string',
+        type: 'html',
         sort: false,
         filter: false,
         title: 'Monthly Score (Reliability)',
@@ -95,7 +183,17 @@ delete: false
             return '';
           }
 
-          return (Math.round(((row.MonthlySuccessTotal / row.MonthlyRequestsTotal) * 100) * 100) / 100).toString() + '%';
+          const score = (Math.round(((row.MonthlySuccessTotal / row.MonthlyRequestsTotal) * 100) * 100) / 100);
+
+          if (score > 99.0) {
+            return '<div class="par"><span class="pass"></span>' + '<span>' + score.toString() + '%</span></div>';
+          }
+          if (score < 90) {
+            return '<div class="par"><span class="fail"></span>' + '<span>' + score.toString() + '%</span></div>';
+          }
+
+          return '<div class="par"><span class="amber"></span>' + '<span>' + score.toString() + '%</span></div>';
+
         }
       },
       Performance: {
@@ -130,4 +228,32 @@ delete: false
 }
 
 
+}
+
+@Component({
+  selector: 'rpchealthcolumn',
+  template: `
+<nb-icon [icon]="icon"></nb-icon>
+`,
+})
+export class RPCHealthColumnComponent implements ViewCell, OnInit {
+
+  renderValue: string;
+
+  @Input() value: string;
+  @Input() rowData: any;
+
+  status: NbComponentStatus;
+  icon: string;
+
+  constructor() {
+
+  }
+
+  ngOnInit() {
+    debugger;
+    this.status = 'danger';
+    this.icon = 'alert-triangle';
+      this.renderValue = this.value;
+  }
 }
