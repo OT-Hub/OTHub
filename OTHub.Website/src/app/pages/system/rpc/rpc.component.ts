@@ -82,7 +82,7 @@ delete: false
         type: 'number',
         sort: false,
         filter: false,
-        title: 'Monthly Requets'
+        title: 'Monthly Requests'
       },
       MonthlySuccessTotal: {
         type: 'string',
