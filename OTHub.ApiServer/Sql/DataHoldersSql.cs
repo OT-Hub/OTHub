@@ -99,12 +99,12 @@ GREATEST(SUM(COALESCE(I.Stake, 0)) - SUM(COALESCE(I.StakeReserved, 0)) - @minimu
 SUM(COALESCE(I.Paidout, 0))  as PaidTokens,
 SUM(COALESCE(I.TotalOffers, 0))  as TotalWonOffers, 
 SUM(COALESCE(I.OffersLast7Days, 0))  WonOffersLast7Days,
-(SELECT COUNT(DISTINCT  CASE WHEN O.IsFinalized = 1 
+SUM((SELECT COUNT(DISTINCT  CASE WHEN O.IsFinalized = 1 
 	THEN (CASE WHEN NOW() <= DATE_Add(O.FinalizedTimeStamp, INTERVAL + O.HoldingTimeInMinutes MINUTE) THEN O.OfferId ELSE null END)
 	ELSE null
 END) FROM otoffer o 
 JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
-WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity) ActiveOffers
+WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity)) ActiveOffers
 from OTIdentity I
 {(userID != null ? $"{(filterByMyNodes ? "INNER" : "LEFT")} JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
 WHERE (@NodeId_like IS NULL OR (I.NodeId = @NodeId_like OR I.Identity = @NodeId_like))
