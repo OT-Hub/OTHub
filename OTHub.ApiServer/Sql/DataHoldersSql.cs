@@ -104,7 +104,7 @@ SUM(COALESCE(I.OffersLast7Days, 0))  WonOffersLast7Days,
 	ELSE null
 END) FROM otoffer o 
 JOIN otoffer_holders h ON h.OfferID = o.OfferID AND h.BlockchainID = o.BlockchainID
-WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity) ActiveJobs
+WHERE o.BlockchainID = I.blockchainID AND h.Holder = I.Identity) ActiveOffers
 from OTIdentity I
 {(userID != null ? $"{(filterByMyNodes ? "INNER" : "LEFT")} JOIN MyNodes MN ON MN.NodeID = I.NodeID AND MN.UserID = @userID" : "")}
 WHERE (@NodeId_like IS NULL OR (I.NodeId = @NodeId_like OR I.Identity = @NodeId_like))
