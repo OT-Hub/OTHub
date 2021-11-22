@@ -979,6 +979,16 @@ ENGINE=InnoDB
 ;
 ");
 
+                connection.Execute(@"CREATE TABLE IF NOT EXISTS `otnode_dc_visibility` (
+	`NodeId` VARCHAR(100) NOT NULL COLLATE 'latin1_swedish_ci',
+	PRIMARY KEY (`NodeId`) USING BTREE,
+	CONSTRAINT `FK_otnode_dc_visibility_otidentity` FOREIGN KEY (`NodeId`) REFERENCES `otidentity` (`NodeId`) ON UPDATE NO ACTION ON DELETE NO ACTION
+)
+COLLATE='latin1_swedish_ci'
+ENGINE=InnoDB
+;
+");
+
             }
         }
     }

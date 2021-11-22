@@ -53,7 +53,11 @@ namespace OTHub.APIServer.Controllers
                     var badges = await connection.QueryFirstOrDefaultAsync<BadgeModel>(@"SELECT 
 (SELECT COUNT(*) FROM otoffer WHERE IsFinalized = 1) AS TotalJobs,
 (SELECT COUNT(DISTINCT NodeId) FROM otidentity WHERE VERSION = 1) AS DataHolders,
-(SELECT COUNT(DISTINCT DcNodeID) FROM otcontract_holding_offercreated) AS DataCreators");
+(SELECT COUNT(DISTINCT o.DCNodeId)
+FROM otoffer o 
+JOIN otidentity i ON i.NodeId = o.DCNodeId 
+left JOIN otnode_dc_visibility dc ON dc.NodeId = i.NodeId 
+WHERE o.IsFinalized = 1 AND dc.NodeId IS NULL AND VERSION = 1) AS DataCreators");
 
                     var status = (await connection.QueryAsync<StatusModel>(@"SELECT 
 s.Name, s.Success, b.DisplayName BlockchainName, s.ParentName 

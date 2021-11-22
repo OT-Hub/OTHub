@@ -124,17 +124,24 @@ namespace OTHub.APIServer.Controllers
 (
 select oc.Timestamp, 'New Offer' as EventName, oc.OfferId as RelatedEntity, '' AS RelatedEntityName, '' as RelatedEntity2, '' AS RelatedEntity2Name, bc.TransactionUrl, oc.TransactionHash as TransactionHash, '' as Message, bc.DisplayName as BlockchainDisplayName from otcontract_holding_offercreated oc
 join blockchains bc on bc.ID = oc.BlockchainID
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = oc.DcNodeId
+WHERE dc.NodeId IS null
 union all 
 select DATE_ADD(of.Timestamp, INTERVAL 1 MICROSECOND), 'Data Holder Chosen', i.Identity, mn.DisplayName, h.OfferId, '', bc.TransactionUrl, of.TransactionHash, '', bc.DisplayName as BlockchainDisplayName from otoffer_holders h
 join otcontract_holding_offerfinalized of on of.OfferID = h.OfferId 
+join otcontract_holding_offercreated oc on oc.OfferID = h.OfferID
 join blockchains bc on bc.ID = h.BlockchainID
 JOIN otidentity i ON i.Identity = h.Holder
 LEFT JOIN mynodes mn ON mn.UserID = @userID AND mn.NodeID = i.NodeId
-where h.IsOriginalHolder = 1
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = oc.DcNodeId
+where h.IsOriginalHolder = 1 and dc.NodeId IS null
 GROUP BY h.ID
 union all
 select ofi.Timestamp, 'Finalized Offer', ofi.OfferId, '', '', '', bc.TransactionUrl, ofi.TransactionHash, '', bc.DisplayName as BlockchainDisplayName from otcontract_holding_offerfinalized ofi
 join blockchains bc on bc.ID = ofi.BlockchainID
+join otcontract_holding_offercreated oc on oc.OfferID = ofi.OfferID
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = oc.DcNodeId
+where dc.NodeId IS null
 union all 
 select po.Timestamp, 'Offer Payout', i.Identity, mn.DisplayName, '', '', bc.TransactionUrl, po.TransactionHash, '', bc.DisplayName as BlockchainDisplayName from otcontract_holding_paidout po
 join blockchains bc on bc.ID = po.BlockchainID
@@ -212,16 +219,23 @@ WHERE
 (
 select oc.Timestamp, 'New Offer' as EventName, oc.OfferId as RelatedEntity, '' as RelatedEntity2, oc.TransactionHash as TransactionHash, '' as Message, bc.DisplayName as BlockchainDisplayName from otcontract_holding_offercreated oc
 join blockchains bc on bc.ID = oc.BlockchainID
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = oc.DcNodeId
+WHERE dc.NodeId IS null
 union all 
 select DATE_ADD(of.Timestamp, INTERVAL 1 MICROSECOND), 'Data Holder Chosen', i.NodeId, h.OfferId, of.TransactionHash, '', bc.DisplayName as BlockchainDisplayName from otoffer_holders h
 join otcontract_holding_offerfinalized of on of.OfferID = h.OfferId 
+join otcontract_holding_offercreated oc on oc.OfferID = h.OfferID
 join blockchains bc on bc.ID = h.BlockchainID
 JOIN otidentity i ON i.Identity = h.Holder
-where h.IsOriginalHolder = 1
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = oc.DcNodeId
+where h.IsOriginalHolder = 1 and dc.NodeId IS null
 GROUP BY h.ID
 union all
 select ofi.Timestamp, 'Finalized Offer', ofi.OfferId, '', ofi.TransactionHash, '', bc.DisplayName as BlockchainDisplayName from otcontract_holding_offerfinalized ofi
+join otcontract_holding_offercreated oc on oc.OfferID = ofi.OfferID
 join blockchains bc on bc.ID = ofi.BlockchainID
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = oc.DcNodeId
+where dc.NodeId IS null
 union all 
 select po.Timestamp, 'Offer Payout', i.NodeId, '', po.TransactionHash, '', bc.DisplayName as BlockchainDisplayName from otcontract_holding_paidout po
 join blockchains bc on bc.ID = po.BlockchainID

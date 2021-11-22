@@ -18,6 +18,18 @@ using OTHub.Settings;
 
 namespace OTHub.BackendSync.Blockchain.Web3Helper
 {
+    public struct GetBlockResult
+    {
+        public HexBigInteger BlockNumber { get; set; }
+        public TimeSpan Duration { get; set; }
+
+        public GetBlockResult(HexBigInteger blockNumber, TimeSpan duration)
+        {
+            BlockNumber = blockNumber;
+            Duration = duration;
+        }
+    }
+
     public class Web3LoadBalancer : IWeb3
     {
         private readonly Random _rand = new Random();
@@ -31,21 +43,32 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
 
         public async Task SetupWeb3ForRequests(MySqlConnection connection, BlockchainType type, Rpc[] rpcs)
         {
-            ConcurrentDictionary<Rpc, HexBigInteger> rpcsToBlockNumberDict = new ConcurrentDictionary<Rpc, HexBigInteger>();
+            ConcurrentDictionary<Rpc, GetBlockResult> rpcsToBlockNumberDict = new ConcurrentDictionary<Rpc, GetBlockResult>();
 
             IEnumerable<Task> tasks = rpcs.Select(async rpc =>
             {
+                var start = DateTime.UtcNow;
+
                 Web3 web3 = new Web3(rpc.Url);
+
+                HexBigInteger latestBlockNumber = null;
 
                 try
                 {
-                    HexBigInteger latestBlockNumber = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
-                    rpcsToBlockNumberDict[rpc] = latestBlockNumber;
+                    latestBlockNumber = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine(ex);
-                    rpcsToBlockNumberDict[rpc] = new HexBigInteger(0);
+                    latestBlockNumber = new HexBigInteger(0);
+                }
+                finally
+                {
+                    var end = DateTime.UtcNow;
+
+                    var diff = end - start;
+
+                    rpcsToBlockNumberDict[rpc] = new GetBlockResult(latestBlockNumber, diff);
                 }
             });
 
@@ -53,50 +76,61 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
 
             foreach (var kvp in rpcsToBlockNumberDict)
             {
-                if (kvp.Value.Value != 0)
+                if (kvp.Value.BlockNumber.Value != 0)
                 {
                     await connection.ExecuteAsync(@"UPDATE rpcs SET LatestBlockNumber = @blockNumber WHERE ID = @id",
                         new
                         {
                             id = kvp.Key.ID,
-                            blockNumber = (UInt64) kvp.Value.Value
+                            blockNumber = (UInt64) kvp.Value.BlockNumber.Value
                         });
                 }
             }
 
-            KeyValuePair<Rpc, HexBigInteger>[] orderedByBlockNumberDesc = rpcsToBlockNumberDict.OrderByDescending(r => r.Value.Value).ToArray();
+            KeyValuePair<Rpc, GetBlockResult>[] orderedByBlockNumberDesc = rpcsToBlockNumberDict.OrderByDescending(r => r.Value.BlockNumber.Value).ToArray();
 
-            List<Rpc> rpcsToRemoveAsBehindInBlocks = new List<Rpc>();
+            List<KeyValuePair<Rpc, GetBlockResult>> rpcsToRemoveAsBehindInBlocks = new List<KeyValuePair<Rpc, GetBlockResult>>();
             HexBigInteger maxBlockNumber = null;
             bool subtractOneFromMaxBlockNumber = false;
             for (var index = 0; index < orderedByBlockNumberDesc.Length; index++)
             {
-                KeyValuePair<Rpc, HexBigInteger> keyValuePair = orderedByBlockNumberDesc[index];
+                KeyValuePair<Rpc, GetBlockResult> keyValuePair = orderedByBlockNumberDesc[index];
 
                 if (index == 0)
                 {
-                    maxBlockNumber = keyValuePair.Value;
+                    maxBlockNumber = keyValuePair.Value.BlockNumber;
                 }
                 else
                 {
-                    if (maxBlockNumber.Value == keyValuePair.Value)
+                    if (maxBlockNumber.Value == keyValuePair.Value.BlockNumber)
                     {
 
                     }
-                    else if (maxBlockNumber.Value - 1 == keyValuePair.Value)
+                    else if (maxBlockNumber.Value - 1 == keyValuePair.Value.BlockNumber)
                     {
                         subtractOneFromMaxBlockNumber = true;
                     }
                     else
                     {
-                        rpcsToRemoveAsBehindInBlocks.Add(keyValuePair.Key);
+                        rpcsToRemoveAsBehindInBlocks.Add(keyValuePair);
                     }
                 }
             }
 
             foreach (var rpcsToRemoveAsBehindInBlock in rpcsToRemoveAsBehindInBlocks)
             {
-                rpcsToBlockNumberDict.Remove(rpcsToRemoveAsBehindInBlock, out _);
+                Rpcshistory history = new Rpcshistory
+                {
+                    Timestamp = DateTime.UtcNow,
+                    RPCID = rpcsToRemoveAsBehindInBlock.Key.ID,
+                    Method = "eth_getBlockByNumber",
+                    Success = false,
+                    Duration = (int)rpcsToRemoveAsBehindInBlock.Value.Duration.TotalMilliseconds
+                };
+
+                await history.Insert(connection);
+
+                rpcsToBlockNumberDict.Remove(rpcsToRemoveAsBehindInBlock.Key, out _);
             }
 
             if (subtractOneFromMaxBlockNumber)

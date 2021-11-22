@@ -26,8 +26,9 @@ x.Date,
 COUNT(O.OfferId) NewJobs,
 (
 	SELECT COUNT(OI.OfferId) FROM OTOffer OI 
+    LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = OI.DCNodeId
 	WHERE 
-	OI.IsFinalized = 1
+	OI.IsFinalized = 1 AND dc.NodeID is null
 	AND 
 	DATE(DATE_Add(OI.FinalizedTimeStamp, INTERVAL + OI.HoldingTimeInMinutes MINUTE)) = x.Date
 	)
@@ -44,6 +45,8 @@ where Date BETWEEN (SELECT MIN(ethblock.Timestamp) FROM ethblock) AND (SELECT MA
 AND DATE NOT IN (SELECT DATE FROM jobhistorybyday) AND DATE < DATE(NOW())
 ) x 
 LEFT JOIN OTOffer O on O.IsFinalized = 1 AND x.Date = DATE(O.FinalizedTimestamp)
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = O.DCNodeId
+WHERE dc.NodeID is null
 GROUP BY x.Date");
             }
         }

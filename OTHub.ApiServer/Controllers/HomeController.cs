@@ -69,20 +69,20 @@ WHERE otoffer.IsFinalized = 1 AND otoffer.BlockchainID = b.Id
 SELECT COALESCE(SUM(CASE WHEN IsFinalized = 1 AND NOW() <= DATE_ADD(FinalizedTimeStamp, INTERVAL +HoldingTimeInMinutes MINUTE) THEN 1 ELSE 0 END), 0)
 FROM otoffer WHERE blockchainid = b.id) AS ActiveJobs,
 (select COALESCE(sum(Stake), 0) from otidentity WHERE blockchainid = b.id) StakedTokens,
-(SELECT COUNT(*) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
-(SELECT AVG(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
-(SELECT AVG(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
-(SELECT AVG(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H,
-(SELECT SUM(otoffer.TokenAmountPerHolder * 6) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensLocked24H,
-(SELECT SUM(otcontract_holding_paidout.Amount) FROM otcontract_holding_paidout WHERE blockchainid = b.id and Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensPaidout24H,
-(SELECT MIN(otoffer.EstimatedLambda) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorLow24H,
-(SELECT MAX(otoffer.EstimatedLambda) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorHigh24H,
-(SELECT MIN(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsRewardLow24H,
-(SELECT MAX(otoffer.TokenAmountPerHolder) FROM otoffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsRewardHigh24H,
-(SELECT MIN(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDurationLow24H,
-(SELECT MAX(otoffer.HoldingTimeInMinutes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDurationHigh24H,
-(SELECT MIN(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSizeLow24H,
-(SELECT MAX(otoffer.DataSetSizeInBytes) FROM OTOffer WHERE blockchainid = b.id and IsFinalized = 1 AND FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSizeHigh24H
+(SELECT COUNT(*) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS Jobs24H,
+(SELECT AVG(o.TokenAmountPerHolder) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsReward24H,
+(SELECT AVG(o.HoldingTimeInMinutes) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDuration24H,
+(SELECT AVG(o.DataSetSizeInBytes) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSize24H,
+(SELECT SUM(o.TokenAmountPerHolder * 6) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensLocked24H,
+(SELECT SUM(po.Amount) FROM otcontract_holding_paidout po JOIN otoffer o ON o.OfferID = po.OfferID LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND po.blockchainid = b.id and po.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS TokensPaidout24H,
+(SELECT MIN(o.EstimatedLambda) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorLow24H,
+(SELECT MAX(o.EstimatedLambda) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS PriceFactorHigh24H,
+(SELECT MIN(o.TokenAmountPerHolder) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsRewardLow24H,
+(SELECT MAX(o.TokenAmountPerHolder) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsRewardHigh24H,
+(SELECT MIN(o.HoldingTimeInMinutes) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDurationLow24H,
+(SELECT MAX(o.HoldingTimeInMinutes) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsDurationHigh24H,
+(SELECT MIN(o.DataSetSizeInBytes) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSizeLow24H,
+(SELECT MAX(o.DataSetSizeInBytes) FROM otoffer o LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId WHERE dc.NodeId IS NULL AND o.blockchainid = b.id and o.IsFinalized = 1 AND o.FinalizedTimeStamp >= DATE_Add(NOW(), INTERVAL -1 DAY)) AS JobsSizeHigh24H
 FROM blockchains b
 order by b.id desc")).ToArray();
 
@@ -214,7 +214,7 @@ SELECT AVG(TIMESTAMPDIFF(HOUR, CreatedDate, FirstOfferDate)) TimeTillFirstJob FR
                 new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var data = (await connection.QueryAsync<HomeJobBlockchainDistributionModel>(
-                    @"SET @totalToday = (SELECT COUNT(*) AS total FROM otoffer oo WHERE oo.IsFinalized = 1 AND oo.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY));
+                    @"SET @totalToday = (SELECT COUNT(*) AS total FROM otoffer oo LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = oo.DCNodeId WHERE dc.NodeID is null and oo.IsFinalized = 1 AND oo.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY));
 
 SELECT bc.DisplayName, 
 bc.Color, 
@@ -222,6 +222,8 @@ COUNT(o.OfferID) Jobs,
 ROUND(COUNT(o.OfferID) / (@totalToday) * 100) AS Percentage
 FROM blockchains bc
 LEFT JOIN otoffer o ON bc.ID = o.BlockchainID AND o.IsFinalized = 1 AND o.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId
+WHERE dc.NodeID is null
 GROUP BY bc.Id
 ORDER BY Percentage")).ToArray();
 
@@ -229,7 +231,7 @@ ORDER BY Percentage")).ToArray();
 
                 summary.Blockchains = data;
                 summary.MaxDailyJobs = await connection.ExecuteScalarAsync<int>(
-                    @"SELECT MAX(total) FROM (SELECT COUNT(*) AS total FROM otoffer oo WHERE oo.IsFinalized = 1 GROUP BY DATE(FinalizedTimestamp)) x");
+                    @"SELECT MAX(total) FROM (SELECT COUNT(*) AS total FROM otoffer oo LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = oo.DCNodeId WHERE dc.NodeID is null AND oo.IsFinalized = 1 GROUP BY DATE(FinalizedTimestamp)) x");
 
                 int number = (int)(Math.Ceiling(summary.MaxDailyJobs / 50.0d) * 50);
 
@@ -313,8 +315,9 @@ x.Date,
 COUNT(O.OfferId) NewJobs,
 (
 	SELECT COUNT(OI.OfferId) FROM OTOffer OI 
+    LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = OI.DCNodeId
 	WHERE 
-	OI.IsFinalized = 1
+	OI.IsFinalized = 1 AND dc.NodeID is null
 	AND 
 	DATE(DATE_Add(OI.FinalizedTimeStamp, INTERVAL + OI.HoldingTimeInMinutes MINUTE)) = x.Date
 	)
@@ -323,6 +326,8 @@ FROM (
 SELECT DATE(NOW()) Date
 ) x 
 LEFT JOIN OTOffer O on O.IsFinalized = 1 AND x.Date = DATE(O.FinalizedTimestamp)
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = o.DCNodeId
+WHERE dc.NodeID is null
 GROUP BY x.Date");
 
                     data.Add(today);

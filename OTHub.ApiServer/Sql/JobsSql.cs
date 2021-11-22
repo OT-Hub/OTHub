@@ -75,7 +75,9 @@ O.EstimatedLambdaConfidence
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = I.NodeId
 WHERE O.IsFinalized = 1 AND (COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like)
+AND dc.NodeId IS null
 GROUP BY O.OfferID
 {orderBy}
 {limitSql}", new
@@ -87,7 +89,8 @@ GROUP BY O.OfferID
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
-WHERE O.IsFinalized = 1 AND (COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like)", new
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = I.NodeId
+WHERE O.IsFinalized = 1 AND ((COALESCE(@OfferId_like, '') = '' OR O.OfferId = @OfferId_like)) AND dc.NodeId IS null", new
                 {
                     OfferId_like
                 });
@@ -116,7 +119,8 @@ bc.DisplayName BlockchainDisplayName
 FROM OTOffer O
 JOIN blockchains bc ON bc.ID = O.BlockchainID
 LEFT JOIN OTIdentity I ON I.NodeID = O.DCNodeID
-WHERE O.IsFinalized = 1  AND O.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)
+LEFT JOIN otnode_dc_visibility dc ON dc.NodeId = I.NodeId
+WHERE O.IsFinalized = 1  AND O.FinalizedTimestamp >= DATE_Add(NOW(), INTERVAL -1 DAY)  AND dc.NodeId IS null
 GROUP BY O.OfferID
 ORDER BY o.FinalizedTimestamp DESC")).ToArray();
 
