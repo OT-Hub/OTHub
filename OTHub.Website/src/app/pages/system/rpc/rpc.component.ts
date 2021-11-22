@@ -155,10 +155,10 @@ delete: false
 
           const score = (Math.round(((row.DailySuccessTotal / row.DailyRequestsTotal) * 100) * 100) / 100);
 
-          if (score > 99.5) {
+          if (score > 99.0) {
             return '<div class="par"><span class="pass"></span>' + '<span>' + score.toString() + '%</span></div>';
           }
-          if (score < 90) {
+          if (score < 95) {
             return '<div class="par"><span class="fail"></span>' + '<span>' + score.toString() + '%</span></div>';
           }
 
@@ -188,7 +188,7 @@ delete: false
           if (score > 99.0) {
             return '<div class="par"><span class="pass"></span>' + '<span>' + score.toString() + '%</span></div>';
           }
-          if (score < 90) {
+          if (score < 95) {
             return '<div class="par"><span class="fail"></span>' + '<span>' + score.toString() + '%</span></div>';
           }
 
