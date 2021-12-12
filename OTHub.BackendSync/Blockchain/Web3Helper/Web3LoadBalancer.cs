@@ -133,6 +133,20 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
                 rpcsToBlockNumberDict.Remove(rpcsToRemoveAsBehindInBlock.Key, out _);
             }
 
+            foreach (var keyValuePair in rpcsToBlockNumberDict)
+            {
+                Rpcshistory history = new Rpcshistory
+                {
+                    Timestamp = DateTime.UtcNow,
+                    RPCID = keyValuePair.Key.ID,
+                    Method = "eth_getBlockByNumber",
+                    Success = true,
+                    Duration = (int)keyValuePair.Value.Duration.TotalMilliseconds
+                };
+
+                await history.Insert(connection);
+            }
+
             if (subtractOneFromMaxBlockNumber)
             {
                 maxBlockNumber = new HexBigInteger(maxBlockNumber.Value - 1);
