@@ -51,43 +51,53 @@ ORDER BY b.ID, r.ID")).ToArray();
                             }
                             else
                             {
-                                if (score > row.LastCalculatedDailyScore.Value)
+                                if (score > row.LastCalculatedDailyScore.Value && score > 90)
                                 {
                                     decimal diff = score - row.LastCalculatedDailyScore.Value;
 
-                                    if (weight < 15 || (diff < 0.1m && score > 95))
+                                    if (score > 95)
                                     {
-                                        weight += 1;
-                                    }
-                                    else if (weight < 50 || (diff < 0.2m && score > 90))
-                                    {
-                                        weight += 2;
-                                    }
-                                    else
-                                    {
-                                        weight += 3;
+                                        if (weight < 15 || (diff < 0.1m && score > 95))
+                                        {
+                                            weight += 1;
+                                        }
+                                        else if (weight < 50 || (diff < 0.2m))
+                                        {
+                                            weight += 2;
+                                        }
+                                        else
+                                        {
+                                            weight += 3;
+                                        }
                                     }
                                 }
-                                else if (score < row.LastCalculatedDailyScore.Value)
+                                else if (score < row.LastCalculatedDailyScore.Value || score < 90)
                                 {
-                                    decimal diff = row.LastCalculatedDailyScore.Value - score;
+                                    if (score < row.LastCalculatedDailyScore.Value)
+                                    {
+                                        decimal diff = row.LastCalculatedDailyScore.Value - score;
 
-                                    if (weight < 15 || diff < 0.1m && score > 95)
-                                    {
-                                        weight -= 1;
-                                    }
-                                    else if (weight < 50 || (diff < 0.2m && score > 90))
-                                    {
-                                        weight -= 2;
+                                        if (weight < 15 || diff < 0.1m && score > 95)
+                                        {
+                                            weight -= 1;
+                                        }
+                                        else if (weight < 50 || (diff < 0.2m && score > 90))
+                                        {
+                                            weight -= 2;
+                                        }
+                                        else
+                                        {
+                                            weight -= 3;
+                                        }
+
+                                        if (score < 1)
+                                        {
+                                            weight = 0;
+                                        }
                                     }
                                     else
                                     {
-                                        weight -= 3;
-                                    }
-
-                                    if (score < 1)
-                                    {
-                                        weight = 0;
+                                        weight -= 1;
                                     }
                                 }
                                 else
