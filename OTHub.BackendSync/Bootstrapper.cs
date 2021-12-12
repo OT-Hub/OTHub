@@ -20,7 +20,7 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.Misc);
 
-                controller.Schedule(new RPCWeightAdjustorTask(), TimeSpan.FromMinutes(30), true);
+                controller.Schedule(new RPCWeightAdjustorTask(), TimeSpan.FromMinutes(5), true);
                 controller.Schedule(new MiscTask(), TimeSpan.FromHours(10), true);
            
 
