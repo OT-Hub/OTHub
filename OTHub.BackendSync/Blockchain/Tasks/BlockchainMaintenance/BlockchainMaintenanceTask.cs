@@ -17,12 +17,11 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainMaintenance
         {
             Add(new GetLatestContractsTask());
             Add(new RefreshAllHolderLitigationStatusesTask());
-            Add(new MarkOldContractsAsArchived());
         }
 
         public override TimeSpan GetExecutingInterval(BlockchainType type)
         {
-            return TimeSpan.FromHours(3);
+            return TimeSpan.FromHours(4);
         }
 
         public override async Task<bool> Execute(Source source, BlockchainType blockchain, BlockchainNetwork network, IWeb3 web3, int blockchainID)

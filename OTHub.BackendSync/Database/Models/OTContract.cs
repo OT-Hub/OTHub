@@ -116,6 +116,13 @@ WHERE Address = @address and type = @type AND BlockchainID = @blockchainID", new
             if (otContract.IsLatest)
             {
                 otContract.IsArchived = false;
+                await connection.ExecuteAsync("UPDATE OTContract Set IsLatest = 0 AND IsArchived = 1 where BlockchainID = @blockchainID AND Type = @type AND IsLatest = 1 AND Address != @ignoreAddress",
+                    new
+                    {
+                        type = otContract.Type,
+                        blockchainID = otContract.BlockchainID,
+                        ignoreAddress = otContract.Address
+                    });
             }
 
             if (count == 0)

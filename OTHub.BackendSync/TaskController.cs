@@ -19,15 +19,20 @@ namespace OTHub.BackendSync
         private readonly Source _source;
         private readonly ConcurrentBag<TaskControllerItem> _items = new ConcurrentBag<TaskControllerItem>();
 
-        private class TaskControllerItem
+        public class TaskControllerItem
         {
             private readonly BlockchainType _blockchain;
             private readonly BlockchainNetwork _network;
             private readonly Source _source;
             private readonly TaskRunBase _task;
-            private readonly TimeSpan _runEveryTimeSpan;
+            private TimeSpan _runEveryTimeSpan;
             private DateTime _lastRunDateTime;
             private SystemStatus _systemStatus;
+
+            public BlockchainType BlockchainType => _blockchain;
+            public BlockchainNetwork BlockchainNetwork => _network;
+
+  
 
             internal TaskControllerItem(BlockchainType blockchain, BlockchainNetwork network, Source source,
                 TaskRunBlockchain task, TimeSpan runEveryTimeSpan, bool startNow, int blockchainID)
@@ -142,6 +147,11 @@ namespace OTHub.BackendSync
                     Logger.WriteLine(_source, "Finished " + _task.Name + " in " + (DateTime.Now - startTime).TotalSeconds + " seconds on " + _blockchain + " " + _network);
                 }
             }
+
+            public void SetInterval(int minutes)
+            {
+                _runEveryTimeSpan = TimeSpan.FromMinutes(minutes);
+            }
         }
 
         public void Schedule(TaskRunGeneric task, TimeSpan runEveryTimeSpan, bool startNow)
@@ -150,13 +160,17 @@ namespace OTHub.BackendSync
             _items.Add(item);
         }
 
-        public static Task[] Schedule<TTask>(Source source, bool startNow) where TTask : TaskRunBlockchain, new()
+
+
+        public static Task[] Schedule<TTask>(Source source, bool startNow, out TaskControllerItem[] taskControllers) where TTask : TaskRunBlockchain, new()
         {
             using (var connection = new MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 var blockchains = connection.Query(@"SELECT * FROM blockchains WHERE enabled = 1").ToArray();
 
                 List<Task> tasks = new List<Task>();
+
+                List<TaskControllerItem> list = new List<TaskControllerItem>();
 
                 foreach (var blockchain in blockchains)
                 {
@@ -174,17 +188,18 @@ namespace OTHub.BackendSync
 
                     TimeSpan interval = task.GetExecutingInterval(blockchainEnum);
 
+                    TaskController controller = new TaskController(source);
+                    var item = new TaskControllerItem(blockchainEnum, networkNameEnum, controller._source, task, interval, startNow, id);
+                    controller._items.Add(item);
+                    list.Add(item);
+
                     tasks.Add(Task.Run(async () =>
                     {
-                        TaskController controller = new TaskController(source);
-                        var item = new TaskControllerItem(blockchainEnum, networkNameEnum, controller._source, task, interval, startNow, id);
-                        controller._items.Add(item);
-
                         await controller.Start();
                     }));
-
-             
                 }
+
+                taskControllers = list.ToArray();
 
                 return tasks.ToArray();
             }

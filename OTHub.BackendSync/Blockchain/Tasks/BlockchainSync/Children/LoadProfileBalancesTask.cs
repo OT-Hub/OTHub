@@ -110,7 +110,7 @@ GROUP BY i.Identity", new
                         {
                             DateTime adjustedNowTime = DateTime.Now;
 
-                            if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalDays <= 14)
+                            if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalDays <= 365)
                                 updateProfile = false;
                         }
                     }
@@ -184,7 +184,7 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
 
                             if (lastActivityDate.Value <= currentIdentity.LastSyncedTimestamp)
                             {
-                                if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalHours <= 16)
+                                if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalDays <= 90)
                                 {
                                     updateProfile = false;
                                 }
@@ -192,7 +192,7 @@ where i.Identity = @identity AND of.blockchainID = @blockchainID", new
                         }
                         else
                         {
-                            if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalHours <= 24)
+                            if ((adjustedNowTime - currentIdentity.LastSyncedTimestamp.Value).TotalDays <= 180)
                             {
                                 updateProfile = false;
                             }
