@@ -989,6 +989,9 @@ ENGINE=InnoDB
 ;
 ");
 
+                connection.Execute(@"ALTER TABLE rpcs
+ADD COLUMN IF NOT EXISTS `LastCalculatedDailyScore` INT NULL");
+
             }
         }
     }

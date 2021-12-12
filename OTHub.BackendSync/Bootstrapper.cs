@@ -20,7 +20,9 @@ namespace OTHub.BackendSync
             {
                 TaskController controller = new TaskController(Source.Misc);
 
+                controller.Schedule(new RPCWeightAdjustorTask(), TimeSpan.FromMinutes(30), true);
                 controller.Schedule(new MiscTask(), TimeSpan.FromHours(10), true);
+           
 
                 await controller.Start();
             }));
@@ -36,7 +38,6 @@ namespace OTHub.BackendSync
             tasks.AddRange(TaskController.Schedule<ToolsTask>(Source.Tools, false, out _));
 
             tasks.AddRange(TaskController.Schedule<BlockchainSyncTimeAdjustorTask>(Source.BlockchainSync, true, out _));
-
 
             tasks.Add(Task.Run(async () =>
             {

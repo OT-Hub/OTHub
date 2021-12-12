@@ -53,7 +53,8 @@ SELECT LEAST(NOW(), (SELECT DATE_ADD(DATE_ADD(DATE(MAX(TIMESTAMP)), INTERVAL 1 D
             if (controllerItem == null)
                 return false;
 
-            await using (var connection = new MySqlConnector.MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
+            await using (var connection =
+                new MySqlConnector.MySqlConnection(OTHubSettings.Instance.MariaDB.ConnectionString))
             {
                 decimal? averageBlockTimeInSecondsWithData = await connection.ExecuteScalarAsync<decimal?>(_sql, new
                 {
@@ -72,10 +73,10 @@ SELECT LEAST(NOW(), (SELECT DATE_ADD(DATE_ADD(DATE(MAX(TIMESTAMP)), INTERVAL 1 D
 
                 if (averageBlockTimeInSecondsWithData == null)
                 {
-                    averageBlockTimeInSecondsWithData = (int)TimeSpan.FromHours(2).TotalSeconds;
+                    averageBlockTimeInSecondsWithData = (int) TimeSpan.FromHours(2).TotalSeconds;
                 }
 
-                int minutes = (int)(averageBlockTimeInSecondsWithData / 60);
+                int minutes = (int) (averageBlockTimeInSecondsWithData / 60);
 
                 if (minutes <= 3)
                 {
@@ -83,10 +84,13 @@ SELECT LEAST(NOW(), (SELECT DATE_ADD(DATE_ADD(DATE(MAX(TIMESTAMP)), INTERVAL 1 D
                 }
                 else if (minutes >= TimeSpan.FromHours(4).TotalMinutes)
                 {
-                    minutes = (int)TimeSpan.FromHours(4).TotalMinutes;
+                    minutes = (int) TimeSpan.FromHours(4).TotalMinutes;
                 }
 
                 controllerItem.SetInterval(minutes);
+
+
+                await TaskRunBlockchain.RefreshRPCs(connection, blockchainID);
             }
 
             return true;

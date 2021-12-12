@@ -15,7 +15,7 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
     public class Web3Factory
     {
         private readonly BlockchainType _type;
-        private readonly Rpc[] _rpcs;
+        private Rpc[] _rpcs;
 
         private RPCInterceptor RequestInterceptor { get; }
 
@@ -24,6 +24,11 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
             _type = type;
             _rpcs = rpcs;
             RequestInterceptor = new RPCInterceptor(_type);
+        }
+
+        public void SetRPCs(Rpc[] rpcs)
+        {
+            _rpcs = rpcs;
         }
 
         public async Task<IWeb3> CreateInstance(MySqlConnection connection)

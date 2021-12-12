@@ -105,6 +105,19 @@ namespace OTHub.BackendSync
 
 
         private static readonly ConcurrentDictionary<int, Web3Factory> _blockchainWeb3Dictionary = new ConcurrentDictionary<int, Web3Factory>();
+
+        public static async Task RefreshRPCs(MySqlConnection connection, int blockchainID)
+        {
+            using (await LockManager.GetLock(LockType.GetWeb3).Lock())
+            {
+                if (_blockchainWeb3Dictionary.TryGetValue(blockchainID, out Web3Factory loadBalancer))
+                {
+                    Rpc[] rpcs = await Rpc.GetByBlockchainID(connection, blockchainID);
+                    loadBalancer.SetRPCs(rpcs);
+                }
+            }
+        }
+
         public async Task<Web3Factory> GetWeb3(MySqlConnection connection, int blockchainID, BlockchainType type)
         {
             using (await LockManager.GetLock(LockType.GetWeb3).Lock())
