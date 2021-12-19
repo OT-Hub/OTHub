@@ -23,8 +23,8 @@ namespace OTHub.BackendSync.System.Tasks
             {
                 RPCModel[] data = (await connection.QueryAsync<RPCModel>(@"SELECT r.ID, r.`Name`, r.LatestBlockNumber BlockNumber, r.LastCalculatedDailyScore, r.Weight, b.DisplayName BlockchainName,
 b.id BlockchainID,
-SUM(CASE WHEN h.Timestamp >= DATE_Add(NOW(), INTERVAL -100 DAY) THEN 1 ELSE 0 END) DailyRequestsTotal,
-SUM(CASE WHEN h.Success = 1 AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -100 DAY) THEN 1 ELSE 0 END) DailySuccessTotal
+SUM(CASE WHEN h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) DailyRequestsTotal,
+SUM(CASE WHEN h.Success = 1 AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) DailySuccessTotal
 FROM rpcs r
 JOIN blockchains b ON b.ID = r.BlockchainID
 LEFT JOIN rpcshistory h ON h.RPCID = r.ID

@@ -78,7 +78,7 @@ namespace OTHub.BackendSync.Database.Models
                 if (contract.IsLatest)
                 {
                     await connection.ExecuteAsync(@"UPDATE OTContract
-SET IsLatest = 0
+SET IsLatest = 0, IsArchived = 1
 WHERE Type = @type AND IsLatest = 1 AND Address != @address AND BlockchainID = @blockchainID", new
                     {
                         address = contract.Address,
