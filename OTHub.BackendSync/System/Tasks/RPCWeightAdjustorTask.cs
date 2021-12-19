@@ -23,8 +23,8 @@ namespace OTHub.BackendSync.System.Tasks
             {
                 RPCModel[] data = (await connection.QueryAsync<RPCModel>(@"SELECT r.ID, r.`Name`, r.LatestBlockNumber BlockNumber, r.LastCalculatedDailyScore, r.Weight, b.DisplayName BlockchainName,
 b.id BlockchainID,
-SUM(CASE WHEN h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) DailyRequestsTotal,
-SUM(CASE WHEN h.Success = 1 AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -1 DAY) THEN 1 ELSE 0 END) DailySuccessTotal
+SUM(CASE WHEN h.Timestamp >= DATE_Add(NOW(), INTERVAL -100 DAY) THEN 1 ELSE 0 END) DailyRequestsTotal,
+SUM(CASE WHEN h.Success = 1 AND h.Timestamp >= DATE_Add(NOW(), INTERVAL -100 DAY) THEN 1 ELSE 0 END) DailySuccessTotal
 FROM rpcs r
 JOIN blockchains b ON b.ID = r.BlockchainID
 LEFT JOIN rpcshistory h ON h.RPCID = r.ID
@@ -39,8 +39,14 @@ ORDER BY b.ID, r.ID")).ToArray();
 
                     foreach (RPCModel row in group)
                     {
-                        decimal score = (Math.Round(((row.DailySuccessTotal / row.DailyRequestsTotal) * 100) * 100, 2) /
-                                         100);
+                        decimal score = 0;
+
+                        if (row.DailyRequestsTotal > 0)
+                        {
+                            score = (Math.Round(((row.DailySuccessTotal / row.DailyRequestsTotal) * 100) * 100, 2) /
+                                     100);
+                        }
+
                         int weight = row.Weight;
 
                         if (row.LastCalculatedDailyScore.HasValue)
@@ -51,62 +57,7 @@ ORDER BY b.ID, r.ID")).ToArray();
                             }
                             else
                             {
-                                if (score > row.LastCalculatedDailyScore.Value && score > 90)
-                                {
-                                    decimal diff = score - row.LastCalculatedDailyScore.Value;
-
-                                    if (score > 95)
-                                    {
-                                        if (weight < 15 || (diff < 0.1m && score > 95))
-                                        {
-                                            weight += 1;
-                                        }
-                                        else if (weight < 50 || (diff < 0.2m))
-                                        {
-                                            weight += 2;
-                                        }
-                                        else
-                                        {
-                                            weight += 3;
-                                        }
-                                    }
-                                }
-                                else if (score < row.LastCalculatedDailyScore.Value || score < 90)
-                                {
-                                    if (score < row.LastCalculatedDailyScore.Value)
-                                    {
-                                        decimal diff = row.LastCalculatedDailyScore.Value - score;
-
-                                        if (weight < 15 || diff < 0.1m && score > 95)
-                                        {
-                                            weight -= 1;
-                                        }
-                                        else if (weight < 50 || (diff < 0.2m && score > 90))
-                                        {
-                                            weight -= 2;
-                                        }
-                                        else
-                                        {
-                                            weight -= 3;
-                                        }
-
-                                        if (score < 1)
-                                        {
-                                            weight = 0;
-                                        }
-                                    }
-                                    else
-                                    {
-                                        weight -= 1;
-                                    }
-                                }
-                                else
-                                {
-                                    if (weight < 100 && score == 100)
-                                    {
-                                        weight += 1;
-                                    }
-                                }
+                                weight = (int)Math.Round((double)(100m - ((100m - score) * 5m)), MidpointRounding.ToEven);
                             }
                         }
 
