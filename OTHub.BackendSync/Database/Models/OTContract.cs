@@ -55,20 +55,22 @@ namespace OTHub.BackendSync.Database.Models
         {
             if (onlyAllowIsArchivedUpdate)
             {
-                await connection.ExecuteAsync("UPDATE OTContract SET IsArchived = @IsArchived WHERE Address = @address AND BlockchainID = @blockchainID", new
+                await connection.ExecuteAsync("UPDATE OTContract SET IsArchived = @IsArchived WHERE Address = @address AND BlockchainID = @blockchainID AND Type = @type", new
                 {
                     address = contract.Address,
                     IsArchived = contract.IsArchived,
-                    blockchainID = contract.BlockchainID
+                    blockchainID = contract.BlockchainID,
+                    type = contract.Type
                 });
             }
             else if (onlyAllowIsLatestUpdate)
             {
-                await connection.ExecuteAsync("UPDATE OTContract SET IsLatest = @isLatest WHERE Address = @address AND BlockchainID = @blockchainID", new
+                await connection.ExecuteAsync("UPDATE OTContract SET IsLatest = @isLatest WHERE Address = @address AND BlockchainID = @blockchainID AND Type = @type", new
                 {
                     address = contract.Address,
                     isLatest = contract.IsLatest,
-                    blockchainID = contract.BlockchainID
+                    blockchainID = contract.BlockchainID,
+                    type = contract.Type
                 });
             }
             else
