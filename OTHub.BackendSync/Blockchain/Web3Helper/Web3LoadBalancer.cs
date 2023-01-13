@@ -158,7 +158,7 @@ namespace OTHub.BackendSync.Blockchain.Web3Helper
 
             if (type == BlockchainType.xDai)
             {
-                defaultBlocksToIgnore = 12;
+                defaultBlocksToIgnore = 3;
             }
             else if (type == BlockchainType.Polygon)
             {
