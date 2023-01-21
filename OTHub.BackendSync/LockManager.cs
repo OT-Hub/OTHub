@@ -1,62 +1,39 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using AsyncKeyedLock;
+using System;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
 namespace OTHub.BackendSync
 {
     public static class LockManager
     {
-        private static readonly ConcurrentDictionary<LockType, SemaphoreSlim> _lockDictionary = new ConcurrentDictionary<LockType, SemaphoreSlim>();
-
-        public static LockRelease GetLock(LockType type)
+        private static readonly AsyncKeyedLocker<LockType> _asyncKeyedLocker = new AsyncKeyedLocker<LockType>(o =>
         {
-            if (!_lockDictionary.TryGetValue(type, out SemaphoreSlim lck))
-            {
-                lck = new SemaphoreSlim(1, 1);
-                _lockDictionary[type] = lck;
-            }
+            o.PoolSize = Enum.GetNames(typeof(LockType)).Length;
+            o.PoolInitialFill = 1;
+        });
 
-            return new LockRelease(lck);
-        }
-    }
-
-    public class LockRelease : IDisposable
-    {
-        private readonly SemaphoreSlim _lck;
-
-        public LockRelease(SemaphoreSlim lck)
+        public static bool IsInUse(LockType type)
         {
-            _lck = lck;
+            return _asyncKeyedLocker.IsInUse(type);
         }
 
-        public void Dispose()
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static async ValueTask<IDisposable> Lock(LockType type)
         {
-            _lck.Release();
+            return await _asyncKeyedLocker.LockAsync(type).ConfigureAwait(false);
         }
 
-        public int LockCurrentCount => _lck.CurrentCount;
-
-        public async Task<LockRelease> Lock(int? milliseconds = null)
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static async ValueTask<IDisposable> Lock(LockType type, int milliseconds)
         {
-            if (milliseconds.HasValue)
+            var releaser = (AsyncKeyedLockTimeoutReleaser<LockType>)await _asyncKeyedLocker.LockAsync(type, milliseconds).ConfigureAwait(false);
+            if (!releaser.EnteredSemaphore)
             {
-                bool result = await _lck.WaitAsync(milliseconds.Value);
-
-                if (!result)
-                {
-                    throw new Exception("Lock did not release in time.");
-                }
+                releaser.Dispose();
+                throw new Exception("Lock did not release in time.");
             }
-            else
-            {
-                await _lck.WaitAsync();
-            }
-
-            return this;
+            return releaser;
         }
     }
 

@@ -128,7 +128,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
         public static async Task Execute(MySqlConnection connection, int blockchainID, BlockchainType blockchain, BlockchainNetwork network)
         {
-            using (await LockManager.GetLock(LockType.ProcessJobs).Lock())
+            using (await LockManager.Lock(LockType.ProcessJobs).ConfigureAwait(false))
             {
                 if (blockchain == BlockchainType.xDai || blockchain == BlockchainType.Polygon)
                 {

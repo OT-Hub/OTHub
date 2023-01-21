@@ -194,7 +194,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         public static async Task ProcessOfferTasks(MySqlConnection connection, int blockchainID, Web3 cl,
             string contractAddress, EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
-            using (await LockManager.GetLock(LockType.OfferTask).Lock())
+            using (await LockManager.Lock(LockType.OfferTask).ConfigureAwait(false))
             {
                 var offerId =
                     HexHelper.ByteArrayToString((byte[])eventLog.Event
@@ -242,7 +242,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         public static async Task ProcessOfferCreated(MySqlConnection connection, int blockchainID, Web3 cl,
             string contractAddress, EventLog<Models.Program.OfferCreated> eventLog)
         {
-            using (await LockManager.GetLock(LockType.OfferCreated).Lock())
+            using (await LockManager.Lock(LockType.OfferCreated).ConfigureAwait(false))
             {
                 string offerID = HexHelper.ByteArrayToString(eventLog.Event.offerId);
 
@@ -291,7 +291,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
         public static async Task ProcessOfferFinalised(MySqlConnection connection, int blockchainID, Web3 cl,
             string contractAddress, EventLog<List<ParameterOutput>> eventLog)
         {
-            using (await LockManager.GetLock(LockType.OfferFinalised).Lock())
+            using (await LockManager.Lock(LockType.OfferFinalised).ConfigureAwait(false))
             {
                 var offerId =
                     HexHelper.ByteArrayToString((byte[]) eventLog.Event
@@ -347,7 +347,7 @@ namespace OTHub.BackendSync.Blockchain.Tasks.BlockchainSync.Children
 
         public static async Task ProcessPayout(MySqlConnection connection, int blockchainID, Web3 cl, string contractAddress, EventLog<List<ParameterOutput>> eventLog)
         {
-            using (await LockManager.GetLock(LockType.PayoutInsert).Lock())
+            using (await LockManager.Lock(LockType.PayoutInsert).ConfigureAwait(false))
             {
                 var offerId =
                     HexHelper.ByteArrayToString((byte[]) eventLog.Event

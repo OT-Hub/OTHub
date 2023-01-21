@@ -402,7 +402,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         public static async Task ProcessTokensWithdrawn(MySqlConnection connection, string contractAddress, int blockchainID,
             Web3 cl, IGrouping<string, EventLog<List<ParameterOutput>>> @group, EthApiService eth)
         {
-            using (await LockManager.GetLock(LockType.TokensWithdrawn).Lock())
+            using (await LockManager.Lock(LockType.TokensWithdrawn).ConfigureAwait(false))
             {
                 if (OTContract_Profile_TokensWithdrawn.TransactionExists(connection, @group.Key, blockchainID))
                 {
@@ -450,7 +450,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         public static async Task ProcessTokensReleased(MySqlConnection connection, string contractAddress, int blockchainID,
             Web3 cl, IGrouping<string, EventLog<List<ParameterOutput>>> @group, EthApiService eth)
         {
-            using (await LockManager.GetLock(LockType.TokensReleased).Lock())
+            using (await LockManager.Lock(LockType.TokensReleased).ConfigureAwait(false))
             {
                 if (OTContract_Profile_TokensReleased.TransactionExists(connection, @group.Key, blockchainID))
                 {
@@ -495,7 +495,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         public static async Task ProcessTokensDeposited(MySqlConnection connection, string contractAddress, int blockchainID,
             Web3 cl, IGrouping<string, EventLog<List<ParameterOutput>>> @group, EthApiService eth)
         {
-            using (await LockManager.GetLock(LockType.TokensDeposited).Lock())
+            using (await LockManager.Lock(LockType.TokensDeposited).ConfigureAwait(false))
             {
                 if (OTContract_Profile_TokensDeposited.TransactionExists(connection, @group.Key, blockchainID))
                 {
@@ -542,7 +542,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         public static async Task ProcessProfileCreated(MySqlConnection connection, string contractAddress,
             Function createProfileFunction, int blockchainID, Web3 cl, EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
-            using (await LockManager.GetLock(LockType.ProfileCreated).Lock())
+            using (await LockManager.Lock(LockType.ProfileCreated).ConfigureAwait(false))
             {
                 var profile = (string)eventLog.Event.FirstOrDefault(p => p.Parameter.Name == "profile")
                     .Result;
@@ -596,7 +596,7 @@ WHERE Profile not in (select otidentity.Identity from otidentity WHERE Blockchai
         public static async Task ProcessIdentityCreated(MySqlConnection connection, string contractAddress, int blockchainID,
             Web3 cl, EventLog<List<ParameterOutput>> eventLog, EthApiService eth)
         {
-            using (await LockManager.GetLock(LockType.IdentityCreated).Lock())
+            using (await LockManager.Lock(LockType.IdentityCreated).ConfigureAwait(false))
             {
                 var newIdentity = (string)eventLog.Event
                     .FirstOrDefault(p => p.Parameter.Name == "newIdentity").Result;
