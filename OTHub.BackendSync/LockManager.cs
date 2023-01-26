@@ -27,7 +27,7 @@ namespace OTHub.BackendSync
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static async ValueTask<IDisposable> Lock(LockType type, int milliseconds)
         {
-            var releaser = (AsyncKeyedLockTimeoutReleaser<LockType>)await _asyncKeyedLocker.LockAsync(type, milliseconds).ConfigureAwait(false);
+            var releaser = await _asyncKeyedLocker.LockAsync(type, milliseconds).ConfigureAwait(false);
             if (!releaser.EnteredSemaphore)
             {
                 releaser.Dispose();
