@@ -1,14 +1,19 @@
-# Maintainers Wanted
-This project is looking for maintainers.
+# [othub.io](https://www.othub.io/) for V6 DKG (Ongoing)
+If you are looking for the latest OTHub please see https://othub.io.
 
-I want to wind down my time spent on this project. I left the crypto scene about 2 years ago which took OT Hub offline and eventually I brought the website back online due to popular demand. 
-OriginTrail fund the hosting on the website since bringing the website back online but I don't have any passion to continue development of the website.
+Latest repositories below:
 
-If you're interested in working on OT Hub or taking over it, send me a message.
+[othub-api](https://github.com/othub-io/othub-api)
 
-The last feature I want to finish is the Tax Report which was voted by the community in October 2021.
+[othub-react](https://github.com/othub-io/othub-react)
 
-# OT Hub
+[othub-runtime](https://github.com/othub-io/othub-runtime)
+
+[otp-sync](https://github.com/othub-io/otp-sync)
+
+[othub-bot](https://github.com/othub-io/othub-bot)
+
+# OT Hub for V5 DKG (End of life)
 
 OT Hub is a community-made project for live insights into the OriginTrail Decentralized Network.
 
